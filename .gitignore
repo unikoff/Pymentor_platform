@@ -8,8 +8,12 @@ backend/*.log
 backend/.env
 
 frontend/node_modules/
-frontend/dist/
 frontend/*.log
+# frontend/dist коммитим намеренно: сервер шаред-хостинга не может собрать
+# фронт (не хватает памяти), поэтому готовый билд доставляем через git.
 
 # Claude Code local config (личные разрешения + машинно-зависимые пути)
 .claude/
+
+# Локальный zip-архив билда (для ручной заливки; в git не нужен — dist уже в репе)
+pymentor-dist.zip

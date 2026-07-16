@@ -1,6 +1,10 @@
+from pathlib import Path
+
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy import inspect, text
 
 from DataBase.engine import Base, engine
@@ -58,9 +62,22 @@ app.include_router(admin_router, prefix="/admin")
 app.include_router(user_router, prefix="/user")
 app.include_router(learning_router, prefix="/learning")
 
-@app.get("/")
-async def root():
-    return "Pymentor API working"
+# --- Раздача собранного фронтенда (production) ---
+# В деплое FastAPI сам отдаёт собранный React из frontend/dist: и ассеты, и SPA.
+# Тогда фронт и API живут на одном origin — cookie сессии работает без CORS.
+# В dev папки dist нет (фронт крутит Vite отдельно) → остаётся чистый API.
+_DIST_DIR = Path(__file__).resolve().parent.parent / "frontend" / "dist"
+if (_DIST_DIR / "index.html").exists():
+    app.mount("/assets", StaticFiles(directory=_DIST_DIR / "assets"), name="assets")
+
+    @app.get("/{full_path:path}")
+    async def spa(full_path: str):
+        # Любой путь, не пойманный роутерами и /assets, отдаёт index.html (SPA-роутинг).
+        return FileResponse(_DIST_DIR / "index.html")
+else:
+    @app.get("/")
+    async def root():
+        return "Pymentor API working"
 
 if __name__ == "__main__":
     import uvicorn
