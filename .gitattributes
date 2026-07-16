@@ -1,0 +1,5 @@
+# Нормализация окончаний строк.
+# Shell-скрипты ВСЕГДА с LF — иначе на Linux ошибка "bad interpreter: bash^M".
+*.sh text eol=lf
+# Batch-файлы всегда с CRLF — для Windows.
+*.bat text eol=crlf
