@@ -360,8 +360,12 @@ function getInitialTheme(): ThemeMode {
   }
 }
 
+// Префикс, под которым смонтирована платформа: "/platform" на проде, "" в dev.
+// Vite подставляет сюда значение base из vite.config.ts.
+const API_PREFIX = import.meta.env.BASE_URL.replace(/\/+$/, "");
+
 async function apiRequest<T>(url: string, body?: unknown, method?: string): Promise<T> {
-  const response = await fetch(url, {
+  const response = await fetch(API_PREFIX + url, {
     method: method ?? (body ? "POST" : "GET"),
     credentials: "include",
     headers: body ? { "Content-Type": "application/json" } : undefined,
