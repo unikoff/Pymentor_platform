@@ -17,7 +17,6 @@ def main() -> None:
         sys.exit(1)
 
     email = sys.argv[1]
-    email = "unikofpost@gmail.ru"
     revoke = "--revoke" in sys.argv[2:]
 
     db = SessionLocal()
