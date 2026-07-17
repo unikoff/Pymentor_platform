@@ -1082,6 +1082,8 @@ function AdminScreen({ onClose }: { onClose: () => void }) {
   const [accounts, setAccounts] = useState<AdminAccount[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  // Меняется после удаления аккаунта, чтобы список перезапросился.
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -1111,7 +1113,7 @@ function AdminScreen({ onClose }: { onClose: () => void }) {
       cancelled = true;
       window.clearTimeout(timer);
     };
-  }, [search]);
+  }, [search, reloadKey]);
 
   return (
     <div className="admin-layer" role="dialog" aria-modal="true" aria-label="Админ-панель">
@@ -1149,7 +1151,14 @@ function AdminScreen({ onClose }: { onClose: () => void }) {
         {adminTab === "slots" ? (
           <AdminSlotsView />
         ) : openStudentId !== null ? (
-          <AdminStudentProfile studentId={openStudentId} onBack={() => setOpenStudentId(null)} />
+          <AdminStudentProfile
+            studentId={openStudentId}
+            onBack={() => setOpenStudentId(null)}
+            onDeleted={() => {
+              setOpenStudentId(null);
+              setReloadKey((key) => key + 1);
+            }}
+          />
         ) : (
           <>
             <label className="admin-search">
@@ -1199,12 +1208,25 @@ function AdminScreen({ onClose }: { onClose: () => void }) {
   );
 }
 
-function AdminStudentProfile({ studentId, onBack }: { studentId: number; onBack: () => void }) {
+// Слово, которое админ обязан ввести, чтобы удалить аккаунт.
+const DELETE_KEYWORD = "УДАЛИТЬ";
+
+function AdminStudentProfile({
+  studentId,
+  onBack,
+  onDeleted,
+}: {
+  studentId: number;
+  onBack: () => void;
+  onDeleted: () => void;
+}) {
   const [month, setMonth] = useState<CalendarMonth>(getInitialCalendarMonth);
   const [profile, setProfile] = useState<StudentProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [isBusy, setIsBusy] = useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState("");
 
   const loadProfile = useCallback(() => {
     setIsLoading(true);
@@ -1237,6 +1259,18 @@ function AdminStudentProfile({ studentId, onBack }: { studentId: number; onBack:
 
   function addQuota(amount: number) {
     mutate(apiRequest(`/admin/users/${studentId}/quota`, { year: month.year, month: month.month, add: amount }));
+  }
+
+  async function deleteUser() {
+    setIsBusy(true);
+    setError("");
+    try {
+      await apiRequest(`/admin/users/${studentId}`, undefined, "DELETE");
+      onDeleted();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Не удалось удалить аккаунт");
+      setIsBusy(false);
+    }
   }
 
   if (isLoading && !profile) {
@@ -1343,6 +1377,51 @@ function AdminStudentProfile({ studentId, onBack }: { studentId: number; onBack:
               </span>
             </div>
           ))
+        )}
+      </div>
+
+      <div className="profile-danger">
+        <span className="profile-bookings-title">Опасная зона</span>
+        {isDeleteOpen ? (
+          <>
+            <p className="admin-note">
+              Аккаунт <strong>{profile.email}</strong> и весь его прогресс будут удалены безвозвратно.
+              Забронированные им занятия освободятся. Введите <strong>{DELETE_KEYWORD}</strong>, чтобы подтвердить.
+            </p>
+            <input
+              className="profile-danger-input"
+              value={deleteConfirm}
+              onChange={(event) => setDeleteConfirm(event.target.value)}
+              placeholder={DELETE_KEYWORD}
+              autoFocus
+            />
+            <div className="profile-actions">
+              <button
+                type="button"
+                className="is-danger"
+                disabled={isBusy || deleteConfirm.trim() !== DELETE_KEYWORD}
+                onClick={deleteUser}
+              >
+                <Trash2 size={14} /> Удалить навсегда
+              </button>
+              <button
+                type="button"
+                disabled={isBusy}
+                onClick={() => {
+                  setIsDeleteOpen(false);
+                  setDeleteConfirm("");
+                }}
+              >
+                Отмена
+              </button>
+            </div>
+          </>
+        ) : (
+          <div className="profile-actions">
+            <button type="button" className="is-danger" disabled={isBusy} onClick={() => setIsDeleteOpen(true)}>
+              <Trash2 size={14} /> Удалить пользователя
+            </button>
+          </div>
         )}
       </div>
     </div>

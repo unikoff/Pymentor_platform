@@ -64,6 +64,36 @@ async def list_users(
     return {"users": [_serialize_account(u, counts.get(u.id, 0)) for u in users]}
 
 
+@admin_router.delete("/users/{user_id}")
+async def delete_user(user_id: int, request: Request, db: Session = Depends(get_db)):
+    admin = await require_admin(request, db)
+
+    if admin.id == user_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Нельзя удалить собственный аккаунт",
+        )
+
+    user_db = db.query(models.User).filter(models.User.id == user_id).first()
+    if user_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    # Слоты создавал админ, поэтому их не удаляем, а освобождаем — после
+    # удаления студента занятие снова доступно для записи.
+    db.query(models.BookingSlot).filter(models.BookingSlot.student_id == user_id).update(
+        {models.BookingSlot.student_id: None}, synchronize_session=False
+    )
+
+    # Остальное принадлежит только этому пользователю и уходит вместе с ним.
+    for related in (models.Session, models.UserActivityDay, models.UserLessonProgress, models.BookingQuota):
+        db.query(related).filter(related.user_id == user_id).delete(synchronize_session=False)
+
+    db.delete(user_db)
+    db.commit()
+
+    return {"deleted": user_id}
+
+
 @admin_router.patch("/users/{user_id}/subscription")
 async def change_subscription(
     user_id: int,

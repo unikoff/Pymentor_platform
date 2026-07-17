@@ -3127,6 +3127,35 @@ pre {
   white-space: nowrap;
 }
 
+/* Удаление аккаунта: отделено от остальных действий и требует ввода слова */
+.profile-danger {
+  display: grid;
+  gap: 8px;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line-soft);
+}
+
+.profile-danger .profile-bookings-title {
+  color: var(--danger, #ef4444);
+}
+
+.profile-danger-input {
+  padding: 9px 12px;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: inherit;
+  font: inherit;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.profile-danger-input:focus {
+  outline: none;
+  border-color: var(--danger, #ef4444);
+}
+
 /* Плашка остатка занятий у студента */
 .quota-badge {
   display: flex;
