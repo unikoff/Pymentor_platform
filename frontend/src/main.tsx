@@ -1,4 +1,4 @@
-import React, { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import React, { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import {
   BookOpen,
@@ -587,6 +587,9 @@ function Workspace({
       return "";
     }
   });
+  const [loadedTrackId, setLoadedTrackId] = useState(PYTHON_TRACK_NAME);
+  const [isLessonsLoading, setIsLessonsLoading] = useState(false);
+  const lessonsRequestId = useRef(0);
   const [isTrackMenuOpen, setIsTrackMenuOpen] = useState(false);
   const [activeLessonId, setActiveLessonId] = useState(`${PYTHON_TRACK_NAME}-lesson-01`);
   const [activeView, setActiveView] = useState<WorkspaceView>("theory");
@@ -601,9 +604,10 @@ function Workspace({
   const [bookingSlots, setBookingSlots] = useState<StudentSlot[]>([]);
   const [bookingQuota, setBookingQuota] = useState<QuotaStatus | null>(null);
   const [openModules, setOpenModules] = useState<Set<string>>(() => new Set());
+  const isCurrentTrackLoaded = loadedTrackId === activeTrackId;
   const displayLessons = useMemo(
-    () => courseLessons.map((lesson) => ({ ...lesson, module: getDisplayModule(lesson, activeTrackId) })),
-    [activeTrackId, courseLessons],
+    () => (isCurrentTrackLoaded ? courseLessons : []).map((lesson) => ({ ...lesson, module: getDisplayModule(lesson, activeTrackId) })),
+    [activeTrackId, courseLessons, isCurrentTrackLoaded],
   );
   const lessonModules = useMemo(() => {
     const available = new Set(displayLessons.map((lesson) => lesson.module));
@@ -613,7 +617,7 @@ function Workspace({
     ];
   }, [displayLessons]);
   const moduleKey = lessonModules.join("|");
-  const activeLesson = displayLessons.find((lesson) => lesson.id === activeLessonId) ?? displayLessons[0] ?? lessons[0];
+  const activeLesson = displayLessons.find((lesson) => lesson.id === activeLessonId) ?? displayLessons[0];
   const workspaceStyle = { "--explorer": `${explorerWidth}px` } as React.CSSProperties;
 
   const progress = useMemo(() => {
@@ -640,17 +644,38 @@ function Workspace({
 
   const loadLessons = useCallback(() => {
     if (!activeTrackId) {
+      setCourseLessons([]);
+      setLoadedTrackId("");
       return;
     }
-    apiRequest<{ lessons: Lesson[] }>(`/learning/lessons?track=${encodeURIComponent(activeTrackId)}`)
-      .then((data) => {
-        if (data.lessons.length > 0) {
-          setCourseLessons(data.lessons);
-        }
-      })
-      .catch(() => undefined);
-  }, [activeTrackId]);
 
+    const requestedTrackId = activeTrackId;
+    const requestId = lessonsRequestId.current + 1;
+    lessonsRequestId.current = requestId;
+    setIsLessonsLoading(true);
+    setLoadedTrackId((loadedTrack) => (loadedTrack === requestedTrackId ? loadedTrack : ""));
+
+    apiRequest<{ track: string; lessons: Lesson[] }>(`/learning/lessons?track=${encodeURIComponent(requestedTrackId)}`)
+      .then((data) => {
+        if (requestId !== lessonsRequestId.current || data.track !== requestedTrackId) {
+          return;
+        }
+        setCourseLessons(data.lessons);
+        setLoadedTrackId(data.track);
+      })
+      .catch(() => {
+        if (requestId !== lessonsRequestId.current) {
+          return;
+        }
+        setCourseLessons([]);
+        setLoadedTrackId(requestedTrackId);
+      })
+      .finally(() => {
+        if (requestId === lessonsRequestId.current) {
+          setIsLessonsLoading(false);
+        }
+      });
+  }, [activeTrackId]);
   const handleLessonCompleted = useCallback(() => {
     loadLessons();
     loadTracks();
@@ -781,10 +806,10 @@ function Workspace({
       const retainedModules = Array.from(current).filter((moduleName) => availableModules.has(moduleName));
       return new Set(retainedModules.length > 0 ? retainedModules : lessonModules);
     });
-    if (!courseLessons.some((lesson) => lesson.id === activeLessonId) && courseLessons[0]) {
-      setActiveLessonId(courseLessons[0].id);
+    if (!displayLessons.some((lesson) => lesson.id === activeLessonId) && displayLessons[0]) {
+      setActiveLessonId(displayLessons[0].id);
     }
-  }, [activeLessonId, courseLessons, lessonModules, moduleKey]);
+  }, [activeLessonId, displayLessons, lessonModules, moduleKey]);
 
   function toggleModule(moduleName: string) {
     setOpenModules((current) => {
@@ -981,9 +1006,15 @@ function Workspace({
             </button>
           )}
           <div className="breadcrumbs">
-            <span>{activeLesson.module}</span>
-            <ChevronRight size={14} />
-            <strong>{activeLesson.title}</strong>
+            {activeLesson ? (
+              <>
+                <span>{activeLesson.module}</span>
+                <ChevronRight size={14} />
+                <strong>{activeLesson.title}</strong>
+              </>
+            ) : (
+              <strong>{isLessonsLoading ? "Загружаем занятия..." : "В курсе пока нет занятий"}</strong>
+            )}
           </div>
           <div className="top-actions">
             <ThemeToggle theme={theme} onToggleTheme={onToggleTheme} />
@@ -1013,7 +1044,7 @@ function Workspace({
           })}
         </div>
 
-        {openViews.length > 0 ? (
+        {openViews.length > 0 && activeLesson ? (
           <article className="lesson-stage" key={`${activeLesson.id}-${activeView}`}>
             {isLessonUnavailable(activeLesson) ? (
               <LockedLessonView lesson={activeLesson} onRequireAuth={onRequireAuth} isGuest={!user} />

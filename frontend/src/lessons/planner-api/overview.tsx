@@ -33,7 +33,7 @@ export function LearningRoadmap() {
     <RichLesson>
       <RichHero
         variant="project"
-        chip="Месяц 3 · карта обучения"
+        chip="ЭТАП 3 · карта обучения"
         title="От Persistent Planner к первому REST API"
         intro="За 24 занятия знакомый проект перестанет быть только консольной программой. Вы разберёте HTTP по частям, запустите FastAPI, реализуете CRUD в памяти, разделите приложение на понятные модули и защитите Planner API."
         tags={[
@@ -44,7 +44,7 @@ export function LearningRoadmap() {
 
       <Section number="01" title={"От Persistent Planner к HTTP API"}>
         <Lead>
-          {"В конце второго месяца уже существует Persistent Planner: модель Task, сервисные операции, JSON-хранилище, ожидаемые исключения и первые тесты. Третий месяц не переписывает этот опыт с нуля. Он меняет способ общения с приложением."}
+          {"В конце второго этапа уже существует Persistent Planner: модель Task, сервисные операции, JSON-хранилище, ожидаемые исключения и первые тесты. Третий этап не переписывает этот опыт с нуля. Он меняет способ общения с приложением."}
         </Lead>
 
         <div className="lesson-route">
@@ -121,7 +121,7 @@ export function LearningRoadmap() {
         />
 
         <CodeSequence
-          title={"Соберите последовательность месяца"}
+          title={"Соберите последовательность этапа"}
           prompt={"Расположите этапы так, чтобы новая сложность опиралась на уже понятную."}
           pieces={[
             { id: "http", code: "понять HTTP request и response" },
@@ -392,7 +392,7 @@ export function LearningRoadmap() {
           {"Storage не импортирует router, crud не запускает FastAPI, а schema не знает способ хранения."}
         </Callout>
       </Section>
-      <Section number="07" title={"Что будет готово к концу месяца"}>
+      <Section number="07" title={"Что будет готово к концу этапа"}>
         <Lead>
           {"Результатом является не набор несвязанных decorators, а небольшой API-проект, который можно запустить, проверить, объяснить и показать по документации."}
         </Lead>
@@ -451,7 +451,7 @@ export function LearningRoadmap() {
           {"На защите ученик прослеживает один request от клиента до response и называет ответственность каждого файла."}
         </Callout>
       </Section>
-      <Section number="08" title={"Как проходить месяц без перегрузки"}>
+      <Section number="08" title={"Как проходить этап без перегрузки"}>
         <Lead>
           {"Рабочий ритм остаётся прежним: понять одну модель, проверить её маленьким request, изменить одну деталь и только затем расширять проект."}
         </Lead>
@@ -472,7 +472,7 @@ export function LearningRoadmap() {
 
         <div className="lesson-check-group">
           <QuizCard
-            question={"Почему APIRouter появляется ближе к концу месяца?"}
+            question={"Почему APIRouter появляется ближе к концу этапа?"}
             options={[
               "Сначала нужен работающий API и реальная проблема большого файла",
               "FastAPI запрещает routers в начале",
@@ -498,7 +498,7 @@ export function LearningRoadmap() {
             explanation={"Endpoint реализует заранее сформулированный HTTP-контракт."}
           />
           <QuizCard
-            question={"Что является итогом месяца?"}
+            question={"Что является итогом этапа?"}
             options={[
               "Planner API с CRUD, schemas, tests и документацией",
               "JWT и Redis",
@@ -511,7 +511,7 @@ export function LearningRoadmap() {
 
         <KeyTakeaways
           points={[
-            <>{"Третий месяц переводит знакомый Planner в HTTP API."}</>,
+            <>{"Третий этап переводит знакомый Planner в HTTP API."}</>,
             <>{"HTTP изучается раньше фреймворка."}</>,
             <>{"FastAPI вводится от одного endpoint к полному CRUD."}</>,
             <>{"Pydantic разделяет формы входа, обновления и ответа."}</>,
@@ -534,9 +534,9 @@ export function MonthTheory() {
   return (
     <RichLesson>
       <RichHero
-        chip="Месяц 3 · общая теория"
+        chip="Этап 3 · общая теория"
         title="HTTP, REST, FastAPI и путь одного запроса"
-        intro="Главная модель месяца проста: клиент формирует request, сервер выбирает endpoint, проверяет данные, выполняет Python-правило и возвращает response. Все новые термины занимают своё место внутри этой цепочки."
+        intro="Главная модель этапа проста: клиент формирует request, сервер выбирает endpoint, проверяет данные, выполняет Python-правило и возвращает response. Все новые термины занимают своё место внутри этой цепочки."
         tags={[
           { icon: <BrainCircuit size={14} />, label: "одна сквозная модель" },
           { icon: <ShieldCheck size={14} />, label: "validation и statuses" },
@@ -875,7 +875,7 @@ export function MonthTheory() {
         />
 
         <Callout tone="info">
-          {"Поэтому во втором месяце изучались функции как объекты, decorators, imports, parameters, return и exceptions."}
+          {"Поэтому во втором этапе изучались функции как объекты, decorators, imports, parameters, return и exceptions."}
         </Callout>
       </Section>
       <Section number="07" title={"Pydantic проверяет форму данных"}>
@@ -928,7 +928,7 @@ export function MonthTheory() {
       </Section>
       <Section number="08" title={"Полный путь request и граница следующего этапа"}>
         <Lead>
-          {"К концу месяца ученик должен видеть не отдельные decorators, а полный маршрут одного request. Одновременно он должен честно понимать ограничения хранения в памяти."}
+          {"К концу этапа ученик должен видеть не отдельные decorators, а полный маршрут одного request. Одновременно он должен честно понимать ограничения хранения в памяти."}
         </Lead>
 
         <CodeBlock

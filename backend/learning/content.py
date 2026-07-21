@@ -258,16 +258,19 @@ def _module_label(path: Path, track_dir: Path) -> str:
 
 def _sort_key(path: Path) -> tuple[int, str]:
     relative = path.relative_to(COURSE_ROOT).as_posix()
+    overview_order = {"План обучения.md": -2, "Теория месяца.md": -1}
+    if path.name in overview_order:
+        return (overview_order[path.name], relative)
     if path.parent.name in RICH_TRACK_MODULE_LABELS:
-        overview_order = {"План обучения.md": -2, "Теория месяца.md": -1}
-        if path.name in overview_order:
-            return (overview_order[path.name], relative)
         lesson_number = re.match(r"^(\d+)", path.name)
         return (int(lesson_number.group(1)) if lesson_number else 999, relative)
     try:
         return (LESSON_SEQUENCE.index(relative), relative)
     except ValueError:
-        return (len(LESSON_SEQUENCE), relative)
+        lesson_number = re.match(r"^(\d+)", path.name)
+        if lesson_number:
+            return (len(LESSON_SEQUENCE) + int(lesson_number.group(1)), relative)
+        return (len(LESSON_SEQUENCE) + 999, relative)
 
 
 def _collect_markdown_files(track_dir: Path) -> list[Path]:
@@ -518,10 +521,27 @@ def _tasks_for_lesson(
     return tasks
 
 
-def _lesson_access(index: int, total: int) -> str:
-    if index < 3:
+def _lesson_access(path: Path, track_dir: Path) -> str:
+    """Возвращает уровень доступа по новой воронке обучения.
+
+    Карта обучения остаётся открытой в каждом курсе. Бесплатный старт есть
+    только у первого курса: весь обзор и блок 1. После регистрации доступен
+    блок 2 первого курса; все остальные занятия требуют Pro-подписку.
+    """
+    if path.name == "План обучения.md":
         return "free"
-    if index < max(3, total - 4):
+
+    if track_dir.name != NEW_PYTHON_TRACK_NAME:
+        return "subscription"
+
+    if path.name == "Теория месяца.md":
+        return "free"
+
+    lesson_match = re.match(r"^(\d+)", path.name)
+    lesson_number = int(lesson_match.group(1)) if lesson_match else None
+    if lesson_number is not None and 1 <= lesson_number <= 5:
+        return "free"
+    if lesson_number is not None and 6 <= lesson_number <= 10:
         return "registered"
     return "subscription"
 
@@ -548,7 +568,7 @@ def _build_lesson(path: Path, index: int, total: int, track_id: str, track_dir: 
     relative = path.relative_to(COURSE_ROOT).as_posix()
     lesson_id = f"{track_id}-lesson-{index + 1:02d}"
     title = "Карта обучения" if path.name == "План обучения.md" else _extract_title(path, text)
-    access = _lesson_access(index, total)
+    access = _lesson_access(path, track_dir)
     tasks = _tasks_for_lesson(relative, text, lesson_id, track_id, path.name)
     manual_practice = [] if tasks else get_manual_practice(track_id, path.name)
     self_check = relative in SELF_CHECK_LESSONS or bool(manual_practice)

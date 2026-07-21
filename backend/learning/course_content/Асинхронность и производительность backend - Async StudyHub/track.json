@@ -1,0 +1,5 @@
+﻿{
+    "title":  "Асинхронность и производительность backend",
+    "tagline":  "asyncio, конкурентный I/O, async FastAPI и Async SQLAlchemy",
+    "order":  7
+}

@@ -69,6 +69,12 @@ def build_lessons_payload(track_id: str, user: models.User | None, db: Session) 
         lesson["is_available"] = is_available
         lesson["locked_reason"] = locked_reason
         lesson["completed"] = lesson["id"] in completed_ids
+        if not is_available:
+            # В списке оставляем только навигационные данные и признак блокировки.
+            # Полная теория и практические задания выдаются только после проверки доступа.
+            lesson["theory"] = []
+            lesson["tasks"] = []
+            lesson["manual_practice"] = []
     return lessons
 
 
@@ -90,7 +96,7 @@ async def list_tracks(request: Request, db: Session = Depends(get_db)):
 @learning_router.get("/lessons")
 async def list_lessons(
     request: Request,
-    track: str | None = Query(default=None, max_length=60),
+    track: str | None = Query(default=None, max_length=160),
     db: Session = Depends(get_db),
 ):
     track_id = track or default_track_id()
