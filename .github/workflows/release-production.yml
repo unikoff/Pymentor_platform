@@ -1,0 +1,79 @@
+name: Build and release production
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pymentor-production-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout source revision
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Block dependency changes from automatic deployment
+        run: |
+          set -euo pipefail
+          if git ls-remote --exit-code --heads origin production >/dev/null 2>&1; then
+            git fetch --no-tags origin production
+            if ! git diff --quiet origin/production HEAD -- requirements.txt; then
+              echo 'requirements.txt changed: update the shared-hosting venv manually before releasing.' >&2
+              exit 1
+            fi
+          fi
+
+      - name: Build frontend for the production prefix
+        working-directory: frontend
+        run: |
+          npm ci
+          VITE_BASE=/platform/ npm run build
+          grep -q '/platform/assets/' dist/index.html
+
+      - name: Publish the verified release branch
+        env:
+          SOURCE_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add frontend/dist
+          if ! git diff --cached --quiet; then
+            git commit -m "build: frontend for ${SOURCE_SHA} [skip ci]"
+          fi
+          git push origin HEAD:production
+
+      - name: Wait for cron deployment and verify production
+        run: |
+          set -euo pipefail
+          expected_asset="$(grep -oE '/platform/assets/index-[^\"]+\.js' frontend/dist/index.html | head -n 1)"
+          for attempt in {1..40}; do
+            page_status="$(curl -skS -o "$RUNNER_TEMP/platform.html" -w '%{http_code}' https://pymentor.ru/platform/)"
+            api_status="$(curl -skS -o /dev/null -w '%{http_code}' https://pymentor.ru/platform/learning/tracks)"
+            if [ "$page_status" = '200' ] && [ "$api_status" = '200' ] && grep -Fq "$expected_asset" "$RUNNER_TEMP/platform.html"; then
+              echo 'DEPLOY_VERIFIED'
+              exit 0
+            fi
+            sleep 3
+          done
+          echo "Production did not reach the expected release: page=$page_status api=$api_status" >&2
+          exit 1
