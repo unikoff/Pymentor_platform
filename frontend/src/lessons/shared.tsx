@@ -136,15 +136,8 @@ export function MethodGrid({ rows }: { rows: [React.ReactNode, React.ReactNode][
 }
 
 export function PracticeCta({ text }: { text?: string }) {
-  return (
-    <div className="practice-cta">
-      <div>
-        <strong>Теперь — код</strong>
-        <p>{text ?? "Откройте вкладку practice.py: решите задание и проверьте его прямо в браузере."}</p>
-      </div>
-      <ArrowRight size={20} />
-    </div>
-  );
+  void text;
+  return null;
 }
 
 // ---------- Интерактив: собрать код (Parsons-подобное задание) ----------

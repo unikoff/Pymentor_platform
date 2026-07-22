@@ -43,3 +43,5 @@ Timeline db started → db healthy → migrations → API ready; CodeSequence з
 - проверяет успешный и ошибочный путь;
 - фиксирует воспроизводимую проверку, тест или runbook;
 - делает один осмысленный Git-коммит;
+
+<!-- youtube: -->

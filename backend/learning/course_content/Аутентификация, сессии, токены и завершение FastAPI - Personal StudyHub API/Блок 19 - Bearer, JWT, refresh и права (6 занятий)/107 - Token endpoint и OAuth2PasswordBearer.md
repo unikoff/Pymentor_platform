@@ -159,3 +159,5 @@ BearerToken = Annotated[str, Depends(oauth2_scheme)]
 - Все security-проверки выполняются до действия.
 - Есть success, invalid и forbidden тесты.
 - Status codes обоснованы.
+
+<!-- youtube: -->

@@ -563,3 +563,5 @@ def test_rejects_large_attachment(client, auth_headers) -> None:
 ## Что должно остаться в проекте
 
 После занятия Personal StudyHub должен демонстрировать результат: **файл и метаданные сохраняются безопасно**.
+
+<!-- youtube: -->

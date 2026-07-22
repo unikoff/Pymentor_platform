@@ -43,3 +43,5 @@ BranchExplorer first/repeated/concurrent enrollment; схема Python check + d
 - проверяет успешный и ошибочный путь;
 - фиксирует воспроизводимую проверку, тест или runbook;
 - делает один осмысленный Git-коммит;
+
+<!-- youtube: -->

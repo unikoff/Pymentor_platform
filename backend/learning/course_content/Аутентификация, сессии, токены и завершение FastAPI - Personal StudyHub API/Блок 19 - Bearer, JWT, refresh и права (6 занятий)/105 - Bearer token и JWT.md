@@ -150,3 +150,5 @@ print(claims.get("sub"), claims.get("iat"), claims.get("exp"))
 - Все security-проверки выполняются до действия.
 - Есть success, invalid и forbidden тесты.
 - Status codes обоснованы.
+
+<!-- youtube: -->

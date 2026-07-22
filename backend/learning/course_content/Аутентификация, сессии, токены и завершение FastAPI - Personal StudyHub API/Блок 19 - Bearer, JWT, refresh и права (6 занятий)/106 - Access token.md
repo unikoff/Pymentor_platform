@@ -161,3 +161,5 @@ def decode_access_token(token: str, settings) -> str:
 - Все security-проверки выполняются до действия.
 - Есть success, invalid и forbidden тесты.
 - Status codes обоснованы.
+
+<!-- youtube: -->

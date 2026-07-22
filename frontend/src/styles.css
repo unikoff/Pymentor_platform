@@ -1222,6 +1222,51 @@ code,
   background: var(--code-bg);
 }
 
+.lesson-next-link {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-top: 28px;
+  padding: 20px;
+  border: 1px solid rgba(99, 210, 151, 0.5);
+  border-radius: var(--radius-lg);
+  background: rgba(99, 210, 151, 0.08);
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+  transition: transform 160ms ease, background 160ms ease, border-color 160ms ease;
+}
+
+.lesson-next-link:hover {
+  transform: translateY(-2px);
+  border-color: var(--green);
+  background: rgba(99, 210, 151, 0.15);
+}
+
+.lesson-next-link div {
+  display: grid;
+  gap: 6px;
+}
+
+.lesson-next-link span {
+  color: var(--green);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.lesson-next-link strong {
+  font-size: 1.05rem;
+}
+
+.lesson-next-link svg {
+  flex: 0 0 auto;
+  color: var(--green);
+}
+
 .video-view {
   height: 100%;
   display: grid;

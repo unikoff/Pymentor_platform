@@ -260,3 +260,5 @@ assert owner_view.json()["title"] == "Private task"
 ## Что намеренно отложено
 
 Роли user/admin, JWT access/refresh и более сложная RBAC-модель входят в следующие блоки. Ownership query останется применимым независимо от способа аутентификации.
+
+<!-- youtube: -->

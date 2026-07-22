@@ -43,3 +43,5 @@ Enterprise RBAC, policy engine и granular permissions не вводятся.
 - проверяет успешный и ошибочный путь;
 - фиксирует воспроизводимую проверку, тест или runbook;
 - делает один осмысленный Git-коммит;
+
+<!-- youtube: -->

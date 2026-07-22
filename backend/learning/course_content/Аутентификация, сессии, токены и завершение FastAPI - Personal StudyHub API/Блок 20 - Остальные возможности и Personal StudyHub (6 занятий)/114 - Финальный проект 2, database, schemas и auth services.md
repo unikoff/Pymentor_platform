@@ -599,3 +599,5 @@ def test_auth_services_smoke(db: Session, settings: Settings) -> None:
 ## Что должно остаться в проекте
 
 После занятия Personal StudyHub должен демонстрировать результат: **routers получают готовые строительные блоки**.
+
+<!-- youtube: -->
