@@ -82,589 +82,1218 @@ def _dynamic_script(
     )
 
 
-FOUNDATIONS_CODE_TASKS: dict[int, list[dict[str, Any]]] = {
-    1: [
-        _script(
-            "Порядок строк",
-            "Напишите программу из трёх `print()`. Она должна вывести строки в порядке: `Старт`, `Проверяю план`, `Готово`.",
-            'print("Старт")\n# Добавьте ещё две строки\n',
-            "Старт\nПроверяю план\nГотово",
-            'print("Старт")\nprint("Проверяю план")\nprint("Готово")\n',
-        ),
-        _script(
-            "Чтение сверху вниз",
-            "Выведите название программы, затем слово `запущена`. Используйте две отдельные команды `print()`.",
-            'print("Console Planner")\n# Напишите вторую строку\n',
-            "Console Planner\nзапущена",
-            'print("Console Planner")\nprint("запущена")\n',
-        ),
-    ],
-    4: [
-        _script(
-            "Данные одной задачи",
-            "Создайте переменные `title`, `priority`, `is_done` со значениями `Сделать README`, `2`, `False`. Выведите их по одной в этом порядке.",
-            "# Создайте три переменные\n", "Сделать README\n2\nFalse",
-            'title = "Сделать README"\npriority = 2\nis_done = False\nprint(title)\nprint(priority)\nprint(is_done)\n',
-        ),
-        _script(
-            "Обновите приоритет",
-            "Создайте `priority = 1`, выведите значение, затем измените его на 3 и снова выведите.",
-            "priority = 1\nprint(priority)\n# Измените значение\n", "1\n3",
-            "priority = 1\nprint(priority)\npriority = 3\nprint(priority)\n",
-        ),
-    ],
-    5: [
-        _script(
-            "Минуты из текста",
-            "Создайте `raw_hours = '3'`, преобразуйте строку через `int()` и выведите число минут.",
-            "raw_hours = '3'\n# Напечатайте минуты\n", "180",
-            "raw_hours = '3'\nhours = int(raw_hours)\nprint(hours * 60)\n",
-        ),
-        _script(
-            "Среднее время",
-            "Создайте `first = 20` и `second = 40`. Выведите сумму и среднее значение, каждое с новой строки.",
-            "first = 20\nsecond = 40\n# Напишите расчёты\n", "60\n30.0",
-            "first = 20\nsecond = 40\nprint(first + second)\nprint((first + second) / 2)\n",
-        ),
-    ],
-    6: [
-        _script(
-            "Карточка через f-строку",
-            "Создайте `title = 'Купить хлеб'` и `priority = 1`. Через f-строку выведите `Задача: Купить хлеб | приоритет: 1`.",
-            "title = 'Купить хлеб'\npriority = 1\n# Используйте f-строку\n", "Задача: Купить хлеб | приоритет: 1",
-            "title = 'Купить хлеб'\npriority = 1\nprint(f'Задача: {title} | приоритет: {priority}')\n",
-        ),
-        _script(
-            "Очистите заголовок",
-            "Создайте строку `'  сделать README  '`. Уберите пробелы по краям, приведите текст к нижнему регистру и выведите результат.",
-            "raw_title = '  сделать README  '\n# Подготовьте строку\n", "сделать readme",
-            "raw_title = '  сделать README  '\nclean_title = raw_title.strip().lower()\nprint(clean_title)\n",
-        ),
-    ],
-    7: [
-        _script(
-            "Срочная задача",
-            "Создайте `days_left = 3`. Выведите результат проверки: дней осталось не больше трёх.",
-            "days_left = 3\n# Напечатайте bool-выражение\n", "True",
-            "days_left = 3\nprint(days_left <= 3)\n",
-        ),
-        _script(
-            "Два условия",
-            "Создайте `is_important = True` и `is_today = False`. Выведите результат `or`, затем результат `and`.",
-            "is_important = True\nis_today = False\n# Напечатайте два выражения\n", "True\nFalse",
-            "is_important = True\nis_today = False\nprint(is_important or is_today)\nprint(is_important and is_today)\n",
-        ),
-    ],
-    8: [
-        _script(
-            "Текстовый приоритет",
-            "Создайте `priority = 1`. Через `if / elif / else` выведите `высокий` для 1, `обычный` для 2 и `низкий` для остальных значений.",
-            "priority = 1\n# Напишите ветвление\n", "высокий",
-            "priority = 1\nif priority == 1:\n    print('высокий')\nelif priority == 2:\n    print('обычный')\nelse:\n    print('низкий')\n",
-        ),
-        _script(
-            "Статус задачи",
-            "Создайте `is_done = False`. Если задача выполнена, печатайте `Закрыта`, иначе — `В работе`.",
-            "is_done = False\n# Напишите условие\n", "В работе",
-            "is_done = False\nif is_done:\n    print('Закрыта')\nelse:\n    print('В работе')\n",
-        ),
-    ],
-    9: [
-        _script(
-            "Выведите список",
-            "Создайте список `['Код', 'Тесты', 'README']` и циклом `for` напечатайте каждый элемент с новой строки.",
-            "tasks = ['Код', 'Тесты', 'README']\n# Напишите цикл\n", "Код\nТесты\nREADME",
-            "tasks = ['Код', 'Тесты', 'README']\nfor task in tasks:\n    print(task)\n",
-        ),
-        _script(
-            "Номера от 1 до 3",
-            "Используйте `range()`, чтобы вывести числа 1, 2 и 3 каждое с новой строки.",
-            "# Напишите цикл с range\n", "1\n2\n3",
-            "for number in range(1, 4):\n    print(number)\n",
-        ),
-    ],
-    10: [
-        _script(
-            "Счётчик до трёх",
-            "Создайте `completed = 0`. Циклом `while` увеличивайте счётчик и выводите значения 1, 2, 3.",
-            "completed = 0\n# Напишите while\n", "1\n2\n3",
-            "completed = 0\nwhile completed < 3:\n    completed += 1\n    print(completed)\n",
-        ),
-        _script(
-            "Остановка по команде",
-            "Создайте `command = ''`. Внутри `while` замените её на `'exit'`, затем после цикла выведите `Завершено`.",
-            "command = ''\n# Завершите цикл через команду exit\n", "Завершено",
-            "command = ''\nwhile command != 'exit':\n    command = 'exit'\nprint('Завершено')\n",
-        ),
-    ],
-    11: [
-        _script(
-            "Добавьте задачу",
-            "Создайте список `['Код', 'Тесты']`, добавьте в конец `README` и выведите итоговый список.",
-            "tasks = ['Код', 'Тесты']\n# Добавьте README\n", "['Код', 'Тесты', 'README']",
-            "tasks = ['Код', 'Тесты']\ntasks.append('README')\nprint(tasks)\n",
-        ),
-        _script(
-            "Уникальные теги",
-            "Создайте множество тегов из `['python', 'git', 'python']` и выведите его длину.",
-            "tags = ['python', 'git', 'python']\n# Создайте множество\n", "2",
-            "tags = ['python', 'git', 'python']\nunique_tags = set(tags)\nprint(len(unique_tags))\n",
-        ),
-    ],
-    12: [
-        _script(
-            "Словарь задачи",
-            "Создайте словарь с ключами `title`, `priority`, `done`, значениями `Код`, `1`, `False`. Выведите значение по ключу `title`.",
-            "# Создайте словарь task\n", "Код",
-            "task = {'title': 'Код', 'priority': 1, 'done': False}\nprint(task['title'])\n",
-        ),
-        _script(
-            "Измените статус",
-            "Создайте `task = {'title': 'README', 'done': False}`, измените `done` на `True` и выведите это значение.",
-            "task = {'title': 'README', 'done': False}\n# Измените статус\n", "True",
-            "task = {'title': 'README', 'done': False}\ntask['done'] = True\nprint(task['done'])\n",
-        ),
-    ],
-    13: [
-        _solve("Формат задачи", "Напишите `solve(title, priority)`, возвращающую строку `Задача: <title> | приоритет: <priority>`.", "def solve(title, priority):\n    pass\n", [{"name": "обычная задача", "args": ["Код", 1], "expected": "Задача: Код | приоритет: 1"}, {"name": "другая задача", "args": ["README", 3], "expected": "Задача: README | приоритет: 3"}], "def solve(title, priority):\n    return f'Задача: {title} | приоритет: {priority}'\n"),
-        _solve("Срочность по дням", "Напишите `solve(days_left)`, возвращающую `True`, если дней осталось не больше трёх.", "def solve(days_left):\n    pass\n", [{"name": "пять дней", "args": [5], "expected": False}, {"name": "три дня", "args": [3], "expected": True}, {"name": "сегодня", "args": [0], "expected": True}], "def solve(days_left):\n    return days_left <= 3\n"),
-    ],
-    14: [
-        _solve("Чистый заголовок", "Напишите `solve(title)`, которая убирает пробелы по краям и приводит каждое слово к заглавной букве.", "def solve(title):\n    pass\n", [{"name": "лишние пробелы", "args": ["  сделать readme  "], "expected": "Сделать Readme"}, {"name": "одно слово", "args": ["код"], "expected": "Код"}], "def solve(title):\n    return title.strip().title()\n"),
-        _solve("Открытые задачи", "Напишите `solve(tasks)`, возвращающую число словарей, у которых `done` равно `False`.", "def solve(tasks):\n    pass\n", [{"name": "две открытые", "args": [[{"done": False}, {"done": True}, {"done": False}]], "expected": 2}, {"name": "пустой список", "args": [[]], "expected": 0}], "def solve(tasks):\n    count = 0\n    for task in tasks:\n        if not task['done']:\n            count += 1\n    return count\n"),
-    ],
-    15: [
-        _script("Исправьте имя", "Исправьте код так, чтобы он вывел заголовок в верхнем регистре. Не создавайте новую переменную с другим именем.", "task_title = 'сделать readme'\nprint(task_titel.upper())\n", "СДЕЛАТЬ README", "task_title = 'сделать readme'\nprint(task_title.upper())\n"),
-        _script("Исправьте тип", "Преобразуйте строку `'7'` в число и выведите результат сложения с 1.", "raw_priority = '7'\nprint(raw_priority + 1)\n", "8", "raw_priority = '7'\nprint(int(raw_priority) + 1)\n"),
-    ],
-    16: [
-        _script("Команда меню", "Создайте `command = 'list'`. Через `if / elif / else` выведите `Показать задачи` для `list`, `Добавить задачу` для `add`, иначе `Неизвестная команда`.", "command = 'list'\n# Напишите обработчик\n", "Показать задачи", "command = 'list'\nif command == 'list':\n    print('Показать задачи')\nelif command == 'add':\n    print('Добавить задачу')\nelse:\n    print('Неизвестная команда')\n"),
-        _script("Пустой заголовок", "Создайте `title = '   '`. После `strip()` выведите `Ошибка: пустой заголовок`, если текста нет.", "title = '   '\n# Проверьте заголовок\n", "Ошибка: пустой заголовок", "title = '   '\nif title.strip() == '':\n    print('Ошибка: пустой заголовок')\nelse:\n    print('Задача добавлена')\n"),
-    ],
-    17: [
-        _solve("Создайте модели задач", "Напишите `solve(titles)`, возвращающую список словарей вида `{'title': ..., 'done': False}` для каждого заголовка.", "def solve(titles):\n    pass\n", [{"name": "две задачи", "args": [["Код", "README"]], "expected": [{"title": "Код", "done": False}, {"title": "README", "done": False}]}, {"name": "нет задач", "args": [[]], "expected": []}], "def solve(titles):\n    result = []\n    for title in titles:\n        result.append({'title': title, 'done': False})\n    return result\n"),
-        _solve("Покажите заголовки", "Напишите `solve(tasks)`, возвращающую список заголовков из списка словарей задач.", "def solve(tasks):\n    pass\n", [{"name": "два заголовка", "args": [[{"title": "Код"}, {"title": "Тесты"}]], "expected": ["Код", "Тесты"]}, {"name": "пустой список", "args": [[]], "expected": []}], "def solve(tasks):\n    titles = []\n    for task in tasks:\n        titles.append(task['title'])\n    return titles\n"),
-    ],
-    18: [
-        _solve("Поиск по заголовку", "Напишите `solve(tasks, query)`, возвращающую заголовки задач, в которых есть `query` без учёта регистра.", "def solve(tasks, query):\n    pass\n", [{"name": "одно совпадение", "args": [[{"title": "Сделать README"}, {"title": "Написать тесты"}], "readme"], "expected": ["Сделать README"]}, {"name": "нет совпадений", "args": [[{"title": "Код"}], "git"], "expected": []}], "def solve(tasks, query):\n    found = []\n    for task in tasks:\n        if query.lower() in task['title'].lower():\n            found.append(task['title'])\n    return found\n"),
-        _solve("Статистика статусов", "Напишите `solve(tasks)`, возвращающую список `[открытые, выполненные]`.", "def solve(tasks):\n    pass\n", [{"name": "смешанный список", "args": [[{"done": False}, {"done": True}, {"done": False}]], "expected": [2, 1]}, {"name": "нет задач", "args": [[]], "expected": [0, 0]}], "def solve(tasks):\n    open_count = 0\n    done_count = 0\n    for task in tasks:\n        if task['done']:\n            done_count += 1\n        else:\n            open_count += 1\n    return [open_count, done_count]\n"),
-    ],
-}
+FOUNDATIONS_CODE_TASKS: dict[int, list[dict[str, Any]]] = {1: [{'title': 'Стартовый экран StudyHub',
+      'level': 'easy',
+      'mode': 'script',
+      'prompt': 'Напишите три отдельные команды print(). Первая выводит StudyHub, вторая — Начинаем обучение, '
+                'третья — Программа запущена. Сохраните именно этот порядок. Не добавляйте другой текст и пустые '
+                'строки.',
+      'contract': {'given': 'Редактор пуст. Никакие переменные и готовые команды не созданы. Напишите программу '
+                            'полностью, используя print().',
+                   'todo': 'Напишите три отдельные команды print(). Первая выводит StudyHub, вторая — Начинаем '
+                           'обучение, третья — Программа запущена. Сохраните именно этот порядок. Не добавляйте '
+                           'другой текст и пустые строки.',
+                   'check': 'Сравнивается весь вывод. Ожидаются ровно три строки: StudyHub, Начинаем обучение, '
+                            'Программа запущена. Другой регистр, порядок или лишняя строка считаются ошибкой.'},
+      'requirements': {'items': ['три отдельные команды print()', 'три точные строки', 'порядок сверху вниз'],
+                       'calls': ['print']},
+      'starter_code': '# Первая строка: StudyHub\n'
+                      '# Вторая строка: Начинаем обучение\n'
+                      '# Третья строка: Программа запущена\n',
+      'tests': [{'name': 'точный стартовый экран',
+                 'expected': 'StudyHub\nНачинаем обучение\nПрограмма запущена',
+                 'assert': 'stdout'}],
+      'reference_code': 'print("StudyHub")\nprint("Начинаем обучение")\nprint("Программа запущена")\n'}],
+ 4: [{'title': 'Паспорт учебной задачи',
+      'level': 'easy',
+      'mode': 'script',
+      'prompt': 'Создайте title, priority, progress, is_done и присвойте им соответствующие source-значения. '
+                'Выведите четыре значения в этом порядке. Затем выведите названия их типов через '
+                'type(...).__name__ в том же порядке.',
+      'contract': {'given': 'Платформа создаёт source_title (str), source_priority (int), source_progress '
+                            '(float) и source_done (bool). Их значения меняются в проверках.',
+                   'todo': 'Создайте title, priority, progress, is_done и присвойте им соответствующие '
+                           'source-значения. Выведите четыре значения в этом порядке. Затем выведите названия их '
+                           'типов через type(...).__name__ в том же порядке.',
+                   'check': 'Ожидаются восемь строк: четыре текущих значения, затем str, int, float, bool. '
+                            'Нельзя подставлять значения примера напрямую.'},
+      'requirements': {'items': ['четыре переменные', 'четыре значения', 'названия четырёх типов'],
+                       'names': ['source_title',
+                                 'source_priority',
+                                 'source_progress',
+                                 'source_done',
+                                 'title',
+                                 'priority',
+                                 'progress',
+                                 'is_done'],
+                       'calls': ['type', 'print']},
+      'starter_code': '# source_title, source_priority, source_progress и source_done уже созданы\n'
+                      '# Создайте четыре переменные, выведите значения и названия типов\n',
+      'tests': [{'name': 'первая задача',
+                 'namespace': {'source_title': 'Сделать README',
+                               'source_priority': 2,
+                               'source_progress': 0.0,
+                               'source_done': False},
+                 'expected': 'Сделать README\n2\n0.0\nFalse\nstr\nint\nfloat\nbool',
+                 'assert': 'stdout'},
+                {'name': 'другие значения',
+                 'namespace': {'source_title': 'Повторить циклы',
+                               'source_priority': 4,
+                               'source_progress': 37.5,
+                               'source_done': True},
+                 'expected': 'Повторить циклы\n4\n37.5\nTrue\nstr\nint\nfloat\nbool',
+                 'assert': 'stdout'}],
+      'reference_code': 'title = source_title\n'
+                        'priority = source_priority\n'
+                        'progress = source_progress\n'
+                        'is_done = source_done\n'
+                        'print(title)\n'
+                        'print(priority)\n'
+                        'print(progress)\n'
+                        'print(is_done)\n'
+                        'print(type(title).__name__)\n'
+                        'print(type(priority).__name__)\n'
+                        'print(type(progress).__name__)\n'
+                        'print(type(is_done).__name__)\n'}],
+ 5: [{'title': 'Длительность учебной сессии',
+      'level': 'easy',
+      'mode': 'script',
+      'prompt': 'Преобразуйте raw_lessons через int() в lessons_count. Рассчитайте study_minutes = lessons_count '
+                '* minutes_per_lesson, затем total_minutes = study_minutes + break_minutes. Выведите только '
+                'total_minutes.',
+      'contract': {'given': 'Платформа создаёт raw_lessons как строку, minutes_per_lesson и break_minutes как '
+                            'целые числа. Не присваивайте им собственные значения.',
+                   'todo': 'Преобразуйте raw_lessons через int() в lessons_count. Рассчитайте study_minutes = '
+                           'lessons_count * minutes_per_lesson, затем total_minutes = study_minutes + '
+                           'break_minutes. Выведите только total_minutes.',
+                   'check': 'Код запускается с тремя наборами данных. Проверяется итоговое число и использование '
+                            'int(raw_lessons). Фиксированный ответ не пройдёт.'},
+      'requirements': {'items': ['int(raw_lessons)', 'lessons_count', 'study_minutes', 'total_minutes'],
+                       'names': ['raw_lessons',
+                                 'minutes_per_lesson',
+                                 'break_minutes',
+                                 'lessons_count',
+                                 'study_minutes',
+                                 'total_minutes'],
+                       'calls': ['int', 'print']},
+      'starter_code': '# raw_lessons, minutes_per_lesson и break_minutes уже созданы\n'
+                      '# Рассчитайте lessons_count, study_minutes и total_minutes\n',
+      'tests': [{'name': 'два занятия',
+                 'namespace': {'raw_lessons': '2', 'minutes_per_lesson': 40, 'break_minutes': 10},
+                 'expected': '90',
+                 'assert': 'stdout'},
+                {'name': 'три занятия',
+                 'namespace': {'raw_lessons': '3', 'minutes_per_lesson': 35, 'break_minutes': 15},
+                 'expected': '120',
+                 'assert': 'stdout'},
+                {'name': 'без перерыва',
+                 'namespace': {'raw_lessons': '1', 'minutes_per_lesson': 50, 'break_minutes': 0},
+                 'expected': '50',
+                 'assert': 'stdout'}],
+      'reference_code': 'lessons_count = int(raw_lessons)\n'
+                        'study_minutes = lessons_count * minutes_per_lesson\n'
+                        'total_minutes = study_minutes + break_minutes\n'
+                        'print(total_minutes)\n'}],
+ 6: [{'title': 'Короткий код и карточка задачи',
+      'level': 'easy',
+      'mode': 'script',
+      'prompt': 'Получите clean_title = raw_title.strip(). Возьмите первые три символа, переведите их в верхний '
+                'регистр и сохраните в short_code. Через f-строку выведите [КОД] Заголовок | приоритет: число.',
+      'contract': {'given': 'Платформа создаёт raw_title с пробелами по краям и минимум тремя буквами после '
+                            'очистки, а также целое число priority.',
+                   'todo': 'Получите clean_title = raw_title.strip(). Возьмите первые три символа, переведите их в '
+                           'верхний регистр и сохраните в short_code. Через f-строку выведите [КОД] Заголовок | '
+                           'приоритет: число.',
+                   'check': 'Проверяются разные заголовки. Нужны strip(), срез [:3], upper() и f-строка. '
+                            'Сравнивается весь текст.'},
+      'requirements': {'items': ['strip()', 'срез первых трёх символов', 'upper()', 'f-строка'],
+                       'names': ['raw_title', 'priority', 'clean_title', 'short_code'],
+                       'attributes': ['strip', 'upper'],
+                       'nodes': ['JoinedStr'],
+                       'calls': ['print']},
+      'starter_code': '# raw_title и priority уже созданы\n# Получите clean_title, short_code и выведите карточку\n',
+      'tests': [{'name': 'Python',
+                 'namespace': {'raw_title': '  Python практика  ', 'priority': 2},
+                 'expected': '[PYT] Python практика | приоритет: 2',
+                 'assert': 'stdout'},
+                {'name': 'README',
+                 'namespace': {'raw_title': '  README проекта ', 'priority': 4},
+                 'expected': '[REA] README проекта | приоритет: 4',
+                 'assert': 'stdout'}],
+      'reference_code': 'clean_title = raw_title.strip()\n'
+                        'short_code = clean_title[:3].upper()\n'
+                        "print(f'[{short_code}] {clean_title} | приоритет: {priority}')\n"}],
+ 7: [{'title': 'Попадает ли задача в срочные',
+      'level': 'easy',
+      'mode': 'script',
+      'prompt': 'Создайте is_urgent. Значение должно быть True только когда priority не меньше 4, задача не '
+                'выполнена и days_left больше 0. Используйте and и not. Выведите только is_urgent.',
+      'contract': {'given': 'Платформа создаёт priority от 1 до 5, is_done как bool и days_left как целое '
+                            'число.',
+                   'todo': 'Создайте is_urgent. Значение должно быть True только когда priority не меньше 4, '
+                           'задача не выполнена и days_left больше 0. Используйте and и not. Выведите только '
+                           'is_urgent.',
+                   'check': 'Проверяются срочная, выполненная, просроченная и низкоприоритетная задачи. Ожидается '
+                            'одна строка True или False.'},
+      'requirements': {'items': ['priority >= 4', 'not is_done', 'days_left > 0', 'единое выражение с and'],
+                       'names': ['priority', 'is_done', 'days_left', 'is_urgent'],
+                       'nodes': ['BoolOp'],
+                       'calls': ['print']},
+      'starter_code': '# priority, is_done и days_left уже созданы\n# Создайте и выведите is_urgent\n',
+      'tests': [{'name': 'срочная',
+                 'namespace': {'priority': 4, 'is_done': False, 'days_left': 2},
+                 'expected': 'True',
+                 'assert': 'stdout'},
+                {'name': 'выполненная',
+                 'namespace': {'priority': 5, 'is_done': True, 'days_left': 1},
+                 'expected': 'False',
+                 'assert': 'stdout'},
+                {'name': 'просроченная',
+                 'namespace': {'priority': 5, 'is_done': False, 'days_left': 0},
+                 'expected': 'False',
+                 'assert': 'stdout'},
+                {'name': 'низкий приоритет',
+                 'namespace': {'priority': 3, 'is_done': False, 'days_left': 2},
+                 'expected': 'False',
+                 'assert': 'stdout'}],
+      'reference_code': 'is_urgent = priority >= 4 and not is_done and days_left > 0\nprint(is_urgent)\n'}],
+ 8: [{'title': 'Понятный статус задачи',
+      'level': 'easy',
+      'mode': 'script',
+      'prompt': 'Напишите одну цепочку if / elif / else. Если is_done истинно, выведите Выполнена. Иначе, если '
+                'priority не меньше 4, выведите Срочно. Иначе, если priority не меньше 2, выведите В работе. Во '
+                'всех остальных случаях выведите Низкий приоритет.',
+      'contract': {'given': 'Платформа создаёт priority от 1 до 5 и is_done со значением True или False.',
+                   'todo': 'Напишите одну цепочку if / elif / else. Если is_done истинно, выведите Выполнена. '
+                           'Иначе, если priority не меньше 4, выведите Срочно. Иначе, если priority не меньше 2, '
+                           'выведите В работе. Во всех остальных случаях выведите Низкий приоритет.',
+                   'check': 'Проверяются все четыре ветки. Для каждого набора данных должна появиться ровно одна '
+                            'строка.'},
+      'requirements': {'items': ['одна цепочка if / elif / else', 'четыре точных сообщения'],
+                       'names': ['priority', 'is_done'],
+                       'nodes': ['If'],
+                       'calls': ['print']},
+      'starter_code': '# priority и is_done уже созданы\n# Напишите одну цепочку if / elif / elif / else\n',
+      'tests': [{'name': 'выполненная',
+                 'namespace': {'priority': 5, 'is_done': True},
+                 'expected': 'Выполнена',
+                 'assert': 'stdout'},
+                {'name': 'срочная',
+                 'namespace': {'priority': 4, 'is_done': False},
+                 'expected': 'Срочно',
+                 'assert': 'stdout'},
+                {'name': 'обычная',
+                 'namespace': {'priority': 2, 'is_done': False},
+                 'expected': 'В работе',
+                 'assert': 'stdout'},
+                {'name': 'низкий приоритет',
+                 'namespace': {'priority': 1, 'is_done': False},
+                 'expected': 'Низкий приоритет',
+                 'assert': 'stdout'}],
+      'reference_code': 'if is_done:\n'
+                        "    print('Выполнена')\n"
+                        'elif priority >= 4:\n'
+                        "    print('Срочно')\n"
+                        'elif priority >= 2:\n'
+                        "    print('В работе')\n"
+                        'else:\n'
+                        "    print('Низкий приоритет')\n"}],
+ 9: [{'title': 'Нумерованный список задач',
+      'level': 'easy',
+      'mode': 'script',
+      'prompt': 'Не создавайте tasks заново. Циклом for и range(len(tasks)) пройдите по индексам. Для каждой '
+                "задачи выведите <номер>. <заголовок>, начиная с номера 1. Например, ['Код', 'README'] даёт 1. "
+                'Код и 2. README.',
+      'contract': {'given': 'Платформа создаёт список строк tasks. Его длина меняется в проверках.',
+                   'todo': 'Не создавайте tasks заново. Циклом for и range(len(tasks)) пройдите по индексам. Для '
+                           "каждой задачи выведите <номер>. <заголовок>, начиная с номера 1. Например, ['Код', "
+                           "'README'] даёт 1. Код и 2. README.",
+                   'check': 'Количество строк должно совпадать с len(tasks), порядок сохраняется, нумерация '
+                            'начинается с 1.'},
+      'requirements': {'items': ['цикл for', 'range(len(tasks))', 'нумерация index + 1', 'f-строка'],
+                       'names': ['tasks'],
+                       'nodes': ['For', 'JoinedStr'],
+                       'calls': ['range', 'len', 'print']},
+      'starter_code': '# tasks уже создан\n# Используйте for и range(len(tasks))\n',
+      'tests': [{'name': 'две задачи',
+                 'namespace': {'tasks': ['Код', 'README']},
+                 'expected': '1. Код\n2. README',
+                 'assert': 'stdout'},
+                {'name': 'три задачи',
+                 'namespace': {'tasks': ['Python', 'Git', 'Тесты']},
+                 'expected': '1. Python\n2. Git\n3. Тесты',
+                 'assert': 'stdout'}],
+      'reference_code': "for index in range(len(tasks)):\n    print(f'{index + 1}. {tasks[index]}')\n"}],
+ 10: [{'title': 'Повторная проверка команды',
+       'level': 'easy',
+       'mode': 'script',
+       'prompt': 'Пока command не равна expected_command, выведите Неизвестная команда: <command>, затем присвойте '
+                 'command значение expected_command. После while выведите Принято: <command>. Обе строки соберите '
+                 'через f-строки.',
+       'contract': {'given': 'Runner не использует input(), поэтому повторный ввод моделируется переменными. '
+                             'Платформа создаёт неверную command и правильную expected_command.',
+                    'todo': 'Пока command не равна expected_command, выведите Неизвестная команда: <command>, '
+                            'затем присвойте command значение expected_command. После while выведите Принято: '
+                            '<command>. Обе строки соберите через f-строки.',
+                    'check': 'Проверяются разные команды. Ожидаются ровно две строки. Цикл должен завершиться, '
+                             'потому что command изменяется внутри while.'},
+       'requirements': {'items': ['цикл while', 'изменение command внутри цикла', 'две f-строки'],
+                        'names': ['command', 'expected_command'],
+                        'nodes': ['While', 'JoinedStr'],
+                        'calls': ['print']},
+       'starter_code': '# command и expected_command уже созданы\n# Напишите завершаемый while и итоговый вывод\n',
+       'tests': [{'name': 'list',
+                  'namespace': {'command': 'show', 'expected_command': 'list'},
+                  'expected': 'Неизвестная команда: show\nПринято: list',
+                  'assert': 'stdout'},
+                 {'name': 'exit',
+                  'namespace': {'command': 'stop', 'expected_command': 'exit'},
+                  'expected': 'Неизвестная команда: stop\nПринято: exit',
+                  'assert': 'stdout'}],
+       'reference_code': 'while command != expected_command:\n'
+                         "    print(f'Неизвестная команда: {command}')\n"
+                         '    command = expected_command\n'
+                         "print(f'Принято: {command}')\n"}],
+ 11: [{'title': 'Коллекции учебного проекта',
+       'level': 'easy',
+       'mode': 'script',
+       'prompt': "Добавьте new_task в tasks через append(). Создайте кортеж statuses = ('new', 'done'). Создайте "
+                 'unique_tags = set(tags). Выведите: длину tasks, элемент statuses с индексом 1, количество '
+                 'уникальных тегов — каждое значение с новой строки.',
+       'contract': {'given': 'Платформа создаёт список tasks, строку new_task и список tags с повторами.',
+                    'todo': "Добавьте new_task в tasks через append(). Создайте кортеж statuses = ('new', 'done'). "
+                            'Создайте unique_tags = set(tags). Выведите: длину tasks, элемент statuses с индексом '
+                            '1, количество уникальных тегов — каждое значение с новой строки.',
+                    'check': 'Проверяются разные списки. Ожидаются три строки: новая длина tasks, слово done, '
+                             'число уникальных тегов.'},
+       'requirements': {'items': ['append(new_task)', 'кортеж statuses', 'множество unique_tags', 'три строки'],
+                        'names': ['tasks', 'new_task', 'tags', 'statuses', 'unique_tags'],
+                        'attributes': ['append'],
+                        'calls': ['set', 'len', 'print']},
+       'starter_code': '# tasks, new_task и tags уже созданы\n'
+                       '# Добавьте задачу, создайте statuses и unique_tags, выведите три значения\n',
+       'tests': [{'name': 'два тега',
+                  'namespace': {'tasks': ['Код'], 'new_task': 'README', 'tags': ['python', 'git', 'python']},
+                  'expected': '2\ndone\n2',
+                  'assert': 'stdout'},
+                 {'name': 'три тега',
+                  'namespace': {'tasks': ['Код', 'Тесты', 'Git'],
+                                'new_task': 'Релиз',
+                                'tags': ['api', 'api', 'test', 'git']},
+                  'expected': '4\ndone\n3',
+                  'assert': 'stdout'}],
+       'reference_code': 'tasks.append(new_task)\n'
+                         "statuses = ('new', 'done')\n"
+                         'unique_tags = set(tags)\n'
+                         'print(len(tasks))\n'
+                         'print(statuses[1])\n'
+                         'print(len(unique_tags))\n'}],
+ 12: [{'title': 'Словарь одной задачи',
+       'level': 'easy',
+       'mode': 'script',
+       'prompt': 'Создайте словарь task: ключ title получает переменную title, priority получает priority, done '
+                 "сначала равен False. Затем замените task['done'] на new_done. Выведите значения по ключам title, "
+                 'priority, done — каждое с новой строки.',
+       'contract': {'given': 'Платформа создаёт title, priority и логическое значение new_done.',
+                    'todo': 'Создайте словарь task: ключ title получает переменную title, priority получает '
+                            "priority, done сначала равен False. Затем замените task['done'] на new_done. Выведите "
+                            'значения по ключам title, priority, done — каждое с новой строки.',
+                    'check': 'Проверяются два набора данных. Ключи должны называться точно title, priority, '
+                             'done.'},
+       'requirements': {'items': ['словарь task с тремя ключами',
+                                  'done = False',
+                                  'обновление done',
+                                  'чтение по ключам'],
+                        'names': ['title', 'priority', 'new_done', 'task'],
+                        'calls': ['print']},
+       'starter_code': '# title, priority и new_done уже созданы\n'
+                       '# Создайте task, обновите done, выведите три значения\n',
+       'tests': [{'name': 'открытая',
+                  'namespace': {'title': 'Код', 'priority': 1, 'new_done': False},
+                  'expected': 'Код\n1\nFalse',
+                  'assert': 'stdout'},
+                 {'name': 'выполненная',
+                  'namespace': {'title': 'README', 'priority': 3, 'new_done': True},
+                  'expected': 'README\n3\nTrue',
+                  'assert': 'stdout'}],
+       'reference_code': "task = {'title': title, 'priority': priority, 'done': False}\n"
+                         "task['done'] = new_done\n"
+                         "print(task['title'])\n"
+                         "print(task['priority'])\n"
+                         "print(task['done'])\n"}],
+ 13: [{'title': 'Функция форматирования задачи',
+       'level': 'easy',
+       'mode': 'solve',
+       'prompt': 'Внутри solve верните строку Задача: <title> | приоритет: <priority> через return и f-строку. '
+                 'Используйте оба параметра. Не вызывайте print().',
+       'contract': {'given': 'Автопроверка вызывает solve(title, priority) с разными строками и целыми числами. '
+                             'Тело функции пока пустое.',
+                    'todo': 'Внутри solve верните строку Задача: <title> | приоритет: <priority> через return и '
+                            'f-строку. Используйте оба параметра. Не вызывайте print().',
+                    'check': "Проверяются минимум три набора аргументов. Например, solve('Код', 1) должна вернуть "
+                             'Задача: Код | приоритет: 1.'},
+       'requirements': {'items': ['solve(title, priority)', 'оба параметра', 'f-строка', 'return вместо print'],
+                        'names': ['title', 'priority'],
+                        'nodes': ['FunctionDef', 'JoinedStr']},
+       'starter_code': 'def solve(title, priority):\n    # Верните готовую строку\n    pass\n',
+       'tests': [{'name': 'код', 'args': ['Код', 1], 'expected': 'Задача: Код | приоритет: 1'},
+                 {'name': 'README', 'args': ['README', 3], 'expected': 'Задача: README | приоритет: 3'},
+                 {'name': 'длинный заголовок',
+                  'args': ['Повторить функции', 5],
+                  'expected': 'Задача: Повторить функции | приоритет: 5'}],
+       'reference_code': "def solve(title, priority):\n    return f'Задача: {title} | приоритет: {priority}'\n"}],
+ 14: [{'title': 'Две функции с разными обязанностями',
+       'level': 'easy',
+       'mode': 'solve',
+       'prompt': 'Создайте normalize_title(title), которая возвращает title.strip().title(). В solve вызовите '
+                 'normalize_title(raw_title) и верните словарь с ключами title, priority, done: очищенный '
+                 'заголовок, переданный priority и False.',
+       'contract': {'given': 'Автопроверка вызывает solve(raw_title, priority). raw_title может содержать пробелы '
+                             'и разный регистр, priority — целое число.',
+                    'todo': 'Создайте normalize_title(title), которая возвращает title.strip().title(). В solve '
+                            'вызовите normalize_title(raw_title) и верните словарь с ключами title, priority, '
+                            'done: очищенный заголовок, переданный priority и False.',
+                    'check': 'Сравнивается весь словарь. Также проверяется, что solve действительно вызывает '
+                             'normalize_title.'},
+       'requirements': {'items': ['normalize_title()',
+                                  'strip() и title()',
+                                  'вызов helper из solve',
+                                  'словарь с тремя ключами'],
+                        'names': ['raw_title', 'priority'],
+                        'calls': ['normalize_title'],
+                        'attributes': ['strip', 'title'],
+                        'nodes': ['FunctionDef']},
+       'starter_code': 'def normalize_title(title):\n'
+                       '    # Верните очищенный заголовок\n'
+                       '    pass\n'
+                       '\n'
+                       '\n'
+                       'def solve(raw_title, priority):\n'
+                       '    # Вызовите normalize_title и верните словарь\n'
+                       '    pass\n',
+       'tests': [{'name': 'пробелы',
+                  'args': ['  сделать readme  ', 2],
+                  'expected': {'title': 'Сделать Readme', 'priority': 2, 'done': False}},
+                 {'name': 'регистр',
+                  'args': ['  PYTHON ПРАКТИКА ', 4],
+                  'expected': {'title': 'Python Практика', 'priority': 4, 'done': False}},
+                 {'name': 'одно слово',
+                  'args': ['git', 1],
+                  'expected': {'title': 'Git', 'priority': 1, 'done': False}}],
+       'reference_code': 'def normalize_title(title):\n'
+                         '    return title.strip().title()\n'
+                         '\n'
+                         '\n'
+                         'def solve(raw_title, priority):\n'
+                         '    clean_title = normalize_title(raw_title)\n'
+                         "    return {'title': clean_title, 'priority': priority, 'done': False}\n"}],
+ 15: [{'title': 'Исправьте NameError и TypeError',
+       'level': 'easy',
+       'mode': 'script',
+       'prompt': 'Исправьте две строки: используйте правильное имя task_title и преобразуйте raw_priority через '
+                 'int() перед сложением. После исправления программа выводит Сделать README, затем 3.',
+       'contract': {'given': 'В редакторе программа с двумя ошибками. Переменная называется task_title, но в print '
+                             "написано task_titel. raw_priority хранит строку '2', поэтому её нельзя "
+                             'складывать с числом 1.',
+                    'todo': 'Исправьте две строки: используйте правильное имя task_title и преобразуйте raw_priority '
+                            'через int() перед сложением. После исправления программа выводит Сделать README, '
+                            'затем 3.',
+                    'check': 'Сравниваются две строки и проверяется вызов int(). Не переименовывайте исходные '
+                             'переменные и не заменяйте вычисление готовым print(3).'},
+       'requirements': {'items': ['правильное имя task_title', 'int(raw_priority)', 'две строки вывода'],
+                        'names': ['task_title', 'raw_priority'],
+                        'calls': ['int', 'print']},
+       'starter_code': "task_title = 'Сделать README'\n"
+                       "raw_priority = '2'\n"
+                       '\n'
+                       'print(task_titel)\n'
+                       'print(raw_priority + 1)\n',
+       'tests': [{'name': 'обе ошибки исправлены', 'expected': 'Сделать README\n3', 'assert': 'stdout'}],
+       'reference_code': "task_title = 'Сделать README'\n"
+                         "raw_priority = '2'\n"
+                         '\n'
+                         'print(task_title)\n'
+                         'print(int(raw_priority) + 1)\n'}],
+ 16: [{'title': 'Одна итерация меню',
+       'level': 'easy',
+       'mode': 'script',
+       'prompt': 'Получите clean_title = raw_title.strip(). Для add: если clean_title пуст, выведите Ошибка: '
+                 'пустой заголовок, иначе Добавить: <clean_title>. Для list выведите Показать задачи, для exit '
+                 '— Выход, для другой команды — Неизвестная команда.',
+       'contract': {'given': 'Платформа создаёт command и raw_title. command может быть add, list, exit '
+                             'или неизвестной строкой. raw_title используется для add и может состоять из пробелов.',
+                    'todo': 'Получите clean_title = raw_title.strip(). Для add: если clean_title пуст, выведите '
+                            'Ошибка: пустой заголовок, иначе Добавить: <clean_title>. Для list выведите '
+                            'Показать задачи, для exit — Выход, для другой команды — Неизвестная команда.',
+                    'check': 'Проверяются пять сценариев. Каждый запуск должен дать ровно одну строку.'},
+       'requirements': {'items': ['clean_title через strip()',
+                                  'команды add/list/exit',
+                                  'пустой заголовок',
+                                  'неизвестная команда'],
+                        'names': ['command', 'raw_title', 'clean_title'],
+                        'attributes': ['strip'],
+                        'nodes': ['If', 'JoinedStr'],
+                        'calls': ['print']},
+       'starter_code': '# command и raw_title уже созданы\n'
+                       '# Получите clean_title и обработайте add, list, exit, неизвестную команду\n',
+       'tests': [{'name': 'add',
+                  'namespace': {'command': 'add', 'raw_title': '  Изучить функции  '},
+                  'expected': 'Добавить: Изучить функции',
+                  'assert': 'stdout'},
+                 {'name': 'пустой add',
+                  'namespace': {'command': 'add', 'raw_title': '   '},
+                  'expected': 'Ошибка: пустой заголовок',
+                  'assert': 'stdout'},
+                 {'name': 'list',
+                  'namespace': {'command': 'list', 'raw_title': ''},
+                  'expected': 'Показать задачи',
+                  'assert': 'stdout'},
+                 {'name': 'exit',
+                  'namespace': {'command': 'exit', 'raw_title': ''},
+                  'expected': 'Выход',
+                  'assert': 'stdout'},
+                 {'name': 'unknown',
+                  'namespace': {'command': 'remove', 'raw_title': ''},
+                  'expected': 'Неизвестная команда',
+                  'assert': 'stdout'}],
+       'reference_code': 'clean_title = raw_title.strip()\n'
+                         "if command == 'add':\n"
+                         "    if clean_title == '':\n"
+                         "        print('Ошибка: пустой заголовок')\n"
+                         '    else:\n'
+                         "        print(f'Добавить: {clean_title}')\n"
+                         "elif command == 'list':\n"
+                         "    print('Показать задачи')\n"
+                         "elif command == 'exit':\n"
+                         "    print('Выход')\n"
+                         'else:\n'
+                         "    print('Неизвестная команда')\n"}],
+ 17: [{'title': 'Добавление задачи со стабильным id',
+       'level': 'easy',
+       'mode': 'solve',
+       'prompt': 'Начните с next_id = 1. Циклом найдите id больше максимального существующего. Очистите title '
+                 'через strip(). Создайте новую задачу с next_id, title, priority и done=False. Добавьте её через '
+                 'append() и верните обновлённый tasks.',
+       'contract': {'given': 'Автопроверка вызывает solve(tasks, title, priority). tasks — список словарей с '
+                             'ключами id, title, priority, done. Список может быть пустым или иметь пропуски в id.',
+                    'todo': 'Начните с next_id = 1. Циклом найдите id больше максимального существующего. Очистите '
+                            'title через strip(). Создайте новую задачу с next_id, title, priority и done=False. '
+                            'Добавьте её через append() и верните обновлённый tasks.',
+                    'check': 'Проверяется пустой список и список с пропуском id. Новый id должен быть больше '
+                             'максимального id, а не равен len(tasks)+1.'},
+       'requirements': {'items': ['поиск next_id циклом',
+                                  'title.strip()',
+                                  'словарь новой задачи',
+                                  'append()',
+                                  'return tasks'],
+                        'names': ['tasks', 'title', 'priority', 'next_id', 'new_task'],
+                        'nodes': ['FunctionDef', 'For', 'If'],
+                        'attributes': ['strip', 'append']},
+       'starter_code': 'def solve(tasks, title, priority):\n'
+                       '    next_id = 1\n'
+                       '    # Найдите следующий id\n'
+                       '    # Создайте и добавьте задачу\n'
+                       '    # Верните tasks\n'
+                       '    pass\n',
+       'tests': [{'name': 'пустой',
+                  'args': [[], '  Изучить списки  ', 2],
+                  'expected': [{'id': 1, 'title': 'Изучить списки', 'priority': 2, 'done': False}]},
+                 {'name': 'обычные id',
+                  'args': [[{'id': 1, 'title': 'Код', 'priority': 1, 'done': False},
+                            {'id': 2, 'title': 'Git', 'priority': 3, 'done': True}],
+                           'README',
+                           4],
+                  'expected': [{'id': 1, 'title': 'Код', 'priority': 1, 'done': False},
+                               {'id': 2, 'title': 'Git', 'priority': 3, 'done': True},
+                               {'id': 3, 'title': 'README', 'priority': 4, 'done': False}]},
+                 {'name': 'пропуск id',
+                  'args': [[{'id': 1, 'title': 'Код', 'priority': 1, 'done': False},
+                            {'id': 4, 'title': 'Релиз', 'priority': 5, 'done': False}],
+                           'Тесты',
+                           3],
+                  'expected': [{'id': 1, 'title': 'Код', 'priority': 1, 'done': False},
+                               {'id': 4, 'title': 'Релиз', 'priority': 5, 'done': False},
+                               {'id': 5, 'title': 'Тесты', 'priority': 3, 'done': False}]}],
+       'reference_code': 'def solve(tasks, title, priority):\n'
+                         '    next_id = 1\n'
+                         '    for task_item in tasks:\n'
+                         "        if task_item['id'] >= next_id:\n"
+                         "            next_id = task_item['id'] + 1\n"
+                         "    new_task = {'id': next_id, 'title': title.strip(), 'priority': priority, 'done': "
+                         'False}\n'
+                         '    tasks.append(new_task)\n'
+                         '    return tasks\n'}],
+ 18: [{'title': 'Поиск, завершение и статистика',
+       'level': 'medium',
+       'mode': 'solve',
+       'prompt': 'Найдите task_id и установите done=True; сохраните found. Соберите matches из заголовков, '
+                 'содержащих query без учёта регистра. После изменения посчитайте открытые и выполненные задачи. '
+                 'Верните словарь с ключами found, matches, open, done.',
+       'contract': {'given': 'Автопроверка вызывает solve(tasks, task_id, query). tasks содержит словари id, '
+                             'title, done. task_id — задача для завершения, query — часть заголовка для поиска без '
+                             'учёта регистра.',
+                    'todo': 'Найдите task_id и установите done=True; сохраните found. Соберите matches из '
+                            'заголовков, содержащих query без учёта регистра. После изменения посчитайте открытые и '
+                            'выполненные задачи. Верните словарь с ключами found, matches, open, done.',
+                    'check': 'Проверяются найденный id, отсутствующий id и пустой список. Статистика считается после '
+                             'изменения статуса, порядок matches сохраняется.'},
+       'requirements': {'items': ['поиск по id',
+                                  'done=True',
+                                  'поиск без регистра',
+                                  'два счётчика',
+                                  'четыре ключа результата'],
+                        'names': ['tasks', 'task_id', 'query', 'found', 'matches', 'open_count', 'done_count'],
+                        'nodes': ['FunctionDef', 'For', 'If'],
+                        'attributes': ['lower', 'append']},
+       'starter_code': 'def solve(tasks, task_id, query):\n'
+                       '    found = False\n'
+                       '    matches = []\n'
+                       '    open_count = 0\n'
+                       '    done_count = 0\n'
+                       '    # Измените статус, соберите matches и статистику\n'
+                       "    return {'found': found, 'matches': matches, 'open': open_count, 'done': done_count}\n",
+       'tests': [{'name': 'найдена',
+                  'args': [[{'id': 1, 'title': 'Сделать README', 'done': False},
+                            {'id': 2, 'title': 'Написать тесты', 'done': False},
+                            {'id': 3, 'title': 'Git практика', 'done': True}],
+                           2,
+                           'read'],
+                  'expected': {'found': True, 'matches': ['Сделать README'], 'open': 1, 'done': 2}},
+                 {'name': 'id отсутствует',
+                  'args': [[{'id': 1, 'title': 'Код', 'done': False}, {'id': 2, 'title': 'Код-ревью', 'done': True}],
+                           99,
+                           'КОД'],
+                  'expected': {'found': False, 'matches': ['Код', 'Код-ревью'], 'open': 1, 'done': 1}},
+                 {'name': 'пустой',
+                  'args': [[], 1, 'python'],
+                  'expected': {'found': False, 'matches': [], 'open': 0, 'done': 0}}],
+       'reference_code': 'def solve(tasks, task_id, query):\n'
+                         '    found = False\n'
+                         '    for task_item in tasks:\n'
+                         "        if task_item['id'] == task_id:\n"
+                         "            task_item['done'] = True\n"
+                         '            found = True\n'
+                         '    matches = []\n'
+                         '    open_count = 0\n'
+                         '    done_count = 0\n'
+                         '    normalized_query = query.lower()\n'
+                         '    for task_item in tasks:\n'
+                         "        if normalized_query in task_item['title'].lower():\n"
+                         "            matches.append(task_item['title'])\n"
+                         "        if task_item['done']:\n"
+                         '            done_count += 1\n'
+                         '        else:\n'
+                         '            open_count += 1\n'
+                         "    return {'found': found, 'matches': matches, 'open': open_count, 'done': "
+                         'done_count}\n'}]}
 
-
-DEEPER_CODE_TASKS: dict[int, list[dict[str, Any]]] = {
-    22: [
-        _solve("Контракт заголовка", "Напишите `solve(title)`, возвращающую `True`, если после `strip()` заголовок не пустой.", "def solve(title):\n    pass\n", [{"name": "обычный заголовок", "args": ["Купить хлеб"], "expected": True}, {"name": "пробелы", "args": ["   "], "expected": False}], "def solve(title):\n    return title.strip() != ''\n"),
-        _solve("Контракт приоритета", "Напишите `solve(priority)`, возвращающую `True` только для целых приоритетов от 1 до 3 включительно.", "def solve(priority):\n    pass\n", [{"name": "нижняя граница", "args": [1], "expected": True}, {"name": "верхняя граница", "args": [3], "expected": True}, {"name": "слишком большой", "args": [4], "expected": False}], "def solve(priority):\n    return priority >= 1 and priority <= 3\n"),
-    ],
-    23: [
-        _solve("Значение по умолчанию", "Напишите `solve(title, priority=2, done=False)`, возвращающую словарь с этими тремя полями.", "def solve(title, priority=2, done=False):\n    pass\n", [{"name": "только обязательный аргумент", "args": ["Код"], "expected": {"title": "Код", "priority": 2, "done": False}}, {"name": "все значения", "args": ["README", 1, True], "expected": {"title": "README", "priority": 1, "done": True}}], "def solve(title, priority=2, done=False):\n    return {'title': title, 'priority': priority, 'done': done}\n"),
-        _solve("Именованные настройки", "Напишите `solve(title, priority=2, done=False)`. Автопроверка вызовет её с именованными аргументами; верните строку `<title>:<priority>:<done>`.", "def solve(title, priority=2, done=False):\n    pass\n", [{"name": "именованный вызов", "kwargs": {"title": "Тесты", "done": True, "priority": 3}, "expected": "Тесты:3:True"}, {"name": "значения по умолчанию", "kwargs": {"title": "Код"}, "expected": "Код:2:False"}], "def solve(title, priority=2, done=False):\n    return f'{title}:{priority}:{done}'\n"),
-    ],
-    24: [
-        _solve("Локальное не меняет внешнее", "Напишите `solve(status)`: внутри создайте `local_status = 'done'`, а верните список из исходного `status` и локального значения.", "def solve(status):\n    pass\n", [{"name": "исходный статус", "args": ["new"], "expected": ["new", "done"]}, {"name": "другой статус", "args": ["in_progress"], "expected": ["in_progress", "done"]}], "def solve(status):\n    local_status = 'done'\n    return [status, local_status]\n"),
-        _solve("Изменяемый список", "Напишите `solve(tasks, title)`: добавьте `title` в переданный список и верните этот же список.", "def solve(tasks, title):\n    pass\n", [{"name": "добавление", "args": [["Код"], "Тесты"], "expected": ["Код", "Тесты"]}, {"name": "пустой список", "args": [[], "README"], "expected": ["README"]}], "def solve(tasks, title):\n    tasks.append(title)\n    return tasks\n"),
-    ],
-    25: [
-        _solve("Сумма *args", "Напишите `solve(*durations)`, возвращающую сумму всех переданных длительностей.", "def solve(*durations):\n    pass\n", [{"name": "две длительности", "args": [15, 45], "expected": 60}, {"name": "четыре длительности", "args": [5, 10, 15, 20], "expected": 50}], "def solve(*durations):\n    return sum(durations)\n"),
-        _solve("Словарь **kwargs", "Напишите `solve(**settings)`, возвращающую значения `priority` и `owner` в списке именно в таком порядке.", "def solve(**settings):\n    pass\n", [{"name": "две настройки", "kwargs": {"priority": 1, "owner": "Анна"}, "expected": [1, "Анна"]}, {"name": "другие значения", "kwargs": {"owner": "Илья", "priority": 3}, "expected": [3, "Илья"]}], "def solve(**settings):\n    return [settings['priority'], settings['owner']]\n"),
-    ],
-    26: [
-        _solve("Правило как функция", "Напишите `solve(numbers)`. Внутри создайте функцию `is_even(number)` и верните только чётные числа из входного списка.", "def solve(numbers):\n    pass\n", [{"name": "смешанные числа", "args": [[1, 2, 3, 4]], "expected": [2, 4]}, {"name": "нет чётных", "args": [[1, 3]], "expected": []}], "def solve(numbers):\n    def is_even(number):\n        return number % 2 == 0\n\n    result = []\n    for number in numbers:\n        if is_even(number):\n            result.append(number)\n    return result\n"),
-        _solve("Замыкание с префиксом", "Напишите `solve(prefix, text)`. Внутри создайте `make_prefix(prefix)`, верните из неё внутреннюю функцию и примените её к `text`.", "def solve(prefix, text):\n    pass\n", [{"name": "todo", "args": ["[TODO] ", "Код"], "expected": "[TODO] Код"}, {"name": "done", "args": ["[DONE] ", "README"], "expected": "[DONE] README"}], "def solve(prefix, text):\n    def make_prefix(prefix):\n        def add_prefix(value):\n            return prefix + value\n        return add_prefix\n\n    formatter = make_prefix(prefix)\n    return formatter(text)\n"),
-    ],
-    27: [
-        _solve("Декоратор до и после", "Напишите декоратор `announce`, который печатает `Старт` до вызова и `Готово` после. Оберните им `solve(title)`, возвращающую `title.upper()`.", "def solve(title):\n    pass\n", [{"name": "значение функции", "args": ["код"], "expected": "КОД"}, {"name": "другая строка", "args": ["тесты"], "expected": "ТЕСТЫ"}], "def announce(func):\n    def wrapper(*args, **kwargs):\n        print('Старт')\n        result = func(*args, **kwargs)\n        print('Готово')\n        return result\n    return wrapper\n\n@announce\ndef solve(title):\n    return title.upper()\n"),
-        _solve("Параметры не потерялись", "Напишите декоратор `keep_args`, в `wrapper` используйте `*args, **kwargs`. Оберните `solve(first, second)`, возвращающую их сумму.", "def solve(first, second):\n    pass\n", [{"name": "два числа", "args": [4, 6], "expected": 10}, {"name": "ноль", "args": [0, 5], "expected": 5}], "def keep_args(func):\n    def wrapper(*args, **kwargs):\n        return func(*args, **kwargs)\n    return wrapper\n\n@keep_args\ndef solve(first, second):\n    return first + second\n"),
-    ],
-    29: [
-        _solve("Безопасный int", "Напишите `solve(raw)`: верните `int(raw)`, а при `ValueError` верните `None`.", "def solve(raw):\n    pass\n", [{"name": "число", "args": ["12"], "expected": 12}, {"name": "текст", "args": ["двенадцать"], "expected": None}], "def solve(raw):\n    try:\n        return int(raw)\n    except ValueError:\n        return None\n"),
-        _solve("Деление без падения", "Напишите `solve(total, count)`: верните результат деления, а при делении на ноль верните строку `нельзя делить на ноль`.", "def solve(total, count):\n    pass\n", [{"name": "обычное деление", "args": [9, 3], "expected": 3.0}, {"name": "ноль", "args": [9, 0], "expected": "нельзя делить на ноль"}], "def solve(total, count):\n    try:\n        return total / count\n    except ZeroDivisionError:\n        return 'нельзя делить на ноль'\n"),
-    ],
-    30: [
-        _solve("else после успеха", "Напишите `solve(raw)`: в `try` преобразуйте строку в число, при `ValueError` верните `некорректный возраст`, в `else` верните `Возраст: <число>`. Добавьте `finally` с `pass`.", "def solve(raw):\n    pass\n", [{"name": "корректный возраст", "args": ["18"], "expected": "Возраст: 18"}, {"name": "некорректный возраст", "args": ["восемнадцать"], "expected": "некорректный возраст"}], "def solve(raw):\n    try:\n        age = int(raw)\n    except ValueError:\n        return 'некорректный возраст'\n    else:\n        return f'Возраст: {age}'\n    finally:\n        pass\n"),
-        _solve("Своя ошибка команды", "Создайте `InvalidCommand(Exception)`. В `solve(command)` разрешите только `add` и `list`; для другой команды вызовите и поймайте свою ошибку, вернув её текст.", "def solve(command):\n    pass\n", [{"name": "разрешённая команда", "args": ["list"], "expected": "ok"}, {"name": "неизвестная команда", "args": ["remove"], "expected": "Неизвестная команда: remove"}], "class InvalidCommand(Exception):\n    pass\n\ndef solve(command):\n    try:\n        if command != 'add' and command != 'list':\n            raise InvalidCommand(f'Неизвестная команда: {command}')\n        return 'ok'\n    except InvalidCommand as error:\n        return str(error)\n"),
-    ],
-    36: [
-        _script("Первый объект", "Создайте класс `Task` с `__init__(self, title, priority)`. Создайте объект с `Код`, 1 и выведите его `title`, затем `priority`.", "# Опишите класс Task\n", "Код\n1", "class Task:\n    def __init__(self, title, priority):\n        self.title = title\n        self.priority = priority\n\ntask = Task('Код', 1)\nprint(task.title)\nprint(task.priority)\n"),
-        _script("Метод меняет объект", "Добавьте классу `Task` поле `done = False` и метод `mark_done`. После вызова метода выведите `task.done`.", "# Опишите класс и метод\n", "True", "class Task:\n    def __init__(self):\n        self.done = False\n\n    def mark_done(self):\n        self.done = True\n\ntask = Task()\ntask.mark_done()\nprint(task.done)\n"),
-    ],
-    37: [
-        _script("Читаемый print", "Создайте класс `Task` с `title` и методом `__str__`, возвращающим `Задача: <title>`. Напечатайте `Task('README')`.", "# Опишите Task и __str__\n", "Задача: README", "class Task:\n    def __init__(self, title):\n        self.title = title\n\n    def __str__(self):\n        return f'Задача: {self.title}'\n\nprint(Task('README'))\n"),
-        _script("Переименование методом", "Создайте класс `Task` с методом `rename(new_title)`. Создайте `Task('Код')`, переименуйте в `Тесты` и выведите title.", "# Опишите Task и rename\n", "Тесты", "class Task:\n    def __init__(self, title):\n        self.title = title\n\n    def rename(self, new_title):\n        self.title = new_title\n\ntask = Task('Код')\ntask.rename('Тесты')\nprint(task.title)\n"),
-    ],
-    38: [
-        _script("Свойство priority", "Создайте класс `Task` с `_priority`, getter и setter `priority`. Setter должен разрешать значения от 1 до 3. Создайте объект с 1, присвойте 3 и выведите priority.", "# Опишите Task с property\n", "3", "class Task:\n    def __init__(self, priority):\n        self._priority = priority\n\n    @property\n    def priority(self):\n        return self._priority\n\n    @priority.setter\n    def priority(self, value):\n        if value < 1 or value > 3:\n            raise ValueError('Неверный приоритет')\n        self._priority = value\n\ntask = Task(1)\ntask.priority = 3\nprint(task.priority)\n"),
-        _script("Ошибка в setter", "Используйте класс `Task` с проверяющим setter. Попробуйте присвоить 4 в `try / except ValueError` и выведите строку `Неверный приоритет`.", "# Опишите Task с property и обработайте ValueError\n", "Неверный приоритет", "class Task:\n    def __init__(self, priority):\n        self._priority = priority\n\n    @property\n    def priority(self):\n        return self._priority\n\n    @priority.setter\n    def priority(self, value):\n        if value < 1 or value > 3:\n            raise ValueError('Неверный приоритет')\n        self._priority = value\n\ntask = Task(1)\ntry:\n    task.priority = 4\nexcept ValueError as error:\n    print(error)\n"),
-    ],
-}
-
-
-
-# Обычные программы получают разные значения из скрытых тестов. Это не даёт
-# пройти задание фиксированным print и требует использовать алгоритм.
-F = FOUNDATIONS_CODE_TASKS
-
-_dynamic_script(
-    F[4][0],
-    given="Интерпретатор уже создал title, priority и is_done с разными значениями.",
-    todo="Не создавайте эти переменные заново. Напечатайте их по очереди: заголовок, приоритет, статус.",
-    starter_code="# title, priority и is_done уже готовы\n# Напечатайте три значения\n",
-    tests=[
-        {"name": "первая задача", "namespace": {"title": "Код", "priority": 1, "is_done": False}, "expected": "Код\n1\nFalse", "assert": "stdout"},
-        {"name": "другая задача", "namespace": {"title": "Тесты", "priority": 3, "is_done": True}, "expected": "Тесты\n3\nTrue", "assert": "stdout"},
-    ],
-    reference_code="print(title)\nprint(priority)\nprint(is_done)\n",
-    requirements={"items": ["используйте title, priority и is_done"], "names": ["title", "priority", "is_done"], "calls": ["print"]},
-)
-_dynamic_script(
-    F[4][1],
-    given="Интерпретатор уже создал priority и increase.",
-    todo="Прибавьте increase к priority, сохраните новое значение в priority и напечатайте его.",
-    starter_code="# priority и increase уже готовы\n# Обновите priority\n",
-    tests=[
-        {"name": "увеличение на два", "namespace": {"priority": 1, "increase": 2}, "expected": "3", "assert": "stdout"},
-        {"name": "увеличение на один", "namespace": {"priority": 3, "increase": 1}, "expected": "4", "assert": "stdout"},
-    ],
-    reference_code="priority = priority + increase\nprint(priority)\n",
-    requirements={"items": ["измените priority", "используйте increase"], "names": ["priority", "increase"], "calls": ["print"]},
-)
-_dynamic_script(
-    F[5][0],
-    given="raw_hours уже создана как строка с целым числом.",
-    todo="Преобразуйте raw_hours через int и выведите количество минут.",
-    starter_code="# raw_hours уже готова\n# Преобразуйте часы в минуты\n",
-    tests=[
-        {"name": "два часа", "namespace": {"raw_hours": "2"}, "expected": "120", "assert": "stdout"},
-        {"name": "пять часов", "namespace": {"raw_hours": "5"}, "expected": "300", "assert": "stdout"},
-    ],
-    reference_code="hours = int(raw_hours)\nprint(hours * 60)\n",
-    requirements={"items": ["преобразование int", "переменная raw_hours"], "names": ["raw_hours"], "calls": ["int"]},
-)
-_dynamic_script(
-    F[5][1],
-    given="Интерпретатор уже создал два числа: first и second.",
-    todo="Выведите их сумму, затем среднее арифметическое. Каждое значение должно быть на новой строке.",
-    starter_code="# first и second уже готовы\n# Напечатайте сумму и среднее\n",
-    tests=[
-        {"name": "десять и пятьдесят", "namespace": {"first": 10, "second": 50}, "expected": "60\n30.0", "assert": "stdout"},
-        {"name": "пятнадцать и тридцать", "namespace": {"first": 15, "second": 30}, "expected": "45\n22.5", "assert": "stdout"},
-    ],
-    reference_code="print(first + second)\nprint((first + second) / 2)\n",
-    requirements={"items": ["используйте first и second", "операции + и /"], "names": ["first", "second"]},
-)
-_dynamic_script(
-    F[6][0],
-    given="Интерпретатор уже создал title и priority.",
-    todo="Через f-строку выведите карточку ровно в формате: Задача: title | приоритет: priority.",
-    starter_code="# title и priority уже готовы\n# Соберите строку через f-строку\n",
-    tests=[
-        {"name": "первая карточка", "namespace": {"title": "Купить хлеб", "priority": 1}, "expected": "Задача: Купить хлеб | приоритет: 1", "assert": "stdout"},
-        {"name": "вторая карточка", "namespace": {"title": "Написать тесты", "priority": 3}, "expected": "Задача: Написать тесты | приоритет: 3", "assert": "stdout"},
-    ],
-    reference_code="print(f'Задача: {title} | приоритет: {priority}')\n",
-    requirements={"items": ["f-строка", "переменные title и priority"], "names": ["title", "priority"], "nodes": ["JoinedStr"]},
-)
-_dynamic_script(
-    F[6][1],
-    given="raw_title уже создана со случайными пробелами и регистром.",
-    todo="Уберите пробелы по краям через strip, приведите текст к нижнему регистру через lower и выведите результат.",
-    starter_code="# raw_title уже готова\n# Очистите и нормализуйте строку\n",
-    tests=[
-        {"name": "пробелы и регистр", "namespace": {"raw_title": "  Сделать README  "}, "expected": "сделать readme", "assert": "stdout"},
-        {"name": "другая строка", "namespace": {"raw_title": "  PYTHON  "}, "expected": "python", "assert": "stdout"},
-    ],
-    reference_code="clean_title = raw_title.strip().lower()\nprint(clean_title)\n",
-    requirements={"items": ["методы strip и lower", "переменная raw_title"], "names": ["raw_title"], "attributes": ["strip", "lower"]},
-)
-_dynamic_script(
-    F[7][0],
-    given="days_left уже создана как целое число.",
-    todo="Выведите True, если до дедлайна осталось не больше трёх дней. Иначе выведите False.",
-    starter_code="# days_left уже готова\n# Напечатайте результат сравнения\n",
-    tests=[
-        {"name": "срочный дедлайн", "namespace": {"days_left": 3}, "expected": "True", "assert": "stdout"},
-        {"name": "не срочно", "namespace": {"days_left": 6}, "expected": "False", "assert": "stdout"},
-    ],
-    reference_code="print(days_left <= 3)\n",
-    requirements={"items": ["сравнение с числом 3", "переменная days_left"], "names": ["days_left"]},
-)
-_dynamic_script(
-    F[7][1],
-    given="Интерпретатор уже создал is_important и is_today.",
-    todo="Сначала выведите is_important or is_today, затем is_important and is_today.",
-    starter_code="# is_important и is_today уже готовы\n# Напишите два логических выражения\n",
-    tests=[
-        {"name": "важная задача", "namespace": {"is_important": True, "is_today": False}, "expected": "True\nFalse", "assert": "stdout"},
-        {"name": "сегодняшняя задача", "namespace": {"is_important": False, "is_today": True}, "expected": "True\nFalse", "assert": "stdout"},
-    ],
-    reference_code="print(is_important or is_today)\nprint(is_important and is_today)\n",
-    requirements={"items": ["операторы or и and"], "names": ["is_important", "is_today"], "nodes": ["BoolOp"]},
-)
-_dynamic_script(
-    F[8][0],
-    given="priority уже создана и может быть равна 1, 2 или 3.",
-    todo="Через if, elif, else выведите: для 1 высокий, для 2 обычный, для 3 низкий.",
-    starter_code="# priority уже готова\n# Напишите if / elif / else\n",
-    tests=[
-        {"name": "высокий", "namespace": {"priority": 1}, "expected": "высокий", "assert": "stdout"},
-        {"name": "обычный", "namespace": {"priority": 2}, "expected": "обычный", "assert": "stdout"},
-        {"name": "низкий", "namespace": {"priority": 3}, "expected": "низкий", "assert": "stdout"},
-    ],
-    reference_code="if priority == 1:\n    print('высокий')\nelif priority == 2:\n    print('обычный')\nelse:\n    print('низкий')\n",
-    requirements={"items": ["ветвление if / elif / else", "переменная priority"], "names": ["priority"], "nodes": ["If"]},
-)
-_dynamic_script(
-    F[8][1],
-    given="is_done уже создана как булево значение.",
-    todo="Если is_done истинно, выведите Закрыта. Иначе выведите В работе.",
-    starter_code="# is_done уже готова\n# Напишите if / else\n",
-    tests=[
-        {"name": "готовая задача", "namespace": {"is_done": True}, "expected": "Закрыта", "assert": "stdout"},
-        {"name": "открытая задача", "namespace": {"is_done": False}, "expected": "В работе", "assert": "stdout"},
-    ],
-    reference_code="if is_done:\n    print('Закрыта')\nelse:\n    print('В работе')\n",
-    requirements={"items": ["ветвление if / else", "переменная is_done"], "names": ["is_done"], "nodes": ["If"]},
-)
-_dynamic_script(
-    F[9][0],
-    given="Интерпретатор уже создал список строк tasks разной длины.",
-    todo="Не переопределяйте tasks. Циклом for напечатайте каждый заголовок с новой строки в исходном порядке.",
-    starter_code="# tasks уже готов\n# Напишите цикл for\n",
-    tests=[
-        {"name": "две задачи", "namespace": {"tasks": ["Код", "Тесты"]}, "expected": "Код\nТесты", "assert": "stdout"},
-        {"name": "три задачи", "namespace": {"tasks": ["README", "Git", "Релиз"]}, "expected": "README\nGit\nРелиз", "assert": "stdout"},
-    ],
-    reference_code="for task in tasks:\n    print(task)\n",
-    requirements={"items": ["цикл for", "переменная tasks", "вывод через print"], "names": ["tasks"], "nodes": ["For"], "calls": ["print"]},
-)
-_dynamic_script(
-    F[9][1],
-    given="Интерпретатор уже создал границы start и stop.",
-    todo="Циклом for и range выведите все целые числа от start до stop включительно.",
-    starter_code="# start и stop уже готовы\n# Используйте for и range\n",
-    tests=[
-        {"name": "малый диапазон", "namespace": {"start": 1, "stop": 3}, "expected": "1\n2\n3", "assert": "stdout"},
-        {"name": "другой диапазон", "namespace": {"start": 4, "stop": 6}, "expected": "4\n5\n6", "assert": "stdout"},
-    ],
-    reference_code="for number in range(start, stop + 1):\n    print(number)\n",
-    requirements={"items": ["цикл for", "range", "границы start и stop"], "names": ["start", "stop"], "nodes": ["For"], "calls": ["range"]},
-)
-_dynamic_script(
-    F[10][0],
-    given="completed и target уже созданы; completed всегда меньше target.",
-    todo="Циклом while увеличивайте completed на 1 и печатайте новое значение, пока не достигнете target.",
-    starter_code="# completed и target уже готовы\n# Напишите while\n",
-    tests=[
-        {"name": "от нуля до трёх", "namespace": {"completed": 0, "target": 3}, "expected": "1\n2\n3", "assert": "stdout"},
-        {"name": "от двух до пяти", "namespace": {"completed": 2, "target": 5}, "expected": "3\n4\n5", "assert": "stdout"},
-    ],
-    reference_code="while completed < target:\n    completed += 1\n    print(completed)\n",
-    requirements={"items": ["цикл while", "completed и target"], "names": ["completed", "target"], "nodes": ["While"]},
-)
-_dynamic_script(
-    F[10][1],
-    given="command создана как пустая строка, exit_command содержит команду выхода.",
-    todo="Циклом while меняйте command на exit_command, пока они не совпадут. После цикла выведите command.",
-    starter_code="# command и exit_command уже готовы\n# Завершите цикл через exit_command\n",
-    tests=[
-        {"name": "exit", "namespace": {"command": "", "exit_command": "exit"}, "expected": "exit", "assert": "stdout"},
-        {"name": "stop", "namespace": {"command": "", "exit_command": "stop"}, "expected": "stop", "assert": "stdout"},
-    ],
-    reference_code="while command != exit_command:\n    command = exit_command\nprint(command)\n",
-    requirements={"items": ["цикл while", "command и exit_command"], "names": ["command", "exit_command"], "nodes": ["While"]},
-)
-_dynamic_script(
-    F[11][0],
-    given="Интерпретатор уже создал список tasks и строку new_task.",
-    todo="Добавьте new_task в конец tasks через append. Выведите длину списка после добавления.",
-    starter_code="# tasks и new_task уже готовы\n# Добавьте задачу и выведите len(tasks)\n",
-    tests=[
-        {"name": "два элемента", "namespace": {"tasks": ["Код"], "new_task": "Тесты"}, "expected": "2", "assert": "stdout"},
-        {"name": "четыре элемента", "namespace": {"tasks": ["Код", "Git", "README"], "new_task": "Релиз"}, "expected": "4", "assert": "stdout"},
-    ],
-    reference_code="tasks.append(new_task)\nprint(len(tasks))\n",
-    requirements={"items": ["метод append", "переменные tasks и new_task"], "names": ["tasks", "new_task"], "attributes": ["append"]},
-)
-_dynamic_script(
-    F[11][1],
-    given="Интерпретатор уже создал список tags, в котором есть повторы.",
-    todo="Создайте множество из tags и выведите количество уникальных тегов.",
-    starter_code="# tags уже готов\n# Используйте set и len\n",
-    tests=[
-        {"name": "один повтор", "namespace": {"tags": ["python", "git", "python"]}, "expected": "2", "assert": "stdout"},
-        {"name": "несколько повторов", "namespace": {"tags": ["api", "api", "test", "git"]}, "expected": "3", "assert": "stdout"},
-    ],
-    reference_code="unique_tags = set(tags)\nprint(len(unique_tags))\n",
-    requirements={"items": ["set", "len", "переменная tags"], "names": ["tags"], "calls": ["set", "len"]},
-)
-_dynamic_script(
-    F[12][0],
-    given="Интерпретатор уже создал словарь task с ключом title.",
-    todo="Выведите значение task по ключу title.",
-    starter_code="# task уже готов\n# Выведите task['title']\n",
-    tests=[
-        {"name": "первая задача", "namespace": {"task": {"title": "Код", "done": False}}, "expected": "Код", "assert": "stdout"},
-        {"name": "вторая задача", "namespace": {"task": {"title": "README", "done": True}}, "expected": "README", "assert": "stdout"},
-    ],
-    reference_code="print(task['title'])\n",
-    requirements={"items": ["словарь task", "ключ title"], "names": ["task"]},
-)
-_dynamic_script(
-    F[12][1],
-    given="Интерпретатор уже создал словарь task и булево значение new_done.",
-    todo="Измените task по ключу done на new_done и выведите новый статус.",
-    starter_code="# task и new_done уже готовы\n# Обновите task['done']\n",
-    tests=[
-        {"name": "закрыть задачу", "namespace": {"task": {"title": "Код", "done": False}, "new_done": True}, "expected": "True", "assert": "stdout"},
-        {"name": "открыть задачу", "namespace": {"task": {"title": "README", "done": True}, "new_done": False}, "expected": "False", "assert": "stdout"},
-    ],
-    reference_code="task['done'] = new_done\nprint(task['done'])\n",
-    requirements={"items": ["словарь task", "переменная new_done"], "names": ["task", "new_done"]},
-)
-
-
-_dynamic_script(
-    F[15][0],
-    given="Интерпретатор уже создал строку title в разном регистре.",
-    todo="Выведите title в верхнем регистре через upper.",
-    starter_code="# title уже готова\n# Напечатайте title.upper()\n",
-    tests=[
-        {"name": "русский текст", "namespace": {"title": "сделать readme"}, "expected": "СДЕЛАТЬ README", "assert": "stdout"},
-        {"name": "латиница", "namespace": {"title": "python"}, "expected": "PYTHON", "assert": "stdout"},
-    ],
-    reference_code="print(title.upper())\n",
-    requirements={"items": ["метод upper", "переменная title"], "names": ["title"], "attributes": ["upper"]},
-)
-_dynamic_script(
-    F[15][1],
-    given="raw_priority уже создана как строка с числом.",
-    todo="Преобразуйте raw_priority в int и выведите результат сложения с 1.",
-    starter_code="# raw_priority уже готова\n# Исправьте тип перед сложением\n",
-    tests=[
-        {"name": "семь", "namespace": {"raw_priority": "7"}, "expected": "8", "assert": "stdout"},
-        {"name": "двенадцать", "namespace": {"raw_priority": "12"}, "expected": "13", "assert": "stdout"},
-    ],
-    reference_code="print(int(raw_priority) + 1)\n",
-    requirements={"items": ["преобразование int", "переменная raw_priority"], "names": ["raw_priority"], "calls": ["int"]},
-)
-_dynamic_script(
-    F[16][0],
-    given="Интерпретатор уже создал command: list, add или другую строку.",
-    todo="Через if, elif, else выведите: для list Показать задачи, для add Добавить задачу, иначе Неизвестная команда.",
-    starter_code="# command уже готова\n# Напишите обработчик команды\n",
-    tests=[
-        {"name": "список", "namespace": {"command": "list"}, "expected": "Показать задачи", "assert": "stdout"},
-        {"name": "добавление", "namespace": {"command": "add"}, "expected": "Добавить задачу", "assert": "stdout"},
-        {"name": "неизвестная команда", "namespace": {"command": "remove"}, "expected": "Неизвестная команда", "assert": "stdout"},
-    ],
-    reference_code="if command == 'list':\n    print('Показать задачи')\nelif command == 'add':\n    print('Добавить задачу')\nelse:\n    print('Неизвестная команда')\n",
-    requirements={"items": ["ветвление if / elif / else", "переменная command"], "names": ["command"], "nodes": ["If"]},
-)
-_dynamic_script(
-    F[16][1],
-    given="Интерпретатор уже создал title: она может быть пустой, состоять из пробелов или содержать текст.",
-    todo="Сначала примените strip. Если после очистки строка пуста, выведите Ошибка: пустой заголовок, иначе Задача добавлена.",
-    starter_code="# title уже готова\n# Проверьте title после strip\n",
-    tests=[
-        {"name": "только пробелы", "namespace": {"title": "   "}, "expected": "Ошибка: пустой заголовок", "assert": "stdout"},
-        {"name": "корректный заголовок", "namespace": {"title": "  Код  "}, "expected": "Задача добавлена", "assert": "stdout"},
-    ],
-    reference_code="if title.strip() == '':\n    print('Ошибка: пустой заголовок')\nelse:\n    print('Задача добавлена')\n",
-    requirements={"items": ["метод strip", "ветвление if / else"], "names": ["title"], "nodes": ["If"], "attributes": ["strip"]},
-)
-
-D = DEEPER_CODE_TASKS
-_dynamic_script(
-    D[36][0],
-    given="Интерпретатор уже создал task_title и task_priority.",
-    todo="Создайте класс Task с __init__(title, priority). Создайте объект из task_title и task_priority, затем выведите title и priority с новой строки.",
-    starter_code="# task_title и task_priority уже готовы\n# Опишите класс Task и создайте объект\n",
-    tests=[
-        {"name": "первая задача", "namespace": {"task_title": "Код", "task_priority": 1}, "expected": "Код\n1", "assert": "stdout"},
-        {"name": "вторая задача", "namespace": {"task_title": "Тесты", "task_priority": 3}, "expected": "Тесты\n3", "assert": "stdout"},
-    ],
-    reference_code="class Task:\n    def __init__(self, title, priority):\n        self.title = title\n        self.priority = priority\n\ntask = Task(task_title, task_priority)\nprint(task.title)\nprint(task.priority)\n",
-    requirements={"items": ["класс Task", "метод __init__", "task_title и task_priority"], "names": ["task_title", "task_priority"], "nodes": ["ClassDef"]},
-)
-_dynamic_script(
-    D[36][1],
-    given="Интерпретатор уже создал булеву переменную should_complete.",
-    todo="Создайте Task с done = False и методом mark_done. Если should_complete истинно, вызовите метод. Выведите task.done.",
-    starter_code="# should_complete уже готова\n# Опишите Task, mark_done и условие\n",
-    tests=[
-        {"name": "не завершать", "namespace": {"should_complete": False}, "expected": "False", "assert": "stdout"},
-        {"name": "завершить", "namespace": {"should_complete": True}, "expected": "True", "assert": "stdout"},
-    ],
-    reference_code="class Task:\n    def __init__(self):\n        self.done = False\n\n    def mark_done(self):\n        self.done = True\n\ntask = Task()\nif should_complete:\n    task.mark_done()\nprint(task.done)\n",
-    requirements={"items": ["класс Task", "метод mark_done", "условие if"], "names": ["should_complete"], "nodes": ["ClassDef", "If"]},
-)
-_dynamic_script(
-    D[37][0],
-    given="Интерпретатор уже создал строку title.",
-    todo="Создайте Task с __init__(title) и __str, который возвращает строку Задача: title. Напечатайте созданный объект.",
-    starter_code="# title уже готова\n# Опишите Task с __str__\n",
-    tests=[
-        {"name": "README", "namespace": {"title": "README"}, "expected": "Задача: README", "assert": "stdout"},
-        {"name": "код", "namespace": {"title": "Код"}, "expected": "Задача: Код", "assert": "stdout"},
-    ],
-    reference_code="class Task:\n    def __init__(self, title):\n        self.title = title\n\n    def __str__(self):\n        return f'Задача: {self.title}'\n\nprint(Task(title))\n",
-    requirements={"items": ["класс Task", "метод __str__", "переменная title"], "names": ["title"], "nodes": ["ClassDef"]},
-)
-_dynamic_script(
-    D[37][1],
-    given="Интерпретатор уже создал строки first_title и next_title.",
-    todo="Создайте Task с методом rename(new_title). Создайте объект из first_title, переименуйте в next_title и выведите task.title.",
-    starter_code="# first_title и next_title уже готовы\n# Опишите Task и rename\n",
-    tests=[
-        {"name": "первое переименование", "namespace": {"first_title": "Код", "next_title": "Тесты"}, "expected": "Тесты", "assert": "stdout"},
-        {"name": "второе переименование", "namespace": {"first_title": "README", "next_title": "Релиз"}, "expected": "Релиз", "assert": "stdout"},
-    ],
-    reference_code="class Task:\n    def __init__(self, title):\n        self.title = title\n\n    def rename(self, new_title):\n        self.title = new_title\n\ntask = Task(first_title)\ntask.rename(next_title)\nprint(task.title)\n",
-    requirements={"items": ["класс Task", "метод rename", "first_title и next_title"], "names": ["first_title", "next_title"], "nodes": ["ClassDef"]},
-)
-_dynamic_script(
-    D[38][0],
-    given="Интерпретатор уже создал корректные initial_priority и next_priority от 1 до 3.",
-    todo="Создайте Task с _priority, property priority и setter. Setter разрешает только 1-3. Создайте объект из initial_priority, присвойте next_priority и выведите priority.",
-    starter_code="# initial_priority и next_priority уже готовы\n# Опишите Task с property и setter\n",
-    tests=[
-        {"name": "из одного в три", "namespace": {"initial_priority": 1, "next_priority": 3}, "expected": "3", "assert": "stdout"},
-        {"name": "из трёх в два", "namespace": {"initial_priority": 3, "next_priority": 2}, "expected": "2", "assert": "stdout"},
-    ],
-    reference_code="class Task:\n    def __init__(self, priority):\n        self._priority = priority\n\n    @property\n    def priority(self):\n        return self._priority\n\n    @priority.setter\n    def priority(self, value):\n        if value < 1 or value > 3:\n            raise ValueError('Неверный приоритет')\n        self._priority = value\n\ntask = Task(initial_priority)\ntask.priority = next_priority\nprint(task.priority)\n",
-    requirements={"items": ["класс Task", "property и setter", "проверка границ 1-3"], "names": ["initial_priority", "next_priority", "property"], "nodes": ["ClassDef", "If"]},
-)
-_dynamic_script(
-    D[38][1],
-    given="Интерпретатор уже создал initial_priority и некорректный invalid_priority.",
-    todo="В Task реализуйте проверяющий setter priority. Попробуйте присвоить invalid_priority в try / except ValueError. После ошибки выведите сохранённый task.priority.",
-    starter_code="# initial_priority и invalid_priority уже готовы\n# Опишите Task, обработайте ValueError и выведите priority\n",
-    tests=[
-        {"name": "слишком большой", "namespace": {"initial_priority": 1, "invalid_priority": 4}, "expected": "1", "assert": "stdout"},
-        {"name": "слишком маленький", "namespace": {"initial_priority": 3, "invalid_priority": 0}, "expected": "3", "assert": "stdout"},
-    ],
-    reference_code="class Task:\n    def __init__(self, priority):\n        self._priority = priority\n\n    @property\n    def priority(self):\n        return self._priority\n\n    @priority.setter\n    def priority(self, value):\n        if value < 1 or value > 3:\n            raise ValueError('Неверный приоритет')\n        self._priority = value\n\ntask = Task(initial_priority)\ntry:\n    task.priority = invalid_priority\nexcept ValueError:\n    pass\nprint(task.priority)\n",
-    requirements={"items": ["класс Task", "property и setter", "try / except ValueError"], "names": ["initial_priority", "invalid_priority", "property"], "nodes": ["ClassDef", "Try", "If"]},
-)
-
-
-F[1][0]["contract"] = _contract(
-    "В первом уроке данные ещё не передаются: тренируем порядок выполнения строк.",
-    "Напишите три команды print в точном порядке из условия.",
-    "Сверим весь вывод и порядок строк.",
-)
-F[1][0]["requirements"] = {"items": ["три команды print в заданном порядке"], "calls": ["print"]}
-F[1][1]["contract"] = _contract(
-    "В первом уроке данные ещё не передаются: тренируем порядок выполнения строк.",
-    "Напишите две команды print в точном порядке из условия.",
-    "Сверим весь вывод и порядок строк.",
-)
-F[1][1]["requirements"] = {"items": ["две команды print в заданном порядке"], "calls": ["print"]}
+DEEPER_CODE_TASKS: dict[int, list[dict[str, Any]]] = {22: [{'title': 'Контракт создания задачи',
+       'level': 'easy',
+       'mode': 'solve',
+       'prompt': 'Объявите solve(title, priority=2). Получите clean_title через title.strip(). Если clean_title пуст, '
+                 'верните None. Иначе верните словарь с ключами title, priority и done. Для done установите False. '
+                 'Функция ничего не печатает.',
+       'contract': {'given': 'Автопроверка вызывает solve(title, priority) или solve(title). title — строка, иногда '
+                             'только из пробелов. priority — целое число от 1 до 5; когда аргумент не передан, должно '
+                             'использоваться значение 2.',
+                    'todo': 'Объявите solve(title, priority=2). Получите clean_title через title.strip(). Если '
+                            'clean_title пуст, верните None. Иначе верните словарь с ключами title, priority и done. '
+                            'Для done установите False. Функция ничего не печатает.',
+                    'check': 'Проверяются вызов со значением по умолчанию, явный priority, заголовок с пробелами и '
+                             'пустой заголовок. Сравнивается return. Лишний print не нужен.'},
+       'requirements': {'items': ['параметр priority со значением 2',
+                                  'title.strip()',
+                                  'return None для пустой строки',
+                                  'словарь задачи'],
+                        'nodes': ['FunctionDef', 'If'],
+                        'attributes': ['strip']},
+       'starter_code': 'def solve(title, priority=2):\n'
+                       '    # Получите clean_title\n'
+                       '    # Верните None или словарь задачи\n'
+                       '    pass\n',
+       'tests': [{'name': 'значение по умолчанию',
+                  'args': ['  Изучить функции  '],
+                  'expected': {'title': 'Изучить функции', 'priority': 2, 'done': False}},
+                 {'name': 'явный приоритет',
+                  'args': ['README', 5],
+                  'expected': {'title': 'README', 'priority': 5, 'done': False}},
+                 {'name': 'именованный приоритет',
+                  'args': ['  Тесты '],
+                  'kwargs': {'priority': 3},
+                  'expected': {'title': 'Тесты', 'priority': 3, 'done': False}},
+                 {'name': 'пустой заголовок', 'args': ['   '], 'expected': None}],
+       'reference_code': 'def solve(title, priority=2):\n'
+                         '    clean_title = title.strip()\n'
+                         "    if clean_title == '':\n"
+                         '        return None\n'
+                         "    return {'title': clean_title, 'priority': priority, 'done': False}\n"}],
+ 23: [{'title': 'Позиционные и именованные вызовы',
+       'level': 'easy',
+       'mode': 'script',
+       'prompt': 'Объявите create_task(title, priority=2, done=False), которая возвращает словарь title, priority, '
+                 'done. Создайте first вызовом только с first_title. Создайте second, передав second_title позиционно, '
+                 'а second_priority именованно. Создайте third, передав third_title позиционно, а priority и done '
+                 'именованно в обратном порядке: done=third_done, priority=third_priority. Выведите first, second и '
+                 'third с новой строки.',
+       'contract': {'given': 'Интерпретатор создаёт first_title, second_title, second_priority, third_title, '
+                             'third_priority и third_done. Значения меняются в проверках.',
+                    'todo': 'Объявите create_task(title, priority=2, done=False), которая возвращает словарь title, '
+                            'priority, done. Создайте first вызовом только с first_title. Создайте second, передав '
+                            'second_title позиционно, а second_priority именованно. Создайте third, передав '
+                            'third_title позиционно, а priority и done именованно в обратном порядке: done=third_done, '
+                            'priority=third_priority. Выведите first, second и third с новой строки.',
+                    'check': 'Программа запускается с двумя наборами данных. Сравниваются три строки целиком. '
+                             'Проверяется функция со значениями по умолчанию и использование всех подготовленных '
+                             'переменных.'},
+       'requirements': {'items': ['create_task с двумя значениями по умолчанию',
+                                  'позиционный title',
+                                  'именованные priority и done',
+                                  'три результата'],
+                        'nodes': ['FunctionDef'],
+                        'calls': ['print'],
+                        'names': ['first_title',
+                                  'second_title',
+                                  'second_priority',
+                                  'third_title',
+                                  'third_priority',
+                                  'third_done']},
+       'starter_code': '# Все входные переменные уже созданы\n# Объявите create_task и выполните три разных вызова\n',
+       'tests': [{'name': 'основной набор',
+                  'namespace': {'first_title': 'Python',
+                                'second_title': 'SQL',
+                                'second_priority': 4,
+                                'third_title': 'Git',
+                                'third_priority': 1,
+                                'third_done': True},
+                  'expected': "{'title': 'Python', 'priority': 2, 'done': False}\n"
+                              "{'title': 'SQL', 'priority': 4, 'done': False}\n"
+                              "{'title': 'Git', 'priority': 1, 'done': True}",
+                  'assert': 'stdout'},
+                 {'name': 'другие значения',
+                  'namespace': {'first_title': 'README',
+                                'second_title': 'Тесты',
+                                'second_priority': 5,
+                                'third_title': 'Релиз',
+                                'third_priority': 3,
+                                'third_done': False},
+                  'expected': "{'title': 'README', 'priority': 2, 'done': False}\n"
+                              "{'title': 'Тесты', 'priority': 5, 'done': False}\n"
+                              "{'title': 'Релиз', 'priority': 3, 'done': False}",
+                  'assert': 'stdout'}],
+       'reference_code': 'def create_task(title, priority=2, done=False):\n'
+                         "    return {'title': title, 'priority': priority, 'done': done}\n"
+                         '\n'
+                         'first = create_task(first_title)\n'
+                         'second = create_task(second_title, priority=second_priority)\n'
+                         'third = create_task(third_title, done=third_done, priority=third_priority)\n'
+                         'print(first)\n'
+                         'print(second)\n'
+                         'print(third)\n'}],
+ 24: [{'title': 'Копия списка без скрытого изменения',
+       'level': 'easy',
+       'mode': 'solve',
+       'prompt': 'Создайте updated через tasks.copy(). Добавьте в updated очищенный title через append(). Не изменяйте '
+                 'tasks. Верните словарь с ключами original и updated: original должен ссылаться на неизменённое '
+                 'содержимое tasks, updated — на новый список с добавленным заголовком.',
+       'contract': {'given': 'Автопроверка вызывает solve(tasks, title). tasks — список строк. Вызывающий код должен '
+                             'сохранить исходный список без изменений.',
+                    'todo': 'Создайте updated через tasks.copy(). Добавьте в updated очищенный title через append(). '
+                            'Не изменяйте tasks. Верните словарь с ключами original и updated: original должен '
+                            'ссылаться на неизменённое содержимое tasks, updated — на новый список с добавленным '
+                            'заголовком.',
+                    'check': 'Проверяются пустой и заполненный списки, а также заголовок с пробелами. Сравнивается '
+                             'return. Решение через tasks.append(title) не пройдёт, потому что original тоже '
+                             'изменится.'},
+       'requirements': {'items': ['отдельная копия списка', 'append только в копию', 'исходный список без изменения'],
+                        'nodes': ['FunctionDef'],
+                        'attributes': ['copy', 'append', 'strip']},
+       'starter_code': 'def solve(tasks, title):\n'
+                       '    # Создайте отдельный список updated\n'
+                       '    # Добавьте очищенный title\n'
+                       '    # Верните original и updated\n'
+                       '    pass\n',
+       'tests': [{'name': 'заполненный список',
+                  'args': [['Python', 'Git'], '  SQL  '],
+                  'expected': {'original': ['Python', 'Git'], 'updated': ['Python', 'Git', 'SQL']}},
+                 {'name': 'пустой список', 'args': [[], 'README'], 'expected': {'original': [], 'updated': ['README']}},
+                 {'name': 'одно значение',
+                  'args': [['Тесты'], '  Релиз'],
+                  'expected': {'original': ['Тесты'], 'updated': ['Тесты', 'Релиз']}}],
+       'reference_code': 'def solve(tasks, title):\n'
+                         '    updated = tasks.copy()\n'
+                         '    updated.append(title.strip())\n'
+                         "    return {'original': tasks, 'updated': updated}\n"}],
+ 25: [{'title': 'Сводка через args и kwargs',
+       'level': 'easy',
+       'mode': 'solve',
+       'prompt': 'Объявите вспомогательную функцию make_summary(total, label, multiplier), возвращающую словарь label, '
+                 'total и adjusted. Затем объявите solve(*durations, **settings). Получите total через sum(durations). '
+                 'Из settings получите label со значением StudyHub и multiplier со значением 1 по умолчанию. Соберите '
+                 'config с ключами label и multiplier и вызовите make_summary(total, **config). Верните полученный '
+                 'словарь.',
+       'contract': {'given': 'Автопроверка вызывает solve с произвольным количеством позиционных длительностей и '
+                             'именованными настройками label и multiplier. Настройки могут отсутствовать.',
+                    'todo': 'Объявите вспомогательную функцию make_summary(total, label, multiplier), возвращающую '
+                            'словарь label, total и adjusted. Затем объявите solve(*durations, **settings). Получите '
+                            'total через sum(durations). Из settings получите label со значением StudyHub и multiplier '
+                            'со значением 1 по умолчанию. Соберите config с ключами label и multiplier и вызовите '
+                            'make_summary(total, **config). Верните полученный словарь.',
+                    'check': 'Проверяются ноль, два и четыре позиционных значения, настройки по умолчанию и '
+                             'именованные настройки. Сравнивается return. В решении должны быть *durations, **settings '
+                             'и распаковка словаря при вызове make_summary.'},
+       'requirements': {'items': ['*durations',
+                                  '**settings',
+                                  'sum(durations)',
+                                  'settings.get()',
+                                  'распаковка **config'],
+                        'nodes': ['FunctionDef'],
+                        'calls': ['sum', 'make_summary'],
+                        'attributes': ['get']},
+       'starter_code': 'def make_summary(total, label, multiplier):\n'
+                       '    # Верните словарь сводки\n'
+                       '    pass\n'
+                       '\n'
+                       '\n'
+                       'def solve(*durations, **settings):\n'
+                       '    # Посчитайте total и подготовьте config\n'
+                       '    # Вызовите make_summary(total, **config)\n'
+                       '    pass\n',
+       'tests': [{'name': 'значения по умолчанию',
+                  'args': [30, 45],
+                  'expected': {'label': 'StudyHub', 'total': 75, 'adjusted': 75}},
+                 {'name': 'именованные настройки',
+                  'args': [10, 20, 30],
+                  'kwargs': {'label': 'Неделя', 'multiplier': 2},
+                  'expected': {'label': 'Неделя', 'total': 60, 'adjusted': 120}},
+                 {'name': 'без длительностей',
+                  'kwargs': {'label': 'Пустой план'},
+                  'expected': {'label': 'Пустой план', 'total': 0, 'adjusted': 0}},
+                 {'name': 'четыре значения',
+                  'args': [5, 10, 15, 20],
+                  'kwargs': {'multiplier': 3},
+                  'expected': {'label': 'StudyHub', 'total': 50, 'adjusted': 150}}],
+       'reference_code': 'def make_summary(total, label, multiplier):\n'
+                         "    return {'label': label, 'total': total, 'adjusted': total * multiplier}\n"
+                         '\n'
+                         'def solve(*durations, **settings):\n'
+                         '    total = sum(durations)\n'
+                         "    label = settings.get('label', 'StudyHub')\n"
+                         "    multiplier = settings.get('multiplier', 1)\n"
+                         "    config = {'label': label, 'multiplier': multiplier}\n"
+                         '    return make_summary(total, **config)\n'}],
+ 26: [{'title': 'Callback внутри замыкания',
+       'level': 'medium',
+       'mode': 'solve',
+       'prompt': 'Внутри solve объявите double(value) и square(value). Объявите make_transformer(operation, offset), '
+                 'внутри неё — transform(value), которая вызывает переданную operation, прибавляет сохранённый offset '
+                 'и возвращает результат. Выберите callback по mode, получите transformer через make_transformer и '
+                 'примените его к каждому числу. Верните новый список.',
+       'contract': {'given': 'Автопроверка вызывает solve(values, mode, offset). values — список чисел. mode равен '
+                             'double или square. offset — число, которое нужно прибавить после основной операции.',
+                    'todo': 'Внутри solve объявите double(value) и square(value). Объявите make_transformer(operation, '
+                            'offset), внутри неё — transform(value), которая вызывает переданную operation, прибавляет '
+                            'сохранённый offset и возвращает результат. Выберите callback по mode, получите '
+                            'transformer через make_transformer и примените его к каждому числу. Верните новый список.',
+                    'check': 'Проверяются оба callback, разные offset и пустой список. Сравнивается return. Исходный '
+                             'values менять не нужно.'},
+       'requirements': {'items': ['callback без немедленного вызова',
+                                  'вложенная transform',
+                                  'замыкание хранит operation и offset',
+                                  'новый список результата'],
+                        'nodes': ['FunctionDef', 'IfExp', 'For'],
+                        'attributes': ['append']},
+       'starter_code': 'def solve(values, mode, offset):\n'
+                       '    def double(value):\n'
+                       '        pass\n'
+                       '\n'
+                       '    def square(value):\n'
+                       '        pass\n'
+                       '\n'
+                       '    def make_transformer(operation, offset):\n'
+                       '        def transform(value):\n'
+                       '            pass\n'
+                       '        return transform\n'
+                       '\n'
+                       '    # Выберите callback, создайте transformer и соберите result\n'
+                       '    pass\n',
+       'tests': [{'name': 'удвоение', 'args': [[1, 2, 3], 'double', 1], 'expected': [3, 5, 7]},
+                 {'name': 'квадрат', 'args': [[2, 3], 'square', 0], 'expected': [4, 9]},
+                 {'name': 'квадрат со смещением', 'args': [[-2, 0, 4], 'square', 5], 'expected': [9, 5, 21]},
+                 {'name': 'пустой список', 'args': [[], 'double', 10], 'expected': []}],
+       'reference_code': 'def solve(values, mode, offset):\n'
+                         '    def double(value):\n'
+                         '        return value * 2\n'
+                         '\n'
+                         '    def square(value):\n'
+                         '        return value * value\n'
+                         '\n'
+                         '    def make_transformer(operation, offset):\n'
+                         '        def transform(value):\n'
+                         '            return operation(value) + offset\n'
+                         '        return transform\n'
+                         '\n'
+                         "    callback = double if mode == 'double' else square\n"
+                         '    transformer = make_transformer(callback, offset)\n'
+                         '    result = []\n'
+                         '    for value in values:\n'
+                         '        result.append(transformer(value))\n'
+                         '    return result\n'}],
+ 27: [{'title': 'Декоратор сохраняет вызов и результат',
+       'level': 'medium',
+       'mode': 'script',
+       'prompt': 'Объявите декоратор log_call(operation). Внутри создайте wrapper(*args, **kwargs), который печатает '
+                 'START <имя функции>, вызывает operation(*args, **kwargs), печатает DONE <результат> и возвращает '
+                 'результат. Примените @log_call к create_task(title, priority=2), возвращающей строку '
+                 '<title>:<priority>. Вызовите create_task(title, priority=priority), сохраните result и выведите '
+                 'RESULT <result>.',
+       'contract': {'given': 'Интерпретатор создаёт title и priority. Они меняются в проверках.',
+                    'todo': 'Объявите декоратор log_call(operation). Внутри создайте wrapper(*args, **kwargs), который '
+                            'печатает START <имя функции>, вызывает operation(*args, **kwargs), печатает DONE '
+                            '<результат> и возвращает результат. Примените @log_call к create_task(title, priority=2), '
+                            'возвращающей строку <title>:<priority>. Вызовите create_task(title, priority=priority), '
+                            'сохраните result и выведите RESULT <result>.',
+                    'check': 'Проверяются два набора title и priority. Сравниваются три строки целиком. Обязательны '
+                             'декоратор, wrapper с *args и **kwargs, передача аргументов дальше и return результата.'},
+       'requirements': {'items': ['функция-декоратор',
+                                  'wrapper(*args, **kwargs)',
+                                  'operation(*args, **kwargs)',
+                                  'return result',
+                                  '@log_call'],
+                        'nodes': ['FunctionDef', 'JoinedStr'],
+                        'calls': ['print'],
+                        'names': ['args', 'kwargs', 'operation']},
+       'starter_code': '# title и priority уже созданы\n'
+                       '# Напишите log_call, декорируйте create_task и выведите RESULT\n',
+       'tests': [{'name': 'Python',
+                  'namespace': {'title': 'Python', 'priority': 3},
+                  'expected': 'START create_task\nDONE Python:3\nRESULT Python:3',
+                  'assert': 'stdout'},
+                 {'name': 'README',
+                  'namespace': {'title': 'README', 'priority': 5},
+                  'expected': 'START create_task\nDONE README:5\nRESULT README:5',
+                  'assert': 'stdout'}],
+       'reference_code': 'def log_call(operation):\n'
+                         '    def wrapper(*args, **kwargs):\n'
+                         "        print(f'START {operation.__name__}')\n"
+                         '        result = operation(*args, **kwargs)\n'
+                         "        print(f'DONE {result}')\n"
+                         '        return result\n'
+                         '    return wrapper\n'
+                         '\n'
+                         '@log_call\n'
+                         'def create_task(title, priority=2):\n'
+                         "    return f'{title}:{priority}'\n"
+                         '\n'
+                         'result = create_task(title, priority=priority)\n'
+                         "print(f'RESULT {result}')\n"}],
+ 29: [{'title': 'Конкретный except для приоритета',
+       'level': 'easy',
+       'mode': 'solve',
+       'prompt': 'В try выполните int(raw_priority). Перехватите только ValueError и верните None. После успешного '
+                 'преобразования верните число, если оно находится от 1 до 5 включительно; иначе верните None. Не '
+                 'используйте общий except Exception.',
+       'contract': {'given': 'Автопроверка вызывает solve(raw_priority). raw_priority — строка, которую нужно '
+                             'преобразовать в целое число.',
+                    'todo': 'В try выполните int(raw_priority). Перехватите только ValueError и верните None. После '
+                            'успешного преобразования верните число, если оно находится от 1 до 5 включительно; иначе '
+                            'верните None. Не используйте общий except Exception.',
+                    'check': 'Проверяются числа 1 и 5, значения вне диапазона, пустая строка и произвольный текст. '
+                             'Сравнивается return.'},
+       'requirements': {'items': ['try вокруг int()', 'except ValueError', 'проверка диапазона 1-5'],
+                        'nodes': ['FunctionDef', 'Try', 'If'],
+                        'calls': ['int']},
+       'starter_code': 'def solve(raw_priority):\n'
+                       '    # Преобразуйте строку в try\n'
+                       '    # Перехватите ValueError\n'
+                       '    # Проверьте диапазон 1-5\n'
+                       '    pass\n',
+       'tests': [{'name': 'нижняя граница', 'args': ['1'], 'expected': 1},
+                 {'name': 'верхняя граница', 'args': ['5'], 'expected': 5},
+                 {'name': 'вне диапазона', 'args': ['8'], 'expected': None},
+                 {'name': 'текст', 'args': ['high'], 'expected': None},
+                 {'name': 'пустая строка', 'args': [''], 'expected': None}],
+       'reference_code': 'def solve(raw_priority):\n'
+                         '    try:\n'
+                         '        priority = int(raw_priority)\n'
+                         '    except ValueError:\n'
+                         '        return None\n'
+                         '    if 1 <= priority <= 5:\n'
+                         '        return priority\n'
+                         '    return None\n'}],
+ 30: [{'title': 'Собственная ошибка и обязательное завершение',
+       'level': 'medium',
+       'mode': 'script',
+       'prompt': 'Объявите UnknownCommandError как подкласс ValueError. Объявите execute(command): для add верните '
+                 'Задача добавлена, для list верните Список задач, иначе выполните raise UnknownCommandError(command). '
+                 'В try вызовите execute. В except UnknownCommandError выведите ERROR <command>. В else выведите OK '
+                 '<result>. В finally всегда выведите CLEANUP.',
+       'contract': {'given': 'Интерпретатор создаёт command. Допустимы add, list и неизвестные строки.',
+                    'todo': 'Объявите UnknownCommandError как подкласс ValueError. Объявите execute(command): для add '
+                            'верните Задача добавлена, для list верните Список задач, иначе выполните raise '
+                            'UnknownCommandError(command). В try вызовите execute. В except UnknownCommandError '
+                            'выведите ERROR <command>. В else выведите OK <result>. В finally всегда выведите CLEANUP.',
+                    'check': 'Проверяются успешные add и list, а также неизвестная команда. Каждый запуск должен дать '
+                             'ровно две строки. CLEANUP обязана появиться во всех сценариях.'},
+       'requirements': {'items': ['собственный класс ошибки',
+                                  'raise UnknownCommandError',
+                                  'except конкретного типа',
+                                  'else для успеха',
+                                  'finally для общего действия'],
+                        'nodes': ['ClassDef', 'FunctionDef', 'If', 'Try', 'Raise'],
+                        'calls': ['print']},
+       'starter_code': '# command уже создана\n'
+                       '# Объявите UnknownCommandError и execute\n'
+                       '# Обработайте вызов через try / except / else / finally\n',
+       'tests': [{'name': 'add',
+                  'namespace': {'command': 'add'},
+                  'expected': 'OK Задача добавлена\nCLEANUP',
+                  'assert': 'stdout'},
+                 {'name': 'list',
+                  'namespace': {'command': 'list'},
+                  'expected': 'OK Список задач\nCLEANUP',
+                  'assert': 'stdout'},
+                 {'name': 'unknown',
+                  'namespace': {'command': 'remove'},
+                  'expected': 'ERROR remove\nCLEANUP',
+                  'assert': 'stdout'}],
+       'reference_code': 'class UnknownCommandError(ValueError):\n'
+                         '    pass\n'
+                         '\n'
+                         'def execute(command):\n'
+                         "    if command == 'add':\n"
+                         "        return 'Задача добавлена'\n"
+                         "    if command == 'list':\n"
+                         "        return 'Список задач'\n"
+                         '    raise UnknownCommandError(command)\n'
+                         '\n'
+                         'try:\n'
+                         '    result = execute(command)\n'
+                         'except UnknownCommandError:\n'
+                         "    print(f'ERROR {command}')\n"
+                         'else:\n'
+                         "    print(f'OK {result}')\n"
+                         'finally:\n'
+                         "    print('CLEANUP')\n"}],
+ 36: [{'title': 'Первый объект Task',
+       'level': 'easy',
+       'mode': 'script',
+       'prompt': 'Объявите класс Task. В __init__(self, task_id, title, priority) сохраните id, очищенный title, '
+                 'priority и done=False в атрибутах объекта. Создайте task из подготовленных значений. Выведите '
+                 'task.id, task.title, task.priority и task.done — каждое значение с новой строки.',
+       'contract': {'given': 'Интерпретатор создаёт task_id, title и priority. Значения меняются в проверках.',
+                    'todo': 'Объявите класс Task. В __init__(self, task_id, title, priority) сохраните id, очищенный '
+                            'title, priority и done=False в атрибутах объекта. Создайте task из подготовленных '
+                            'значений. Выведите task.id, task.title, task.priority и task.done — каждое значение с '
+                            'новой строки.',
+                    'check': 'Проверяются два набора данных и заголовок с пробелами. Сравниваются четыре строки '
+                             'целиком. Обязательны класс, __init__, self и title.strip().'},
+       'requirements': {'items': ['класс Task', '__init__ с self', 'четыре атрибута экземпляра', 'очистка title'],
+                        'nodes': ['ClassDef'],
+                        'attributes': ['strip'],
+                        'calls': ['print']},
+       'starter_code': '# task_id, title и priority уже созданы\n'
+                       '# Опишите Task, создайте объект и выведите четыре атрибута\n',
+       'tests': [{'name': 'первая задача',
+                  'namespace': {'task_id': 1, 'title': '  Python  ', 'priority': 2},
+                  'expected': '1\nPython\n2\nFalse',
+                  'assert': 'stdout'},
+                 {'name': 'вторая задача',
+                  'namespace': {'task_id': 7, 'title': 'README', 'priority': 5},
+                  'expected': '7\nREADME\n5\nFalse',
+                  'assert': 'stdout'}],
+       'reference_code': 'class Task:\n'
+                         '    def __init__(self, task_id, title, priority):\n'
+                         '        self.id = task_id\n'
+                         '        self.title = title.strip()\n'
+                         '        self.priority = priority\n'
+                         '        self.done = False\n'
+                         '\n'
+                         'task = Task(task_id, title, priority)\n'
+                         'print(task.id)\n'
+                         'print(task.title)\n'
+                         'print(task.priority)\n'
+                         'print(task.done)\n'}],
+ 37: [{'title': 'Методы и читаемое представление',
+       'level': 'medium',
+       'mode': 'script',
+       'prompt': 'Объявите Task с id, title и done=False. Метод rename(new_title) должен сохранять new_title.strip(). '
+                 'Метод mark_done() устанавливает done=True. Метод __str__ возвращает строку #<id> | <title> | open '
+                 'для незавершённой задачи и #<id> | <title> | done для завершённой. Создайте объект, вызовите '
+                 'rename(next_title), при истинном should_complete вызовите mark_done(), затем напечатайте объект.',
+       'contract': {'given': 'Интерпретатор создаёт task_id, title, next_title и should_complete.',
+                    'todo': 'Объявите Task с id, title и done=False. Метод rename(new_title) должен сохранять '
+                            'new_title.strip(). Метод mark_done() устанавливает done=True. Метод __str__ возвращает '
+                            'строку #<id> | <title> | open для незавершённой задачи и #<id> | <title> | done для '
+                            'завершённой. Создайте объект, вызовите rename(next_title), при истинном should_complete '
+                            'вызовите mark_done(), затем напечатайте объект.',
+                    'check': 'Проверяются завершённая и открытая задачи. Сравнивается одна итоговая строка. '
+                             'Обязательны два предметных метода и __str__.'},
+       'requirements': {'items': ['rename', 'mark_done', '__str__', 'изменение состояния конкретного объекта'],
+                        'nodes': ['ClassDef', 'If', 'IfExp', 'JoinedStr'],
+                        'attributes': ['strip', 'rename', 'mark_done'],
+                        'calls': ['print']},
+       'starter_code': '# Все входные значения уже созданы\n# Опишите Task, измените объект и напечатайте его\n',
+       'tests': [{'name': 'открытая задача',
+                  'namespace': {'task_id': 2,
+                                'title': 'Черновик',
+                                'next_title': '  README  ',
+                                'should_complete': False},
+                  'expected': '#2 | README | open',
+                  'assert': 'stdout'},
+                 {'name': 'завершённая задача',
+                  'namespace': {'task_id': 5, 'title': 'Код', 'next_title': 'Тесты', 'should_complete': True},
+                  'expected': '#5 | Тесты | done',
+                  'assert': 'stdout'}],
+       'reference_code': 'class Task:\n'
+                         '    def __init__(self, task_id, title):\n'
+                         '        self.id = task_id\n'
+                         '        self.title = title\n'
+                         '        self.done = False\n'
+                         '\n'
+                         '    def rename(self, new_title):\n'
+                         '        self.title = new_title.strip()\n'
+                         '\n'
+                         '    def mark_done(self):\n'
+                         '        self.done = True\n'
+                         '\n'
+                         '    def __str__(self):\n'
+                         "        status = 'done' if self.done else 'open'\n"
+                         "        return f'#{self.id} | {self.title} | {status}'\n"
+                         '\n'
+                         'task = Task(task_id, title)\n'
+                         'task.rename(next_title)\n'
+                         'if should_complete:\n'
+                         '    task.mark_done()\n'
+                         'print(task)\n'}],
+ 38: [{'title': 'Property защищает приоритет',
+       'level': 'medium',
+       'mode': 'script',
+       'prompt': 'Объявите Task. В __init__ создайте _priority и присвойте начальное значение через публичное свойство '
+                 'priority. Getter возвращает _priority. Setter разрешает только числа от 1 до 5 и иначе выполняет '
+                 'raise ValueError с текстом priority должен быть от 1 до 5. Создайте task. В try присвойте '
+                 'next_priority. В except ValueError выведите ERROR <текст ошибки>. После try выведите PRIORITY '
+                 '<сохранённое значение>.',
+       'contract': {'given': 'Интерпретатор создаёт initial_priority и next_priority. initial_priority всегда от 1 до '
+                             '5. next_priority может быть корректным или выходить за диапазон.',
+                    'todo': 'Объявите Task. В __init__ создайте _priority и присвойте начальное значение через '
+                            'публичное свойство priority. Getter возвращает _priority. Setter разрешает только числа '
+                            'от 1 до 5 и иначе выполняет raise ValueError с текстом priority должен быть от 1 до 5. '
+                            'Создайте task. В try присвойте next_priority. В except ValueError выведите ERROR <текст '
+                            'ошибки>. После try выведите PRIORITY <сохранённое значение>.',
+                    'check': 'Проверяются корректное изменение и два некорректных значения. При ошибке старое значение '
+                             'должно сохраниться. Сравнивается весь вывод.'},
+       'requirements': {'items': ['закрытый атрибут _priority',
+                                  'getter и setter',
+                                  'проверка 1-5',
+                                  'старое значение сохраняется при ошибке'],
+                        'nodes': ['ClassDef', 'If', 'Try', 'Raise', 'JoinedStr'],
+                        'names': ['property'],
+                        'calls': ['print']},
+       'starter_code': '# initial_priority и next_priority уже созданы\n'
+                       '# Опишите Task с property и безопасно измените priority\n',
+       'tests': [{'name': 'корректное изменение',
+                  'namespace': {'initial_priority': 2, 'next_priority': 5},
+                  'expected': 'PRIORITY 5',
+                  'assert': 'stdout'},
+                 {'name': 'слишком большое',
+                  'namespace': {'initial_priority': 2, 'next_priority': 8},
+                  'expected': 'ERROR priority должен быть от 1 до 5\nPRIORITY 2',
+                  'assert': 'stdout'},
+                 {'name': 'слишком маленькое',
+                  'namespace': {'initial_priority': 4, 'next_priority': 0},
+                  'expected': 'ERROR priority должен быть от 1 до 5\nPRIORITY 4',
+                  'assert': 'stdout'}],
+       'reference_code': 'class Task:\n'
+                         '    def __init__(self, priority):\n'
+                         '        self._priority = 1\n'
+                         '        self.priority = priority\n'
+                         '\n'
+                         '    @property\n'
+                         '    def priority(self):\n'
+                         '        return self._priority\n'
+                         '\n'
+                         '    @priority.setter\n'
+                         '    def priority(self, value):\n'
+                         '        if not 1 <= value <= 5:\n'
+                         "            raise ValueError('priority должен быть от 1 до 5')\n"
+                         '        self._priority = value\n'
+                         '\n'
+                         'task = Task(initial_priority)\n'
+                         'try:\n'
+                         '    task.priority = next_priority\n'
+                         'except ValueError as error:\n'
+                         "    print(f'ERROR {error}')\n"
+                         "print(f'PRIORITY {task.priority}')\n"}],
+ 40: [{'title': 'Сервис зависит от контракта хранилища',
+       'level': 'medium',
+       'mode': 'script',
+       'prompt': 'Объявите MemoryStorage: __init__ сохраняет отдельную копию initial, load() возвращает копию данных, '
+                 'save(items) сохраняет копию items. Объявите PlannerService(storage): add_task(title) загружает '
+                 'список, добавляет title.strip(), сохраняет список через storage и возвращает добавленный заголовок; '
+                 'list_tasks() возвращает storage.load(). Создайте storage из initial_titles и service через передачу '
+                 'зависимости. Добавьте new_title. Выведите добавленный заголовок, затем итоговый список.',
+       'contract': {'given': 'Интерпретатор создаёт initial_titles — список строк и new_title — строку с возможными '
+                             'пробелами.',
+                    'todo': 'Объявите MemoryStorage: __init__ сохраняет отдельную копию initial, load() возвращает '
+                            'копию данных, save(items) сохраняет копию items. Объявите PlannerService(storage): '
+                            'add_task(title) загружает список, добавляет title.strip(), сохраняет список через storage '
+                            'и возвращает добавленный заголовок; list_tasks() возвращает storage.load(). Создайте '
+                            'storage из initial_titles и service через передачу зависимости. Добавьте new_title. '
+                            'Выведите добавленный заголовок, затем итоговый список.',
+                    'check': 'Проверяются пустое и заполненное хранилища. Сравниваются две строки. PlannerService не '
+                             'должен наследоваться от MemoryStorage и не должен обращаться к его внутреннему списку '
+                             'напрямую.'},
+       'requirements': {'items': ['MemoryStorage отвечает только за данные',
+                                  'PlannerService получает storage через конструктор',
+                                  'load и save вместо доступа к _items',
+                                  'копии списков на границе'],
+                        'nodes': ['ClassDef'],
+                        'attributes': ['copy', 'append', 'strip', 'load', 'save'],
+                        'calls': ['print']},
+       'starter_code': '# initial_titles и new_title уже созданы\n'
+                       '# Опишите MemoryStorage и PlannerService, затем выполните сценарий\n',
+       'tests': [{'name': 'заполненное хранилище',
+                  'namespace': {'initial_titles': ['Python', 'Git'], 'new_title': '  SQL  '},
+                  'expected': "SQL\n['Python', 'Git', 'SQL']",
+                  'assert': 'stdout'},
+                 {'name': 'пустое хранилище',
+                  'namespace': {'initial_titles': [], 'new_title': 'README'},
+                  'expected': "README\n['README']",
+                  'assert': 'stdout'}],
+       'reference_code': 'class MemoryStorage:\n'
+                         '    def __init__(self, initial):\n'
+                         '        self._items = initial.copy()\n'
+                         '\n'
+                         '    def load(self):\n'
+                         '        return self._items.copy()\n'
+                         '\n'
+                         '    def save(self, items):\n'
+                         '        self._items = items.copy()\n'
+                         '\n'
+                         '\n'
+                         'class PlannerService:\n'
+                         '    def __init__(self, storage):\n'
+                         '        self.storage = storage\n'
+                         '\n'
+                         '    def add_task(self, title):\n'
+                         '        items = self.storage.load()\n'
+                         '        clean_title = title.strip()\n'
+                         '        items.append(clean_title)\n'
+                         '        self.storage.save(items)\n'
+                         '        return clean_title\n'
+                         '\n'
+                         '    def list_tasks(self):\n'
+                         '        return self.storage.load()\n'
+                         '\n'
+                         'storage = MemoryStorage(initial_titles)\n'
+                         'service = PlannerService(storage)\n'
+                         'added = service.add_task(new_title)\n'
+                         'print(added)\n'
+                         'print(service.list_tasks())\n'}]}
 
 def get_code_tasks(track_id: str, filename: str) -> list[dict[str, Any]]:
     """Возвращает задачи редактора только для тем, проверяемых без доступа к ОС."""
-    match = re.match(r"^(\d{2})\s+-\s+", filename)
+    match = re.match(r"^(\d+)\s+-\s+", filename)
     if match is None:
         return []
 
