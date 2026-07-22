@@ -25,6 +25,7 @@ ASYNC_TRACK_ALIASES = (
 DEPLOY_TRACK = "Docker, CI/CD и первый стабильный деплой - Deployable StudyHub"
 DEPLOY_TRACK_ALIASES = (
     DEPLOY_TRACK,
+    DEPLOY_TRACK.replace("CI/CD", "CI-CD"),
     "Docker, CI/CD и деплой - Deployable StudyHub",
     "Docker и CI/CD - Deployable StudyHub",
 )
