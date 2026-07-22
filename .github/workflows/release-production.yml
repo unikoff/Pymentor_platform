@@ -60,7 +60,12 @@ jobs:
           if ! git diff --cached --quiet; then
             git commit -m "build: frontend for ${SOURCE_SHA} [skip ci]"
           fi
-          git push origin HEAD:production
+          if git ls-remote --exit-code --heads origin production >/dev/null 2>&1; then
+            git fetch --no-tags origin production
+            git push --force-with-lease=refs/heads/production:"$(git rev-parse origin/production)" origin HEAD:production
+          else
+            git push origin HEAD:production
+          fi
 
       - name: Wait for cron deployment and verify production
         run: |
