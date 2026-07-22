@@ -22,6 +22,12 @@ ASYNC_TRACK_ALIASES = (
     "Асинхронность, FastAPI и Async SQLAlchemy - Async StudyHub",
     "Асинхронность и Async SQLAlchemy - Async StudyHub",
 )
+DEPLOY_TRACK = "Docker, CI/CD и первый стабильный деплой - Deployable StudyHub"
+DEPLOY_TRACK_ALIASES = (
+    DEPLOY_TRACK,
+    "Docker, CI/CD и деплой - Deployable StudyHub",
+    "Docker и CI/CD - Deployable StudyHub",
+)
 
 
 def _contract(given: str, todo: str, check: str) -> dict[str, str]:
@@ -4538,6 +4544,804 @@ ASYNC_CODE_TASKS: dict[int, list[dict[str, Any]]] = {141: [{'title': 'Разде
                           "        'n_plus_one': n_plus_one,\n"
                           '    }\n'}]}
 
+DEPLOY_CODE_TASKS: dict[int, list[dict[str, Any]]] = {166: [{'title': 'Диагностика process и port',
+        'level': 'easy',
+        'mode': 'solve',
+        'prompt': 'Найдите running process, который слушает target_port. Если process не найден, верните status '
+                  'free, pid None и shutdown graceful=False. Если найден, верните status occupied и его pid. Для '
+                  "SIGINT и SIGTERM shutdown graceful=True и final_state='stopped'. Для SIGKILL shutdown "
+                  "graceful=False и final_state='killed'. Не изменяйте входной список.",
+        'contract': {'given': 'Автопроверка вызывает solve(processes, target_port, signal). processes — список '
+                              'словарей pid, name, port и state. signal равен SIGINT, SIGTERM или SIGKILL.',
+                     'todo': 'Найдите running process, который слушает target_port. Если process не найден, верните '
+                             'status free, pid None и shutdown graceful=False. Если найден, верните status occupied '
+                             "и его pid. Для SIGINT и SIGTERM shutdown graceful=True и final_state='stopped'. Для "
+                             "SIGKILL shutdown graceful=False и final_state='killed'. Не изменяйте входной список.",
+                     'check': 'Платформа проверит свободный port, занятый port, корректный SIGTERM и принудительный '
+                              'SIGKILL. Stopped process не должен считаться слушающим.'},
+        'requirements': {'items': ['поиск только running process',
+                                   'сопоставление target_port',
+                                   'SIGINT и SIGTERM как graceful',
+                                   'SIGKILL как forced'],
+                         'names': ['processes', 'target_port', 'signal', 'found', 'graceful', 'final_state'],
+                         'nodes': ['FunctionDef', 'For', 'If', 'BoolOp']},
+        'starter_code': 'def solve(processes, target_port, signal):\n'
+                        '    # Найдите process и определите результат сигнала\n'
+                        '    pass\n',
+        'tests': [{'name': 'port свободен',
+                   'args': [[{'pid': 10, 'name': 'uvicorn', 'port': 8000, 'state': 'stopped'}], 8000, 'SIGTERM'],
+                   'expected': {'status': 'free', 'pid': None, 'graceful': False, 'final_state': None}},
+                  {'name': 'graceful SIGTERM',
+                   'args': [[{'pid': 11, 'name': 'uvicorn', 'port': 8000, 'state': 'running'},
+                             {'pid': 12, 'name': 'worker', 'port': 9000, 'state': 'running'}],
+                            8000,
+                            'SIGTERM'],
+                   'expected': {'status': 'occupied', 'pid': 11, 'graceful': True, 'final_state': 'stopped'}},
+                  {'name': 'принудительный SIGKILL',
+                   'args': [[{'pid': 21, 'name': 'uvicorn', 'port': 8080, 'state': 'running'}], 8080, 'SIGKILL'],
+                   'expected': {'status': 'occupied', 'pid': 21, 'graceful': False, 'final_state': 'killed'}}],
+        'reference_code': 'def solve(processes, target_port, signal):\n'
+                          '    found = None\n'
+                          '    for process in processes:\n'
+                          "        if process['state'] == 'running' and process['port'] == target_port:\n"
+                          '            found = process\n'
+                          '            break\n'
+                          '    if found is None:\n'
+                          '        return {\n'
+                          "            'status': 'free',\n"
+                          "            'pid': None,\n"
+                          "            'graceful': False,\n"
+                          "            'final_state': None,\n"
+                          '        }\n'
+                          "    graceful = signal in ('SIGINT', 'SIGTERM')\n"
+                          "    final_state = 'stopped' if graceful else 'killed'\n"
+                          '    return {\n'
+                          "        'status': 'occupied',\n"
+                          "        'pid': found['pid'],\n"
+                          "        'graceful': graceful,\n"
+                          "        'final_state': final_state,\n"
+                          '    }\n'}],
+ 167: [{'title': 'Сборка Settings из environment',
+        'level': 'easy',
+        'mode': 'solve',
+        'prompt': 'Соберите config: значения env имеют приоритет над defaults. Пустая строка после strip считается '
+                  'отсутствующим значением. Верните config, missing и safe_preview. missing содержит обязательные '
+                  'ключи без значения в порядке required. safe_preview содержит APP_ENV, LOG_LEVEL и DATABASE_URL, '
+                  "но DATABASE_URL нужно заменить строкой 'configured', если значение есть, иначе 'missing'. "
+                  'SECRET_KEY запрещено включать в safe_preview.',
+        'contract': {'given': 'Автопроверка вызывает solve(env, defaults, required). env и defaults — словари '
+                              'строковых значений. required — список обязательных ключей.',
+                     'todo': 'Соберите config: значения env имеют приоритет над defaults. Пустая строка после strip '
+                             'считается отсутствующим значением. Верните config, missing и safe_preview. missing '
+                             'содержит обязательные ключи без значения в порядке required. safe_preview содержит '
+                             'APP_ENV, LOG_LEVEL и DATABASE_URL, но DATABASE_URL нужно заменить строкой '
+                             "'configured', если значение есть, иначе 'missing'. SECRET_KEY запрещено включать в "
+                             'safe_preview.',
+                     'check': 'Проверяются default values, environment override, пустая строка и отсутствующий '
+                              'SECRET_KEY. Секрет не должен появиться в preview.'},
+        'requirements': {'items': ['environment имеет приоритет',
+                                   'пустые строки удаляются',
+                                   'missing сохраняет порядок required',
+                                   'SECRET_KEY отсутствует в preview'],
+                         'names': ['env', 'defaults', 'required', 'config', 'missing', 'safe_preview'],
+                         'nodes': ['FunctionDef', 'For', 'If'],
+                         'calls': ['str'],
+                         'attributes': ['items', 'strip', 'pop', 'append', 'get']},
+        'starter_code': 'def solve(env, defaults, required):\n'
+                        '    # Соберите config, missing и безопасный preview\n'
+                        '    pass\n',
+        'tests': [{'name': 'env переопределяет defaults',
+                   'args': [{'APP_ENV': 'production', 'DATABASE_URL': 'postgresql://prod', 'SECRET_KEY': 'secret'},
+                            {'APP_ENV': 'development', 'LOG_LEVEL': 'INFO'},
+                            ['DATABASE_URL', 'SECRET_KEY']],
+                   'expected': {'config': {'APP_ENV': 'production',
+                                           'LOG_LEVEL': 'INFO',
+                                           'DATABASE_URL': 'postgresql://prod',
+                                           'SECRET_KEY': 'secret'},
+                                'missing': [],
+                                'safe_preview': {'APP_ENV': 'production',
+                                                 'LOG_LEVEL': 'INFO',
+                                                 'DATABASE_URL': 'configured'}}},
+                  {'name': 'пустой secret',
+                   'args': [{'SECRET_KEY': '   '},
+                            {'APP_ENV': 'test', 'LOG_LEVEL': 'DEBUG', 'DATABASE_URL': 'postgresql://test'},
+                            ['DATABASE_URL', 'SECRET_KEY']],
+                   'expected': {'config': {'APP_ENV': 'test',
+                                           'LOG_LEVEL': 'DEBUG',
+                                           'DATABASE_URL': 'postgresql://test'},
+                                'missing': ['SECRET_KEY'],
+                                'safe_preview': {'APP_ENV': 'test',
+                                                 'LOG_LEVEL': 'DEBUG',
+                                                 'DATABASE_URL': 'configured'}}}],
+        'reference_code': 'def solve(env, defaults, required):\n'
+                          '    config = {}\n'
+                          '    for key, value in defaults.items():\n'
+                          "        if str(value).strip() != '':\n"
+                          '            config[key] = value\n'
+                          '    for key, value in env.items():\n'
+                          "        if str(value).strip() == '':\n"
+                          '            config.pop(key, None)\n'
+                          '        else:\n'
+                          '            config[key] = value\n'
+                          '    missing = []\n'
+                          '    for key in required:\n'
+                          '        if key not in config:\n'
+                          '            missing.append(key)\n'
+                          "    database_state = 'configured' if 'DATABASE_URL' in config else 'missing'\n"
+                          '    safe_preview = {\n'
+                          "        'APP_ENV': config.get('APP_ENV'),\n"
+                          "        'LOG_LEVEL': config.get('LOG_LEVEL'),\n"
+                          "        'DATABASE_URL': database_state,\n"
+                          '    }\n'
+                          '    return {\n'
+                          "        'config': config,\n"
+                          "        'missing': missing,\n"
+                          "        'safe_preview': safe_preview,\n"
+                          '    }\n'}],
+ 168: [{'title': 'Безопасное структурированное событие',
+        'level': 'easy',
+        'mode': 'solve',
+        'prompt': 'Верните словарь level, message и context. level приведите к верхнему регистру. Из context '
+                  'исключите все секретные ключи. Оставшиеся ключи отсортируйте по алфавиту и сохраните значения без '
+                  'изменения. message не должна содержать traceback или секреты из удалённых полей.',
+        'contract': {'given': 'Автопроверка вызывает solve(level, message, context). context — словарь произвольных '
+                              'полей request. Секретными считаются password, token, access_token, refresh_token, '
+                              'secret_key и authorization без учёта регистра.',
+                     'todo': 'Верните словарь level, message и context. level приведите к верхнему регистру. Из '
+                             'context исключите все секретные ключи. Оставшиеся ключи отсортируйте по алфавиту и '
+                             'сохраните значения без изменения. message не должна содержать traceback или секреты из '
+                             'удалённых полей.',
+                     'check': 'Проверяются обычный request, несколько secret fields и регистр ключей. Сравнивается '
+                              'точное безопасное событие.'},
+        'requirements': {'items': ['уровень в верхнем регистре',
+                                   'secret keys без учёта регистра',
+                                   'стабильный порядок context',
+                                   'безопасное событие'],
+                         'names': ['level', 'message', 'context', 'secret_keys', 'safe_context'],
+                         'nodes': ['FunctionDef', 'For', 'If', 'Set'],
+                         'calls': ['sorted'],
+                         'attributes': ['lower', 'upper']},
+        'starter_code': 'def solve(level, message, context):\n    # Удалите секреты и соберите log event\n    pass\n',
+        'tests': [{'name': 'request event',
+                   'args': ['info',
+                            'request_completed',
+                            {'request_id': 'req-7', 'path': '/tasks', 'status': 200, 'user_id': 4}],
+                   'expected': {'level': 'INFO',
+                                'message': 'request_completed',
+                                'context': {'path': '/tasks', 'request_id': 'req-7', 'status': 200, 'user_id': 4}}},
+                  {'name': 'секреты удалены',
+                   'args': ['error',
+                            'login_failed',
+                            {'Request_ID': 'req-8',
+                             'password': 'plain',
+                             'Authorization': 'Bearer token',
+                             'refresh_token': 'hidden',
+                             'email': 'user@example.com'}],
+                   'expected': {'level': 'ERROR',
+                                'message': 'login_failed',
+                                'context': {'Request_ID': 'req-8', 'email': 'user@example.com'}}}],
+        'reference_code': 'def solve(level, message, context):\n'
+                          '    secret_keys = {\n'
+                          "        'password',\n"
+                          "        'token',\n"
+                          "        'access_token',\n"
+                          "        'refresh_token',\n"
+                          "        'secret_key',\n"
+                          "        'authorization',\n"
+                          '    }\n'
+                          '    safe_context = {}\n'
+                          '    for key in sorted(context):\n'
+                          '        if key.lower() not in secret_keys:\n'
+                          '            safe_context[key] = context[key]\n'
+                          '    return {\n'
+                          "        'level': level.upper(),\n"
+                          "        'message': message,\n"
+                          "        'context': safe_context,\n"
+                          '    }\n'}],
+ 169: [{'title': 'Liveness, readiness и draining',
+        'level': 'easy',
+        'mode': 'solve',
+        'prompt': 'Верните health_status, ready_status и state. health_status равен 200, если process_running=True, '
+                  'иначе 503. ready_status равен 200 только когда process работает, startup завершён, database '
+                  'доступна и draining=False; иначе 503. state выбирается в порядке: stopped, starting, draining, '
+                  'dependency_failed, ready.',
+        'contract': {'given': 'Автопроверка вызывает solve(process_running, startup_complete, database_ok, '
+                              'draining). Все аргументы имеют тип bool.',
+                     'todo': 'Верните health_status, ready_status и state. health_status равен 200, если '
+                             'process_running=True, иначе 503. ready_status равен 200 только когда process работает, '
+                             'startup завершён, database доступна и draining=False; иначе 503. state выбирается в '
+                             'порядке: stopped, starting, draining, dependency_failed, ready.',
+                     'check': 'Проверяются stopped, startup, недоступная database, draining и ready. Health может '
+                              'быть 200, когда readiness уже 503.'},
+        'requirements': {'items': ['health зависит только от process',
+                                   'readiness зависит от startup и database',
+                                   'draining выключает readiness',
+                                   'явный lifecycle state'],
+                         'names': ['process_running',
+                                   'startup_complete',
+                                   'database_ok',
+                                   'draining',
+                                   'health_status',
+                                   'ready_status',
+                                   'state'],
+                         'nodes': ['FunctionDef', 'If', 'BoolOp', 'IfExp']},
+        'starter_code': 'def solve(process_running, startup_complete, database_ok, draining):\n'
+                        '    # Определите liveness, readiness и lifecycle state\n'
+                        '    pass\n',
+        'tests': [{'name': 'process остановлен',
+                   'args': [False, False, False, False],
+                   'expected': {'health_status': 503, 'ready_status': 503, 'state': 'stopped'}},
+                  {'name': 'startup',
+                   'args': [True, False, True, False],
+                   'expected': {'health_status': 200, 'ready_status': 503, 'state': 'starting'}},
+                  {'name': 'database недоступна',
+                   'args': [True, True, False, False],
+                   'expected': {'health_status': 200, 'ready_status': 503, 'state': 'dependency_failed'}},
+                  {'name': 'graceful draining',
+                   'args': [True, True, True, True],
+                   'expected': {'health_status': 200, 'ready_status': 503, 'state': 'draining'}},
+                  {'name': 'готов',
+                   'args': [True, True, True, False],
+                   'expected': {'health_status': 200, 'ready_status': 200, 'state': 'ready'}}],
+        'reference_code': 'def solve(process_running, startup_complete, database_ok, draining):\n'
+                          '    health_status = 200 if process_running else 503\n'
+                          '    ready = process_running and startup_complete and database_ok and not draining\n'
+                          '    ready_status = 200 if ready else 503\n'
+                          '    if not process_running:\n'
+                          "        state = 'stopped'\n"
+                          '    elif not startup_complete:\n'
+                          "        state = 'starting'\n"
+                          '    elif draining:\n'
+                          "        state = 'draining'\n"
+                          '    elif not database_ok:\n'
+                          "        state = 'dependency_failed'\n"
+                          '    else:\n'
+                          "        state = 'ready'\n"
+                          '    return {\n'
+                          "        'health_status': health_status,\n"
+                          "        'ready_status': ready_status,\n"
+                          "        'state': state,\n"
+                          '    }\n'}],
+ 171: [{'title': 'Image, container и process',
+        'level': 'easy',
+        'mode': 'solve',
+        'prompt': 'Начальные значения image_exists=False, container_exists=False, process_running=False, '
+                  'runtime_file=False. build_image создаёт image. create_container возможно только при image_exists. '
+                  'start запускает process только внутри существующего container. write_file создаёт runtime_file '
+                  'только при running process. stop останавливает process. remove_container удаляет container и '
+                  'runtime_file, но image сохраняется. create_from_same_image создаёт новый container без '
+                  'runtime_file, если image существует. Верните все четыре flags.',
+        'contract': {'given': 'Автопроверка вызывает solve(events). events — список строк build_image, '
+                              'create_container, start, write_file, stop, remove_container и create_from_same_image.',
+                     'todo': 'Начальные значения image_exists=False, container_exists=False, process_running=False, '
+                             'runtime_file=False. build_image создаёт image. create_container возможно только при '
+                             'image_exists. start запускает process только внутри существующего container. '
+                             'write_file создаёт runtime_file только при running process. stop останавливает '
+                             'process. remove_container удаляет container и runtime_file, но image сохраняется. '
+                             'create_from_same_image создаёт новый container без runtime_file, если image '
+                             'существует. Верните все четыре flags.',
+                     'check': 'Проверяется сборка без запуска, полный lifecycle и пересоздание из того же image. '
+                              'Файл, созданный только внутри container, не должен пережить remove.'},
+        'requirements': {'items': ['image живёт отдельно от container',
+                                   'process запускается внутри container',
+                                   'runtime file принадлежит container',
+                                   'remove не удаляет image'],
+                         'names': ['events', 'image_exists', 'container_exists', 'process_running', 'runtime_file'],
+                         'nodes': ['FunctionDef', 'For', 'If']},
+        'starter_code': 'def solve(events):\n'
+                        '    image_exists = False\n'
+                        '    container_exists = False\n'
+                        '    process_running = False\n'
+                        '    runtime_file = False\n'
+                        '    # Выполните lifecycle Docker objects\n'
+                        '    pass\n',
+        'tests': [{'name': 'только image',
+                   'args': [['build_image']],
+                   'expected': {'image_exists': True,
+                                'container_exists': False,
+                                'process_running': False,
+                                'runtime_file': False}},
+                  {'name': 'container запущен',
+                   'args': [['build_image', 'create_container', 'start', 'write_file']],
+                   'expected': {'image_exists': True,
+                                'container_exists': True,
+                                'process_running': True,
+                                'runtime_file': True}},
+                  {'name': 'пересоздание теряет runtime file',
+                   'args': [['build_image',
+                             'create_container',
+                             'start',
+                             'write_file',
+                             'stop',
+                             'remove_container',
+                             'create_from_same_image',
+                             'start']],
+                   'expected': {'image_exists': True,
+                                'container_exists': True,
+                                'process_running': True,
+                                'runtime_file': False}}],
+        'reference_code': 'def solve(events):\n'
+                          '    image_exists = False\n'
+                          '    container_exists = False\n'
+                          '    process_running = False\n'
+                          '    runtime_file = False\n'
+                          '    for event in events:\n'
+                          "        if event == 'build_image':\n"
+                          '            image_exists = True\n'
+                          "        elif event in ('create_container', 'create_from_same_image') and image_exists:\n"
+                          '            container_exists = True\n'
+                          '            process_running = False\n'
+                          '            runtime_file = False\n'
+                          "        elif event == 'start' and container_exists:\n"
+                          '            process_running = True\n'
+                          "        elif event == 'write_file' and process_running:\n"
+                          '            runtime_file = True\n'
+                          "        elif event == 'stop':\n"
+                          '            process_running = False\n'
+                          "        elif event == 'remove_container':\n"
+                          '            container_exists = False\n'
+                          '            process_running = False\n'
+                          '            runtime_file = False\n'
+                          '    return {\n'
+                          "        'image_exists': image_exists,\n"
+                          "        'container_exists': container_exists,\n"
+                          "        'process_running': process_running,\n"
+                          "        'runtime_file': runtime_file,\n"
+                          '    }\n'}],
+ 173: [{'title': 'Инвалидация Docker layers',
+        'level': 'easy',
+        'mode': 'solve',
+        'prompt': 'Идите по layers сверху вниз. Первый layer, чей inputs пересекается с changed_inputs, становится '
+                  'cache miss. Все последующие layers тоже miss, даже если их собственные inputs не менялись. '
+                  'Предыдущие layers остаются hit. Верните список словарей name и cache.',
+        'contract': {'given': 'Автопроверка вызывает solve(layers, changed_inputs). layers — список словарей name и '
+                              'inputs. changed_inputs — список изменённых файлов или значений.',
+                     'todo': 'Идите по layers сверху вниз. Первый layer, чей inputs пересекается с changed_inputs, '
+                             'становится cache miss. Все последующие layers тоже miss, даже если их собственные '
+                             'inputs не менялись. Предыдущие layers остаются hit. Верните список словарей name и '
+                             'cache.',
+                     'check': 'Проверяются изменение source, dependency-файла, отсутствие изменений и изменение '
+                              'раннего base input. Порядок layers сохраняется.'},
+        'requirements': {'items': ['первое изменение инвалидирует layer',
+                                   'все следующие layers miss',
+                                   'предыдущие layers hit',
+                                   'порядок сохраняется'],
+                         'names': ['layers', 'changed_inputs', 'changed', 'invalidated', 'result'],
+                         'nodes': ['FunctionDef', 'For', 'If', 'IfExp'],
+                         'calls': ['set'],
+                         'attributes': ['intersection', 'append']},
+        'starter_code': 'def solve(layers, changed_inputs):\n'
+                        '    # Определите cache hit и miss по порядку layers\n'
+                        '    pass\n',
+        'tests': [{'name': 'изменился source',
+                   'args': [[{'name': 'base', 'inputs': ['python:3.12-slim']},
+                             {'name': 'dependencies', 'inputs': ['requirements.txt']},
+                             {'name': 'source', 'inputs': ['app/']},
+                             {'name': 'user', 'inputs': ['Dockerfile:USER']}],
+                            ['app/']],
+                   'expected': [{'name': 'base', 'cache': 'hit'},
+                                {'name': 'dependencies', 'cache': 'hit'},
+                                {'name': 'source', 'cache': 'miss'},
+                                {'name': 'user', 'cache': 'miss'}]},
+                  {'name': 'изменились dependencies',
+                   'args': [[{'name': 'base', 'inputs': ['python:3.12-slim']},
+                             {'name': 'dependencies', 'inputs': ['requirements.txt']},
+                             {'name': 'source', 'inputs': ['app/']}],
+                            ['requirements.txt']],
+                   'expected': [{'name': 'base', 'cache': 'hit'},
+                                {'name': 'dependencies', 'cache': 'miss'},
+                                {'name': 'source', 'cache': 'miss'}]},
+                  {'name': 'ничего не изменилось',
+                   'args': [[{'name': 'base', 'inputs': ['python:3.12-slim']},
+                             {'name': 'source', 'inputs': ['app/']}],
+                            []],
+                   'expected': [{'name': 'base', 'cache': 'hit'}, {'name': 'source', 'cache': 'hit'}]}],
+        'reference_code': 'def solve(layers, changed_inputs):\n'
+                          '    changed = set(changed_inputs)\n'
+                          '    invalidated = False\n'
+                          '    result = []\n'
+                          '    for layer in layers:\n'
+                          "        if not invalidated and changed.intersection(layer['inputs']):\n"
+                          '            invalidated = True\n'
+                          '        result.append({\n'
+                          "            'name': layer['name'],\n"
+                          "            'cache': 'miss' if invalidated else 'hit',\n"
+                          '        })\n'
+                          '    return result\n'}],
+ 177: [{'title': 'Service DNS внутри Compose',
+        'level': 'easy',
+        'mode': 'solve',
+        'prompt': 'Если source_service или target_service отсутствует, верните reachable=False и url=None. Если оба '
+                  'существуют, внутренний URL равен target_service:target_port и не использует host published port. '
+                  'Верните reachable=True, internal_url и host_url. host_url существует только когда target_service '
+                  'есть в published_ports и имеет вид localhost:host_port.',
+        'contract': {'given': 'Автопроверка вызывает solve(services, source_service, target_service, target_port, '
+                              'published_ports). services — список имён Compose services. published_ports — словарь '
+                              'service → host port.',
+                     'todo': 'Если source_service или target_service отсутствует, верните reachable=False и '
+                             'url=None. Если оба существуют, внутренний URL равен target_service:target_port и не '
+                             'использует host published port. Верните reachable=True, internal_url и host_url. '
+                             'host_url существует только когда target_service есть в published_ports и имеет вид '
+                             'localhost:host_port.',
+                     'check': 'Проверяются API → db, API → redis, unpublished internal service и неизвестное имя. '
+                              'Внутренний URL запрещено строить через localhost.'},
+        'requirements': {'items': ['проверка существования двух services',
+                                   'service name как hostname',
+                                   'container port внутри сети',
+                                   'published port только для host'],
+                         'names': ['services',
+                                   'source_service',
+                                   'target_service',
+                                   'target_port',
+                                   'published_ports',
+                                   'service_names',
+                                   'internal_url',
+                                   'host_url'],
+                         'nodes': ['FunctionDef', 'If', 'BoolOp', 'JoinedStr'],
+                         'calls': ['set']},
+        'starter_code': 'def solve(services, source_service, target_service, target_port, published_ports):\n'
+                        '    # Соберите внутренний и host URL\n'
+                        '    pass\n',
+        'tests': [{'name': 'API подключается к db',
+                   'args': [['api', 'db', 'redis'], 'api', 'db', 5432, {'api': 8000}],
+                   'expected': {'reachable': True, 'internal_url': 'db:5432', 'host_url': None}},
+                  {'name': 'API опубликован на host',
+                   'args': [['api', 'db'], 'db', 'api', 8000, {'api': 8080}],
+                   'expected': {'reachable': True, 'internal_url': 'api:8000', 'host_url': 'localhost:8080'}},
+                  {'name': 'service отсутствует',
+                   'args': [['api', 'db'], 'api', 'redis', 6379, {'api': 8000}],
+                   'expected': {'reachable': False, 'internal_url': None, 'host_url': None}}],
+        'reference_code': 'def solve(services, source_service, target_service, target_port, published_ports):\n'
+                          '    service_names = set(services)\n'
+                          '    if source_service not in service_names or target_service not in service_names:\n'
+                          '        return {\n'
+                          "            'reachable': False,\n"
+                          "            'internal_url': None,\n"
+                          "            'host_url': None,\n"
+                          '        }\n'
+                          "    internal_url = f'{target_service}:{target_port}'\n"
+                          '    host_url = None\n'
+                          '    if target_service in published_ports:\n'
+                          '        host_url = f"localhost:{published_ports[target_service]}"\n'
+                          '    return {\n'
+                          "        'reachable': True,\n"
+                          "        'internal_url': internal_url,\n"
+                          "        'host_url': host_url,\n"
+                          '    }\n'}],
+ 179: [{'title': 'Lifecycle container и named volume',
+        'level': 'easy',
+        'mode': 'solve',
+        'prompt': 'Начальные flags: volume_exists=False, container_exists=False, database_running=False, '
+                  'row_exists=False. create_volume создаёт volume. start_db создаёт container и запускает database; '
+                  'если volume уже существует, row state сохраняется. write_row возможно только при running database '
+                  'и существующем volume. stop выключает database. remove_container и compose_down удаляют '
+                  'container, но сохраняют volume и row. compose_down_v удаляет container, volume и row. Верните '
+                  'четыре flags.',
+        'contract': {'given': 'Автопроверка вызывает solve(events). events — список строк create_volume, start_db, '
+                              'write_row, stop, remove_container, compose_down и compose_down_v.',
+                     'todo': 'Начальные flags: volume_exists=False, container_exists=False, database_running=False, '
+                             'row_exists=False. create_volume создаёт volume. start_db создаёт container и запускает '
+                             'database; если volume уже существует, row state сохраняется. write_row возможно только '
+                             'при running database и существующем volume. stop выключает database. remove_container '
+                             'и compose_down удаляют container, но сохраняют volume и row. compose_down_v удаляет '
+                             'container, volume и row. Верните четыре flags.',
+                     'check': 'Проверяются recreate с сохранением данных и полный reset через down -v. Named volume '
+                              'не считается backup.'},
+        'requirements': {'items': ['container lifecycle отдельно от volume',
+                                   'compose down сохраняет data',
+                                   'down -v удаляет volume',
+                                   'row живёт вместе с volume'],
+                         'names': ['events', 'volume_exists', 'container_exists', 'database_running', 'row_exists'],
+                         'nodes': ['FunctionDef', 'For', 'If', 'BoolOp']},
+        'starter_code': 'def solve(events):\n'
+                        '    volume_exists = False\n'
+                        '    container_exists = False\n'
+                        '    database_running = False\n'
+                        '    row_exists = False\n'
+                        '    # Выполните lifecycle\n'
+                        '    pass\n',
+        'tests': [{'name': 'данные переживают recreate',
+                   'args': [['create_volume', 'start_db', 'write_row', 'stop', 'remove_container', 'start_db']],
+                   'expected': {'volume_exists': True,
+                                'container_exists': True,
+                                'database_running': True,
+                                'row_exists': True}},
+                  {'name': 'down сохраняет volume',
+                   'args': [['create_volume', 'start_db', 'write_row', 'compose_down']],
+                   'expected': {'volume_exists': True,
+                                'container_exists': False,
+                                'database_running': False,
+                                'row_exists': True}},
+                  {'name': 'down v удаляет данные',
+                   'args': [['create_volume', 'start_db', 'write_row', 'compose_down_v']],
+                   'expected': {'volume_exists': False,
+                                'container_exists': False,
+                                'database_running': False,
+                                'row_exists': False}}],
+        'reference_code': 'def solve(events):\n'
+                          '    volume_exists = False\n'
+                          '    container_exists = False\n'
+                          '    database_running = False\n'
+                          '    row_exists = False\n'
+                          '    for event in events:\n'
+                          "        if event == 'create_volume':\n"
+                          '            volume_exists = True\n'
+                          "        elif event == 'start_db':\n"
+                          '            container_exists = True\n'
+                          '            database_running = True\n'
+                          "        elif event == 'write_row' and database_running and volume_exists:\n"
+                          '            row_exists = True\n'
+                          "        elif event == 'stop':\n"
+                          '            database_running = False\n'
+                          "        elif event in ('remove_container', 'compose_down'):\n"
+                          '            container_exists = False\n'
+                          '            database_running = False\n'
+                          "        elif event == 'compose_down_v':\n"
+                          '            container_exists = False\n'
+                          '            database_running = False\n'
+                          '            volume_exists = False\n'
+                          '            row_exists = False\n'
+                          '    return {\n'
+                          "        'volume_exists': volume_exists,\n"
+                          "        'container_exists': container_exists,\n"
+                          "        'database_running': database_running,\n"
+                          "        'row_exists': row_exists,\n"
+                          '    }\n'}],
+ 180: [{'title': 'Порядок db, migrations и API',
+        'level': 'easy',
+        'mode': 'solve',
+        'prompt': "Верните allowed_step и stack_ready. Если db не started, allowed_step='start_db'. Если db started, "
+                  "но не healthy, allowed_step='wait_db'. Если migration pending, allowed_step='run_migrations'. "
+                  "Если migration failed, allowed_step='stop_deployment'. Если migration success и API не started, "
+                  "allowed_step='start_api'. Иначе allowed_step='serve_traffic'. stack_ready=True только в последнем "
+                  'случае.',
+        'contract': {'given': 'Автопроверка вызывает solve(db_started, db_healthy, migration_status, api_started). '
+                              'migration_status равен pending, success или failed.',
+                     'todo': "Верните allowed_step и stack_ready. Если db не started, allowed_step='start_db'. Если "
+                             "db started, но не healthy, allowed_step='wait_db'. Если migration pending, "
+                             "allowed_step='run_migrations'. Если migration failed, allowed_step='stop_deployment'. "
+                             "Если migration success и API не started, allowed_step='start_api'. Иначе "
+                             "allowed_step='serve_traffic'. stack_ready=True только в последнем случае.",
+                     'check': 'Проверяется каждый этап startup timeline. API нельзя считать готовым до успешных '
+                              'migrations.'},
+        'requirements': {'items': ['database сначала запускается',
+                                   'healthcheck до migrations',
+                                   'failed migration блокирует deploy',
+                                   'traffic только после API'],
+                         'names': ['db_started', 'db_healthy', 'migration_status', 'api_started', 'allowed_step'],
+                         'nodes': ['FunctionDef', 'If']},
+        'starter_code': 'def solve(db_started, db_healthy, migration_status, api_started):\n'
+                        '    # Определите следующий допустимый шаг\n'
+                        '    pass\n',
+        'tests': [{'name': 'database не запущена',
+                   'args': [False, False, 'pending', False],
+                   'expected': {'allowed_step': 'start_db', 'stack_ready': False}},
+                  {'name': 'ожидание healthcheck',
+                   'args': [True, False, 'pending', False],
+                   'expected': {'allowed_step': 'wait_db', 'stack_ready': False}},
+                  {'name': 'нужны migrations',
+                   'args': [True, True, 'pending', False],
+                   'expected': {'allowed_step': 'run_migrations', 'stack_ready': False}},
+                  {'name': 'migration failed',
+                   'args': [True, True, 'failed', False],
+                   'expected': {'allowed_step': 'stop_deployment', 'stack_ready': False}},
+                  {'name': 'stack готов',
+                   'args': [True, True, 'success', True],
+                   'expected': {'allowed_step': 'serve_traffic', 'stack_ready': True}}],
+        'reference_code': 'def solve(db_started, db_healthy, migration_status, api_started):\n'
+                          '    if not db_started:\n'
+                          "        allowed_step = 'start_db'\n"
+                          '    elif not db_healthy:\n'
+                          "        allowed_step = 'wait_db'\n"
+                          "    elif migration_status == 'pending':\n"
+                          "        allowed_step = 'run_migrations'\n"
+                          "    elif migration_status == 'failed':\n"
+                          "        allowed_step = 'stop_deployment'\n"
+                          '    elif not api_started:\n'
+                          "        allowed_step = 'start_api'\n"
+                          '    else:\n'
+                          "        allowed_step = 'serve_traffic'\n"
+                          '    return {\n'
+                          "        'allowed_step': allowed_step,\n"
+                          "        'stack_ready': allowed_step == 'serve_traffic',\n"
+                          '    }\n'}],
+ 183: [{'title': 'Quality gates для commit',
+        'level': 'easy',
+        'mode': 'solve',
+        'prompt': 'Верните status, stopped_at и executed. Идите по gates по порядку и добавляйте name в executed. '
+                  "При первом passed=False остановитесь, status='failed', stopped_at получает name. Если все gates "
+                  "прошли, status='passed', stopped_at=None. Steps после первого failure не выполняются.",
+        'contract': {'given': 'Автопроверка вызывает solve(gates). gates — список словарей name и passed в '
+                              'фактическом порядке pipeline.',
+                     'todo': 'Верните status, stopped_at и executed. Идите по gates по порядку и добавляйте name в '
+                             "executed. При первом passed=False остановитесь, status='failed', stopped_at получает "
+                             "name. Если все gates прошли, status='passed', stopped_at=None. Steps после первого "
+                             'failure не выполняются.',
+                     'check': 'Проверяются полный success, format failure, test failure и пустой pipeline. '
+                              'Сравнивается точный executed order.'},
+        'requirements': {'items': ['gates выполняются по порядку',
+                                   'остановка на первом failure',
+                                   'последующие steps не выполняются',
+                                   'полный success'],
+                         'names': ['gates', 'executed'],
+                         'nodes': ['FunctionDef', 'For', 'If'],
+                         'attributes': ['append']},
+        'starter_code': 'def solve(gates):\n    executed = []\n    # Выполните gates до первого failure\n    pass\n',
+        'tests': [{'name': 'зелёный pipeline',
+                   'args': [[{'name': 'format', 'passed': True},
+                             {'name': 'lint', 'passed': True},
+                             {'name': 'tests', 'passed': True},
+                             {'name': 'image', 'passed': True}]],
+                   'expected': {'status': 'passed',
+                                'stopped_at': None,
+                                'executed': ['format', 'lint', 'tests', 'image']}},
+                  {'name': 'format failure',
+                   'args': [[{'name': 'format', 'passed': False},
+                             {'name': 'lint', 'passed': True},
+                             {'name': 'tests', 'passed': True}]],
+                   'expected': {'status': 'failed', 'stopped_at': 'format', 'executed': ['format']}},
+                  {'name': 'tests failure',
+                   'args': [[{'name': 'format', 'passed': True},
+                             {'name': 'lint', 'passed': True},
+                             {'name': 'tests', 'passed': False},
+                             {'name': 'image', 'passed': True}]],
+                   'expected': {'status': 'failed', 'stopped_at': 'tests', 'executed': ['format', 'lint', 'tests']}}],
+        'reference_code': 'def solve(gates):\n'
+                          '    executed = []\n'
+                          '    for gate in gates:\n'
+                          "        executed.append(gate['name'])\n"
+                          "        if not gate['passed']:\n"
+                          '            return {\n'
+                          "                'status': 'failed',\n"
+                          "                'stopped_at': gate['name'],\n"
+                          "                'executed': executed,\n"
+                          '            }\n'
+                          '    return {\n'
+                          "        'status': 'passed',\n"
+                          "        'stopped_at': None,\n"
+                          "        'executed': executed,\n"
+                          '    }\n'}],
+ 186: [{'title': 'Прослеживаемый image tag',
+        'level': 'easy',
+        'mode': 'solve',
+        'prompt': 'Если tests_passed=False, верните publish=False и пустой tags. Иначе всегда добавьте tag '
+                  'sha-<первые 12 символов commit_sha>. Для branch main добавьте tag main. Если release_tag не None '
+                  'и начинается с v, добавьте его последним. latest не добавляйте. Верните publish=True, tags и '
+                  'traceable_to=commit_sha.',
+        'contract': {'given': 'Автопроверка вызывает solve(commit_sha, release_tag, branch, tests_passed). '
+                              'commit_sha — полная строка SHA, release_tag — строка или None, branch — имя branch.',
+                     'todo': 'Если tests_passed=False, верните publish=False и пустой tags. Иначе всегда добавьте '
+                             'tag sha-<первые 12 символов commit_sha>. Для branch main добавьте tag main. Если '
+                             'release_tag не None и начинается с v, добавьте его последним. latest не добавляйте. '
+                             'Верните publish=True, tags и traceable_to=commit_sha.',
+                     'check': 'Проверяются feature branch, main, release tag и failed tests. Каждый опубликованный '
+                              'image должен ссылаться на конкретный commit.'},
+        'requirements': {'items': ['публикация только после tests',
+                                   'SHA tag обязателен',
+                                   'release tag добавляется явно',
+                                   'latest не используется'],
+                         'names': ['commit_sha', 'release_tag', 'branch', 'tests_passed', 'tags'],
+                         'nodes': ['FunctionDef', 'If', 'JoinedStr'],
+                         'attributes': ['append', 'startswith']},
+        'starter_code': 'def solve(commit_sha, release_tag, branch, tests_passed):\n'
+                        '    # Соберите список безопасных image tags\n'
+                        '    pass\n',
+        'tests': [{'name': 'feature branch',
+                   'args': ['abcdef1234567890', None, 'feature/logs', True],
+                   'expected': {'publish': True, 'tags': ['sha-abcdef123456'], 'traceable_to': 'abcdef1234567890'}},
+                  {'name': 'main release',
+                   'args': ['1234567890abcdef', 'v6.0.0', 'main', True],
+                   'expected': {'publish': True,
+                                'tags': ['sha-1234567890ab', 'main', 'v6.0.0'],
+                                'traceable_to': '1234567890abcdef'}},
+                  {'name': 'tests failed',
+                   'args': ['abcdef1234567890', 'v6.0.0', 'main', False],
+                   'expected': {'publish': False, 'tags': [], 'traceable_to': None}}],
+        'reference_code': 'def solve(commit_sha, release_tag, branch, tests_passed):\n'
+                          '    if not tests_passed:\n'
+                          '        return {\n'
+                          "            'publish': False,\n"
+                          "            'tags': [],\n"
+                          "            'traceable_to': None,\n"
+                          '        }\n'
+                          '    tags = [f"sha-{commit_sha[:12]}"]\n'
+                          "    if branch == 'main':\n"
+                          "        tags.append('main')\n"
+                          "    if release_tag is not None and release_tag.startswith('v'):\n"
+                          '        tags.append(release_tag)\n'
+                          '    return {\n'
+                          "        'publish': True,\n"
+                          "        'tags': tags,\n"
+                          "        'traceable_to': commit_sha,\n"
+                          '    }\n'}],
+ 188: [{'title': 'Решение после smoke test',
+        'level': 'medium',
+        'mode': 'solve',
+        'prompt': "Если все четыре проверки True, верните action='keep', active_tag=current_tag и incident=False. "
+                  "Если любая проверка False и previous_tag существует, верните action='rollback', "
+                  'active_tag=previous_tag и incident=True. Если previous_tag отсутствует, верните '
+                  "action='stop_traffic', active_tag=None и incident=True. Добавьте failed_checks в порядке health, "
+                  'readiness, migration, key_scenario.',
+        'contract': {'given': 'Автопроверка вызывает solve(current_tag, previous_tag, health_ok, readiness_ok, '
+                              'migration_ok, key_scenario_ok). Tags — строки или None, остальные аргументы — bool.',
+                     'todo': "Если все четыре проверки True, верните action='keep', active_tag=current_tag и "
+                             'incident=False. Если любая проверка False и previous_tag существует, верните '
+                             "action='rollback', active_tag=previous_tag и incident=True. Если previous_tag "
+                             "отсутствует, верните action='stop_traffic', active_tag=None и incident=True. Добавьте "
+                             'failed_checks в порядке health, readiness, migration, key_scenario.',
+                     'check': 'Проверяются успешный deploy, один failure, несколько failures и отсутствие предыдущей '
+                              'версии. Rollback должен указывать конкретный known-good tag.'},
+        'requirements': {'items': ['четыре smoke checks',
+                                   'known-good previous tag',
+                                   'rollback при failure',
+                                   'stop traffic без previous version'],
+                         'names': ['current_tag',
+                                   'previous_tag',
+                                   'health_ok',
+                                   'readiness_ok',
+                                   'migration_ok',
+                                   'key_scenario_ok',
+                                   'checks',
+                                   'failed_checks'],
+                         'nodes': ['FunctionDef', 'For', 'If'],
+                         'attributes': ['append']},
+        'starter_code': 'def solve(current_tag, previous_tag, health_ok, readiness_ok, migration_ok, '
+                        'key_scenario_ok):\n'
+                        '    # Определите keep, rollback или stop_traffic\n'
+                        '    pass\n',
+        'tests': [{'name': 'deploy успешен',
+                   'args': ['v6.0.0', 'v5.0.0', True, True, True, True],
+                   'expected': {'action': 'keep', 'active_tag': 'v6.0.0', 'incident': False, 'failed_checks': []}},
+                  {'name': 'rollback',
+                   'args': ['v6.0.1', 'v6.0.0', True, True, True, False],
+                   'expected': {'action': 'rollback',
+                                'active_tag': 'v6.0.0',
+                                'incident': True,
+                                'failed_checks': ['key_scenario']}},
+                  {'name': 'несколько failures',
+                   'args': ['v6.0.1', 'v6.0.0', False, False, True, False],
+                   'expected': {'action': 'rollback',
+                                'active_tag': 'v6.0.0',
+                                'incident': True,
+                                'failed_checks': ['health', 'readiness', 'key_scenario']}},
+                  {'name': 'нет previous tag',
+                   'args': ['v1.0.0', None, False, False, False, False],
+                   'expected': {'action': 'stop_traffic',
+                                'active_tag': None,
+                                'incident': True,
+                                'failed_checks': ['health', 'readiness', 'migration', 'key_scenario']}}],
+        'reference_code': 'def solve(current_tag, previous_tag, health_ok, readiness_ok, migration_ok, '
+                          'key_scenario_ok):\n'
+                          '    checks = [\n'
+                          "        ('health', health_ok),\n"
+                          "        ('readiness', readiness_ok),\n"
+                          "        ('migration', migration_ok),\n"
+                          "        ('key_scenario', key_scenario_ok),\n"
+                          '    ]\n'
+                          '    failed_checks = []\n'
+                          '    for name, passed in checks:\n'
+                          '        if not passed:\n'
+                          '            failed_checks.append(name)\n'
+                          '    if not failed_checks:\n'
+                          '        return {\n'
+                          "            'action': 'keep',\n"
+                          "            'active_tag': current_tag,\n"
+                          "            'incident': False,\n"
+                          "            'failed_checks': [],\n"
+                          '        }\n'
+                          '    if previous_tag is not None:\n'
+                          "        action = 'rollback'\n"
+                          '        active_tag = previous_tag\n'
+                          '    else:\n'
+                          "        action = 'stop_traffic'\n"
+                          '        active_tag = None\n'
+                          '    return {\n'
+                          "        'action': action,\n"
+                          "        'active_tag': active_tag,\n"
+                          "        'incident': True,\n"
+                          "        'failed_checks': failed_checks,\n"
+                          '    }\n'}]}
+
 def get_code_tasks(track_id: str, filename: str) -> list[dict[str, Any]]:
     """Возвращает задачи редактора только для тем, проверяемых без доступа к ОС."""
     match = re.match(r"^(\d+)\s+-\s+", filename)
@@ -4556,5 +5360,7 @@ def get_code_tasks(track_id: str, filename: str) -> list[dict[str, Any]]:
         tasks_by_track[track_name] = POSTGRESQL_CODE_TASKS
     for track_name in ASYNC_TRACK_ALIASES:
         tasks_by_track[track_name] = ASYNC_CODE_TASKS
+    for track_name in DEPLOY_TRACK_ALIASES:
+        tasks_by_track[track_name] = DEPLOY_CODE_TASKS
 
     return tasks_by_track.get(track_id, {}).get(lesson_number, [])

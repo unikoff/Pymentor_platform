@@ -22,6 +22,12 @@ ASYNC_TRACK_ALIASES = (
     "Асинхронность, FastAPI и Async SQLAlchemy - Async StudyHub",
     "Асинхронность и Async SQLAlchemy - Async StudyHub",
 )
+DEPLOY_TRACK = "Docker, CI/CD и первый стабильный деплой - Deployable StudyHub"
+DEPLOY_TRACK_ALIASES = (
+    DEPLOY_TRACK,
+    "Docker, CI/CD и деплой - Deployable StudyHub",
+    "Docker и CI/CD - Deployable StudyHub",
+)
 
 
 def _exercise(
@@ -691,6 +697,75 @@ ASYNC_OVERVIEW_PRACTICE: dict[str, list[dict[str, Any]]] = {'План обуче
                             'result': 'Готово, если по timeline можно объяснить, кто выполняется, кто ждёт, где loop '
                                       'получает управление и какой ресурс должен закрыться при success, timeout и '
                                       'cancellation.'}]}
+
+DEPLOY_OVERVIEW_PRACTICE: dict[str, list[dict[str, Any]]] = {'План обучения.md': [{'title': 'Зафиксируйте baseline Async StudyHub перед контейнеризацией',
+                       'task': 'До Docker сохраните один воспроизводимый запуск Async StudyHub в Linux-подобной '
+                               'среде. Baseline нужен, чтобы отличать инфраструктурную ошибку от изменения '
+                               'приложения.',
+                       'steps': ['Создайте docs/stage8-runtime-baseline.md.',
+                                 'Запишите точную директорию запуска, Python version, команду Uvicorn и обязательные '
+                                 'environment variables без secret values.',
+                                 'Запустите PostgreSQL, Redis и API без Docker.',
+                                 'Проверьте /health, /ready и один защищённый API-сценарий.',
+                                 'Сохраните PID API, listening port и три строки логов одного request с request_id.',
+                                 'Выполните graceful shutdown и зафиксируйте порядок startup/shutdown events.',
+                                 'Запустите pytest -q два раза и запишите число прошедших tests.',
+                                 'Создайте Git-коммит docs: record deployable runtime baseline.'],
+                       'result': 'Готово, если документ позволяет повторить запуск без IDE, содержит '
+                                 'health/readiness, PID, port, logs, graceful shutdown и зелёный test baseline.'}],
+ '00 - План обучения.md': [{'title': 'Зафиксируйте baseline Async StudyHub перед контейнеризацией',
+                            'task': 'До Docker сохраните один воспроизводимый запуск Async StudyHub в Linux-подобной '
+                                    'среде. Baseline нужен, чтобы отличать инфраструктурную ошибку от изменения '
+                                    'приложения.',
+                            'steps': ['Создайте docs/stage8-runtime-baseline.md.',
+                                      'Запишите точную директорию запуска, Python version, команду Uvicorn и '
+                                      'обязательные environment variables без secret values.',
+                                      'Запустите PostgreSQL, Redis и API без Docker.',
+                                      'Проверьте /health, /ready и один защищённый API-сценарий.',
+                                      'Сохраните PID API, listening port и три строки логов одного request с '
+                                      'request_id.',
+                                      'Выполните graceful shutdown и зафиксируйте порядок startup/shutdown events.',
+                                      'Запустите pytest -q два раза и запишите число прошедших tests.',
+                                      'Создайте Git-коммит docs: record deployable runtime baseline.'],
+                            'result': 'Готово, если документ позволяет повторить запуск без IDE, содержит '
+                                      'health/readiness, PID, port, logs, graceful shutdown и зелёный test '
+                                      'baseline.'}],
+ 'Теория месяца.md': [{'title': 'Нарисуйте путь commit до running process',
+                       'task': 'До написания Dockerfile свяжите source code, image, environment, container process, '
+                               'services и deployment в одну схему с отдельными lifecycle.',
+                       'steps': ['Создайте docs/stage8-delivery-model.md.',
+                                 'Нарисуйте маршрут commit → CI gates → image tag → registry → deployment '
+                                 'environment → container process.',
+                                 'Отдельно нарисуйте lifecycle image, container, named volume и production secret.',
+                                 'Покажите Compose stack api, db, redis и migrate с внутренними hostnames.',
+                                 'Добавьте startup timeline db started → healthy → migrations success → API ready → '
+                                 'traffic.',
+                                 'Добавьте failure paths build error, runtime crash, readiness failure, migration '
+                                 'failure и smoke failure.',
+                                 'Для smoke failure укажите previous known-good image tag и rollback.',
+                                 'Зафиксируйте границы: image не содержит production secrets, volume не является '
+                                 'backup, CI не подключается к production database.'],
+                       'result': 'Готово, если по схеме можно проследить конкретный commit до процесса, объяснить '
+                                 'lifecycle каждого artifact и показать точку остановки при каждом failure.'}],
+ '00 - Теория месяца.md': [{'title': 'Нарисуйте путь commit до running process',
+                            'task': 'До написания Dockerfile свяжите source code, image, environment, container '
+                                    'process, services и deployment в одну схему с отдельными lifecycle.',
+                            'steps': ['Создайте docs/stage8-delivery-model.md.',
+                                      'Нарисуйте маршрут commit → CI gates → image tag → registry → deployment '
+                                      'environment → container process.',
+                                      'Отдельно нарисуйте lifecycle image, container, named volume и production '
+                                      'secret.',
+                                      'Покажите Compose stack api, db, redis и migrate с внутренними hostnames.',
+                                      'Добавьте startup timeline db started → healthy → migrations success → API '
+                                      'ready → traffic.',
+                                      'Добавьте failure paths build error, runtime crash, readiness failure, '
+                                      'migration failure и smoke failure.',
+                                      'Для smoke failure укажите previous known-good image tag и rollback.',
+                                      'Зафиксируйте границы: image не содержит production secrets, volume не '
+                                      'является backup, CI не подключается к production database.'],
+                            'result': 'Готово, если по схеме можно проследить конкретный commit до процесса, '
+                                      'объяснить lifecycle каждого artifact и показать точку остановки при каждом '
+                                      'failure.'}]}
 
 FOUNDATIONS_PRACTICE: dict[int, list[dict[str, Any]]] = {2: [{'title': 'Создайте и запустите папку проекта',
       'task': 'Продолжите программу первого занятия в локальном терминале и редакторе. Нужно создать конкретную '
@@ -2185,6 +2260,213 @@ ASYNC_PRACTICE: dict[int, list[dict[str, Any]]] = {143: [{'title': 'Запуст
                   'AsyncClient и AsyncSession имеют корректный lifecycle, measurements документированы, а Release '
                   'v5.0.0 опубликован без недоказанных claims.'}]}
 
+DEPLOY_PRACTICE: dict[int, list[dict[str, Any]]] = {165: [{'title': 'Запустите StudyHub из корректной Linux-директории',
+        'task': 'Разверните учебную копию проекта в Linux-подобной среде и докажите, как current working directory '
+                'влияет на относительные paths.',
+        'steps': ['Создайте отдельную директорию ~/studyhub-stage8 и скопируйте туда project без .venv и local data.',
+                  'Выполните pwd и сохраните абсолютный path.',
+                  'Через ls -la найдите app/main.py, .env.example, alembic.ini и tests.',
+                  'Создайте scripts/show_runtime_path.py, который выводит Path.cwd(), path текущего файла и '
+                  'вычисленный project root.',
+                  'Запустите script из корня проекта и из parent directory.',
+                  'Создайте временный файл data/path-check.txt и прочитайте его сначала через ненадёжный '
+                  'относительный path.',
+                  'Воспроизведите FileNotFoundError при запуске из другой cwd.',
+                  'Исправьте код через path, вычисленный от __file__, а не от cwd.',
+                  'Добавьте test, который запускает функцию с другой cwd через monkeypatch.chdir.',
+                  'Создайте docs/linux-paths.md с командами, ошибкой и исправлением.'],
+        'result': 'Готово, если project запускается из указанной директории, ошибка относительного path '
+                  'воспроизводится, исправленный код не зависит от cwd, а test это доказывает.'}],
+ 170: [{'title': 'Создайте Linux-runbook запуска и диагностики',
+        'task': 'Соберите занятия 165–169 в одну инструкцию, по которой другой разработчик запускает StudyHub и '
+                'исправляет четыре типовых сбоя без подсказки автора.',
+        'steps': ['Создайте docs/runbook-linux.md.',
+                  'Добавьте prerequisites, clone, virtual environment, dependencies, .env и migrations.',
+                  'Добавьте команды запуска PostgreSQL, Redis и Uvicorn.',
+                  'Добавьте проверки cwd, Python version, process PID, listening port, /health и /ready.',
+                  'Добавьте команду фильтрации logs по request_id.',
+                  'Добавьте graceful shutdown через SIGTERM и ожидаемые shutdown logs.',
+                  'Создайте четыре incident cards: неверная cwd, occupied port, missing environment variable и '
+                  'недоступная database.',
+                  'Для каждой карты укажите symptom, diagnostic command, expected evidence и fix.',
+                  'Передайте runbook другому человеку либо выполните его в чистой shell session без history.',
+                  'Зафиксируйте фактические corrections после проверки.'],
+        'result': 'Готово, если чистый запуск проходит только по runbook, четыре failures диагностируются '
+                  'предсказуемо, а документ содержит конкретные commands и ожидаемый output.'}],
+ 172: [{'title': 'Соберите первый Dockerfile StudyHub',
+        'task': 'Создайте прозрачный рабочий image без преждевременной оптимизации. Цель — один FastAPI process, '
+                'доступный с host.',
+        'steps': ['Создайте Dockerfile в корне проекта.',
+                  'Используйте фиксированный minor tag Python slim image.',
+                  'Установите WORKDIR /app.',
+                  'Скопируйте dependency file и установите dependencies.',
+                  'Скопируйте app, alembic files и остальные runtime modules.',
+                  'Задайте CMD в exec-form для Uvicorn с host 0.0.0.0 и container port 8000.',
+                  'Соберите image с tag studyhub:lesson172.',
+                  'Запустите container с --rm, опубликовав host port 8080 на container port 8000.',
+                  'Передайте минимальные environment variables через отдельный учебный env-file.',
+                  'Проверьте /health и /docs с host.',
+                  'Остановите container и сохраните команды build/run в docs/docker-first-image.md.'],
+        'result': 'Готово, если image собирается из чистого context, container отвечает на host:8080, CMD использует '
+                  'exec-form, а инструкция воспроизводит build и run.'}],
+ 174: [{'title': 'Проверьте ports, environment и ephemeral filesystem',
+        'task': 'Запустите один image в двух разных runtime-конфигурациях и докажите, что host port, environment и '
+                'container filesystem принадлежат запуску, а не image.',
+        'steps': ['Запустите studyhub image на host port 8081 с APP_ENV=development.',
+                  'Запустите второй container того же image на host port 8082 с APP_ENV=test.',
+                  'Добавьте диагностический endpoint или startup log, который безопасно показывает APP_ENV без '
+                  'secrets.',
+                  'Проверьте, что оба containers отвечают независимо.',
+                  'Попробуйте запустить третий container на уже занятом host port 8081 и зафиксируйте ошибку.',
+                  'Через docker exec создайте /tmp/runtime-marker в первом container.',
+                  'Остановите и удалите первый container.',
+                  'Создайте новый container из того же image и проверьте отсутствие marker.',
+                  'Запишите различие image filesystem, container writable layer, bind mount и named volume.',
+                  'Не храните PostgreSQL data в writable layer API-container.'],
+        'result': 'Готово, если один image запускается с двумя configs и ports, port conflict воспроизводится, '
+                  'runtime-marker исчезает после recreate, а граница постоянных данных объяснена.'}],
+ 175: [{'title': 'Очистите build context и запустите API не от root',
+        'task': 'Добавьте .dockerignore, исключите secret/local artifacts и настройте отдельного runtime user.',
+        'steps': ['Создайте .dockerignore.',
+                  'Исключите .git, .venv, __pycache__, .pytest_cache, .mypy_cache, coverage files, local databases, '
+                  'uploads test data и .env.',
+                  'Не исключайте .env.example.',
+                  'Соберите список runtime-файлов, которые действительно нужны API и Alembic.',
+                  'Добавьте в Dockerfile создание group/user appuser с фиксированным uid.',
+                  'Скопируйте runtime files с корректным ownership либо выполните chown только для нужных '
+                  'directories.',
+                  'Переключитесь на USER appuser до CMD.',
+                  'Соберите image studyhub:lesson175.',
+                  'Проверьте через docker run id, что uid не равен 0.',
+                  'Проверьте, что API читает config и migrations, но не может записывать в запрещённую системную '
+                  'директорию.',
+                  'Поищите внутри image .env, .git и local database; их не должно быть.'],
+        'result': 'Готово, если build context не содержит secrets и мусор, process работает не от root, runtime '
+                  'files доступны, а проверка image не находит .env и .git.'}],
+ 176: [{'title': 'Диагностируйте четыре container failures',
+        'task': 'Создайте release candidate Dockerfile и выполните controlled failures, отделяя build error, startup '
+                'error, port error и health failure.',
+        'steps': ['Создайте docs/runbook-container.md с таблицей failure stage, command, evidence и fix.',
+                  'Сломайте имя dependency file и получите build failure.',
+                  'Верните build и укажите неверный import module в CMD, затем получите stopped container.',
+                  'Найдите exit code через docker ps -a и причину через docker logs.',
+                  'Верните CMD и запустите без обязательной environment variable.',
+                  'Исправьте config и запустите с неправильным host/container port mapping.',
+                  'Проверьте docker inspect для Config, State и Health.',
+                  'Используйте docker exec только для running container и зафиксируйте его границу.',
+                  'Добавьте HEALTHCHECK либо внешний health probe по принятой архитектуре.',
+                  'Соберите финальный local tag studyhub:stage8-rc.',
+                  'Повторите build/run/health по runbook из чистой директории.'],
+        'result': 'Готово, если четыре failures имеют разные evidence и fixes, release candidate запускается '
+                  'non-root, проходит healthcheck и воспроизводится по runbook.'}],
+ 178: [{'title': 'Подключите PostgreSQL service внутри Compose',
+        'task': 'Добавьте database service и переведите API на внутренний hostname db. Localhost внутри '
+                'API-container использовать запрещено.',
+        'steps': ['Создайте compose.yaml с services api и db.',
+                  'Для db используйте официальный PostgreSQL image с зафиксированным major version.',
+                  'Передайте POSTGRES_DB, POSTGRES_USER и POSTGRES_PASSWORD через environment или env-file для '
+                  'development.',
+                  'Не помещайте production credentials в compose file.',
+                  'Для api задайте DATABASE_URL с hostname db и container port 5432.',
+                  'Опубликуйте наружу только API port; PostgreSQL port публикуйте лишь при обоснованной local '
+                  'необходимости.',
+                  'Запустите docker compose up --build.',
+                  'Проверьте logs db до сообщения о готовности принимать connections.',
+                  'Выполните SELECT 1 из API-container.',
+                  'Откройте endpoint, который читает PostgreSQL.',
+                  'Замените db на localhost в отдельном controlled run и зафиксируйте failure.',
+                  'Верните правильный URL и добавьте docs/compose-network.md.'],
+        'result': 'Готово, если API соединяется с PostgreSQL по db:5432, localhost failure воспроизводится, секреты '
+                  'не зафиксированы в Git, а endpoint читает real database.'}],
+ 181: [{'title': 'Добавьте Redis service без преждевременного cache',
+        'task': 'Подключите Redis как инфраструктурную зависимость и readiness signal, не изменяя business contract '
+                'и не делая Redis source of truth.',
+        'steps': ['Добавьте service redis в compose.yaml с зафиксированным major tag.',
+                  'Не публикуйте Redis port на host без необходимости.',
+                  'Добавьте REDIS_URL=redis://redis:6379/0 в environment API.',
+                  'Добавьте healthcheck redis-cli ping.',
+                  'Создайте диагностическую async function ping_redis.',
+                  'Расширьте /ready полем redis со status ok или unavailable по принятому контракту.',
+                  'Не записывайте users, tasks или tokens в Redis в этом занятии.',
+                  'Остановите redis service и проверьте readiness behavior.',
+                  'Снова запустите redis и проверьте автоматическое восстановление readiness.',
+                  'Добавьте tests readiness с fake Redis dependency.',
+                  'Запишите в docs/redis-role.md, почему PostgreSQL остаётся source of truth.'],
+        'result': 'Готово, если Redis доступен по service hostname, healthcheck работает, controlled outage '
+                  'наблюдаем, HTTP business contract не изменён, а product data остаются в PostgreSQL.'}],
+ 182: [{'title': 'Проверьте полный local Compose stack',
+        'task': 'Соберите one-command environment из API, PostgreSQL, Redis, migration job, healthchecks и named '
+                'volume.',
+        'steps': ['Приведите compose.yaml к services db, redis, migrate и api.',
+                  'Добавьте named volume pgdata.',
+                  'Настройте db и redis healthchecks.',
+                  'Настройте migrate как одноразовый service, выполняющий alembic upgrade head.',
+                  'API должен стартовать только после healthy dependencies и successful migration по возможностям '
+                  'используемой Compose schema.',
+                  'Создайте .env.example без реальных secrets.',
+                  'Выполните docker compose down -v для controlled clean bootstrap.',
+                  'Запустите docker compose up --build и проверьте состояние всех services.',
+                  'Выполните registration/login, create/read/update Task и Redis readiness.',
+                  'Выполните docker compose down без -v, затем up и проверьте сохранность Task.',
+                  'Сделайте backup перед controlled down -v и восстановите test data.',
+                  'Добавьте README quick start, logs, reset и recovery commands.',
+                  'Проверьте весь сценарий из чистого clone.'],
+        'result': 'Готово, если одна команда поднимает clean stack, migrations выполняются до traffic, data '
+                  'переживают recreate, reset и restore контролируемы, а другой разработчик проходит quick start.'}],
+ 184: [{'title': 'Создайте первый GitHub Actions workflow',
+        'task': 'Добавьте независимый CI-runner, который проверяет format, lint и tests для каждого pull request.',
+        'steps': ['Создайте .github/workflows/ci.yml.',
+                  'Настройте события pull_request и push для main.',
+                  'Добавьте permissions contents: read.',
+                  'Создайте job quality на ubuntu runner.',
+                  'Добавьте checkout и setup-python с той же major/minor version, что в Dockerfile.',
+                  'Включите cache dependencies средствами setup action либо выбранного package manager.',
+                  'Установите project dependencies только из зафиксированного dependency file.',
+                  'Запустите formatter в check mode, затем linter, затем unit tests.',
+                  'Создайте branch с намеренной formatting error и получите red run.',
+                  'Исправьте formatting, затем добавьте failing test и проверьте остановку на test step.',
+                  'Исправьте test и добейтесь green run.',
+                  'Сохраните ссылки на три runs в docs/ci-first-workflow.md.'],
+        'result': 'Готово, если pull request автоматически проходит три quality gates, два controlled failures видны '
+                  'в logs, а после исправления run становится green.'}],
+ 185: [{'title': 'Запустите PostgreSQL migrations и integration tests в CI',
+        'task': 'Расширьте workflow настоящим PostgreSQL service. CI должен доказать восстановление schema на чистой '
+                'database.',
+        'steps': ['Добавьте PostgreSQL service в integration job с отдельными test credentials.',
+                  'Добавьте health options через pg_isready.',
+                  'Передайте TEST_DATABASE_URL только из job environment.',
+                  'Не используйте production secrets и production database.',
+                  'После установки dependencies дождитесь healthy service.',
+                  'Выполните alembic upgrade head.',
+                  'Проверьте alembic current.',
+                  'Запустите API integration tests против test database.',
+                  'Добавьте отдельную проверку clean migration на вторую disposable database либо schema.',
+                  'Намеренно сломайте одну migration в branch и получите red gate.',
+                  'Верните migration и добейтесь green integration job.',
+                  'Проверьте изоляцию test data между test cases.',
+                  'Обновите docs/ci-database.md с startup timeline и failure evidence.'],
+        'result': 'Готово, если CI поднимает чистую PostgreSQL, ждёт readiness, применяет migrations и запускает '
+                  'integration tests, а broken migration блокирует pipeline.'}],
+ 187: [{'title': 'Разверните конкретный image tag без secrets в Git',
+        'task': 'Выполните первый учебный deployment одного FastAPI-монолита. Deployment должен использовать '
+                'проверенный immutable image и external production configuration.',
+        'steps': ['Выберите учебный deployment host и зафиксируйте его ограничения в docs/deployment-target.md.',
+                  'Создайте production environment отдельно от repository.',
+                  'Добавьте DATABASE_URL, SECRET_KEY, REDIS_URL, APP_ENV и LOG_LEVEL через secret/config interface '
+                  'платформы.',
+                  'Не используйте .env из repository как production secret store.',
+                  'Выберите конкретный SHA или release image tag из CI.',
+                  'Запустите migrations отдельным pre-deploy command/job до traffic.',
+                  'Разверните exact image tag.',
+                  'Проверьте startup logs без secret values.',
+                  'Откройте внешний /health и /ready.',
+                  'Выполните один authenticated read-only request.',
+                  'Сохраните deployment timestamp, commit SHA, image digest/tag и migration revision.',
+                  'Проверьте repository search на production secrets.',
+                  'Создайте docs/deployment-runbook.md с deploy и emergency stop.'],
+        'result': 'Готово, если внешний URL отвечает, deployment связан с конкретным commit/image, migrations '
+                  'известны, production secrets отсутствуют в Git и запуск воспроизводится по runbook.'}]}
+
 def get_manual_practice(track_id: str, filename: str) -> list[dict[str, Any]]:
     """Возвращает ручную практику обзорной страницы или нумерованного урока."""
     overview_by_track = {
@@ -2207,6 +2489,9 @@ def get_manual_practice(track_id: str, filename: str) -> list[dict[str, Any]]:
     for track_name in ASYNC_TRACK_ALIASES:
         overview_by_track[track_name] = ASYNC_OVERVIEW_PRACTICE
         practice_by_track[track_name] = ASYNC_PRACTICE
+    for track_name in DEPLOY_TRACK_ALIASES:
+        overview_by_track[track_name] = DEPLOY_OVERVIEW_PRACTICE
+        practice_by_track[track_name] = DEPLOY_PRACTICE
 
     overview = overview_by_track.get(track_id, {}).get(filename)
     if overview is not None:
