@@ -11,6 +11,11 @@ DEEPER_TRACK = "Python глубже, файлы и структура небол
 PLANNER_API_TRACK = "HTTP, API и FastAPI - Planner API"
 DATABASE_API_TRACK = "FastAPI, SQLite и SQLAlchemy - StudyHub Database API"
 PERSONAL_API_TRACK = "Аутентификация, сессии и токены - Personal StudyHub API"
+POSTGRESQL_TRACK = "SQL, PostgreSQL и модели хранения - PostgreSQL StudyHub"
+POSTGRESQL_TRACK_ALIASES = (
+    POSTGRESQL_TRACK,
+    "SQL, PostgreSQL и выбор хранилища - PostgreSQL StudyHub",
+)
 
 
 def _contract(given: str, todo: str, check: str) -> dict[str, str]:
@@ -2976,6 +2981,772 @@ PERSONAL_API_CODE_TASKS: dict[int, list[dict[str, Any]]] = {93: [{'title': 'Тр
                           "        return {'status': 200, 'decision': 'owner'}\n"
                           "    return {'status': 403, 'decision': 'forbidden'}\n"}]}
 
+POSTGRESQL_CODE_TASKS: dict[int, list[dict[str, Any]]] = {117: [{'title': 'Сопоставление ORM-полей и колонок',
+        'level': 'easy',
+        'mode': 'solve',
+        'prompt': 'Сравните поля по имени. Верните словарь matched и differences. В matched добавляйте имена, для '
+                  'которых type и nullable совпадают. В differences добавляйте словари field и problem. problem '
+                  'равен missing_column, если колонки нет; type_mismatch, если отличается type; nullable_mismatch, '
+                  'если отличается nullable. Сохраняйте порядок model_fields.',
+        'contract': {'given': 'Автопроверка вызывает solve(model_fields, table_columns). Оба аргумента — списки '
+                              'словарей с ключами name, type и nullable. model_fields описывает ORM-модель, '
+                              'table_columns — фактическую таблицу.',
+                     'todo': 'Сравните поля по имени. Верните словарь matched и differences. В matched добавляйте '
+                             'имена, для которых type и nullable совпадают. В differences добавляйте словари field и '
+                             'problem. problem равен missing_column, если колонки нет; type_mismatch, если '
+                             'отличается type; nullable_mismatch, если отличается nullable. Сохраняйте порядок '
+                             'model_fields.',
+                     'check': 'Платформа проверит полное совпадение, отсутствующую колонку и два вида несовпадений. '
+                              'Сравниваются порядок matched и точные словари differences.'},
+        'requirements': {'items': ['индекс колонок по name',
+                                   'проверка missing_column',
+                                   'проверка type_mismatch',
+                                   'проверка nullable_mismatch'],
+                         'names': ['model_fields', 'table_columns', 'matched', 'differences'],
+                         'nodes': ['FunctionDef', 'For', 'If'],
+                         'attributes': ['get', 'append']},
+        'starter_code': 'def solve(model_fields, table_columns):\n'
+                        '    matched = []\n'
+                        '    differences = []\n'
+                        '    # Сопоставьте ORM-поля и колонки\n'
+                        '    pass\n',
+        'tests': [{'name': 'полное совпадение',
+                   'args': [[{'name': 'id', 'type': 'INTEGER', 'nullable': False},
+                             {'name': 'title', 'type': 'VARCHAR', 'nullable': False}],
+                            [{'name': 'id', 'type': 'INTEGER', 'nullable': False},
+                             {'name': 'title', 'type': 'VARCHAR', 'nullable': False}]],
+                   'expected': {'matched': ['id', 'title'], 'differences': []}},
+                  {'name': 'отсутствующая колонка',
+                   'args': [[{'name': 'id', 'type': 'INTEGER', 'nullable': False},
+                             {'name': 'priority', 'type': 'INTEGER', 'nullable': False}],
+                            [{'name': 'id', 'type': 'INTEGER', 'nullable': False}]],
+                   'expected': {'matched': ['id'],
+                                'differences': [{'field': 'priority', 'problem': 'missing_column'}]}},
+                  {'name': 'тип и nullable отличаются',
+                   'args': [[{'name': 'id', 'type': 'INTEGER', 'nullable': False},
+                             {'name': 'title', 'type': 'VARCHAR', 'nullable': False},
+                             {'name': 'description', 'type': 'VARCHAR', 'nullable': True}],
+                            [{'name': 'id', 'type': 'BIGINT', 'nullable': False},
+                             {'name': 'title', 'type': 'VARCHAR', 'nullable': True},
+                             {'name': 'description', 'type': 'VARCHAR', 'nullable': True}]],
+                   'expected': {'matched': ['description'],
+                                'differences': [{'field': 'id', 'problem': 'type_mismatch'},
+                                                {'field': 'title', 'problem': 'nullable_mismatch'}]}}],
+        'reference_code': 'def solve(model_fields, table_columns):\n'
+                          '    matched = []\n'
+                          '    differences = []\n'
+                          '    columns_by_name = {}\n'
+                          '    for column in table_columns:\n'
+                          "        columns_by_name[column['name']] = column\n"
+                          '    for field in model_fields:\n'
+                          "        column = columns_by_name.get(field['name'])\n"
+                          '        if column is None:\n'
+                          '            differences.append({\n'
+                          "                'field': field['name'],\n"
+                          "                'problem': 'missing_column',\n"
+                          '            })\n'
+                          "        elif column['type'] != field['type']:\n"
+                          '            differences.append({\n'
+                          "                'field': field['name'],\n"
+                          "                'problem': 'type_mismatch',\n"
+                          '            })\n'
+                          "        elif column['nullable'] != field['nullable']:\n"
+                          '            differences.append({\n'
+                          "                'field': field['name'],\n"
+                          "                'problem': 'nullable_mismatch',\n"
+                          '            })\n'
+                          '        else:\n'
+                          "            matched.append(field['name'])\n"
+                          "    return {'matched': matched, 'differences': differences}\n"}],
+ 119: [{'title': 'INSERT отдельно от значений',
+        'level': 'easy',
+        'mode': 'solve',
+        'prompt': 'Верните словарь statement и params. statement должен быть постоянной строкой INSERT INTO tasks '
+                  '(title, priority, is_done) VALUES (:title, :priority, :is_done) RETURNING id. params должен '
+                  'содержать переданные значения по ключам title, priority и is_done. Не вставляйте пользовательский '
+                  'title внутрь SQL-строки.',
+        'contract': {'given': 'Автопроверка вызывает solve(title, priority, is_done). title — пользовательская '
+                              'строка, priority — целое число, is_done — bool.',
+                     'todo': 'Верните словарь statement и params. statement должен быть постоянной строкой INSERT '
+                             'INTO tasks (title, priority, is_done) VALUES (:title, :priority, :is_done) RETURNING '
+                             'id. params должен содержать переданные значения по ключам title, priority и is_done. '
+                             'Не вставляйте пользовательский title внутрь SQL-строки.',
+                     'check': 'Платформа вызовет solve с обычным текстом, кавычкой и фрагментом, похожим на SQL '
+                              'injection. Во всех случаях statement должен остаться одинаковым, а пользовательские '
+                              'значения должны находиться только в params.'},
+        'requirements': {'items': ['постоянный SQL statement',
+                                   'именованные placeholders',
+                                   'отдельный params',
+                                   'пользовательский title не склеивается с SQL'],
+                         'names': ['title', 'priority', 'is_done', 'statement', 'params'],
+                         'nodes': ['FunctionDef']},
+        'starter_code': 'def solve(title, priority, is_done):\n'
+                        '    # Верните parameterized statement и params\n'
+                        '    pass\n',
+        'tests': [{'name': 'обычная задача',
+                   'args': ['Изучить SQL', 3, False],
+                   'expected': {'statement': 'INSERT INTO tasks (title, priority, is_done) VALUES (:title, '
+                                             ':priority, :is_done) RETURNING id',
+                                'params': {'title': 'Изучить SQL', 'priority': 3, 'is_done': False}}},
+                  {'name': 'кавычка в заголовке',
+                   'args': ["Авторская задача O'Reilly", 2, False],
+                   'expected': {'statement': 'INSERT INTO tasks (title, priority, is_done) VALUES (:title, '
+                                             ':priority, :is_done) RETURNING id',
+                                'params': {'title': "Авторская задача O'Reilly", 'priority': 2, 'is_done': False}}},
+                  {'name': 'опасный текст остаётся значением',
+                   'args': ["x'); DELETE FROM tasks; --", 5, True],
+                   'expected': {'statement': 'INSERT INTO tasks (title, priority, is_done) VALUES (:title, '
+                                             ':priority, :is_done) RETURNING id',
+                                'params': {'title': "x'); DELETE FROM tasks; --", 'priority': 5, 'is_done': True}}}],
+        'reference_code': 'def solve(title, priority, is_done):\n'
+                          '    statement = (\n'
+                          "        'INSERT INTO tasks (title, priority, is_done) '\n"
+                          "        'VALUES (:title, :priority, :is_done) RETURNING id'\n"
+                          '    )\n'
+                          '    params = {\n'
+                          "        'title': title,\n"
+                          "        'priority': priority,\n"
+                          "        'is_done': is_done,\n"
+                          '    }\n'
+                          "    return {'statement': statement, 'params': params}\n"}],
+ 120: [{'title': 'SELECT из последовательных частей',
+        'level': 'medium',
+        'mode': 'solve',
+        'prompt': 'Начните со строки SELECT id, title, priority, is_done FROM tasks. Если is_done не None, добавьте '
+                  'условие is_done = :is_done. Если min_priority не None, добавьте priority >= :min_priority. Если '
+                  'условий два, соедините их через AND. Добавьте ORDER BY priority DESC, id ASC при descending=True, '
+                  'иначе ORDER BY priority ASC, id ASC. В конце добавьте LIMIT :limit OFFSET :offset. Верните '
+                  'statement и params только с реально используемыми filters, а также limit и offset.',
+        'contract': {'given': 'Автопроверка вызывает solve(is_done, min_priority, descending, limit, offset). '
+                              'is_done равен True, False или None. min_priority равен целому числу или None. '
+                              'descending — bool, limit и offset — целые числа.',
+                     'todo': 'Начните со строки SELECT id, title, priority, is_done FROM tasks. Если is_done не '
+                             'None, добавьте условие is_done = :is_done. Если min_priority не None, добавьте '
+                             'priority >= :min_priority. Если условий два, соедините их через AND. Добавьте ORDER BY '
+                             'priority DESC, id ASC при descending=True, иначе ORDER BY priority ASC, id ASC. В '
+                             'конце добавьте LIMIT :limit OFFSET :offset. Верните statement и params только с '
+                             'реально используемыми filters, а также limit и offset.',
+                     'check': 'Проверяется запрос без filters, с одним и с двумя filters. Сравниваются точная '
+                              'SQL-строка и params. Порядок частей должен быть FROM → WHERE → ORDER BY → LIMIT → '
+                              'OFFSET.'},
+        'requirements': {'items': ['динамический список conditions',
+                                   'AND только между существующими filters',
+                                   'стабильный tie-breaker id ASC',
+                                   'limit и offset в params'],
+                         'names': ['is_done',
+                                   'min_priority',
+                                   'descending',
+                                   'limit',
+                                   'offset',
+                                   'conditions',
+                                   'params',
+                                   'statement'],
+                         'nodes': ['FunctionDef', 'If'],
+                         'attributes': ['append', 'join']},
+        'starter_code': 'def solve(is_done, min_priority, descending, limit, offset):\n'
+                        '    conditions = []\n'
+                        '    params = {}\n'
+                        '    # Соберите SELECT по этапам\n'
+                        '    pass\n',
+        'tests': [{'name': 'без filters',
+                   'args': [None, None, False, 20, 0],
+                   'expected': {'statement': 'SELECT id, title, priority, is_done FROM tasks ORDER BY priority ASC, '
+                                             'id ASC LIMIT :limit OFFSET :offset',
+                                'params': {'limit': 20, 'offset': 0}}},
+                  {'name': 'один filter',
+                   'args': [False, None, True, 10, 20],
+                   'expected': {'statement': 'SELECT id, title, priority, is_done FROM tasks WHERE is_done = '
+                                             ':is_done ORDER BY priority DESC, id ASC LIMIT :limit OFFSET :offset',
+                                'params': {'is_done': False, 'limit': 10, 'offset': 20}}},
+                  {'name': 'два filters',
+                   'args': [True, 3, False, 5, 0],
+                   'expected': {'statement': 'SELECT id, title, priority, is_done FROM tasks WHERE is_done = '
+                                             ':is_done AND priority >= :min_priority ORDER BY priority ASC, id ASC '
+                                             'LIMIT :limit OFFSET :offset',
+                                'params': {'is_done': True, 'min_priority': 3, 'limit': 5, 'offset': 0}}}],
+        'reference_code': 'def solve(is_done, min_priority, descending, limit, offset):\n'
+                          '    conditions = []\n'
+                          '    params = {}\n'
+                          '    if is_done is not None:\n'
+                          "        conditions.append('is_done = :is_done')\n"
+                          "        params['is_done'] = is_done\n"
+                          '    if min_priority is not None:\n'
+                          "        conditions.append('priority >= :min_priority')\n"
+                          "        params['min_priority'] = min_priority\n"
+                          "    statement = 'SELECT id, title, priority, is_done FROM tasks'\n"
+                          '    if conditions:\n'
+                          "        statement += ' WHERE ' + ' AND '.join(conditions)\n"
+                          '    if descending:\n'
+                          "        statement += ' ORDER BY priority DESC, id ASC'\n"
+                          '    else:\n'
+                          "        statement += ' ORDER BY priority ASC, id ASC'\n"
+                          "    statement += ' LIMIT :limit OFFSET :offset'\n"
+                          "    params['limit'] = limit\n"
+                          "    params['offset'] = offset\n"
+                          "    return {'statement': statement, 'params': params}\n"}],
+ 121: [{'title': 'Защита UPDATE и DELETE',
+        'level': 'medium',
+        'mode': 'solve',
+        'prompt': 'Если has_where равно False или task_id равно None, верните decision blocked, status 400 и '
+                  'statement None. Если matched_count равно 0, верните decision not_found, status 404 и statement '
+                  'None. Если matched_count больше 1, верните decision suspicious, status 409 и statement None. Для '
+                  'безопасного update верните status 200 и statement UPDATE tasks SET is_done = :is_done WHERE id = '
+                  ':task_id RETURNING id. Для безопасного delete верните status 204 и statement DELETE FROM tasks '
+                  'WHERE id = :task_id RETURNING id. В успешном результате добавьте params с task_id.',
+        'contract': {'given': 'Автопроверка вызывает solve(operation, task_id, has_where, matched_count). operation '
+                              'равен update или delete. task_id — целое число или None. has_where — bool, '
+                              'matched_count — число строк, которые затронула бы операция.',
+                     'todo': 'Если has_where равно False или task_id равно None, верните decision blocked, status '
+                             '400 и statement None. Если matched_count равно 0, верните decision not_found, status '
+                             '404 и statement None. Если matched_count больше 1, верните decision suspicious, status '
+                             '409 и statement None. Для безопасного update верните status 200 и statement UPDATE '
+                             'tasks SET is_done = :is_done WHERE id = :task_id RETURNING id. Для безопасного delete '
+                             'верните status 204 и statement DELETE FROM tasks WHERE id = :task_id RETURNING id. В '
+                             'успешном результате добавьте params с task_id.',
+                     'check': 'Проверяется запрос без WHERE, отсутствующий id, 0/1/несколько совпадений и обе '
+                              'операции. Любая неоднозначная mutation должна блокироваться до выполнения.'},
+        'requirements': {'items': ['блокировка без WHERE',
+                                   'различие 0/1/много строк',
+                                   'parameterized UPDATE',
+                                   'parameterized DELETE'],
+                         'names': ['operation', 'task_id', 'has_where', 'matched_count'],
+                         'nodes': ['FunctionDef', 'If', 'BoolOp']},
+        'starter_code': 'def solve(operation, task_id, has_where, matched_count):\n'
+                        '    # Проверьте безопасность mutation\n'
+                        '    pass\n',
+        'tests': [{'name': 'нет WHERE',
+                   'args': ['delete', 7, False, 20],
+                   'expected': {'decision': 'blocked', 'status': 400, 'statement': None}},
+                  {'name': 'строка не найдена',
+                   'args': ['update', 99, True, 0],
+                   'expected': {'decision': 'not_found', 'status': 404, 'statement': None}},
+                  {'name': 'слишком много строк',
+                   'args': ['delete', 7, True, 3],
+                   'expected': {'decision': 'suspicious', 'status': 409, 'statement': None}},
+                  {'name': 'безопасный UPDATE',
+                   'args': ['update', 7, True, 1],
+                   'expected': {'decision': 'allowed',
+                                'status': 200,
+                                'statement': 'UPDATE tasks SET is_done = :is_done WHERE id = :task_id RETURNING id',
+                                'params': {'task_id': 7}}},
+                  {'name': 'безопасный DELETE',
+                   'args': ['delete', 5, True, 1],
+                   'expected': {'decision': 'allowed',
+                                'status': 204,
+                                'statement': 'DELETE FROM tasks WHERE id = :task_id RETURNING id',
+                                'params': {'task_id': 5}}}],
+        'reference_code': 'def solve(operation, task_id, has_where, matched_count):\n'
+                          '    if not has_where or task_id is None:\n'
+                          '        return {\n'
+                          "            'decision': 'blocked',\n"
+                          "            'status': 400,\n"
+                          "            'statement': None,\n"
+                          '        }\n'
+                          '    if matched_count == 0:\n'
+                          '        return {\n'
+                          "            'decision': 'not_found',\n"
+                          "            'status': 404,\n"
+                          "            'statement': None,\n"
+                          '        }\n'
+                          '    if matched_count > 1:\n'
+                          '        return {\n'
+                          "            'decision': 'suspicious',\n"
+                          "            'status': 409,\n"
+                          "            'statement': None,\n"
+                          '        }\n'
+                          "    if operation == 'update':\n"
+                          '        return {\n'
+                          "            'decision': 'allowed',\n"
+                          "            'status': 200,\n"
+                          "            'statement': (\n"
+                          "                'UPDATE tasks SET is_done = :is_done '\n"
+                          "                'WHERE id = :task_id RETURNING id'\n"
+                          '            ),\n'
+                          "            'params': {'task_id': task_id},\n"
+                          '        }\n'
+                          '    return {\n'
+                          "        'decision': 'allowed',\n"
+                          "        'status': 204,\n"
+                          "        'statement': 'DELETE FROM tasks WHERE id = :task_id RETURNING id',\n"
+                          "        'params': {'task_id': task_id},\n"
+                          '    }\n'}],
+ 123: [{'title': 'Маршрут подключения к PostgreSQL',
+        'level': 'easy',
+        'mode': 'solve',
+        'prompt': 'Соберите connection_url в формате postgresql+psycopg://role:password@host:port/database. Верните '
+                  'также layers в точном порядке: client, driver, server, database, schema. Добавьте target со '
+                  'значениями server=host:port, database, schema и role. Не включайте password в target.',
+        'contract': {'given': 'Автопроверка вызывает solve(role, password, host, port, database, schema). Все '
+                              'аргументы кроме port — строки, port — целое число.',
+                     'todo': 'Соберите connection_url в формате '
+                             'postgresql+psycopg://role:password@host:port/database. Верните также layers в точном '
+                             'порядке: client, driver, server, database, schema. Добавьте target со значениями '
+                             'server=host:port, database, schema и role. Не включайте password в target.',
+                     'check': 'Проверяются разные host, port, database и role. Сравниваются URL, порядок layers и '
+                              'безопасный target без password.'},
+        'requirements': {'items': ['postgresql+psycopg URL',
+                                   'явный host и port',
+                                   'пять уровней подключения',
+                                   'password отсутствует в target'],
+                         'names': ['role',
+                                   'password',
+                                   'host',
+                                   'port',
+                                   'database',
+                                   'schema',
+                                   'connection_url',
+                                   'layers',
+                                   'target'],
+                         'nodes': ['FunctionDef', 'JoinedStr']},
+        'starter_code': 'def solve(role, password, host, port, database, schema):\n'
+                        '    # Соберите URL и карту уровней подключения\n'
+                        '    pass\n',
+        'tests': [{'name': 'локальная база',
+                   'args': ['studyhub_app', 'secret', 'localhost', 5432, 'studyhub_dev', 'public'],
+                   'expected': {'connection_url': 'postgresql+psycopg://studyhub_app:secret@localhost:5432/studyhub_dev',
+                                'layers': ['client', 'driver', 'server', 'database', 'schema'],
+                                'target': {'server': 'localhost:5432',
+                                           'database': 'studyhub_dev',
+                                           'schema': 'public',
+                                           'role': 'studyhub_app'}}},
+                  {'name': 'другой server',
+                   'args': ['app_test', 'testpass', 'db.internal', 5544, 'studyhub_test', 'app'],
+                   'expected': {'connection_url': 'postgresql+psycopg://app_test:testpass@db.internal:5544/studyhub_test',
+                                'layers': ['client', 'driver', 'server', 'database', 'schema'],
+                                'target': {'server': 'db.internal:5544',
+                                           'database': 'studyhub_test',
+                                           'schema': 'app',
+                                           'role': 'app_test'}}}],
+        'reference_code': 'def solve(role, password, host, port, database, schema):\n'
+                          '    connection_url = (\n'
+                          "        f'postgresql+psycopg://{role}:{password}'\n"
+                          "        f'@{host}:{port}/{database}'\n"
+                          '    )\n'
+                          "    layers = ['client', 'driver', 'server', 'database', 'schema']\n"
+                          '    target = {\n'
+                          "        'server': f'{host}:{port}',\n"
+                          "        'database': database,\n"
+                          "        'schema': schema,\n"
+                          "        'role': role,\n"
+                          '    }\n'
+                          '    return {\n'
+                          "        'connection_url': connection_url,\n"
+                          "        'layers': layers,\n"
+                          "        'target': target,\n"
+                          '    }\n'}],
+ 129: [{'title': 'INNER JOIN трёх наборов',
+        'level': 'easy',
+        'mode': 'solve',
+        'prompt': 'Соберите результат INNER JOIN. Включайте только task, для которой найдены и user, и category. '
+                  'Каждая строка результата содержит task_id, title, username и category_name. Сохраняйте порядок '
+                  'tasks.',
+        'contract': {'given': 'Автопроверка вызывает solve(tasks, users, categories). tasks содержит id, title, '
+                              'user_id и category_id. users содержит id и username. categories содержит id и name.',
+                     'todo': 'Соберите результат INNER JOIN. Включайте только task, для которой найдены и user, и '
+                             'category. Каждая строка результата содержит task_id, title, username и category_name. '
+                             'Сохраняйте порядок tasks.',
+                     'check': 'Проверяются полные связи, отсутствующий user и отсутствующая category. Строка с любой '
+                              'отсутствующей правой связью не должна попасть в INNER JOIN result.'},
+        'requirements': {'items': ['индексы users и categories по id',
+                                   'две foreign-key проверки',
+                                   'строка только при обеих найденных связях',
+                                   'порядок tasks'],
+                         'names': ['tasks', 'users', 'categories', 'rows'],
+                         'nodes': ['FunctionDef', 'For', 'If', 'BoolOp'],
+                         'attributes': ['get', 'append']},
+        'starter_code': 'def solve(tasks, users, categories):\n'
+                        '    rows = []\n'
+                        '    # Соедините три набора по foreign keys\n'
+                        '    pass\n',
+        'tests': [{'name': 'все связи найдены',
+                   'args': [[{'id': 1, 'title': 'SQL', 'user_id': 7, 'category_id': 10},
+                             {'id': 2, 'title': 'JOIN', 'user_id': 8, 'category_id': 11}],
+                            [{'id': 7, 'username': 'alice'}, {'id': 8, 'username': 'bob'}],
+                            [{'id': 10, 'name': 'database'}, {'id': 11, 'name': 'backend'}]],
+                   'expected': [{'task_id': 1, 'title': 'SQL', 'username': 'alice', 'category_name': 'database'},
+                                {'task_id': 2, 'title': 'JOIN', 'username': 'bob', 'category_name': 'backend'}]},
+                  {'name': 'часть связей отсутствует',
+                   'args': [[{'id': 1, 'title': 'SQL', 'user_id': 7, 'category_id': 10},
+                             {'id': 2, 'title': 'No user', 'user_id': 99, 'category_id': 10},
+                             {'id': 3, 'title': 'No category', 'user_id': 7, 'category_id': 77}],
+                            [{'id': 7, 'username': 'alice'}],
+                            [{'id': 10, 'name': 'database'}]],
+                   'expected': [{'task_id': 1, 'title': 'SQL', 'username': 'alice', 'category_name': 'database'}]}],
+        'reference_code': 'def solve(tasks, users, categories):\n'
+                          '    users_by_id = {}\n'
+                          '    for user in users:\n'
+                          "        users_by_id[user['id']] = user\n"
+                          '    categories_by_id = {}\n'
+                          '    for category in categories:\n'
+                          "        categories_by_id[category['id']] = category\n"
+                          '    rows = []\n'
+                          '    for task in tasks:\n'
+                          "        user = users_by_id.get(task['user_id'])\n"
+                          "        category = categories_by_id.get(task['category_id'])\n"
+                          '        if user is not None and category is not None:\n'
+                          '            rows.append({\n'
+                          "                'task_id': task['id'],\n"
+                          "                'title': task['title'],\n"
+                          "                'username': user['username'],\n"
+                          "                'category_name': category['name'],\n"
+                          '            })\n'
+                          '    return rows\n'}],
+ 130: [{'title': 'LEFT JOIN и отсутствующие связи',
+        'level': 'easy',
+        'mode': 'solve',
+        'prompt': 'Для каждой task верните строку task_id, title и category_name. Если category не найдена или '
+                  'category_id равен None, category_name должен быть None. Также верните users_without_tasks — id '
+                  'пользователей, на которых не ссылается ни одна task. Сохраняйте порядок tasks и users.',
+        'contract': {'given': 'Автопроверка вызывает solve(tasks, users, categories). category_id у task может быть '
+                              'None. Нужно сохранить все tasks и отдельно найти users без задач.',
+                     'todo': 'Для каждой task верните строку task_id, title и category_name. Если category не '
+                             'найдена или category_id равен None, category_name должен быть None. Также верните '
+                             'users_without_tasks — id пользователей, на которых не ссылается ни одна task. '
+                             'Сохраняйте порядок tasks и users.',
+                     'check': 'Проверяются task без category, неизвестная category и user без tasks. В отличие от '
+                              'INNER JOIN ни одна task не должна исчезнуть.'},
+        'requirements': {'items': ['все tasks остаются в result',
+                                   'None для отсутствующей category',
+                                   'множество used_user_ids',
+                                   'users_without_tasks в исходном порядке'],
+                         'names': ['tasks', 'users', 'categories', 'task_rows', 'users_without_tasks'],
+                         'nodes': ['FunctionDef', 'For', 'If'],
+                         'calls': ['set'],
+                         'attributes': ['get', 'add', 'append']},
+        'starter_code': 'def solve(tasks, users, categories):\n'
+                        '    task_rows = []\n'
+                        '    users_without_tasks = []\n'
+                        '    # Смоделируйте два LEFT JOIN сценария\n'
+                        '    pass\n',
+        'tests': [{'name': 'nullable category и user без задач',
+                   'args': [[{'id': 1, 'title': 'SQL', 'user_id': 7, 'category_id': 10},
+                             {'id': 2, 'title': 'Без категории', 'user_id': 7, 'category_id': None}],
+                            [{'id': 7, 'username': 'alice'}, {'id': 8, 'username': 'bob'}],
+                            [{'id': 10, 'name': 'database'}]],
+                   'expected': {'task_rows': [{'task_id': 1, 'title': 'SQL', 'category_name': 'database'},
+                                              {'task_id': 2, 'title': 'Без категории', 'category_name': None}],
+                                'users_without_tasks': [8]}},
+                  {'name': 'неизвестная category',
+                   'args': [[{'id': 3, 'title': 'Broken link', 'user_id': 9, 'category_id': 99}],
+                            [{'id': 9, 'username': 'carol'}],
+                            []],
+                   'expected': {'task_rows': [{'task_id': 3, 'title': 'Broken link', 'category_name': None}],
+                                'users_without_tasks': []}}],
+        'reference_code': 'def solve(tasks, users, categories):\n'
+                          '    categories_by_id = {}\n'
+                          '    for category in categories:\n'
+                          "        categories_by_id[category['id']] = category\n"
+                          '    task_rows = []\n'
+                          '    used_user_ids = set()\n'
+                          '    for task in tasks:\n'
+                          "        used_user_ids.add(task['user_id'])\n"
+                          "        category = categories_by_id.get(task['category_id'])\n"
+                          '        category_name = None\n'
+                          '        if category is not None:\n'
+                          "            category_name = category['name']\n"
+                          '        task_rows.append({\n'
+                          "            'task_id': task['id'],\n"
+                          "            'title': task['title'],\n"
+                          "            'category_name': category_name,\n"
+                          '        })\n'
+                          '    users_without_tasks = []\n'
+                          '    for user in users:\n'
+                          "        if user['id'] not in used_user_ids:\n"
+                          "            users_without_tasks.append(user['id'])\n"
+                          '    return {\n'
+                          "        'task_rows': task_rows,\n"
+                          "        'users_without_tasks': users_without_tasks,\n"
+                          '    }\n'}],
+ 132: [{'title': 'GROUP BY и агрегаты StudyHub',
+        'level': 'medium',
+        'mode': 'solve',
+        'prompt': 'Верните by_user и avg_priority_by_category. by_user — список по возрастанию user_id со значениями '
+                  'user_id, total и done. avg_priority_by_category — список по возрастанию category_id со значениями '
+                  'category_id и average, округлённым round(..., 2). Каждая task участвует ровно в одной группе '
+                  'пользователя и одной группе категории.',
+        'contract': {'given': 'Автопроверка вызывает solve(tasks). Каждая task содержит user_id, category_id, '
+                              'priority и is_done. Списки могут быть пустыми.',
+                     'todo': 'Верните by_user и avg_priority_by_category. by_user — список по возрастанию user_id со '
+                             'значениями user_id, total и done. avg_priority_by_category — список по возрастанию '
+                             'category_id со значениями category_id и average, округлённым round(..., 2). Каждая '
+                             'task участвует ровно в одной группе пользователя и одной группе категории.',
+                     'check': 'Проверяются несколько групп, одна группа и пустой список. Сравниваются counts, '
+                              'averages и стабильный порядок групп.'},
+        'requirements': {'items': ['группировка по user_id',
+                                   'COUNT total и done',
+                                   'группировка по category_id',
+                                   'AVG priority'],
+                         'names': ['tasks', 'users', 'categories', 'by_user', 'avg_priority_by_category'],
+                         'nodes': ['FunctionDef', 'For', 'If'],
+                         'calls': ['sorted', 'round'],
+                         'attributes': ['append']},
+        'starter_code': 'def solve(tasks):\n    # Соберите две группировки\n    pass\n',
+        'tests': [{'name': 'несколько групп',
+                   'args': [[{'user_id': 7, 'category_id': 10, 'priority': 2, 'is_done': True},
+                             {'user_id': 7, 'category_id': 10, 'priority': 4, 'is_done': False},
+                             {'user_id': 8, 'category_id': 11, 'priority': 5, 'is_done': True}]],
+                   'expected': {'by_user': [{'user_id': 7, 'total': 2, 'done': 1},
+                                            {'user_id': 8, 'total': 1, 'done': 1}],
+                                'avg_priority_by_category': [{'category_id': 10, 'average': 3.0},
+                                                             {'category_id': 11, 'average': 5.0}]}},
+                  {'name': 'пустой список',
+                   'args': [[]],
+                   'expected': {'by_user': [], 'avg_priority_by_category': []}}],
+        'reference_code': 'def solve(tasks):\n'
+                          '    users = {}\n'
+                          '    categories = {}\n'
+                          '    for task in tasks:\n'
+                          "        user_id = task['user_id']\n"
+                          '        if user_id not in users:\n'
+                          "            users[user_id] = {'total': 0, 'done': 0}\n"
+                          "        users[user_id]['total'] += 1\n"
+                          "        if task['is_done']:\n"
+                          "            users[user_id]['done'] += 1\n"
+                          "        category_id = task['category_id']\n"
+                          '        if category_id not in categories:\n'
+                          "            categories[category_id] = {'sum': 0, 'count': 0}\n"
+                          "        categories[category_id]['sum'] += task['priority']\n"
+                          "        categories[category_id]['count'] += 1\n"
+                          '    by_user = []\n'
+                          '    for user_id in sorted(users):\n'
+                          '        by_user.append({\n'
+                          "            'user_id': user_id,\n"
+                          "            'total': users[user_id]['total'],\n"
+                          "            'done': users[user_id]['done'],\n"
+                          '        })\n'
+                          '    avg_priority_by_category = []\n'
+                          '    for category_id in sorted(categories):\n'
+                          '        values = categories[category_id]\n'
+                          "        average = round(values['sum'] / values['count'], 2)\n"
+                          '        avg_priority_by_category.append({\n'
+                          "            'category_id': category_id,\n"
+                          "            'average': average,\n"
+                          '        })\n'
+                          '    return {\n'
+                          "        'by_user': by_user,\n"
+                          "        'avg_priority_by_category': avg_priority_by_category,\n"
+                          '    }\n'}],
+ 133: [{'title': 'WHERE, HAVING и EXISTS',
+        'level': 'medium',
+        'mode': 'solve',
+        'prompt': 'Верните три результата. users_with_min_tasks — id пользователей, у которых COUNT(tasks) не меньше '
+                  'min_tasks; это модель HAVING после GROUP BY. categories_without_active — id категорий, для '
+                  'которых не существует task с is_done=False; это модель NOT EXISTS. email_exists — True, если '
+                  'существует user с email без учёта регистра. Сохраняйте порядок users и categories.',
+        'contract': {'given': 'Автопроверка вызывает solve(users, tasks, categories, min_tasks, email). users '
+                              'содержит id и email. tasks содержит user_id, category_id и is_done. categories '
+                              'содержит id.',
+                     'todo': 'Верните три результата. users_with_min_tasks — id пользователей, у которых '
+                             'COUNT(tasks) не меньше min_tasks; это модель HAVING после GROUP BY. '
+                             'categories_without_active — id категорий, для которых не существует task с '
+                             'is_done=False; это модель NOT EXISTS. email_exists — True, если существует user с '
+                             'email без учёта регистра. Сохраняйте порядок users и categories.',
+                     'check': 'Проверяются группы выше и ниже порога, пустая category, category только с '
+                              'завершёнными tasks и поиск email в другом регистре.'},
+        'requirements': {'items': ['COUNT по user_id',
+                                   'фильтр групп по min_tasks',
+                                   'NOT EXISTS активной task',
+                                   'EXISTS email без учёта регистра'],
+                         'names': ['users', 'tasks', 'categories', 'min_tasks', 'email'],
+                         'nodes': ['FunctionDef', 'For', 'If'],
+                         'attributes': ['get', 'append', 'lower']},
+        'starter_code': 'def solve(users, tasks, categories, min_tasks, email):\n'
+                        '    # Реализуйте HAVING и два EXISTS-подобных вопроса\n'
+                        '    pass\n',
+        'tests': [{'name': 'полный сценарий',
+                   'args': [[{'id': 7, 'email': 'alice@example.com'},
+                             {'id': 8, 'email': 'bob@example.com'},
+                             {'id': 9, 'email': 'carol@example.com'}],
+                            [{'user_id': 7, 'category_id': 10, 'is_done': False},
+                             {'user_id': 7, 'category_id': 10, 'is_done': True},
+                             {'user_id': 7, 'category_id': 11, 'is_done': True},
+                             {'user_id': 8, 'category_id': 11, 'is_done': True}],
+                            [{'id': 10}, {'id': 11}, {'id': 12}],
+                            2,
+                            'ALICE@EXAMPLE.COM'],
+                   'expected': {'users_with_min_tasks': [7],
+                                'categories_without_active': [11, 12],
+                                'email_exists': True}},
+                  {'name': 'ничего не найдено',
+                   'args': [[{'id': 1, 'email': 'one@example.com'}], [], [{'id': 5}], 1, 'missing@example.com'],
+                   'expected': {'users_with_min_tasks': [],
+                                'categories_without_active': [5],
+                                'email_exists': False}}],
+        'reference_code': 'def solve(users, tasks, categories, min_tasks, email):\n'
+                          '    counts = {}\n'
+                          '    for task in tasks:\n'
+                          "        user_id = task['user_id']\n"
+                          '        counts[user_id] = counts.get(user_id, 0) + 1\n'
+                          '    users_with_min_tasks = []\n'
+                          '    for user in users:\n'
+                          "        if counts.get(user['id'], 0) >= min_tasks:\n"
+                          "            users_with_min_tasks.append(user['id'])\n"
+                          '    categories_without_active = []\n'
+                          '    for category in categories:\n'
+                          '        active_exists = False\n'
+                          '        for task in tasks:\n'
+                          "            same_category = task['category_id'] == category['id']\n"
+                          "            if same_category and not task['is_done']:\n"
+                          '                active_exists = True\n'
+                          '                break\n'
+                          '        if not active_exists:\n'
+                          "            categories_without_active.append(category['id'])\n"
+                          '    normalized_email = email.lower()\n'
+                          '    email_exists = False\n'
+                          '    for user in users:\n'
+                          "        if user['email'].lower() == normalized_email:\n"
+                          '            email_exists = True\n'
+                          '            break\n'
+                          '    return {\n'
+                          "        'users_with_min_tasks': users_with_min_tasks,\n"
+                          "        'categories_without_active': categories_without_active,\n"
+                          "        'email_exists': email_exists,\n"
+                          '    }\n'}],
+ 134: [{'title': 'Атомарное завершение задачи',
+        'level': 'medium',
+        'mode': 'solve',
+        'prompt': 'Смоделируйте одну transaction: изменить task is_done на True и добавить progress event с task_id '
+                  "и event='completed'. Если fail_event_insert равно True, верните исходные task и progress_events "
+                  'без частичного изменения, status rolled_back и committed False. Иначе верните оба изменения, '
+                  'status committed и committed True. Не изменяйте входные объекты напрямую: сначала создайте '
+                  'copies.',
+        'contract': {'given': 'Автопроверка вызывает solve(task, progress_events, fail_event_insert). task — словарь '
+                              'id и is_done. progress_events — список словарей. fail_event_insert моделирует ошибку '
+                              'второго SQL statement.',
+                     'todo': 'Смоделируйте одну transaction: изменить task is_done на True и добавить progress event '
+                             "с task_id и event='completed'. Если fail_event_insert равно True, верните исходные "
+                             'task и progress_events без частичного изменения, status rolled_back и committed False. '
+                             'Иначе верните оба изменения, status committed и committed True. Не изменяйте входные '
+                             'объекты напрямую: сначала создайте copies.',
+                     'check': 'Платформа проверит успешный commit и ошибку второго шага. При rollback task должна '
+                              'остаться незавершённой, а event не должен появиться.'},
+        'requirements': {'items': ['copies входных данных',
+                                   'два связанных изменения',
+                                   'полный rollback при ошибке',
+                                   'commit только после обоих шагов'],
+                         'names': ['task', 'progress_events', 'fail_event_insert'],
+                         'nodes': ['FunctionDef', 'If'],
+                         'calls': ['dict', 'list'],
+                         'attributes': ['append']},
+        'starter_code': 'def solve(task, progress_events, fail_event_insert):\n'
+                        '    # Выполните оба изменения атомарно\n'
+                        '    pass\n',
+        'tests': [{'name': 'успешная transaction',
+                   'args': [{'id': 5, 'is_done': False}, [], False],
+                   'expected': {'status': 'committed',
+                                'committed': True,
+                                'task': {'id': 5, 'is_done': True},
+                                'progress_events': [{'task_id': 5, 'event': 'completed'}]}},
+                  {'name': 'ошибка второго шага',
+                   'args': [{'id': 5, 'is_done': False}, [], True],
+                   'expected': {'status': 'rolled_back',
+                                'committed': False,
+                                'task': {'id': 5, 'is_done': False},
+                                'progress_events': []}},
+                  {'name': 'сохраняются прежние events',
+                   'args': [{'id': 8, 'is_done': False}, [{'task_id': 3, 'event': 'completed'}], False],
+                   'expected': {'status': 'committed',
+                                'committed': True,
+                                'task': {'id': 8, 'is_done': True},
+                                'progress_events': [{'task_id': 3, 'event': 'completed'},
+                                                    {'task_id': 8, 'event': 'completed'}]}}],
+        'reference_code': 'def solve(task, progress_events, fail_event_insert):\n'
+                          '    original_task = dict(task)\n'
+                          '    original_events = list(progress_events)\n'
+                          '    working_task = dict(task)\n'
+                          '    working_events = list(progress_events)\n'
+                          "    working_task['is_done'] = True\n"
+                          '    if fail_event_insert:\n'
+                          '        return {\n'
+                          "            'status': 'rolled_back',\n"
+                          "            'committed': False,\n"
+                          "            'task': original_task,\n"
+                          "            'progress_events': original_events,\n"
+                          '        }\n'
+                          '    working_events.append({\n'
+                          "        'task_id': working_task['id'],\n"
+                          "        'event': 'completed',\n"
+                          '    })\n'
+                          '    return {\n'
+                          "        'status': 'committed',\n"
+                          "        'committed': True,\n"
+                          "        'task': working_task,\n"
+                          "        'progress_events': working_events,\n"
+                          '    }\n'}],
+ 136: [{'title': 'Leftmost prefix составного индекса',
+        'level': 'medium',
+        'mode': 'solve',
+        'prompt': 'Определите usable_prefix по правилу leftmost prefix. Идите по index_columns слева направо. '
+                  'Колонка входит в prefix, если она есть в equality_filters. Первая колонка range_column также '
+                  'входит и завершает prefix. При первой колонке без equality/range остановитесь. supports_order '
+                  'равно True, если order_by — следующая колонка после equality prefix или уже последняя колонка '
+                  'usable_prefix как range/order column. Верните usable_prefix и supports_order.',
+        'contract': {'given': 'Автопроверка вызывает solve(index_columns, equality_filters, range_column, order_by). '
+                              'index_columns — порядок колонок составного индекса. equality_filters — список колонок '
+                              'с условием равенства. range_column и order_by — строка или None.',
+                     'todo': 'Определите usable_prefix по правилу leftmost prefix. Идите по index_columns слева '
+                             'направо. Колонка входит в prefix, если она есть в equality_filters. Первая колонка '
+                             'range_column также входит и завершает prefix. При первой колонке без equality/range '
+                             'остановитесь. supports_order равно True, если order_by — следующая колонка после '
+                             'equality prefix или уже последняя колонка usable_prefix как range/order column. '
+                             'Верните usable_prefix и supports_order.',
+                     'check': 'Проверяется полный prefix, пропуск первой колонки, range после equality и сортировка '
+                              'по следующей колонке. Индекс не должен считаться полезным только потому, что filter '
+                              'содержит правую колонку.'},
+        'requirements': {'items': ['left-to-right обход index_columns',
+                                   'stop на первой дырке',
+                                   'range завершает prefix',
+                                   'order_by после equality prefix'],
+                         'names': ['index_columns',
+                                   'equality_filters',
+                                   'range_column',
+                                   'order_by',
+                                   'usable_prefix',
+                                   'supports_order'],
+                         'nodes': ['FunctionDef', 'For', 'If'],
+                         'calls': ['set', 'len'],
+                         'attributes': ['append']},
+        'starter_code': 'def solve(index_columns, equality_filters, range_column, order_by):\n'
+                        '    usable_prefix = []\n'
+                        '    # Примените leftmost-prefix rule\n'
+                        '    pass\n',
+        'tests': [{'name': 'полный equality prefix',
+                   'args': [['owner_id', 'is_done', 'created_at'], ['owner_id', 'is_done'], None, 'created_at'],
+                   'expected': {'usable_prefix': ['owner_id', 'is_done'], 'supports_order': True}},
+                  {'name': 'пропущена первая колонка',
+                   'args': [['owner_id', 'is_done', 'created_at'], ['is_done'], None, 'created_at'],
+                   'expected': {'usable_prefix': [], 'supports_order': False}},
+                  {'name': 'range завершает prefix',
+                   'args': [['owner_id', 'is_done', 'created_at'], ['owner_id'], 'is_done', 'created_at'],
+                   'expected': {'usable_prefix': ['owner_id', 'is_done'], 'supports_order': False}},
+                  {'name': 'order по первой колонке',
+                   'args': [['owner_id', 'is_done', 'created_at'], [], None, 'owner_id'],
+                   'expected': {'usable_prefix': [], 'supports_order': True}}],
+        'reference_code': 'def solve(index_columns, equality_filters, range_column, order_by):\n'
+                          '    equality_set = set(equality_filters)\n'
+                          '    usable_prefix = []\n'
+                          '    stopped_by_range = False\n'
+                          '    for column in index_columns:\n'
+                          '        if column in equality_set:\n'
+                          '            usable_prefix.append(column)\n'
+                          '        elif column == range_column:\n'
+                          '            usable_prefix.append(column)\n'
+                          '            stopped_by_range = True\n'
+                          '            break\n'
+                          '        else:\n'
+                          '            break\n'
+                          '    supports_order = False\n'
+                          '    if order_by is not None and not stopped_by_range:\n'
+                          '        next_index = len(usable_prefix)\n'
+                          '        if next_index < len(index_columns):\n'
+                          '            supports_order = index_columns[next_index] == order_by\n'
+                          '    if stopped_by_range and usable_prefix:\n'
+                          '        supports_order = usable_prefix[-1] == order_by\n'
+                          '    return {\n'
+                          "        'usable_prefix': usable_prefix,\n"
+                          "        'supports_order': supports_order,\n"
+                          '    }\n'}]}
+
 def get_code_tasks(track_id: str, filename: str) -> list[dict[str, Any]]:
     """Возвращает задачи редактора только для тем, проверяемых без доступа к ОС."""
     match = re.match(r"^(\d+)\s+-\s+", filename)
@@ -2989,5 +3760,8 @@ def get_code_tasks(track_id: str, filename: str) -> list[dict[str, Any]]:
         PLANNER_API_TRACK: PLANNER_API_CODE_TASKS,
         DATABASE_API_TRACK: DATABASE_API_CODE_TASKS,
         PERSONAL_API_TRACK: PERSONAL_API_CODE_TASKS,
-    }.get(track_id, {})
-    return tasks_by_track.get(lesson_number, [])
+    }
+    for postgres_track in POSTGRESQL_TRACK_ALIASES:
+        tasks_by_track[postgres_track] = POSTGRESQL_CODE_TASKS
+
+    return tasks_by_track.get(track_id, {}).get(lesson_number, [])
