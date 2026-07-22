@@ -9,11 +9,13 @@ backend/.env
 
 frontend/node_modules/
 frontend/*.log
-# frontend/dist коммитим намеренно: сервер шаред-хостинга не может собрать
-# фронт (не хватает памяти), поэтому готовый билд доставляем через git.
+# frontend/dist is intentionally tracked: the production host cannot build it.
 
-# Claude Code local config (личные разрешения + машинно-зависимые пути)
+# Claude Code local configuration.
 .claude/
 
-# Локальный zip-архив билда (для ручной заливки; в git не нужен — dist уже в репе)
+# Local ZIP archive of a build; frontend/dist is already tracked.
 pymentor-dist.zip
+
+# Local deployment notes with production details.
+DEPLOYMENT.local.md
