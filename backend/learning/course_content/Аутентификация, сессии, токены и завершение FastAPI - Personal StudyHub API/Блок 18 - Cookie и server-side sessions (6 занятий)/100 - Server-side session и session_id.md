@@ -272,3 +272,5 @@ app/
 ## Что намеренно отложено
 
 Login endpoint появится в уроке 101, current user — в 102, logout — в 103. Redis sessions и device fingerprinting не входят в этап.
+
+<!-- youtube: -->

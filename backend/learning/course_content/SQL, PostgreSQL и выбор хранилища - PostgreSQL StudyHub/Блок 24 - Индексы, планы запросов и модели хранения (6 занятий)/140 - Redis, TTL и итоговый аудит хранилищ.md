@@ -68,3 +68,5 @@
 - перенос основного проекта на MongoDB;
 - Redis как единственный source of truth;
 - глубокая настройка planner;
+
+<!-- youtube: -->

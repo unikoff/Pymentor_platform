@@ -233,3 +233,5 @@ def unauthorized() -> HTTPException:
 ## Что намеренно отложено
 
 Logout использует CurrentSession в уроке 103. Ownership использует CurrentUser в уроке 104. Роли и JWT пока не вводятся.
+
+<!-- youtube: -->

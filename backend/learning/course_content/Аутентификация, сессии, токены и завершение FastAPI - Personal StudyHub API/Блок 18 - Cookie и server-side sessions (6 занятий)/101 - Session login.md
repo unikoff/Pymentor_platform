@@ -227,3 +227,5 @@ assert "password_hash" not in response.json()
 ## Что намеренно отложено
 
 CurrentUser и защищённые endpoint появятся в уроке 102. JWT и refresh token относятся к блоку 19.
+
+<!-- youtube: -->

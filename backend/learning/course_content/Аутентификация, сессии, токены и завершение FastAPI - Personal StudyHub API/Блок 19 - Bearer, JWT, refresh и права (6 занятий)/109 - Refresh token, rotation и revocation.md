@@ -155,3 +155,5 @@ def refresh_tokens(payload: RefreshRequest, db: DbSession, settings: AppSettings
 - Все security-проверки выполняются до действия.
 - Есть success, invalid и forbidden тесты.
 - Status codes обоснованы.
+
+<!-- youtube: -->

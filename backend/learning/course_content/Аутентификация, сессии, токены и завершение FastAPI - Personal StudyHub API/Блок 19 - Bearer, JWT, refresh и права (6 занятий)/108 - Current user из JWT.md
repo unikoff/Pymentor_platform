@@ -161,3 +161,5 @@ def list_my_tasks(current_user: CurrentUser, db: DbSession):
 - Все security-проверки выполняются до действия.
 - Есть success, invalid и forbidden тесты.
 - Status codes обоснованы.
+
+<!-- youtube: -->

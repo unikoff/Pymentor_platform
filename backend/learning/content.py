@@ -28,7 +28,11 @@ from learning.rich_practice import get_manual_practice
 
 
 COURSE_ROOT = Path(__file__).resolve().parent / "course_content"
-DEFAULT_VIDEO_ID = "rfscVS0vtbw"
+YOUTUBE_MARKER_RE = re.compile(r"<!--\s*youtube\s*:\s*(.*?)\s*-->", re.IGNORECASE | re.DOTALL)
+YOUTUBE_URL_RE = re.compile(
+    r"(?:youtu\.be/|youtube(?:-nocookie)?\.com/(?:watch\?[^#\s]*?v=|embed/|shorts/|live/))([A-Za-z0-9_-]{11})",
+    re.IGNORECASE,
+)
 
 # Порядок уроков python-трека. Файлы, которых нет в списке, идут после — по алфавиту.
 LESSON_SEQUENCE = [
@@ -240,10 +244,29 @@ def _strip_generated_task_dump(text: str) -> str:
     return text.split("\n## Tasks for compiler", 1)[0]
 
 
+def _extract_youtube_video(text: str, title: str) -> dict[str, str] | None:
+    """Read a YouTube URL from the lesson marker at the end of Markdown."""
+    marker_match = YOUTUBE_MARKER_RE.search(text)
+    if marker_match is None:
+        return None
+
+    url_match = YOUTUBE_URL_RE.search(marker_match.group(1))
+    if url_match is None:
+        return None
+
+    youtube_id = url_match.group(1)
+    return {
+        "title": f"Видео к занятию: {title}",
+        "youtube_id": youtube_id,
+        "embed_url": f"https://www.youtube.com/embed/{youtube_id}",
+    }
+
+
 def _strip_service_fences(text: str) -> str:
     """Убирает из markdown сервисные блоки ```tests и ```starter — студент их видеть не должен."""
     text = TESTS_FENCE_RE.sub("", text)
     text = STARTER_FENCE_RE.sub("", text)
+    text = YOUTUBE_MARKER_RE.sub("", text)
     return text.strip()
 
 
@@ -320,6 +343,7 @@ def _split_paragraphs(text: str) -> list[str]:
 
 
 def _extract_intro_theory(text: str) -> list[str]:
+    text = YOUTUBE_MARKER_RE.sub("", text)
     before_tasks = re.split(r"\n##\s+.*?(?:Домашнее задание|Практика).*?\n", text, maxsplit=1, flags=re.IGNORECASE)
     paragraphs = _split_paragraphs(before_tasks[0])
     return paragraphs[:5] or ["Материал урока скоро будет расширен."]
@@ -569,9 +593,13 @@ def _build_lesson(path: Path, index: int, total: int, track_id: str, track_dir: 
     lesson_id = f"{track_id}-lesson-{index + 1:02d}"
     title = "Карта обучения" if path.name == "План обучения.md" else _extract_title(path, text)
     access = _lesson_access(path, track_dir)
+    lesson_match = re.match(r"^(\d+)", path.name)
+    if track_dir.name == NEW_PYTHON_TRACK_NAME and lesson_match and not re.match(r"^\d+\.", title):
+        title = f"{int(lesson_match.group(1))}. {title}"
     tasks = _tasks_for_lesson(relative, text, lesson_id, track_id, path.name)
     manual_practice = [] if tasks else get_manual_practice(track_id, path.name)
     self_check = relative in SELF_CHECK_LESSONS or bool(manual_practice)
+    video = _extract_youtube_video(text, title)
 
     return {
         "id": lesson_id,
@@ -585,11 +613,7 @@ def _build_lesson(path: Path, index: int, total: int, track_id: str, track_dir: 
         "theory_markdown": _strip_service_fences(text),
         "self_check": self_check,
         "manual_practice": manual_practice,
-        "video": {
-            "title": f"Видео к уроку: {title}",
-            "youtube_id": DEFAULT_VIDEO_ID,
-            "embed_url": f"https://www.youtube.com/embed/{DEFAULT_VIDEO_ID}",
-        },
+        "video": video,
         "tasks": tasks,
         "source_file": relative,
     }

@@ -228,3 +228,5 @@ assert phone.get("/users/me").status_code == 200
 ## Что намеренно отложено
 
 Автоматический scheduler cleanup, Redis и distributed sessions относятся к будущим этапам.
+
+<!-- youtube: -->

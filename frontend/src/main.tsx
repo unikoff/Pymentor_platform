@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import "./styles.css";
 import { CodeEditor } from "./CodeEditor";
+import { LessonNavigationProvider, NextLessonLink } from "./lessonNavigation";
 import { richLessonPages } from "./lessonPages";
 
 declare global {
@@ -136,7 +137,7 @@ type Lesson = {
   is_available?: boolean;
   locked_reason?: string | null;
   theory?: string[];
-  video?: LessonVideo;
+  video?: LessonVideo | null;
   tasks?: LessonTask[];
   source_file?: string;
   self_check?: boolean;
@@ -618,6 +619,10 @@ function Workspace({
   }, [displayLessons]);
   const moduleKey = lessonModules.join("|");
   const activeLesson = displayLessons.find((lesson) => lesson.id === activeLessonId) ?? displayLessons[0];
+  const nextLesson = useMemo(() => {
+    const currentIndex = displayLessons.findIndex((lesson) => lesson.id === activeLesson?.id);
+    return currentIndex >= 0 ? displayLessons[currentIndex + 1] : undefined;
+  }, [activeLesson?.id, displayLessons]);
   const workspaceStyle = { "--explorer": `${explorerWidth}px` } as React.CSSProperties;
 
   const progress = useMemo(() => {
@@ -836,6 +841,14 @@ function Workspace({
     }
   }
 
+  function openNextLesson() {
+    if (!nextLesson) {
+      return;
+    }
+    setActiveLessonId(nextLesson.id);
+    openView("theory");
+  }
+
   async function handleLogout() {
     await apiRequest("/user/logout", {}).catch(() => undefined);
     onLogout();
@@ -1050,7 +1063,11 @@ function Workspace({
               <LockedLessonView lesson={activeLesson} onRequireAuth={onRequireAuth} isGuest={!user} />
             ) : (
               <>
-                {activeView === "theory" && <LearningTheoryView lesson={activeLesson} />}
+                {activeView === "theory" && (
+                  <LessonNavigationProvider nextLesson={nextLesson} onNextLesson={openNextLesson}>
+                    <LearningTheoryView lesson={activeLesson} />
+                  </LessonNavigationProvider>
+                )}
                 {activeView === "practice" && (
                   <LearningPracticeView
                     lesson={activeLesson}
@@ -1822,18 +1839,29 @@ function LockedLessonView({
   );
 }
 
-function getLessonVideo(lesson: Lesson): LessonVideo {
-  return (
-    lesson.video ?? {
-      title: "Видео к уроку",
-      youtube_id: "rfscVS0vtbw",
-      embed_url: "https://www.youtube.com/embed/rfscVS0vtbw",
-    }
-  );
+function getLessonVideo(lesson: Lesson): LessonVideo | null | undefined {
+  return lesson.video;
 }
 
 function getLessonTasks(lesson: Lesson): LessonTask[] {
   return lesson.tasks ?? [];
+}
+
+function LessonVideoCard({ video }: { video: LessonVideo }) {
+  return (
+    <section className="lesson-video-card">
+      <div>
+        <span>Видео из YouTube</span>
+        <h2>{video.title}</h2>
+      </div>
+      <iframe
+        src={video.embed_url}
+        title={video.title}
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowFullScreen
+      />
+    </section>
+  );
 }
 
 function LearningTheoryView({ lesson }: { lesson: Lesson }) {
@@ -1877,18 +1905,8 @@ function LearningTheoryView({ lesson }: { lesson: Lesson }) {
     return (
       <div className="document-view document-view--rich">
         <RichLessonPage module={lesson.module} />
-        <section className="lesson-video-card">
-          <div>
-            <span>Видео из YouTube</span>
-            <h2>{video.title}</h2>
-          </div>
-          <iframe
-            src={video.embed_url}
-            title={video.title}
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            allowFullScreen
-          />
-        </section>
+        {video && <LessonVideoCard video={video} />}
+        <NextLessonLink />
       </div>
     );
   }
@@ -1907,22 +1925,8 @@ function LearningTheoryView({ lesson }: { lesson: Lesson }) {
       ) : (
         getLessonTheory(lesson).map((paragraph) => <p key={paragraph}>{paragraph}</p>)
       )}
-      <section className="lesson-video-card">
-        <div>
-          <span>Видео из YouTube</span>
-          <h2>{video.title}</h2>
-        </div>
-        <iframe
-          src={video.embed_url}
-          title={video.title}
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          allowFullScreen
-        />
-      </section>
-      <section className="note-panel">
-        <h2>Практика после теории</h2>
-        <p>Откройте вкладку practice.py, выполните задания по порядку и сверяйтесь с критерием «Готово, если».</p>
-      </section>
+      {video && <LessonVideoCard video={video} />}
+      <NextLessonLink />
     </div>
   );
 }
