@@ -28,6 +28,12 @@ DEPLOY_TRACK_ALIASES = (
     "Docker, CI/CD и деплой - Deployable StudyHub",
     "Docker и CI/CD - Deployable StudyHub",
 )
+LMS_TRACK = "StudyHub LMS, Redis, портфолио и собеседования - StudyHub LMS Release"
+LMS_TRACK_ALIASES = (
+    LMS_TRACK,
+    "LMS Core, Redis и финальный релиз - StudyHub LMS Release",
+    "LMS, Redis и портфолио - StudyHub LMS Release",
+)
 
 
 def _contract(given: str, todo: str, check: str) -> dict[str, str]:
@@ -5342,6 +5348,1216 @@ DEPLOY_CODE_TASKS: dict[int, list[dict[str, Any]]] = {166: [{'title': 'Диаг�
                           "        'failed_checks': failed_checks,\n"
                           '    }\n'}]}
 
+LMS_CODE_TASKS: dict[int, list[dict[str, Any]]] = {189: [{'title': 'Отберите требования финального MVP',
+        'level': 'easy',
+        'mode': 'solve',
+        'prompt': 'Разделите требования на mvp и out_of_scope. В mvp добавляйте name только когда '
+                  'supports_core_flow=True и external_scope=False. Остальные требования добавляйте в out_of_scope '
+                  'как словари name и reason. reason равен external_dependency, если external_scope=True, иначе '
+                  'not_required_for_core_flow. Сохраняйте исходный порядок.',
+        'contract': {'given': 'Автопроверка вызывает solve(requirements). requirements — список словарей name, '
+                              'supports_core_flow и external_scope. supports_core_flow и external_scope имеют тип '
+                              'bool.',
+                     'todo': 'Разделите требования на mvp и out_of_scope. В mvp добавляйте name только когда '
+                             'supports_core_flow=True и external_scope=False. Остальные требования добавляйте в '
+                             'out_of_scope как словари name и reason. reason равен external_dependency, если '
+                             'external_scope=True, иначе not_required_for_core_flow. Сохраняйте исходный порядок.',
+                     'check': 'Платформа проверит обязательный teacher/student flow, необязательные функции и '
+                              'внешнюю инфраструктуру. Сравниваются точные списки и причины исключения.'},
+        'requirements': {'items': ['MVP требует core flow',
+                                   'external scope исключается',
+                                   'причина исключения явная',
+                                   'порядок requirements сохраняется'],
+                         'names': ['requirements', 'mvp', 'out_of_scope', 'reason'],
+                         'nodes': ['FunctionDef', 'For', 'If', 'BoolOp', 'IfExp'],
+                         'attributes': ['append']},
+        'starter_code': 'def solve(requirements):\n'
+                        '    mvp = []\n'
+                        '    out_of_scope = []\n'
+                        '    # Разделите требования по правилам MVP\n'
+                        '    pass\n',
+        'tests': [{'name': 'ядро и лишние функции',
+                   'args': [[{'name': 'teacher creates course', 'supports_core_flow': True, 'external_scope': False},
+                             {'name': 'student completes lesson',
+                              'supports_core_flow': True,
+                              'external_scope': False},
+                             {'name': 'video hosting', 'supports_core_flow': False, 'external_scope': True},
+                             {'name': 'certificates', 'supports_core_flow': False, 'external_scope': False}]],
+                   'expected': {'mvp': ['teacher creates course', 'student completes lesson'],
+                                'out_of_scope': [{'name': 'video hosting', 'reason': 'external_dependency'},
+                                                 {'name': 'certificates', 'reason': 'not_required_for_core_flow'}]}},
+                  {'name': 'пустой список', 'args': [[]], 'expected': {'mvp': [], 'out_of_scope': []}}],
+        'reference_code': 'def solve(requirements):\n'
+                          '    mvp = []\n'
+                          '    out_of_scope = []\n'
+                          '    for requirement in requirements:\n'
+                          "        if requirement['supports_core_flow'] and not requirement['external_scope']:\n"
+                          "            mvp.append(requirement['name'])\n"
+                          '        else:\n'
+                          '            reason = (\n'
+                          "                'external_dependency'\n"
+                          "                if requirement['external_scope']\n"
+                          "                else 'not_required_for_core_flow'\n"
+                          '            )\n'
+                          '            out_of_scope.append({\n'
+                          "                'name': requirement['name'],\n"
+                          "                'reason': reason,\n"
+                          '            })\n'
+                          "    return {'mvp': mvp, 'out_of_scope': out_of_scope}\n"}],
+ 190: [{'title': 'Проверьте дерево Course → Module → Lesson',
+        'level': 'medium',
+        'mode': 'solve',
+        'prompt': 'Проверьте структуру. Module должен ссылаться на course_id, иметь position не меньше 1 и '
+                  'уникальную position внутри course. Lesson должен ссылаться на родительский module, иметь position '
+                  'не меньше 1 и уникальную position внутри module. Верните valid, errors, module_order и '
+                  'lessons_by_module. errors содержит словари entity, id и problem в порядке обхода. module_order — '
+                  'ids modules по position. lessons_by_module — список словарей module_id и lesson_ids по position.',
+        'contract': {'given': 'Автопроверка вызывает solve(course_id, modules). Каждый module содержит id, '
+                              'course_id, position и lessons. Каждый lesson содержит id, module_id и position.',
+                     'todo': 'Проверьте структуру. Module должен ссылаться на course_id, иметь position не меньше 1 '
+                             'и уникальную position внутри course. Lesson должен ссылаться на родительский module, '
+                             'иметь position не меньше 1 и уникальную position внутри module. Верните valid, errors, '
+                             'module_order и lessons_by_module. errors содержит словари entity, id и problem в '
+                             'порядке обхода. module_order — ids modules по position. lessons_by_module — список '
+                             'словарей module_id и lesson_ids по position.',
+                     'check': 'Проверяются корректное дерево, неверные foreign keys, position=0 и duplicate '
+                              'positions. Сравниваются ошибки и устойчивый порядок.'},
+        'requirements': {'items': ['foreign keys проверяются',
+                                   'position начинается с 1',
+                                   'positions уникальны внутри parent',
+                                   'результат сортируется по position'],
+                         'names': ['course_id', 'modules', 'errors', 'module_positions', 'lessons_by_module'],
+                         'nodes': ['FunctionDef', 'For', 'If', 'Lambda', 'ListComp'],
+                         'calls': ['set', 'sorted'],
+                         'attributes': ['append', 'add']},
+        'starter_code': 'def solve(course_id, modules):\n'
+                        '    errors = []\n'
+                        '    # Проверьте связи и positions\n'
+                        '    pass\n',
+        'tests': [{'name': 'корректное дерево',
+                   'args': [5,
+                            [{'id': 10,
+                              'course_id': 5,
+                              'position': 2,
+                              'lessons': [{'id': 101, 'module_id': 10, 'position': 2},
+                                          {'id': 100, 'module_id': 10, 'position': 1}]},
+                             {'id': 9, 'course_id': 5, 'position': 1, 'lessons': []}]],
+                   'expected': {'valid': True,
+                                'errors': [],
+                                'module_order': [9, 10],
+                                'lessons_by_module': [{'module_id': 9, 'lesson_ids': []},
+                                                      {'module_id': 10, 'lesson_ids': [100, 101]}]}},
+                  {'name': 'ошибки структуры',
+                   'args': [5,
+                            [{'id': 10,
+                              'course_id': 8,
+                              'position': 1,
+                              'lessons': [{'id': 100, 'module_id': 99, 'position': 1},
+                                          {'id': 101, 'module_id': 10, 'position': 1}]},
+                             {'id': 11,
+                              'course_id': 5,
+                              'position': 1,
+                              'lessons': [{'id': 102, 'module_id': 11, 'position': 0}]}]],
+                   'expected': {'valid': False,
+                                'errors': [{'entity': 'module', 'id': 10, 'problem': 'foreign_key'},
+                                           {'entity': 'lesson', 'id': 100, 'problem': 'foreign_key'},
+                                           {'entity': 'lesson', 'id': 101, 'problem': 'duplicate_position'},
+                                           {'entity': 'module', 'id': 11, 'problem': 'duplicate_position'},
+                                           {'entity': 'lesson', 'id': 102, 'problem': 'invalid_position'}],
+                                'module_order': [10, 11],
+                                'lessons_by_module': [{'module_id': 10, 'lesson_ids': [100, 101]},
+                                                      {'module_id': 11, 'lesson_ids': [102]}]}}],
+        'reference_code': 'def solve(course_id, modules):\n'
+                          '    errors = []\n'
+                          '    module_positions = set()\n'
+                          '    for module in modules:\n'
+                          "        if module['course_id'] != course_id:\n"
+                          '            errors.append({\n'
+                          "                'entity': 'module',\n"
+                          "                'id': module['id'],\n"
+                          "                'problem': 'foreign_key',\n"
+                          '            })\n'
+                          "        if module['position'] < 1:\n"
+                          '            errors.append({\n'
+                          "                'entity': 'module',\n"
+                          "                'id': module['id'],\n"
+                          "                'problem': 'invalid_position',\n"
+                          '            })\n'
+                          "        elif module['position'] in module_positions:\n"
+                          '            errors.append({\n'
+                          "                'entity': 'module',\n"
+                          "                'id': module['id'],\n"
+                          "                'problem': 'duplicate_position',\n"
+                          '            })\n'
+                          '        else:\n'
+                          "            module_positions.add(module['position'])\n"
+                          '        lesson_positions = set()\n'
+                          "        for lesson in module['lessons']:\n"
+                          "            if lesson['module_id'] != module['id']:\n"
+                          '                errors.append({\n'
+                          "                    'entity': 'lesson',\n"
+                          "                    'id': lesson['id'],\n"
+                          "                    'problem': 'foreign_key',\n"
+                          '                })\n'
+                          "            if lesson['position'] < 1:\n"
+                          '                errors.append({\n'
+                          "                    'entity': 'lesson',\n"
+                          "                    'id': lesson['id'],\n"
+                          "                    'problem': 'invalid_position',\n"
+                          '                })\n'
+                          "            elif lesson['position'] in lesson_positions:\n"
+                          '                errors.append({\n'
+                          "                    'entity': 'lesson',\n"
+                          "                    'id': lesson['id'],\n"
+                          "                    'problem': 'duplicate_position',\n"
+                          '                })\n'
+                          '            else:\n'
+                          "                lesson_positions.add(lesson['position'])\n"
+                          "    ordered_modules = sorted(modules, key=lambda item: item['position'])\n"
+                          '    lessons_by_module = []\n'
+                          '    for module in ordered_modules:\n'
+                          '        ordered_lessons = sorted(\n'
+                          "            module['lessons'],\n"
+                          "            key=lambda item: item['position'],\n"
+                          '        )\n'
+                          '        lessons_by_module.append({\n'
+                          "            'module_id': module['id'],\n"
+                          "            'lesson_ids': [lesson['id'] for lesson in ordered_lessons],\n"
+                          '        })\n'
+                          '    return {\n'
+                          "        'valid': not errors,\n"
+                          "        'errors': errors,\n"
+                          "        'module_order': [module['id'] for module in ordered_modules],\n"
+                          "        'lessons_by_module': lessons_by_module,\n"
+                          '    }\n'}],
+ 191: [{'title': 'Идемпотентная запись на Course',
+        'level': 'medium',
+        'mode': 'solve',
+        'prompt': 'Не изменяйте входной список. Если course_published=False, верните status 409, action rejected и '
+                  'исходные enrollments. Если пара student_id/course_id уже имеет active или completed enrollment, '
+                  'верните status 200 и action existing. Если запись withdrawn, измените её status на active и '
+                  'верните action reactivated. Если пары нет, создайте enrollment с id на единицу больше '
+                  'максимального id, status active и action created. В успешном результате добавьте enrollment_id и '
+                  'обновлённый список.',
+        'contract': {'given': 'Автопроверка вызывает solve(enrollments, student_id, course_id, course_published). '
+                              'enrollments — список словарей id, student_id, course_id и status. status равен '
+                              'active, withdrawn или completed.',
+                     'todo': 'Не изменяйте входной список. Если course_published=False, верните status 409, action '
+                             'rejected и исходные enrollments. Если пара student_id/course_id уже имеет active или '
+                             'completed enrollment, верните status 200 и action existing. Если запись withdrawn, '
+                             'измените её status на active и верните action reactivated. Если пары нет, создайте '
+                             'enrollment с id на единицу больше максимального id, status active и action created. В '
+                             'успешном результате добавьте enrollment_id и обновлённый список.',
+                     'check': 'Проверяются unpublished course, первый request, повторный request и повторная '
+                              'активация withdrawn enrollment. Дубликат пары не создаётся.'},
+        'requirements': {'items': ['unpublished course отклоняется',
+                                   'unique pair не дублируется',
+                                   'withdrawn enrollment реактивируется',
+                                   'входной список не изменяется'],
+                         'names': ['enrollments', 'student_id', 'course_id', 'course_published', 'updated'],
+                         'nodes': ['FunctionDef', 'For', 'If', 'BoolOp', 'ListComp'],
+                         'calls': ['dict', 'max'],
+                         'attributes': ['append']},
+        'starter_code': 'def solve(enrollments, student_id, course_id, course_published):\n'
+                        '    # Верните идемпотентный результат\n'
+                        '    pass\n',
+        'tests': [{'name': 'course не опубликован',
+                   'args': [[], 7, 3, False],
+                   'expected': {'status': 409, 'action': 'rejected', 'enrollment_id': None, 'enrollments': []}},
+                  {'name': 'первая запись',
+                   'args': [[{'id': 4, 'student_id': 8, 'course_id': 3, 'status': 'active'}], 7, 3, True],
+                   'expected': {'status': 201,
+                                'action': 'created',
+                                'enrollment_id': 5,
+                                'enrollments': [{'id': 4, 'student_id': 8, 'course_id': 3, 'status': 'active'},
+                                                {'id': 5, 'student_id': 7, 'course_id': 3, 'status': 'active'}]}},
+                  {'name': 'повторная запись',
+                   'args': [[{'id': 5, 'student_id': 7, 'course_id': 3, 'status': 'active'}], 7, 3, True],
+                   'expected': {'status': 200,
+                                'action': 'existing',
+                                'enrollment_id': 5,
+                                'enrollments': [{'id': 5, 'student_id': 7, 'course_id': 3, 'status': 'active'}]}},
+                  {'name': 'реактивация',
+                   'args': [[{'id': 5, 'student_id': 7, 'course_id': 3, 'status': 'withdrawn'}], 7, 3, True],
+                   'expected': {'status': 200,
+                                'action': 'reactivated',
+                                'enrollment_id': 5,
+                                'enrollments': [{'id': 5, 'student_id': 7, 'course_id': 3, 'status': 'active'}]}}],
+        'reference_code': 'def solve(enrollments, student_id, course_id, course_published):\n'
+                          '    updated = [dict(enrollment) for enrollment in enrollments]\n'
+                          '    if not course_published:\n'
+                          '        return {\n'
+                          "            'status': 409,\n"
+                          "            'action': 'rejected',\n"
+                          "            'enrollment_id': None,\n"
+                          "            'enrollments': updated,\n"
+                          '        }\n'
+                          '    for enrollment in updated:\n'
+                          '        same_pair = (\n'
+                          "            enrollment['student_id'] == student_id\n"
+                          "            and enrollment['course_id'] == course_id\n"
+                          '        )\n'
+                          '        if same_pair:\n'
+                          "            if enrollment['status'] == 'withdrawn':\n"
+                          "                enrollment['status'] = 'active'\n"
+                          "                action = 'reactivated'\n"
+                          '            else:\n'
+                          "                action = 'existing'\n"
+                          '            return {\n'
+                          "                'status': 200,\n"
+                          "                'action': action,\n"
+                          "                'enrollment_id': enrollment['id'],\n"
+                          "                'enrollments': updated,\n"
+                          '            }\n'
+                          "    next_id = max([item['id'] for item in updated], default=0) + 1\n"
+                          '    new_enrollment = {\n'
+                          "        'id': next_id,\n"
+                          "        'student_id': student_id,\n"
+                          "        'course_id': course_id,\n"
+                          "        'status': 'active',\n"
+                          '    }\n'
+                          '    updated.append(new_enrollment)\n'
+                          '    return {\n'
+                          "        'status': 201,\n"
+                          "        'action': 'created',\n"
+                          "        'enrollment_id': next_id,\n"
+                          "        'enrollments': updated,\n"
+                          '    }\n'}],
+ 192: [{'title': 'Рассчитайте Progress из фактов Completion',
+        'level': 'medium',
+        'mode': 'solve',
+        'prompt': 'Если enrolled=False, верните status 403, total 0, completed 0, percent 0.0 и '
+                  'ignored_completion_ids пустым списком. При enrolled=True учитывайте только уникальные published '
+                  'lessons. Completion засчитывается один раз и только когда lesson опубликован. '
+                  'ignored_completion_ids содержит уникальные ids completion, которых нет среди published lessons, в '
+                  'порядке первого появления. percent равен completed / total * 100 с округлением до двух знаков; '
+                  'при total=0 верните 0.0.',
+        'contract': {'given': 'Автопроверка вызывает solve(published_lesson_ids, completed_lesson_ids, enrolled). '
+                              'Списки могут содержать повторы. enrolled имеет тип bool.',
+                     'todo': 'Если enrolled=False, верните status 403, total 0, completed 0, percent 0.0 и '
+                             'ignored_completion_ids пустым списком. При enrolled=True учитывайте только уникальные '
+                             'published lessons. Completion засчитывается один раз и только когда lesson '
+                             'опубликован. ignored_completion_ids содержит уникальные ids completion, которых нет '
+                             'среди published lessons, в порядке первого появления. percent равен completed / total '
+                             '* 100 с округлением до двух знаков; при total=0 верните 0.0.',
+                     'check': 'Проверяются 0%, частичный и 100% progress, duplicate completion, foreign lesson и '
+                              'отсутствие enrollment. Процент нельзя принимать из request.'},
+        'requirements': {'items': ['enrollment обязателен',
+                                   'published lessons уникализируются',
+                                   'completion считается один раз',
+                                   'foreign completion игнорируется и фиксируется'],
+                         'names': ['published_lesson_ids',
+                                   'completed_lesson_ids',
+                                   'enrolled',
+                                   'published',
+                                   'completed_seen',
+                                   'ignored',
+                                   'percent'],
+                         'nodes': ['FunctionDef', 'For', 'If', 'IfExp'],
+                         'calls': ['set', 'len', 'round'],
+                         'attributes': ['add', 'append']},
+        'starter_code': 'def solve(published_lesson_ids, completed_lesson_ids, enrolled):\n'
+                        '    # Рассчитайте progress только из фактов\n'
+                        '    pass\n',
+        'tests': [{'name': 'нет enrollment',
+                   'args': [[1, 2], [1], False],
+                   'expected': {'status': 403,
+                                'total': 0,
+                                'completed': 0,
+                                'percent': 0.0,
+                                'ignored_completion_ids': []}},
+                  {'name': 'частичный progress и повторы',
+                   'args': [[1, 2, 3, 3], [1, 1, 9, 2], True],
+                   'expected': {'status': 200,
+                                'total': 3,
+                                'completed': 2,
+                                'percent': 66.67,
+                                'ignored_completion_ids': [9]}},
+                  {'name': 'полное завершение',
+                   'args': [[4, 5], [5, 4], True],
+                   'expected': {'status': 200,
+                                'total': 2,
+                                'completed': 2,
+                                'percent': 100.0,
+                                'ignored_completion_ids': []}},
+                  {'name': 'нет опубликованных lessons',
+                   'args': [[], [1], True],
+                   'expected': {'status': 200,
+                                'total': 0,
+                                'completed': 0,
+                                'percent': 0.0,
+                                'ignored_completion_ids': [1]}}],
+        'reference_code': 'def solve(published_lesson_ids, completed_lesson_ids, enrolled):\n'
+                          '    if not enrolled:\n'
+                          '        return {\n'
+                          "            'status': 403,\n"
+                          "            'total': 0,\n"
+                          "            'completed': 0,\n"
+                          "            'percent': 0.0,\n"
+                          "            'ignored_completion_ids': [],\n"
+                          '        }\n'
+                          '    published = []\n'
+                          '    published_seen = set()\n'
+                          '    for lesson_id in published_lesson_ids:\n'
+                          '        if lesson_id not in published_seen:\n'
+                          '            published_seen.add(lesson_id)\n'
+                          '            published.append(lesson_id)\n'
+                          '    completed_seen = set()\n'
+                          '    ignored_seen = set()\n'
+                          '    ignored = []\n'
+                          '    for lesson_id in completed_lesson_ids:\n'
+                          '        if lesson_id in published_seen:\n'
+                          '            completed_seen.add(lesson_id)\n'
+                          '        elif lesson_id not in ignored_seen:\n'
+                          '            ignored_seen.add(lesson_id)\n'
+                          '            ignored.append(lesson_id)\n'
+                          '    total = len(published)\n'
+                          '    completed = len(completed_seen)\n'
+                          '    percent = round(completed / total * 100, 2) if total else 0.0\n'
+                          '    return {\n'
+                          "        'status': 200,\n"
+                          "        'total': total,\n"
+                          "        'completed': completed,\n"
+                          "        'percent': percent,\n"
+                          "        'ignored_completion_ids': ignored,\n"
+                          '    }\n'}],
+ 193: [{'title': 'Примените permissions matrix',
+        'level': 'medium',
+        'mode': 'solve',
+        'prompt': 'Если user отсутствует или неактивен, верните status 401 и decision unauthenticated. Admin '
+                  'получает 200 для любого известного action. Teacher может create_course. Для update_course и '
+                  'publish_course teacher должен быть owner; чужой resource возвращает 404. view_course разрешён для '
+                  'published resource, а также owner-teacher для draft; иначе 404. enroll разрешён только student и '
+                  'только published resource; draft возвращает 404. complete_lesson разрешён только student с '
+                  'enrolled=True. Остальные запреты возвращают 403. Верните status и decision.',
+        'contract': {'given': 'Автопроверка вызывает solve(user, action, resource, enrolled). user равен None или '
+                              'словарю id, role и is_active. resource равен None или словарю owner_id и published. '
+                              'action принимает create_course, update_course, publish_course, view_course, enroll, '
+                              'complete_lesson или admin_audit.',
+                     'todo': 'Если user отсутствует или неактивен, верните status 401 и decision unauthenticated. '
+                             'Admin получает 200 для любого известного action. Teacher может create_course. Для '
+                             'update_course и publish_course teacher должен быть owner; чужой resource возвращает '
+                             '404. view_course разрешён для published resource, а также owner-teacher для draft; '
+                             'иначе 404. enroll разрешён только student и только published resource; draft '
+                             'возвращает 404. complete_lesson разрешён только student с enrolled=True. Остальные '
+                             'запреты возвращают 403. Верните status и decision.',
+                     'check': 'Проверяются anonymous, teacher owner, чужой teacher, draft visibility, enrollment, '
+                              'completion и admin override. Identity не берётся из request body.'},
+        'requirements': {'items': ['401 без active user',
+                                   'teacher ownership',
+                                   'draft скрывается',
+                                   'student access через enrollment',
+                                   'admin override'],
+                         'names': ['user', 'action', 'resource', 'enrolled', 'known_actions'],
+                         'nodes': ['FunctionDef', 'If', 'BoolOp', 'Set']},
+        'starter_code': 'def solve(user, action, resource, enrolled):\n'
+                        '    # Примените правила role, ownership и enrollment\n'
+                        '    pass\n',
+        'tests': [{'name': 'anonymous',
+                   'args': [None, 'view_course', {'owner_id': 5, 'published': True}, False],
+                   'expected': {'status': 401, 'decision': 'unauthenticated'}},
+                  {'name': 'teacher создаёт course',
+                   'args': [{'id': 5, 'role': 'teacher', 'is_active': True}, 'create_course', None, False],
+                   'expected': {'status': 200, 'decision': 'allowed'}},
+                  {'name': 'owner обновляет course',
+                   'args': [{'id': 5, 'role': 'teacher', 'is_active': True},
+                            'update_course',
+                            {'owner_id': 5, 'published': False},
+                            False],
+                   'expected': {'status': 200, 'decision': 'owner'}},
+                  {'name': 'чужой teacher',
+                   'args': [{'id': 6, 'role': 'teacher', 'is_active': True},
+                            'publish_course',
+                            {'owner_id': 5, 'published': False},
+                            False],
+                   'expected': {'status': 404, 'decision': 'not_found'}},
+                  {'name': 'student не видит draft',
+                   'args': [{'id': 7, 'role': 'student', 'is_active': True},
+                            'view_course',
+                            {'owner_id': 5, 'published': False},
+                            False],
+                   'expected': {'status': 404, 'decision': 'not_found'}},
+                  {'name': 'student записывается',
+                   'args': [{'id': 7, 'role': 'student', 'is_active': True},
+                            'enroll',
+                            {'owner_id': 5, 'published': True},
+                            False],
+                   'expected': {'status': 200, 'decision': 'allowed'}},
+                  {'name': 'completion без enrollment',
+                   'args': [{'id': 7, 'role': 'student', 'is_active': True},
+                            'complete_lesson',
+                            {'owner_id': 5, 'published': True},
+                            False],
+                   'expected': {'status': 403, 'decision': 'forbidden'}},
+                  {'name': 'admin override',
+                   'args': [{'id': 1, 'role': 'admin', 'is_active': True}, 'admin_audit', None, False],
+                   'expected': {'status': 200, 'decision': 'admin'}}],
+        'reference_code': 'def solve(user, action, resource, enrolled):\n'
+                          "    if user is None or not user['is_active']:\n"
+                          "        return {'status': 401, 'decision': 'unauthenticated'}\n"
+                          '    known_actions = {\n'
+                          "        'create_course',\n"
+                          "        'update_course',\n"
+                          "        'publish_course',\n"
+                          "        'view_course',\n"
+                          "        'enroll',\n"
+                          "        'complete_lesson',\n"
+                          "        'admin_audit',\n"
+                          '    }\n'
+                          '    if action not in known_actions:\n'
+                          "        return {'status': 403, 'decision': 'forbidden'}\n"
+                          "    if user['role'] == 'admin':\n"
+                          "        return {'status': 200, 'decision': 'admin'}\n"
+                          "    if action == 'create_course':\n"
+                          "        if user['role'] == 'teacher':\n"
+                          "            return {'status': 200, 'decision': 'allowed'}\n"
+                          "        return {'status': 403, 'decision': 'forbidden'}\n"
+                          "    if action in ('update_course', 'publish_course'):\n"
+                          "        if user['role'] != 'teacher':\n"
+                          "            return {'status': 403, 'decision': 'forbidden'}\n"
+                          "        if resource is None or resource['owner_id'] != user['id']:\n"
+                          "            return {'status': 404, 'decision': 'not_found'}\n"
+                          "        return {'status': 200, 'decision': 'owner'}\n"
+                          "    if action == 'view_course':\n"
+                          '        if resource is None:\n'
+                          "            return {'status': 404, 'decision': 'not_found'}\n"
+                          "        if resource['published']:\n"
+                          "            return {'status': 200, 'decision': 'allowed'}\n"
+                          "        if user['role'] == 'teacher' and resource['owner_id'] == user['id']:\n"
+                          "            return {'status': 200, 'decision': 'owner_preview'}\n"
+                          "        return {'status': 404, 'decision': 'not_found'}\n"
+                          "    if action == 'enroll':\n"
+                          "        if user['role'] != 'student':\n"
+                          "            return {'status': 403, 'decision': 'forbidden'}\n"
+                          "        if resource is None or not resource['published']:\n"
+                          "            return {'status': 404, 'decision': 'not_found'}\n"
+                          "        return {'status': 200, 'decision': 'allowed'}\n"
+                          "    if action == 'complete_lesson':\n"
+                          "        if user['role'] == 'student' and enrolled:\n"
+                          "            return {'status': 200, 'decision': 'allowed'}\n"
+                          "        return {'status': 403, 'decision': 'forbidden'}\n"
+                          "    return {'status': 403, 'decision': 'forbidden'}\n"}],
+ 194: [{'title': 'Проверьте безопасный migration plan',
+        'level': 'medium',
+        'mode': 'solve',
+        'prompt': 'Ожидаемый порядок: create_lms_tables, add_nullable_relations, backfill_existing_rows, '
+                  'add_constraints, seed_demo_data, enable_lms_routes. Идите по steps по порядку. При первом шаге, '
+                  'который не совпадает с ожидаемым, верните status blocked, blocked_at, expected_step и completed '
+                  'до ошибки. Если steps образуют корректный prefix, верните status in_progress и next_step. Если '
+                  'выполнены все шесть шагов, верните status ready и next_step=None.',
+        'contract': {'given': 'Автопроверка вызывает solve(steps). steps — список названий выполненных '
+                              'migration-шагов.',
+                     'todo': 'Ожидаемый порядок: create_lms_tables, add_nullable_relations, backfill_existing_rows, '
+                             'add_constraints, seed_demo_data, enable_lms_routes. Идите по steps по порядку. При '
+                             'первом шаге, который не совпадает с ожидаемым, верните status blocked, blocked_at, '
+                             'expected_step и completed до ошибки. Если steps образуют корректный prefix, верните '
+                             'status in_progress и next_step. Если выполнены все шесть шагов, верните status ready и '
+                             'next_step=None.',
+                     'check': 'Проверяются пустой plan, корректный prefix, попытка добавить constraints до backfill '
+                              'и полный plan. Большое изменение не должно маскироваться одним giant step.'},
+        'requirements': {'items': ['фиксированный безопасный порядок',
+                                   'ошибка блокирует plan',
+                                   'completed сохраняет успешный prefix',
+                                   'ready только после всех шагов'],
+                         'names': ['steps', 'expected', 'completed'],
+                         'nodes': ['FunctionDef', 'For', 'If'],
+                         'calls': ['enumerate', 'len'],
+                         'attributes': ['append']},
+        'starter_code': 'def solve(steps):\n'
+                        '    expected = []\n'
+                        '    # Проверьте последовательность migration plan\n'
+                        '    pass\n',
+        'tests': [{'name': 'ещё не начато',
+                   'args': [[]],
+                   'expected': {'status': 'in_progress', 'completed': [], 'next_step': 'create_lms_tables'}},
+                  {'name': 'корректный prefix',
+                   'args': [['create_lms_tables', 'add_nullable_relations', 'backfill_existing_rows']],
+                   'expected': {'status': 'in_progress',
+                                'completed': ['create_lms_tables',
+                                              'add_nullable_relations',
+                                              'backfill_existing_rows'],
+                                'next_step': 'add_constraints'}},
+                  {'name': 'constraint слишком рано',
+                   'args': [['create_lms_tables', 'add_nullable_relations', 'add_constraints']],
+                   'expected': {'status': 'blocked',
+                                'completed': ['create_lms_tables', 'add_nullable_relations'],
+                                'blocked_at': 'add_constraints',
+                                'expected_step': 'backfill_existing_rows'}},
+                  {'name': 'готово',
+                   'args': [['create_lms_tables',
+                             'add_nullable_relations',
+                             'backfill_existing_rows',
+                             'add_constraints',
+                             'seed_demo_data',
+                             'enable_lms_routes']],
+                   'expected': {'status': 'ready',
+                                'completed': ['create_lms_tables',
+                                              'add_nullable_relations',
+                                              'backfill_existing_rows',
+                                              'add_constraints',
+                                              'seed_demo_data',
+                                              'enable_lms_routes'],
+                                'next_step': None}}],
+        'reference_code': 'def solve(steps):\n'
+                          '    expected = [\n'
+                          "        'create_lms_tables',\n"
+                          "        'add_nullable_relations',\n"
+                          "        'backfill_existing_rows',\n"
+                          "        'add_constraints',\n"
+                          "        'seed_demo_data',\n"
+                          "        'enable_lms_routes',\n"
+                          '    ]\n'
+                          '    completed = []\n'
+                          '    for index, step in enumerate(steps):\n'
+                          '        if index >= len(expected) or step != expected[index]:\n'
+                          '            expected_step = expected[index] if index < len(expected) else None\n'
+                          '            return {\n'
+                          "                'status': 'blocked',\n"
+                          "                'completed': completed,\n"
+                          "                'blocked_at': step,\n"
+                          "                'expected_step': expected_step,\n"
+                          '            }\n'
+                          '        completed.append(step)\n'
+                          '    if len(completed) == len(expected):\n'
+                          '        return {\n'
+                          "            'status': 'ready',\n"
+                          "            'completed': completed,\n"
+                          "            'next_step': None,\n"
+                          '        }\n'
+                          '    return {\n'
+                          "        'status': 'in_progress',\n"
+                          "        'completed': completed,\n"
+                          "        'next_step': expected[len(completed)],\n"
+                          '    }\n'}],
+ 197: [{'title': 'Проверьте готовность Course к публикации',
+        'level': 'medium',
+        'mode': 'solve',
+        'prompt': 'Если user неактивен, верните status 401 и decision unauthenticated. Если user не admin и не '
+                  'owner-teacher, верните 404 и decision not_found. Если course уже published, верните 200 и '
+                  'decision already_published. Для draft соберите missing: title, slug, module или lesson. module '
+                  'отсутствует, когда modules пуст. lesson отсутствует, если хотя бы у одного module lesson_count '
+                  'меньше 1. При missing верните 409 и decision not_ready. Иначе верните 200, decision published и '
+                  'копию course со status published.',
+        'contract': {'given': 'Автопроверка вызывает solve(course, user, modules). course содержит status, owner_id, '
+                              'title и slug. user содержит id, role и is_active. modules — список словарей id и '
+                              'lesson_count.',
+                     'todo': 'Если user неактивен, верните status 401 и decision unauthenticated. Если user не admin '
+                             'и не owner-teacher, верните 404 и decision not_found. Если course уже published, '
+                             'верните 200 и decision already_published. Для draft соберите missing: title, slug, '
+                             'module или lesson. module отсутствует, когда modules пуст. lesson отсутствует, если '
+                             'хотя бы у одного module lesson_count меньше 1. При missing верните 409 и decision '
+                             'not_ready. Иначе верните 200, decision published и копию course со status published.',
+                     'check': 'Проверяются ownership, пустой course, module без lesson, повторная публикация и '
+                              'успешный переход. Исходный course не должен изменяться.'},
+        'requirements': {'items': ['owner или admin',
+                                   'идемпотентная повторная публикация',
+                                   'явные publication preconditions',
+                                   'копия course вместо изменения input'],
+                         'names': ['course', 'user', 'modules', 'missing', 'published_course'],
+                         'nodes': ['FunctionDef', 'If', 'BoolOp', 'GeneratorExp'],
+                         'calls': ['dict', 'any'],
+                         'attributes': ['strip', 'append']},
+        'starter_code': 'def solve(course, user, modules):\n'
+                        '    # Проверьте permission и publication preconditions\n'
+                        '    pass\n',
+        'tests': [{'name': 'чужой teacher',
+                   'args': [{'status': 'draft', 'owner_id': 5, 'title': 'Python', 'slug': 'python'},
+                            {'id': 6, 'role': 'teacher', 'is_active': True},
+                            [{'id': 1, 'lesson_count': 1}]],
+                   'expected': {'status': 404, 'decision': 'not_found', 'missing': [], 'course': None}},
+                  {'name': 'course не готов',
+                   'args': [{'status': 'draft', 'owner_id': 5, 'title': '', 'slug': ''},
+                            {'id': 5, 'role': 'teacher', 'is_active': True},
+                            []],
+                   'expected': {'status': 409,
+                                'decision': 'not_ready',
+                                'missing': ['title', 'slug', 'module'],
+                                'course': None}},
+                  {'name': 'module без lesson',
+                   'args': [{'status': 'draft', 'owner_id': 5, 'title': 'Python', 'slug': 'python'},
+                            {'id': 5, 'role': 'teacher', 'is_active': True},
+                            [{'id': 1, 'lesson_count': 0}]],
+                   'expected': {'status': 409, 'decision': 'not_ready', 'missing': ['lesson'], 'course': None}},
+                  {'name': 'успешная публикация',
+                   'args': [{'status': 'draft', 'owner_id': 5, 'title': 'Python', 'slug': 'python'},
+                            {'id': 5, 'role': 'teacher', 'is_active': True},
+                            [{'id': 1, 'lesson_count': 2}, {'id': 2, 'lesson_count': 1}]],
+                   'expected': {'status': 200,
+                                'decision': 'published',
+                                'missing': [],
+                                'course': {'status': 'published',
+                                           'owner_id': 5,
+                                           'title': 'Python',
+                                           'slug': 'python'}}},
+                  {'name': 'повторная публикация',
+                   'args': [{'status': 'published', 'owner_id': 5, 'title': 'Python', 'slug': 'python'},
+                            {'id': 5, 'role': 'teacher', 'is_active': True},
+                            [{'id': 1, 'lesson_count': 1}]],
+                   'expected': {'status': 200,
+                                'decision': 'already_published',
+                                'missing': [],
+                                'course': {'status': 'published',
+                                           'owner_id': 5,
+                                           'title': 'Python',
+                                           'slug': 'python'}}}],
+        'reference_code': 'def solve(course, user, modules):\n'
+                          "    if not user['is_active']:\n"
+                          '        return {\n'
+                          "            'status': 401,\n"
+                          "            'decision': 'unauthenticated',\n"
+                          "            'missing': [],\n"
+                          "            'course': None,\n"
+                          '        }\n'
+                          "    is_admin = user['role'] == 'admin'\n"
+                          '    is_owner_teacher = (\n'
+                          "        user['role'] == 'teacher'\n"
+                          "        and user['id'] == course['owner_id']\n"
+                          '    )\n'
+                          '    if not is_admin and not is_owner_teacher:\n'
+                          '        return {\n'
+                          "            'status': 404,\n"
+                          "            'decision': 'not_found',\n"
+                          "            'missing': [],\n"
+                          "            'course': None,\n"
+                          '        }\n'
+                          "    if course['status'] == 'published':\n"
+                          '        return {\n'
+                          "            'status': 200,\n"
+                          "            'decision': 'already_published',\n"
+                          "            'missing': [],\n"
+                          "            'course': dict(course),\n"
+                          '        }\n'
+                          '    missing = []\n'
+                          "    if not course['title'].strip():\n"
+                          "        missing.append('title')\n"
+                          "    if not course['slug'].strip():\n"
+                          "        missing.append('slug')\n"
+                          '    if not modules:\n'
+                          "        missing.append('module')\n"
+                          "    elif any(module['lesson_count'] < 1 for module in modules):\n"
+                          "        missing.append('lesson')\n"
+                          '    if missing:\n'
+                          '        return {\n'
+                          "            'status': 409,\n"
+                          "            'decision': 'not_ready',\n"
+                          "            'missing': missing,\n"
+                          "            'course': None,\n"
+                          '        }\n'
+                          '    published_course = dict(course)\n'
+                          "    published_course['status'] = 'published'\n"
+                          '    return {\n'
+                          "        'status': 200,\n"
+                          "        'decision': 'published',\n"
+                          "        'missing': [],\n"
+                          "        'course': published_course,\n"
+                          '    }\n'}],
+ 201: [{'title': 'Проследите TTL временного Redis key',
+        'level': 'medium',
+        'mode': 'solve',
+        'prompt': 'Начальное время равно 0. set содержит key, value и ttl и сохраняет expires_at=current_time+ttl. '
+                  'advance содержит seconds и увеличивает текущее время. get возвращает hit только если key '
+                  'существует и current_time строго меньше expires_at; иначе key удаляется и возвращается miss. '
+                  'delete удаляет один key, flush удаляет все Redis keys. Верните reads, final_keys и '
+                  'postgresql_unchanged=True. Каждый read содержит key, status, value и ttl_remaining.',
+        'contract': {'given': 'Автопроверка вызывает solve(events). events — список словарей op и дополнительных '
+                              'полей. op равен set, get, advance, delete или flush.',
+                     'todo': 'Начальное время равно 0. set содержит key, value и ttl и сохраняет '
+                             'expires_at=current_time+ttl. advance содержит seconds и увеличивает текущее время. get '
+                             'возвращает hit только если key существует и current_time строго меньше expires_at; '
+                             'иначе key удаляется и возвращается miss. delete удаляет один key, flush удаляет все '
+                             'Redis keys. Верните reads, final_keys и postgresql_unchanged=True. Каждый read '
+                             'содержит key, status, value и ttl_remaining.',
+                     'check': 'Проверяются hit, expiration на точной границе, delete и flush. Удаление Redis data не '
+                              'должно обозначать потерю PostgreSQL data.'},
+        'requirements': {'items': ['TTL имеет точную границу',
+                                   'expired key удаляется',
+                                   'delete и flush влияют только на Redis',
+                                   'final keys сортируются'],
+                         'names': ['events', 'current_time', 'store', 'reads'],
+                         'nodes': ['FunctionDef', 'For', 'If'],
+                         'calls': ['sorted'],
+                         'attributes': ['get', 'pop', 'clear', 'append']},
+        'starter_code': 'def solve(events):\n'
+                        '    current_time = 0\n'
+                        '    store = {}\n'
+                        '    reads = []\n'
+                        '    # Выполните Redis-like события\n'
+                        '    pass\n',
+        'tests': [{'name': 'hit и expiration',
+                   'args': [[{'op': 'set', 'key': 'catalog:v1', 'value': 'A', 'ttl': 10},
+                             {'op': 'get', 'key': 'catalog:v1'},
+                             {'op': 'advance', 'seconds': 10},
+                             {'op': 'get', 'key': 'catalog:v1'}]],
+                   'expected': {'reads': [{'key': 'catalog:v1', 'status': 'hit', 'value': 'A', 'ttl_remaining': 10},
+                                          {'key': 'catalog:v1', 'status': 'miss', 'value': None, 'ttl_remaining': 0}],
+                                'final_keys': [],
+                                'postgresql_unchanged': True}},
+                  {'name': 'delete и flush',
+                   'args': [[{'op': 'set', 'key': 'a', 'value': 1, 'ttl': 30},
+                             {'op': 'set', 'key': 'b', 'value': 2, 'ttl': 30},
+                             {'op': 'delete', 'key': 'a'},
+                             {'op': 'get', 'key': 'a'},
+                             {'op': 'flush'}]],
+                   'expected': {'reads': [{'key': 'a', 'status': 'miss', 'value': None, 'ttl_remaining': 0}],
+                                'final_keys': [],
+                                'postgresql_unchanged': True}}],
+        'reference_code': 'def solve(events):\n'
+                          '    current_time = 0\n'
+                          '    store = {}\n'
+                          '    reads = []\n'
+                          '    for event in events:\n'
+                          "        op = event['op']\n"
+                          "        if op == 'set':\n"
+                          "            store[event['key']] = {\n"
+                          "                'value': event['value'],\n"
+                          "                'expires_at': current_time + event['ttl'],\n"
+                          '            }\n'
+                          "        elif op == 'advance':\n"
+                          "            current_time += event['seconds']\n"
+                          "        elif op == 'delete':\n"
+                          "            store.pop(event['key'], None)\n"
+                          "        elif op == 'flush':\n"
+                          '            store.clear()\n'
+                          "        elif op == 'get':\n"
+                          "            item = store.get(event['key'])\n"
+                          "            if item is None or current_time >= item['expires_at']:\n"
+                          "                store.pop(event['key'], None)\n"
+                          '                reads.append({\n'
+                          "                    'key': event['key'],\n"
+                          "                    'status': 'miss',\n"
+                          "                    'value': None,\n"
+                          "                    'ttl_remaining': 0,\n"
+                          '                })\n'
+                          '            else:\n'
+                          '                reads.append({\n'
+                          "                    'key': event['key'],\n"
+                          "                    'status': 'hit',\n"
+                          "                    'value': item['value'],\n"
+                          "                    'ttl_remaining': item['expires_at'] - current_time,\n"
+                          '                })\n'
+                          '    return {\n'
+                          "        'reads': reads,\n"
+                          "        'final_keys': sorted(store),\n"
+                          "        'postgresql_unchanged': True,\n"
+                          '    }\n'}],
+ 202: [{'title': 'Выполните cache-aside для каталога',
+        'level': 'medium',
+        'mode': 'solve',
+        'prompt': 'Соберите cache_key. Начало ключа: catalog:v1. Затем добавьте page и size, после них filters по '
+                  'алфавиту ключей в формате key=value, разделяя части двоеточием. Если redis_available=True и '
+                  'cached_value не None, верните source redis, db_queries 0, cache_write False и cached_value. Во '
+                  'всех остальных случаях верните source postgresql, db_queries 1 и database_value. cache_write=True '
+                  'только когда Redis доступен.',
+        'contract': {'given': 'Автопроверка вызывает solve(filters, page, page_size, cached_value, redis_available, '
+                              'database_value). filters — словарь строковых значений. cached_value равен None или '
+                              'готовому response.',
+                     'todo': 'Соберите cache_key. Начало ключа: catalog:v1. Затем добавьте page и size, после них '
+                             'filters по алфавиту ключей в формате key=value, разделяя части двоеточием. Если '
+                             'redis_available=True и cached_value не None, верните source redis, db_queries 0, '
+                             'cache_write False и cached_value. Во всех остальных случаях верните source postgresql, '
+                             'db_queries 1 и database_value. cache_write=True только когда Redis доступен.',
+                     'check': 'Проверяются cache hit, cache miss, Redis unavailable и разный порядок filters. '
+                              'Одинаковые параметры должны формировать одинаковый key.'},
+        'requirements': {'items': ['cache key содержит pagination',
+                                   'filters сортируются',
+                                   'hit не выполняет SQL',
+                                   'Redis failure даёт PostgreSQL fallback'],
+                         'names': ['filters',
+                                   'page',
+                                   'page_size',
+                                   'cached_value',
+                                   'redis_available',
+                                   'database_value',
+                                   'parts',
+                                   'cache_key'],
+                         'nodes': ['FunctionDef', 'For', 'If', 'JoinedStr'],
+                         'calls': ['sorted'],
+                         'attributes': ['append', 'join']},
+        'starter_code': 'def solve(filters, page, page_size, cached_value, redis_available, database_value):\n'
+                        '    # Соберите key и выполните cache-aside decision\n'
+                        '    pass\n',
+        'tests': [{'name': 'cache hit',
+                   'args': [{'status': 'published', 'teacher': 'alice'},
+                            2,
+                            20,
+                            {'items': ['cached']},
+                            True,
+                            {'items': ['database']}],
+                   'expected': {'cache_key': 'catalog:v1:page=2:size=20:status=published:teacher=alice',
+                                'source': 'redis',
+                                'db_queries': 0,
+                                'cache_write': False,
+                                'response': {'items': ['cached']}}},
+                  {'name': 'cache miss',
+                   'args': [{'teacher': 'alice', 'status': 'published'}, 2, 20, None, True, {'items': ['database']}],
+                   'expected': {'cache_key': 'catalog:v1:page=2:size=20:status=published:teacher=alice',
+                                'source': 'postgresql',
+                                'db_queries': 1,
+                                'cache_write': True,
+                                'response': {'items': ['database']}}},
+                  {'name': 'Redis недоступен',
+                   'args': [{}, 1, 10, {'items': ['stale']}, False, {'items': ['fresh']}],
+                   'expected': {'cache_key': 'catalog:v1:page=1:size=10',
+                                'source': 'postgresql',
+                                'db_queries': 1,
+                                'cache_write': False,
+                                'response': {'items': ['fresh']}}}],
+        'reference_code': 'def solve(filters, page, page_size, cached_value, redis_available, database_value):\n'
+                          '    parts = [\n'
+                          "        'catalog:v1',\n"
+                          "        f'page={page}',\n"
+                          "        f'size={page_size}',\n"
+                          '    ]\n'
+                          '    for key in sorted(filters):\n'
+                          "        parts.append(f'{key}={filters[key]}')\n"
+                          "    cache_key = ':'.join(parts)\n"
+                          '    if redis_available and cached_value is not None:\n'
+                          '        return {\n'
+                          "            'cache_key': cache_key,\n"
+                          "            'source': 'redis',\n"
+                          "            'db_queries': 0,\n"
+                          "            'cache_write': False,\n"
+                          "            'response': cached_value,\n"
+                          '        }\n'
+                          '    return {\n'
+                          "        'cache_key': cache_key,\n"
+                          "        'source': 'postgresql',\n"
+                          "        'db_queries': 1,\n"
+                          "        'cache_write': redis_available,\n"
+                          "        'response': database_value,\n"
+                          '    }\n'}],
+ 203: [{'title': 'Проследите invalidation после commit',
+        'level': 'medium',
+        'mode': 'solve',
+        'prompt': 'Начально database хранит initial_database_title, cache — initial_cache_title. begin_update '
+                  'создаёт pending new_title. commit переносит pending в database. rollback удаляет pending. '
+                  'invalidate очищает cache. request читает cache при наличии; при miss читает database и заполняет '
+                  'cache. Каждый request добавляет source, value и stale, где stale=True, если value не равен '
+                  'текущему database title. Верните database_title, cache_title и responses.',
+        'contract': {'given': 'Автопроверка вызывает solve(initial_database_title, initial_cache_title, new_title, '
+                              'events). events — список строк begin_update, commit, rollback, invalidate и request.',
+                     'todo': 'Начально database хранит initial_database_title, cache — initial_cache_title. '
+                             'begin_update создаёт pending new_title. commit переносит pending в database. rollback '
+                             'удаляет pending. invalidate очищает cache. request читает cache при наличии; при miss '
+                             'читает database и заполняет cache. Каждый request добавляет source, value и stale, где '
+                             'stale=True, если value не равен текущему database title. Верните database_title, '
+                             'cache_title и responses.',
+                     'check': 'Проверяются правильный порядок commit → invalidate, опасный порядок invalidate → '
+                              'request → commit и rollback. Задание показывает конкретный stale scenario.'},
+        'requirements': {'items': ['pending update отделён от database',
+                                   'commit меняет source of truth',
+                                   'invalidation очищает cache',
+                                   'response отмечает stale data'],
+                         'names': ['initial_database_title',
+                                   'initial_cache_title',
+                                   'new_title',
+                                   'events',
+                                   'database_title',
+                                   'cache_title',
+                                   'pending_title',
+                                   'responses'],
+                         'nodes': ['FunctionDef', 'For', 'If'],
+                         'attributes': ['append']},
+        'starter_code': 'def solve(initial_database_title, initial_cache_title, new_title, events):\n'
+                        '    # Выполните timeline database и cache\n'
+                        '    pass\n',
+        'tests': [{'name': 'правильный порядок',
+                   'args': ['Old', 'Old', 'New', ['begin_update', 'commit', 'invalidate', 'request']],
+                   'expected': {'database_title': 'New',
+                                'cache_title': 'New',
+                                'responses': [{'source': 'postgresql', 'value': 'New', 'stale': False}]}},
+                  {'name': 'invalidation слишком рано',
+                   'args': ['Old', 'Old', 'New', ['begin_update', 'invalidate', 'request', 'commit', 'request']],
+                   'expected': {'database_title': 'New',
+                                'cache_title': 'Old',
+                                'responses': [{'source': 'postgresql', 'value': 'Old', 'stale': False},
+                                              {'source': 'redis', 'value': 'Old', 'stale': True}]}},
+                  {'name': 'rollback',
+                   'args': ['Old', 'Old', 'New', ['begin_update', 'invalidate', 'rollback', 'request']],
+                   'expected': {'database_title': 'Old',
+                                'cache_title': 'Old',
+                                'responses': [{'source': 'postgresql', 'value': 'Old', 'stale': False}]}}],
+        'reference_code': 'def solve(initial_database_title, initial_cache_title, new_title, events):\n'
+                          '    database_title = initial_database_title\n'
+                          '    cache_title = initial_cache_title\n'
+                          '    pending_title = None\n'
+                          '    responses = []\n'
+                          '    for event in events:\n'
+                          "        if event == 'begin_update':\n"
+                          '            pending_title = new_title\n'
+                          "        elif event == 'commit' and pending_title is not None:\n"
+                          '            database_title = pending_title\n'
+                          '            pending_title = None\n'
+                          "        elif event == 'rollback':\n"
+                          '            pending_title = None\n'
+                          "        elif event == 'invalidate':\n"
+                          '            cache_title = None\n'
+                          "        elif event == 'request':\n"
+                          '            if cache_title is None:\n'
+                          "                source = 'postgresql'\n"
+                          '                value = database_title\n'
+                          '                cache_title = database_title\n'
+                          '            else:\n'
+                          "                source = 'redis'\n"
+                          '                value = cache_title\n'
+                          '            responses.append({\n'
+                          "                'source': source,\n"
+                          "                'value': value,\n"
+                          "                'stale': value != database_title,\n"
+                          '            })\n'
+                          '    return {\n'
+                          "        'database_title': database_title,\n"
+                          "        'cache_title': cache_title,\n"
+                          "        'responses': responses,\n"
+                          '    }\n'}],
+ 204: [{'title': 'Ограничьте requests в фиксированном окне',
+        'level': 'medium',
+        'mode': 'solve',
+        'prompt': 'Используйте fixed windows: window_start равен timestamp // window_seconds * window_seconds. Для '
+                  'каждого request храните отдельный counter его окна. Пока counter меньше limit, верните status '
+                  '200, allowed=True, remaining после принятия и retry_after 0. После достижения limit верните '
+                  'status 429, allowed=False, remaining 0 и retry_after до конца текущего окна. Blocked request не '
+                  'увеличивает counter.',
+        'contract': {'given': 'Автопроверка вызывает solve(request_times, limit, window_seconds). request_times — '
+                              'список целых timestamps в неубывающем порядке.',
+                     'todo': 'Используйте fixed windows: window_start равен timestamp // window_seconds * '
+                             'window_seconds. Для каждого request храните отдельный counter его окна. Пока counter '
+                             'меньше limit, верните status 200, allowed=True, remaining после принятия и retry_after '
+                             '0. После достижения limit верните status 429, allowed=False, remaining 0 и retry_after '
+                             'до конца текущего окна. Blocked request не увеличивает counter.',
+                     'check': 'Проверяются разрешённые requests, блокировка, точный переход в новое окно и '
+                              'независимые окна. Порядок decisions совпадает с request_times.'},
+        'requirements': {'items': ['fixed window вычисляется по timestamp',
+                                   'counter отдельный для каждого окна',
+                                   'blocked request не увеличивает counter',
+                                   'Retry-After до конца окна'],
+                         'names': ['request_times', 'limit', 'window_seconds', 'counters', 'decisions'],
+                         'nodes': ['FunctionDef', 'For', 'If'],
+                         'attributes': ['get', 'append']},
+        'starter_code': 'def solve(request_times, limit, window_seconds):\n'
+                        '    # Посчитайте решения rate limit\n'
+                        '    pass\n',
+        'tests': [{'name': 'блокировка и сброс',
+                   'args': [[0, 10, 20, 30, 60], 3, 60],
+                   'expected': [{'time': 0, 'status': 200, 'allowed': True, 'remaining': 2, 'retry_after': 0},
+                                {'time': 10, 'status': 200, 'allowed': True, 'remaining': 1, 'retry_after': 0},
+                                {'time': 20, 'status': 200, 'allowed': True, 'remaining': 0, 'retry_after': 0},
+                                {'time': 30, 'status': 429, 'allowed': False, 'remaining': 0, 'retry_after': 30},
+                                {'time': 60, 'status': 200, 'allowed': True, 'remaining': 2, 'retry_after': 0}]},
+                  {'name': 'limit один',
+                   'args': [[59, 59, 60], 1, 60],
+                   'expected': [{'time': 59, 'status': 200, 'allowed': True, 'remaining': 0, 'retry_after': 0},
+                                {'time': 59, 'status': 429, 'allowed': False, 'remaining': 0, 'retry_after': 1},
+                                {'time': 60, 'status': 200, 'allowed': True, 'remaining': 0, 'retry_after': 0}]}],
+        'reference_code': 'def solve(request_times, limit, window_seconds):\n'
+                          '    counters = {}\n'
+                          '    decisions = []\n'
+                          '    for timestamp in request_times:\n'
+                          '        window_start = timestamp // window_seconds * window_seconds\n'
+                          '        current = counters.get(window_start, 0)\n'
+                          '        if current < limit:\n'
+                          '            current += 1\n'
+                          '            counters[window_start] = current\n'
+                          '            decisions.append({\n'
+                          "                'time': timestamp,\n"
+                          "                'status': 200,\n"
+                          "                'allowed': True,\n"
+                          "                'remaining': limit - current,\n"
+                          "                'retry_after': 0,\n"
+                          '            })\n'
+                          '        else:\n'
+                          '            window_end = window_start + window_seconds\n'
+                          '            decisions.append({\n'
+                          "                'time': timestamp,\n"
+                          "                'status': 429,\n"
+                          "                'allowed': False,\n"
+                          "                'remaining': 0,\n"
+                          "                'retry_after': window_end - timestamp,\n"
+                          '            })\n'
+                          '    return decisions\n'}],
+ 205: [{'title': 'Выберите механизм после response',
+        'level': 'medium',
+        'mode': 'solve',
+        'prompt': 'Если commit_ok=False, верните http_status 409, mechanism none, scheduled False и operation_status '
+                  'not_run. Если commit успешен, HTTP response считается отправленным сразу и response_delay_ms '
+                  'равен 0. Короткая некритичная operation с duration_ms не больше 1000 использует mechanism '
+                  'background_tasks и scheduled=True. Её operation_status равен completed или failed по '
+                  'operation_fails, но HTTP status остаётся 201. Критичная либо более долгая operation использует '
+                  'mechanism external_queue, scheduled=False и operation_status delegated.',
+        'contract': {'given': 'Автопроверка вызывает solve(commit_ok, operation_critical, duration_ms, '
+                              'operation_fails). Все аргументы кроме duration_ms имеют тип bool.',
+                     'todo': 'Если commit_ok=False, верните http_status 409, mechanism none, scheduled False и '
+                             'operation_status not_run. Если commit успешен, HTTP response считается отправленным '
+                             'сразу и response_delay_ms равен 0. Короткая некритичная operation с duration_ms не '
+                             'больше 1000 использует mechanism background_tasks и scheduled=True. Её '
+                             'operation_status равен completed или failed по operation_fails, но HTTP status '
+                             'остаётся 201. Критичная либо более долгая operation использует mechanism '
+                             'external_queue, scheduled=False и operation_status delegated.',
+                     'check': 'Проверяются failed commit, короткое mock-уведомление, ошибка background operation и '
+                              'работа, требующая внешней очереди. Фоновая ошибка не должна менять уже отправленный '
+                              'HTTP response.'},
+        'requirements': {'items': ['background добавляется только после commit',
+                                   'долгая или критичная работа требует queue',
+                                   'response не ждёт operation',
+                                   'background failure не меняет HTTP status'],
+                         'names': ['commit_ok', 'operation_critical', 'duration_ms', 'operation_fails'],
+                         'nodes': ['FunctionDef', 'If', 'BoolOp', 'IfExp']},
+        'starter_code': 'def solve(commit_ok, operation_critical, duration_ms, operation_fails):\n'
+                        '    # Выберите допустимый механизм\n'
+                        '    pass\n',
+        'tests': [{'name': 'commit failed',
+                   'args': [False, False, 50, False],
+                   'expected': {'http_status': 409,
+                                'response_delay_ms': 0,
+                                'mechanism': 'none',
+                                'scheduled': False,
+                                'operation_status': 'not_run'}},
+                  {'name': 'короткое уведомление',
+                   'args': [True, False, 120, False],
+                   'expected': {'http_status': 201,
+                                'response_delay_ms': 0,
+                                'mechanism': 'background_tasks',
+                                'scheduled': True,
+                                'operation_status': 'completed'}},
+                  {'name': 'background operation failed',
+                   'args': [True, False, 300, True],
+                   'expected': {'http_status': 201,
+                                'response_delay_ms': 0,
+                                'mechanism': 'background_tasks',
+                                'scheduled': True,
+                                'operation_status': 'failed'}},
+                  {'name': 'нужна внешняя очередь',
+                   'args': [True, True, 5000, False],
+                   'expected': {'http_status': 201,
+                                'response_delay_ms': 0,
+                                'mechanism': 'external_queue',
+                                'scheduled': False,
+                                'operation_status': 'delegated'}}],
+        'reference_code': 'def solve(commit_ok, operation_critical, duration_ms, operation_fails):\n'
+                          '    if not commit_ok:\n'
+                          '        return {\n'
+                          "            'http_status': 409,\n"
+                          "            'response_delay_ms': 0,\n"
+                          "            'mechanism': 'none',\n"
+                          "            'scheduled': False,\n"
+                          "            'operation_status': 'not_run',\n"
+                          '        }\n'
+                          '    if operation_critical or duration_ms > 1000:\n'
+                          '        return {\n'
+                          "            'http_status': 201,\n"
+                          "            'response_delay_ms': 0,\n"
+                          "            'mechanism': 'external_queue',\n"
+                          "            'scheduled': False,\n"
+                          "            'operation_status': 'delegated',\n"
+                          '        }\n'
+                          '    return {\n'
+                          "        'http_status': 201,\n"
+                          "        'response_delay_ms': 0,\n"
+                          "        'mechanism': 'background_tasks',\n"
+                          "        'scheduled': True,\n"
+                          "        'operation_status': 'failed' if operation_fails else 'completed',\n"
+                          '    }\n'}],
+ 207: [{'title': 'Соберите единый API error contract',
+        'level': 'medium',
+        'mode': 'solve',
+        'prompt': 'Верните словарь error с ключами code, message, details и request_id. validation всегда даёт '
+                  'status 422, code validation_error и message Request validation failed. auth использует status 401 '
+                  'или 403 и code unauthenticated либо forbidden. domain сохраняет status и получает code '
+                  'bad_request для 400, not_found для 404, conflict для 409, иначе domain_error. rate_limit всегда '
+                  'даёт 429 и code rate_limited. unexpected всегда даёт 500, code internal_error, message Internal '
+                  'server error и details=None. Для остальных sources message берётся из public_message.',
+        'contract': {'given': 'Автопроверка вызывает solve(source, status, public_message, details, request_id). '
+                              'source равен validation, auth, domain, rate_limit или unexpected.',
+                     'todo': 'Верните словарь error с ключами code, message, details и request_id. validation всегда '
+                             'даёт status 422, code validation_error и message Request validation failed. auth '
+                             'использует status 401 или 403 и code unauthenticated либо forbidden. domain сохраняет '
+                             'status и получает code bad_request для 400, not_found для 404, conflict для 409, иначе '
+                             'domain_error. rate_limit всегда даёт 429 и code rate_limited. unexpected всегда даёт '
+                             '500, code internal_error, message Internal server error и details=None. Для остальных '
+                             'sources message берётся из public_message.',
+                     'check': 'Проверяются validation, 401, 403, domain 404/409, rate limit и unexpected exception. '
+                              'Внутренний traceback не должен попадать в unexpected response.'},
+        'requirements': {'items': ['validation всегда 422',
+                                   '401 и 403 различаются',
+                                   'domain status получает стабильный code',
+                                   'unexpected скрывает внутренние details'],
+                         'names': ['source', 'status', 'public_message', 'details', 'request_id', 'code', 'message'],
+                         'nodes': ['FunctionDef', 'If', 'IfExp', 'Dict'],
+                         'attributes': ['get']},
+        'starter_code': 'def solve(source, status, public_message, details, request_id):\n'
+                        '    # Нормализуйте ошибку\n'
+                        '    pass\n',
+        'tests': [{'name': 'validation',
+                   'args': ['validation', 400, 'ignored', {'field': 'title'}, 'req-1'],
+                   'expected': {'status': 422,
+                                'error': {'code': 'validation_error',
+                                          'message': 'Request validation failed',
+                                          'details': {'field': 'title'},
+                                          'request_id': 'req-1'}}},
+                  {'name': 'unauthenticated',
+                   'args': ['auth', 401, 'Not authenticated', None, 'req-2'],
+                   'expected': {'status': 401,
+                                'error': {'code': 'unauthenticated',
+                                          'message': 'Not authenticated',
+                                          'details': None,
+                                          'request_id': 'req-2'}}},
+                  {'name': 'domain not found',
+                   'args': ['domain', 404, 'Course not found', None, 'req-3'],
+                   'expected': {'status': 404,
+                                'error': {'code': 'not_found',
+                                          'message': 'Course not found',
+                                          'details': None,
+                                          'request_id': 'req-3'}}},
+                  {'name': 'rate limit',
+                   'args': ['rate_limit', 400, 'Too many requests', {'retry_after': 30}, 'req-4'],
+                   'expected': {'status': 429,
+                                'error': {'code': 'rate_limited',
+                                          'message': 'Too many requests',
+                                          'details': {'retry_after': 30},
+                                          'request_id': 'req-4'}}},
+                  {'name': 'unexpected',
+                   'args': ['unexpected', 418, 'database password leaked', {'traceback': 'secret'}, 'req-5'],
+                   'expected': {'status': 500,
+                                'error': {'code': 'internal_error',
+                                          'message': 'Internal server error',
+                                          'details': None,
+                                          'request_id': 'req-5'}}}],
+        'reference_code': 'def solve(source, status, public_message, details, request_id):\n'
+                          "    if source == 'validation':\n"
+                          '        status = 422\n'
+                          "        code = 'validation_error'\n"
+                          "        message = 'Request validation failed'\n"
+                          "    elif source == 'auth':\n"
+                          '        status = 401 if status == 401 else 403\n'
+                          "        code = 'unauthenticated' if status == 401 else 'forbidden'\n"
+                          '        message = public_message\n'
+                          "    elif source == 'rate_limit':\n"
+                          '        status = 429\n'
+                          "        code = 'rate_limited'\n"
+                          '        message = public_message\n'
+                          "    elif source == 'unexpected':\n"
+                          '        status = 500\n'
+                          "        code = 'internal_error'\n"
+                          "        message = 'Internal server error'\n"
+                          '        details = None\n'
+                          '    else:\n'
+                          '        codes = {\n'
+                          "            400: 'bad_request',\n"
+                          "            404: 'not_found',\n"
+                          "            409: 'conflict',\n"
+                          '        }\n'
+                          "        code = codes.get(status, 'domain_error')\n"
+                          '        message = public_message\n'
+                          '    return {\n'
+                          "        'status': status,\n"
+                          "        'error': {\n"
+                          "            'code': code,\n"
+                          "            'message': message,\n"
+                          "            'details': details,\n"
+                          "            'request_id': request_id,\n"
+                          '        },\n'
+                          '    }\n'}]}
+
 def get_code_tasks(track_id: str, filename: str) -> list[dict[str, Any]]:
     """Возвращает задачи редактора только для тем, проверяемых без доступа к ОС."""
     match = re.match(r"^(\d+)\s+-\s+", filename)
@@ -5362,5 +6578,7 @@ def get_code_tasks(track_id: str, filename: str) -> list[dict[str, Any]]:
         tasks_by_track[track_name] = ASYNC_CODE_TASKS
     for track_name in DEPLOY_TRACK_ALIASES:
         tasks_by_track[track_name] = DEPLOY_CODE_TASKS
+    for track_name in LMS_TRACK_ALIASES:
+        tasks_by_track[track_name] = LMS_CODE_TASKS
 
     return tasks_by_track.get(track_id, {}).get(lesson_number, [])
