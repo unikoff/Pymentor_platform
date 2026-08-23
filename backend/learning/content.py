@@ -18,6 +18,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 from pathlib import Path
@@ -488,9 +489,15 @@ def _extract_python_starter_from_block(block: str) -> str | None:
     return None
 
 
-def _task_from_override(lesson_id: str, task_index: int, task: dict[str, Any]) -> dict[str, Any]:
+def _task_from_override(
+    lesson_id: str,
+    legacy_lesson_id: str,
+    task_index: int,
+    task: dict[str, Any],
+) -> dict[str, Any]:
     return {
         "id": f"{lesson_id}-task-{task_index:02d}",
+        "legacy_ids": [f"{legacy_lesson_id}-task-{task_index:02d}"],
         "title": task["title"],
         "level": task.get("level", "easy"),
         "mode": task.get("mode", "solve"),
@@ -506,6 +513,7 @@ def _tasks_for_lesson(
     relative: str,
     text: str,
     lesson_id: str,
+    legacy_lesson_id: str,
     track_id: str,
     filename: str,
 ) -> list[dict[str, Any]]:
@@ -519,7 +527,7 @@ def _tasks_for_lesson(
 
     if source_tasks:
         return [
-            _task_from_override(lesson_id, task_index, task)
+            _task_from_override(lesson_id, legacy_lesson_id, task_index, task)
             for task_index, task in enumerate(source_tasks, start=1)
         ]
 
@@ -534,6 +542,7 @@ def _tasks_for_lesson(
         tasks.append(
             {
                 "id": f"{lesson_id}-task-{task_index:02d}",
+                "legacy_ids": [f"{legacy_lesson_id}-task-{task_index:02d}"],
                 "title": title or f"Задание {task_index}",
                 "level": "easy" if task_index == 1 else "medium",
                 "mode": "solve",
@@ -587,22 +596,41 @@ def _estimate_duration(text: str, task_count: int) -> str:
     return f"{minutes} мин"
 
 
+def _stable_lesson_id(relative: str) -> str:
+    """Стабильный идентификатор урока, независимый от позиции файла в курсе.
+
+    Порядковый номер в списке меняется, когда в курс добавляют материал. Из-за
+    этого открытая до обновления вкладка могла отправить уже несуществующий
+    lesson_id. Хеш пути не зависит от сортировки и вместе с суффиксом задачи
+    помещается в исторический лимит колонки progress.lesson_id (40 символов).
+    """
+    digest = hashlib.sha256(relative.encode("utf-8")).hexdigest()[:24]
+    return f"lesson-{digest}"
+
+
+def _legacy_lesson_id(track_id: str, index: int) -> str:
+    """ID, использовавшийся до перехода на идентификатор исходного файла."""
+    return f"{track_id}-lesson-{index + 1:02d}"
+
+
 def _build_lesson(path: Path, index: int, total: int, track_id: str, track_dir: Path) -> dict[str, Any]:
     text = _strip_generated_task_dump(_read_text(path))
     relative = path.relative_to(COURSE_ROOT).as_posix()
-    lesson_id = f"{track_id}-lesson-{index + 1:02d}"
+    lesson_id = _stable_lesson_id(relative)
+    legacy_lesson_id = _legacy_lesson_id(track_id, index)
     title = "Карта обучения" if path.name == "План обучения.md" else _extract_title(path, text)
     access = _lesson_access(path, track_dir)
     lesson_match = re.match(r"^(\d+)", path.name)
     if track_dir.name == NEW_PYTHON_TRACK_NAME and lesson_match and not re.match(r"^\d+\.", title):
         title = f"{int(lesson_match.group(1))}. {title}"
-    tasks = _tasks_for_lesson(relative, text, lesson_id, track_id, path.name)
+    tasks = _tasks_for_lesson(relative, text, lesson_id, legacy_lesson_id, track_id, path.name)
     manual_practice = [] if tasks else get_manual_practice(track_id, path.name)
     self_check = relative in SELF_CHECK_LESSONS or bool(manual_practice)
     video = _extract_youtube_video(text, title)
 
     return {
         "id": lesson_id,
+        "legacy_id": legacy_lesson_id,
         "track": track_id,
         "module": _module_label(path, track_dir),
         "title": title,
@@ -706,9 +734,13 @@ def get_public_lessons(track_id: str) -> list[dict[str, Any]]:
 
     lessons: list[dict[str, Any]] = []
     for lesson in track["lessons"]:
-        item = {key: value for key, value in lesson.items() if key != "theory_markdown"}
+        item = {
+            key: value
+            for key, value in lesson.items()
+            if key not in {"theory_markdown", "legacy_id"}
+        }
         item["tasks"] = [
-            {key: value for key, value in task.items() if key != "tests"}
+            {key: value for key, value in task.items() if key not in {"tests", "legacy_ids"}}
             for task in lesson["tasks"]
         ]
         lessons.append(item)
@@ -717,7 +749,7 @@ def get_public_lessons(track_id: str) -> list[dict[str, Any]]:
 
 def find_lesson(lesson_id: str) -> dict[str, Any] | None:
     for lesson in LESSONS:
-        if lesson["id"] == lesson_id:
+        if lesson["id"] == lesson_id or lesson.get("legacy_id") == lesson_id:
             return lesson
     return None
 
@@ -725,7 +757,7 @@ def find_lesson(lesson_id: str) -> dict[str, Any] | None:
 def find_task(task_id: str) -> dict[str, Any] | None:
     for lesson in LESSONS:
         for task in lesson["tasks"]:
-            if task["id"] == task_id:
+            if task["id"] == task_id or task_id in task.get("legacy_ids", []):
                 return task
     return None
 
@@ -733,6 +765,11 @@ def find_task(task_id: str) -> dict[str, Any] | None:
 def find_lesson_by_task(task_id: str) -> dict[str, Any] | None:
     for lesson in LESSONS:
         for task in lesson["tasks"]:
-            if task["id"] == task_id:
+            if task["id"] == task_id or task_id in task.get("legacy_ids", []):
                 return lesson
     return None
+
+
+def get_legacy_lesson_id_map() -> dict[str, str]:
+    """Соответствие позиционных ID их постоянным заменам для миграции прогресса."""
+    return {lesson["legacy_id"]: lesson["id"] for lesson in LESSONS}

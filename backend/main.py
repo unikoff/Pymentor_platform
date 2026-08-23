@@ -9,6 +9,7 @@ from sqlalchemy import inspect, text
 
 from DataBase.engine import Base, engine
 from DataBase import model
+from learning.content import get_legacy_lesson_id_map
 from routers.admin.routers import admin_router
 from routers.learning.routers import learning_router
 from routers.user.routers import user_router
@@ -38,14 +39,40 @@ def ensure_schema() -> None:
             connection.execute(text("ALTER TABLE users ADD COLUMN is_admin INTEGER NOT NULL DEFAULT 0"))
 
     # С появлением треков id уроков получили префикс трека:
-    # lesson-04 -> python-basics-lesson-04. Переносим старые записи прогресса.
+    # lesson-04 -> python-basics-lesson-04. Переносим только прежние
+    # двухзначные позиционные ID, не затрагивая постоянные lesson-<hash>.
     with engine.begin() as connection:
         connection.execute(
             text(
                 "UPDATE user_lesson_progress SET lesson_id = 'python-basics-' || lesson_id "
-                "WHERE lesson_id LIKE 'lesson-%'"
+                "WHERE lesson_id GLOB 'lesson-[0-9][0-9]'"
             )
         )
+
+    # До этого релиза ID зависел от места markdown-файла в отсортированном
+    # списке. Переносим сохранённый прогресс на ID исходного файла, чтобы
+    # последующее добавление материалов не меняло чужие отметки.
+    with engine.begin() as connection:
+        for legacy_id, stable_id in get_legacy_lesson_id_map().items():
+            connection.execute(
+                text(
+                    "DELETE FROM user_lesson_progress "
+                    "WHERE lesson_id = :legacy_id "
+                    "AND EXISTS ("
+                    "SELECT 1 FROM user_lesson_progress AS stable_progress "
+                    "WHERE stable_progress.user_id = user_lesson_progress.user_id "
+                    "AND stable_progress.lesson_id = :stable_id"
+                    ")"
+                ),
+                {"legacy_id": legacy_id, "stable_id": stable_id},
+            )
+            connection.execute(
+                text(
+                    "UPDATE user_lesson_progress SET lesson_id = :stable_id "
+                    "WHERE lesson_id = :legacy_id"
+                ),
+                {"legacy_id": legacy_id, "stable_id": stable_id},
+            )
 
 
 ensure_schema()

@@ -133,8 +133,10 @@ async def complete_lesson(lesson_id: str, request: Request, db: Session = Depend
             detail="Этот урок засчитывается автоматически после решения практики.",
         )
 
-    user_crud.mark_lesson_completed(user_id=user.id, lesson_id=lesson_id, db=db)
-    return {"lesson_id": lesson_id, "completed": True}
+    # Старые вкладки с позиционным ID по-прежнему принимаются find_lesson(),
+    # но прогресс всегда сохраняется под постоянным идентификатором урока.
+    user_crud.mark_lesson_completed(user_id=user.id, lesson_id=lesson["id"], db=db)
+    return {"lesson_id": lesson["id"], "completed": True}
 
 
 @learning_router.get("/lessons/{lesson_id}/theory", response_model=LessonTheoryResponse)
