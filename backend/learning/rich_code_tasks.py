@@ -10,7 +10,7 @@ FOUNDATIONS_TRACK = "Основы Python и мышление программи�
 DEEPER_TRACK = "Python глубже, файлы и структура небольшого проекта"
 PLANNER_API_TRACK = "HTTP, API и FastAPI - Planner API"
 DATABASE_API_TRACK = "FastAPI, SQLite и SQLAlchemy - StudyHub Database API"
-PERSONAL_API_TRACK = "Аутентификация, сессии и токены - Personal StudyHub API"
+PERSONAL_API_TRACK = "Аутентификация, сессии, токены и завершение FastAPI - Personal StudyHub API"
 POSTGRESQL_TRACK = "SQL, PostgreSQL и модели хранения - PostgreSQL StudyHub"
 POSTGRESQL_TRACK_ALIASES = (
     POSTGRESQL_TRACK,
