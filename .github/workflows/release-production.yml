@@ -71,14 +71,16 @@ jobs:
         run: |
           set -euo pipefail
           expected_asset="$(grep -oE '/platform/assets/index-[^\"]+\.js' frontend/dist/index.html | head -n 1)"
+          expected_content_revision="$(PYTHONPATH=backend python3 -c 'from learning.content import get_content_revision; print(get_content_revision())')"
           for attempt in {1..40}; do
             page_status="$(curl -skS -o "$RUNNER_TEMP/platform.html" -w '%{http_code}' https://pymentor.ru/platform/)"
-            api_status="$(curl -skS -o /dev/null -w '%{http_code}' https://pymentor.ru/platform/learning/tracks)"
-            if [ "$page_status" = '200' ] && [ "$api_status" = '200' ] && grep -Fq "$expected_asset" "$RUNNER_TEMP/platform.html"; then
+            api_status="$(curl -skS -o "$RUNNER_TEMP/tracks.json" -w '%{http_code}' https://pymentor.ru/platform/learning/tracks)"
+            actual_content_revision="$(python3 -c 'import json, sys; print(json.load(open(sys.argv[1]))["content_revision"])' "$RUNNER_TEMP/tracks.json" 2>/dev/null || true)"
+            if [ "$page_status" = '200' ] && [ "$api_status" = '200' ] && grep -Fq "$expected_asset" "$RUNNER_TEMP/platform.html" && [ "$actual_content_revision" = "$expected_content_revision" ]; then
               echo 'DEPLOY_VERIFIED'
               exit 0
             fi
             sleep 3
           done
-          echo "Production did not reach the expected release: page=$page_status api=$api_status" >&2
+          echo "Production did not reach the expected release: page=$page_status api=$api_status content_revision=$actual_content_revision" >&2
           exit 1

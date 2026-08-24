@@ -691,6 +691,36 @@ TRACKS: list[dict[str, Any]] = _load_tracks()
 LESSONS: list[dict[str, Any]] = [lesson for track in TRACKS for lesson in track["lessons"]]
 
 
+def _build_content_revision() -> str:
+    """Отпечаток учебного контента для проверки фактически запущенного релиза."""
+    payload = [
+        {
+            "id": lesson["id"],
+            "source_file": lesson["source_file"],
+            "self_check": lesson["self_check"],
+            "manual_practice": lesson["manual_practice"],
+            "tasks": [
+                {
+                    key: value
+                    for key, value in task.items()
+                    if key not in {"tests", "legacy_ids"}
+                }
+                for task in lesson["tasks"]
+            ],
+        }
+        for lesson in LESSONS
+    ]
+    serialized = json.dumps(payload, ensure_ascii=False, separators=(",", ":"), sort_keys=True)
+    return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
+
+
+CONTENT_REVISION = _build_content_revision()
+
+
+def get_content_revision() -> str:
+    return CONTENT_REVISION
+
+
 def _is_countable(lesson: dict[str, Any]) -> bool:
     """Урок «зачётный», если у него есть практика или ручная отметка."""
     return bool(lesson["tasks"]) or bool(lesson.get("self_check"))

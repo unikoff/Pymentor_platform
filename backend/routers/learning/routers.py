@@ -8,6 +8,7 @@ from learning.content import (
     find_lesson,
     find_lesson_by_task,
     find_task,
+    get_content_revision,
     find_track,
     get_public_lessons,
     get_tracks_summary,
@@ -90,7 +91,11 @@ async def list_tracks(request: Request, db: Session = Depends(get_db)):
         track["lessons_completed"] = sum(1 for lesson_id in countable_ids if lesson_id in completed_ids)
         tracks.append(track)
 
-    return {"tracks": tracks, "default_track": default_track_id()}
+    return {
+        "tracks": tracks,
+        "default_track": default_track_id(),
+        "content_revision": get_content_revision(),
+    }
 
 
 @learning_router.get("/lessons")
