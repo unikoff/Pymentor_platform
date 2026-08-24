@@ -365,6 +365,12 @@ function getInitialTheme(): ThemeMode {
 // Vite подставляет сюда значение base из vite.config.ts.
 const API_PREFIX = import.meta.env.BASE_URL.replace(/\/+$/, "");
 
+function formatManualPracticeResult(result: string): string {
+  // Старые и новые тексты практики могут уже включать эту подпись, а компонент
+  // выводит её один раз для единообразной структуры и доступности.
+  return result.replace(/^\s*готово\s*,\s*если\s*:?\s*/iu, "");
+}
+
 async function apiRequest<T>(url: string, body?: unknown, method?: string): Promise<T> {
   const response = await fetch(API_PREFIX + url, {
     method: method ?? (body ? "POST" : "GET"),
@@ -2032,7 +2038,7 @@ function SelfCheckPanel({
                 })}
               </div>
               <p className="manual-practice-card__result">
-                <strong>Готово, если:</strong> {exercise.result}
+                <strong>Готово, если:</strong> {formatManualPracticeResult(exercise.result)}
               </p>
             </article>
           ))}
