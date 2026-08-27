@@ -179,10 +179,24 @@ def _get_available_task(task_id: str, user: models.User | None) -> dict:
     return task
 
 
+def _require_current_task_revision(task: dict, submitted_revision: str | None) -> None:
+    """Reject stale task metadata before running or grading student code."""
+    current_revision = task.get("revision")
+    if not isinstance(current_revision, str) or submitted_revision != current_revision:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=(
+                "Условие или набор проверок задания обновились. "
+                "Обновите страницу и отправьте решение ещё раз."
+            ),
+        )
+
+
 @learning_router.post("/tasks/{task_id}/submit", response_model=CodeSubmitResponse)
 async def submit_task(task_id: str, payload: CodeSubmitRequest, request: Request, db: Session = Depends(get_db)):
     user = await get_optional_user(request=request, db=db)
     task = _get_available_task(task_id, user)
+    _require_current_task_revision(task, payload.task_revision)
     result = run_python_task(code=payload.code, task=task)
 
     # Успешная проверка засчитывает урок залогиненному студенту.
@@ -199,4 +213,5 @@ async def run_task_code(task_id: str, payload: CodeSubmitRequest, request: Reque
     """Запускает одну демонстрационную проверку без зачёта урока."""
     user = await get_optional_user(request=request, db=db)
     task = _get_available_task(task_id, user)
+    _require_current_task_revision(task, payload.task_revision)
     return run_python_preview(code=payload.code, task=task)

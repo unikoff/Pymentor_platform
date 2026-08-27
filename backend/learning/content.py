@@ -489,6 +489,28 @@ def _extract_python_starter_from_block(block: str) -> str | None:
     return None
 
 
+def build_task_revision(task: dict[str, Any]) -> str:
+    """Stable revision of the complete task contract, including hidden tests.
+
+    The client receives only this opaque digest, never the tests themselves.
+    It must echo the revision when it submits code so a deployment mismatch is
+    reported as a configuration error instead of grading the wrong task.
+    """
+    payload = {
+        key: value
+        for key, value in task.items()
+        if key not in {"legacy_ids", "revision"}
+    }
+    serialized = json.dumps(
+        payload,
+        ensure_ascii=False,
+        separators=(",", ":"),
+        sort_keys=True,
+        default=repr,
+    )
+    return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
+
+
 def _task_from_override(
     lesson_id: str,
     legacy_lesson_id: str,
@@ -624,6 +646,8 @@ def _build_lesson(path: Path, index: int, total: int, track_id: str, track_dir: 
     if track_dir.name == NEW_PYTHON_TRACK_NAME and lesson_match and not re.match(r"^\d+\.", title):
         title = f"{int(lesson_match.group(1))}. {title}"
     tasks = _tasks_for_lesson(relative, text, lesson_id, legacy_lesson_id, track_id, path.name)
+    for task in tasks:
+        task["revision"] = build_task_revision(task)
     manual_practice = [] if tasks else get_manual_practice(track_id, path.name)
     self_check = relative in SELF_CHECK_LESSONS or bool(manual_practice)
     video = _extract_youtube_video(text, title)

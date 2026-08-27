@@ -341,6 +341,7 @@ def _build_runner_source(code: str, tests: list[dict[str, Any]], mode: str = "so
 import contextlib
 import io
 import json
+import math
 import traceback
 
 USER_CODE = {code!r}
@@ -358,10 +359,69 @@ def jsonable(value):
         return repr(value)
 
 
-def test_result(name, expected, actual, error=None):
+def normalize_stdout(value):
+    # print() добавляет один завершающий перевод строки. Он не меняет
+    # семантику терминального вывода, но пробелы и дополнительные пустые
+    # строки должны оставаться значимыми для задания.
+    if not isinstance(value, str):
+        return value
+    normalized = value.replace("\\r\\n", "\\n").replace("\\r", "\\n")
+    return normalized[:-1] if normalized.endswith("\\n") else normalized
+
+
+def values_equal(expected, actual, float_tolerance=None):
+    # Python считает True == 1. Для учебной проверки тип — часть контракта,
+    # поэтому сравнение начинается со строгого совпадения типов.
+    if type(expected) is not type(actual):
+        return False
+
+    if isinstance(expected, dict):
+        if len(expected) != len(actual):
+            return False
+        unmatched = list(actual.items())
+        for expected_key, expected_value in expected.items():
+            for index, (actual_key, actual_value) in enumerate(unmatched):
+                if values_equal(expected_key, actual_key) and values_equal(expected_value, actual_value):
+                    unmatched.pop(index)
+                    break
+            else:
+                return False
+        return True
+
+    if isinstance(expected, (list, tuple)):
+        return len(expected) == len(actual) and all(
+            values_equal(expected_item, actual_item)
+            for expected_item, actual_item in zip(expected, actual)
+        )
+
+    if isinstance(expected, (set, frozenset)):
+        if len(expected) != len(actual):
+            return False
+        unmatched = list(actual)
+        for expected_item in expected:
+            for index, actual_item in enumerate(unmatched):
+                if values_equal(expected_item, actual_item):
+                    unmatched.pop(index)
+                    break
+            else:
+                return False
+        return True
+
+    if isinstance(expected, float) and float_tolerance is not None:
+        try:
+            return math.isclose(expected, actual, rel_tol=0.0, abs_tol=float(float_tolerance))
+        except (TypeError, ValueError):
+            return False
+
+    return expected == actual
+
+
+def test_result(name, expected, actual, error=None, assertion=None, float_tolerance=None):
+    compared_expected = normalize_stdout(expected) if assertion == "stdout" else expected
+    compared_actual = normalize_stdout(actual) if assertion == "stdout" else actual
     result = {{
         "name": name,
-        "passed": actual == expected and error is None,
+        "passed": values_equal(compared_expected, compared_actual, float_tolerance) and error is None,
         "expected": jsonable(expected),
         "actual": jsonable(actual),
     }}
@@ -383,13 +443,15 @@ try:
             try:
                 with contextlib.redirect_stdout(test_stdout):
                     exec(USER_CODE, namespace)
-                actual = test_stdout.getvalue().strip()
+                actual = test_stdout.getvalue()
                 output_chunks.append(test_stdout.getvalue())
                 results.append(
                     test_result(
                         test.get("name") or f"test {{index}}",
                         test.get("expected", ""),
                         actual,
+                        assertion="stdout",
+                        float_tolerance=test.get("float_tolerance"),
                     )
                 )
             except Exception as exc:
@@ -439,8 +501,16 @@ try:
                         actual = solve(*test.get("args", []), **test.get("kwargs", {{}}))
                         printed = stdout.getvalue()
                     expected = test["expected"]
-                    actual_value = printed.strip() if test.get("assert") == "stdout" else actual
-                    results.append(test_result(test.get("name") or f"test {{index}}", expected, actual_value))
+                    actual_value = printed if test.get("assert") == "stdout" else actual
+                    results.append(
+                        test_result(
+                            test.get("name") or f"test {{index}}",
+                            expected,
+                            actual_value,
+                            assertion=test.get("assert"),
+                            float_tolerance=test.get("float_tolerance"),
+                        )
+                    )
                 except Exception as exc:
                     results.append(
                         test_result(

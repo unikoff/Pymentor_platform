@@ -111,6 +111,7 @@ type TaskRequirements = {
 
 type LessonTask = {
   id: string;
+  revision: string;
   title: string;
   level: "easy" | "medium" | "hard";
   mode?: "solve" | "script";
@@ -2149,7 +2150,10 @@ function TaskRunner({ task, onSolved }: { task: LessonTask; onSolved?: () => voi
     setResult(null);
     setRunResult(null);
     try {
-      const data = await apiRequest<TaskRunResponse>(`/learning/tasks/${task.id}/run`, { code });
+      const data = await apiRequest<TaskRunResponse>(`/learning/tasks/${task.id}/run`, {
+        code,
+        task_revision: task.revision,
+      });
       setRunResult(data);
     } catch (err) {
       setRunResult({
@@ -2167,7 +2171,10 @@ function TaskRunner({ task, onSolved }: { task: LessonTask; onSolved?: () => voi
     setResult(null);
     setRunResult(null);
     try {
-      const data = await apiRequest<TaskSubmitResponse>(`/learning/tasks/${task.id}/submit`, { code });
+      const data = await apiRequest<TaskSubmitResponse>(`/learning/tasks/${task.id}/submit`, {
+        code,
+        task_revision: task.revision,
+      });
       setResult(data);
       if (data.ok) {
         onSolved?.();
@@ -2327,6 +2334,19 @@ function RunOutput({ result }: { result: TaskRunResponse }) {
   );
 }
 
+function formatTestValue(value: unknown): string {
+  if (value === undefined) {
+    return "undefined";
+  }
+
+  try {
+    const serialized = JSON.stringify(value, null, 2);
+    return serialized ?? String(value);
+  } catch {
+    return String(value);
+  }
+}
+
 function TaskResult({ result }: { result: TaskSubmitResponse }) {
   const errorMessage = formatCompilerMessage(result.error);
 
@@ -2354,10 +2374,21 @@ function TaskResult({ result }: { result: TaskSubmitResponse }) {
               <span>{test.passed ? "passed" : "failed"}</span>
               <strong>{test.name}</strong>
               {!test.passed && (
-                <small>
-                  ожидалось: {String(test.expected)}; получено: {String(test.actual)}
-                  {test.error ? `; ошибка: ${test.error}` : ""}
-                </small>
+                <div className="test-diff">
+                  <div>
+                    <span>Ожидалось</span>
+                    <pre>
+                      <code>{formatTestValue(test.expected)}</code>
+                    </pre>
+                  </div>
+                  <div>
+                    <span>Получено</span>
+                    <pre>
+                      <code>{formatTestValue(test.actual)}</code>
+                    </pre>
+                  </div>
+                  {test.error && <p className="test-diff__error">Ошибка: {test.error}</p>}
+                </div>
               )}
             </li>
           ))}
