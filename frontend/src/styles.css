@@ -3147,6 +3147,52 @@ pre {
   color: var(--green);
 }
 
+.profile-activity-calendar {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-md);
+  background: var(--card);
+}
+
+.profile-activity-calendar-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.profile-activity-calendar-head > div {
+  display: grid;
+  gap: 2px;
+}
+
+.profile-activity-calendar-head span {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.profile-activity-calendar-head strong {
+  font-size: 0.95rem;
+}
+
+.profile-activity-legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.profile-activity-legend::before {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 0 3px var(--green-soft);
+  content: "";
+}
+
 .profile-actions {
   display: inline-flex;
   gap: 6px;

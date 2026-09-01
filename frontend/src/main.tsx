@@ -84,6 +84,7 @@ type QuotaStatus = {
 type StudentProfile = AdminAccount & {
   quota: QuotaStatus;
   activity_days_count: number;
+  activity_days: string[];
   bookings: { id: number; date: string; start_time: string; duration_minutes: number }[];
 };
 
@@ -1350,6 +1351,8 @@ function AdminStudentProfile({
     );
   }
 
+  const activityDays = new Set(profile.activity_days);
+
   return (
     <div className="admin-profile">
       <button className="admin-back" type="button" onClick={onBack}>
@@ -1411,12 +1414,44 @@ function AdminStudentProfile({
         </div>
       </div>
 
-      <div className="profile-metric">
-        <div>
-          <span>Активность</span>
-          <strong>{profile.activity_days_count} дней заходил в этом месяце</strong>
+      <section className="profile-activity-calendar" aria-label="Календарь активности">
+        <div className="profile-activity-calendar-head">
+          <div>
+            <span>Активность</span>
+            <strong>{profile.activity_days_count} дней заходил в этом месяце</strong>
+          </div>
+          <span className="profile-activity-legend">Заходил</span>
         </div>
-      </div>
+        <div className="calendar-weekdays" aria-hidden="true">
+          <span>Пн</span>
+          <span>Вт</span>
+          <span>Ср</span>
+          <span>Чт</span>
+          <span>Пт</span>
+          <span>Сб</span>
+          <span>Вс</span>
+        </div>
+        <div className="calendar-grid" role="grid" aria-label={`Активность за ${getMonthTitle(month)}`}>
+          {buildMonthCells(month).map((cell, index) => {
+            if (!cell) {
+              return <span className="calendar-day is-empty" key={`empty-${index}`} aria-hidden="true" />;
+            }
+
+            const wasActive = activityDays.has(cell.dateKey);
+            return (
+              <span
+                className={`calendar-day ${wasActive ? "is-active" : ""}`}
+                key={cell.key}
+                role="gridcell"
+                title={wasActive ? "Заходил" : undefined}
+                aria-label={`${cell.day}: ${wasActive ? "заходил" : "не заходил"}`}
+              >
+                {cell.day}
+              </span>
+            );
+          })}
+        </div>
+      </section>
 
       <div className="profile-bookings">
         <span className="profile-bookings-title">Записи на занятия</span>

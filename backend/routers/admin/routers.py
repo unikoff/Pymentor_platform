@@ -176,6 +176,7 @@ def _build_student_profile(user: models.User, year: int, month: int, db: Session
     data = _serialize_account(user, completed_lessons=0)
     data["quota"] = uc.get_quota_status(user_id=user.id, year=year, month=month, db=db)
     data["activity_days_count"] = len(activity_days)
+    data["activity_days"] = [activity_day.isoformat() for activity_day in activity_days]
     data["bookings"] = [
         {
             "id": slot.id,
