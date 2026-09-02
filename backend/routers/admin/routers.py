@@ -5,6 +5,7 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from DataBase import model as models
+from learning.content import find_track, get_tracks_summary
 from routers.user import crud as user_crud
 from routers.user.schemas import SlotCreate
 from .schemas import QuotaChange, SubscriptionChange
@@ -33,6 +34,85 @@ def _serialize_account(user: models.User, completed_lessons: int) -> dict:
     data = user_crud._serialize_user(user)
     data["completed_lessons"] = completed_lessons
     return data
+
+
+def _build_learning_progress(user_id: int, db: Session) -> tuple[list[dict], int]:
+    """Собирает компактное дерево треков, блоков, уроков и заданий для админки."""
+    completed_ids = user_crud.get_completed_lesson_ids(user_id, db)
+    tracks: list[dict] = []
+    completed_lessons = 0
+
+    for track_summary in get_tracks_summary():
+        track = find_track(track_summary["id"])
+        if track is None:
+            continue
+
+        track_id = track["id"]
+        modules_by_title: dict[str, dict] = {}
+        for lesson in track["lessons"]:
+            module_title = lesson["module"]
+            module = modules_by_title.setdefault(
+                module_title,
+                {
+                    "id": f"{track_id}:{module_title}",
+                    "title": module_title,
+                    "completed": 0,
+                    "total": 0,
+                    "lessons_total": 0,
+                    "lessons": [],
+                },
+            )
+
+            lesson_completed = lesson["id"] in completed_ids
+            countable = bool(lesson.get("tasks") or lesson.get("self_check"))
+            tasks = [
+                {
+                    "id": task["id"],
+                    "title": task["title"],
+                    "level": task.get("level") if task.get("level") in {"easy", "medium", "hard"} else None,
+                    "completed": lesson_completed,
+                }
+                for task in lesson.get("tasks", [])
+            ]
+            if not tasks and lesson.get("self_check"):
+                tasks = [
+                    {
+                        "id": f"{lesson['id']}:self-check",
+                        "title": "Отметка выполнения",
+                        "level": None,
+                        "completed": lesson_completed,
+                    }
+                ]
+
+            module["lessons_total"] += 1
+            module["lessons"].append(
+                {
+                    "id": lesson["id"],
+                    "title": lesson["title"],
+                    "completed": lesson_completed,
+                    "countable": countable,
+                    "tasks": tasks,
+                }
+            )
+            if countable:
+                module["total"] += 1
+                if lesson_completed:
+                    module["completed"] += 1
+                    completed_lessons += 1
+
+        modules = list(modules_by_title.values())
+        tracks.append(
+            {
+                "id": track_id,
+                "title": track_summary["title"],
+                "completed": sum(module["completed"] for module in modules),
+                "total": sum(module["total"] for module in modules),
+                "lessons_total": sum(module["lessons_total"] for module in modules),
+                "modules": modules,
+            }
+        )
+
+    return tracks, completed_lessons
 
 
 @admin_router.get("/users")
@@ -172,11 +252,13 @@ def _build_student_profile(user: models.User, year: int, month: int, db: Session
         .all()
     )
     activity_days = uc.get_activity_days(user_id=user.id, year=year, month=month, db=db)
+    learning_progress, completed_lessons = _build_learning_progress(user.id, db)
 
-    data = _serialize_account(user, completed_lessons=0)
+    data = _serialize_account(user, completed_lessons=completed_lessons)
     data["quota"] = uc.get_quota_status(user_id=user.id, year=year, month=month, db=db)
     data["activity_days_count"] = len(activity_days)
     data["activity_days"] = [activity_day.isoformat() for activity_day in activity_days]
+    data["learning_progress"] = learning_progress
     data["bookings"] = [
         {
             "id": slot.id,

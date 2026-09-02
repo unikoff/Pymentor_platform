@@ -3075,6 +3075,8 @@ pre {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  width: 100%;
+  min-width: 0;
   min-height: 0;
   overflow-y: auto;
 }
@@ -3147,13 +3149,47 @@ pre {
   color: var(--green);
 }
 
+.profile-overview-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 306px) minmax(0, 1fr);
+  gap: 12px;
+  align-items: stretch;
+  width: 100%;
+  min-width: 0;
+}
+
+.profile-overview-grid > * {
+  min-width: 0;
+  min-height: 316px;
+  box-sizing: border-box;
+}
+
 .profile-activity-calendar {
   display: grid;
-  gap: 14px;
-  padding: 16px;
+  width: 100%;
+  gap: 10px;
+  justify-self: start;
+  padding: 12px;
   border: 1px solid var(--line-soft);
   border-radius: var(--radius-md);
   background: var(--card);
+}
+
+.profile-activity-calendar .calendar-weekdays,
+.profile-activity-calendar .calendar-grid {
+  gap: 5px;
+}
+
+.profile-activity-calendar .calendar-weekdays span {
+  font-size: 0.62rem;
+}
+
+.profile-activity-calendar .calendar-day {
+  font-size: 0.72rem;
+}
+
+.profile-activity-calendar .calendar-day.is-active {
+  box-shadow: 0 0 0 3px var(--green-soft);
 }
 
 .profile-activity-calendar-head {
@@ -3191,6 +3227,295 @@ pre {
   background: var(--green);
   box-shadow: 0 0 0 3px var(--green-soft);
   content: "";
+}
+
+.profile-learning-progress {
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  gap: 10px;
+  min-width: 0;
+  max-height: 350px;
+  overflow: hidden;
+  padding: 12px;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-md);
+  background: var(--card);
+}
+
+.profile-learning-progress-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.profile-learning-progress-head > div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.profile-learning-progress-head span {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.profile-learning-progress-head strong {
+  font-size: 0.95rem;
+}
+
+.profile-learning-progress-head > svg {
+  flex: 0 0 auto;
+  color: var(--green);
+}
+
+.admin-progress-levels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.admin-progress-level {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  padding: 4px 7px;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-pill);
+  color: var(--muted);
+  font-size: 0.68rem;
+}
+
+.admin-progress-level i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.admin-progress-level strong {
+  color: inherit;
+  font-size: inherit;
+  font-weight: 700;
+}
+
+.admin-progress-level small {
+  color: var(--faint);
+  font-size: inherit;
+  font-variant-numeric: tabular-nums;
+}
+
+.admin-progress-level--easy {
+  color: var(--green);
+}
+
+.admin-progress-level--medium {
+  color: var(--amber);
+}
+
+.admin-progress-level--hard {
+  color: var(--red);
+}
+
+.admin-progress-tree {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.admin-progress-track,
+.admin-progress-module,
+.admin-progress-lesson {
+  min-width: 0;
+}
+
+.admin-progress-toggle {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  gap: 7px;
+  padding: 7px 8px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  transition: border-color 140ms ease, background 140ms ease;
+}
+
+.admin-progress-toggle:hover {
+  border-color: var(--line);
+  background: var(--surface-2);
+}
+
+.admin-progress-toggle > svg:first-child {
+  flex: 0 0 auto;
+  color: var(--faint);
+  transition: transform 140ms ease;
+}
+
+.admin-progress-toggle.is-expanded > svg:first-child {
+  transform: rotate(90deg);
+}
+
+.admin-progress-track-toggle {
+  border-color: var(--line-soft);
+  background: var(--surface-2);
+}
+
+.admin-progress-module-toggle {
+  padding-block: 6px;
+}
+
+.admin-progress-lesson-toggle {
+  padding-block: 5px;
+  padding-left: 4px;
+}
+
+.admin-progress-toggle-copy {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+  gap: 1px;
+}
+
+.admin-progress-toggle-copy strong,
+.admin-progress-toggle-copy small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-progress-toggle-copy strong {
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.admin-progress-toggle-copy small {
+  color: var(--faint);
+  font-size: 0.68rem;
+}
+
+.admin-progress-count {
+  flex: 0 0 auto;
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.admin-progress-modules,
+.admin-progress-lessons {
+  display: grid;
+  gap: 2px;
+  margin: 4px 0 0 8px;
+  padding-left: 9px;
+  border-left: 1px solid var(--line-soft);
+}
+
+.admin-progress-lessons {
+  margin-top: 2px;
+  padding-left: 7px;
+}
+
+.admin-progress-status {
+  flex: 0 0 auto;
+  width: 8px;
+  height: 8px;
+  border: 1px solid var(--faint);
+  border-radius: 50%;
+}
+
+.admin-progress-status.is-done {
+  border-color: var(--green);
+  background: var(--green);
+}
+
+.admin-progress-status.is-pending {
+  border-color: var(--green);
+  background: transparent;
+}
+
+.admin-progress-status.is-neutral {
+  border-color: var(--line);
+  background: var(--line);
+}
+
+.admin-progress-tasks {
+  display: grid;
+  gap: 4px;
+  margin: 1px 0 4px 25px;
+  padding: 5px 8px;
+  border-left: 1px solid var(--line-soft);
+}
+
+.admin-progress-task {
+  display: flex;
+  align-items: flex-start;
+  min-width: 0;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 0.7rem;
+  line-height: 1.35;
+}
+
+.admin-progress-task > svg {
+  flex: 0 0 auto;
+  margin-top: 1px;
+}
+
+.admin-progress-task > svg.is-done {
+  color: var(--green);
+}
+
+.admin-progress-task-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-progress-task-level {
+  flex: 0 0 auto;
+  padding: 2px 5px;
+  border: 1px solid currentColor;
+  border-radius: var(--radius-pill);
+  font-size: 0.62rem;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.admin-progress-task-level.is-easy {
+  color: var(--green);
+}
+
+.admin-progress-task-level.is-medium {
+  color: var(--amber);
+}
+
+.admin-progress-task-level.is-hard {
+  color: var(--red);
+}
+
+.admin-progress-task-level.is-manual {
+  color: var(--faint);
+}
+
+.admin-progress-task-dot {
+  flex: 0 0 auto;
+  width: 7px;
+  height: 7px;
+  margin-top: 4px;
+  border: 1px solid var(--faint);
+  border-radius: 50%;
 }
 
 .profile-actions {
@@ -3289,6 +3614,20 @@ pre {
 .profile-danger-input:focus {
   outline: none;
   border-color: var(--danger, #ef4444);
+}
+
+@media (max-width: 760px) {
+  .profile-overview-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .profile-activity-calendar {
+    width: min(100%, 306px);
+  }
+
+  .profile-learning-progress {
+    max-height: 350px;
+  }
 }
 
 /* Плашка остатка занятий у студента */
