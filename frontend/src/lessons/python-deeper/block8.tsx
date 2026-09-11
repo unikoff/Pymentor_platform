@@ -11,10 +11,12 @@ import {
   ShieldCheck,
   Trophy,
 } from "lucide-react";
+import type { ReactNode } from "react";
 import {
   BugHunt,
   Callout,
   CodeBlock,
+  CodeSequence,
   KeyTakeaways,
   Lead,
   PracticeCta,
@@ -30,12 +32,12 @@ import {
 type TheoryBridgeData = { link: string; boundary: string };
 
 const THEORY_BRIDGES: Record<number, TheoryBridgeData> = {
-  39: {"link":"Task уже имеет поля и методы, поэтому @dataclass убирает шаблонный код, default_factory защищает изменяемые значения, а композиция соединяет разные роли.","boundary":"dataclass не создаёт бизнес-правила сам, а наследование выбирают только при настоящем отношении «является»."},
-  40: {"link":"После модели, сервиса и хранения SOLID становится набором вопросов к реальным зависимостям и смешанным обязанностям.","boundary":"Это не требование создать пять новых абстракций: сначала находят боль, затем делают минимальное изменение."},
-  41: {"link":"Контракты уже названы, поэтому тест превращает ожидаемое поведение в повторяемую проверку входа, действия и результата.","boundary":"Тесты не доказывают отсутствие всех ошибок, но защищают важные договорённости при следующем изменении."},
-  42: {"link":"Перед реализацией финального проекта фиксируются пользовательские сценарии, роли файлов и направление зависимостей.","boundary":"Схема папок сама не архитектура: у каждой границы должен быть понятный вход, результат и причина существования."},
-  43: {"link":"Финальная структура готова: модель хранит правила Task, сервис выполняет сценарии, storage сохраняет данные, интерфейс связывает человека с сервисом.","boundary":"Хранилище не принимает решения о приоритете или статусе, а сервис не зависит от деталей JSON больше, чем требует контракт."},
-  44: {"link":"Готовый проект объединяет модель, сервис, хранилище и тесты; README, Git и Release делают конкретную версию воспроизводимой.","boundary":"Релиз не заменяет понимание кода: важно уметь объяснить путь одной задачи и причину архитектурного решения."},
+  39: {"link":"Task получает понятные поля, инварианты и независимые изменяемые данные. Композиция показана как принцип, а коллекция задач появится только вместе с MemoryStorage.","boundary":"dataclass не создаёт бизнес-правила сам, а storage, service и JSON ещё не входят в модель Task."},
+  40: {"link":"Готовая модель получает первый прикладной путь: MemoryStorage хранит состояние, а PlannerService использует его через load и save.","boundary":"SOLID не требует пять новых абстракций: service зависит от роли storage, но JSON и CLI ещё не появились."},
+  41: {"link":"In-memory ядро уже работает, поэтому pytest превращает договоры Task, MemoryStorage и add/list в повторяемые проверки.","boundary":"Тесты пока не проверяют JSON или CLI: эти слои ещё не реализованы."},
+  42: {"link":"Зелёное ядро получает устойчивую структуру, спецификацию persistence и один честный xfail для будущего JsonStorage.","boundary":"Архитектура не начинает проект заново и не отменяет рабочие model, storage и service."},
+  43: {"link":"К существующему ядру добавляются сериализация, JsonStorage, недостающие операции сервиса и тонкий CLI.","boundary":"Хранилище не принимает решения о приоритете или статусе, а CLI не знает формат JSON."},
+  44: {"link":"Готовый проект проходит integration и acceptance проверки, а README, Git и Release делают конкретную версию воспроизводимой.","boundary":"Финальная приёмка не повторяет первые unit-тесты, а доказывает целый пользовательский путь и ошибки."},
 };
 
 function TheoryBridge({ lesson }: { lesson: number }) {
@@ -50,555 +52,460 @@ function TheoryBridge({ lesson }: { lesson: number }) {
   );
 }
 
+function Lesson39ConceptGrid({ children }: { children: ReactNode }) {
+  return <div className="lesson39-concept-grid">{children}</div>;
+}
+
+function Lesson39Concept({ title, children }: { number?: string; title: string; children: ReactNode }) {
+  return (
+    <article className="lesson39-concept">
+      <h3>{title}</h3>
+      <p>{children}</p>
+    </article>
+  );
+}
+
+function Lesson39Explainer({ title, label, children }: { title: string; label?: string; children: ReactNode }) {
+  return (
+    <article className="lesson39-explainer">
+      <header>
+        {label && <span>{label}</span>}
+        <h3>{title}</h3>
+      </header>
+      <div className="lesson39-explainer-body">{children}</div>
+    </article>
+  );
+}
+
+function Lesson39Narrative({ children }: { children: ReactNode }) {
+  return <div className="lesson39-narrative">{children}</div>;
+}
+
 
 // 39. dataclass, композиция и границы наследования
 export function Lesson39({ module }: { module?: string }) {
   return (
-    <RichLesson>
+    <RichLesson className="lesson39">
       <RichHero
-        variant="project"
         chip={module ?? "Месяц 2 · Блок 8"}
-        title={"dataclass, композиция и границы наследования"}
-        intro={"Упростим модель Task через @dataclass, разберём безопасные значения по умолчанию и научимся выбирать композицию вместо наследования там, где объекты просто работают вместе."}
+        title={"39. dataclass, композиция и границы наследования"}
+        intro={"Начнём один Persistent Planner с самой маленькой устойчивой детали: модели Task. Сначала разберём данные, правила и композицию. Storage, сервис и JSON появятся только после этой основы."}
         tags={[
-          { icon: <Boxes size={14} />, label: "@dataclass и field" },
-          { icon: <Puzzle size={14} />, label: "композиция без магии" },
+          { icon: <Braces size={14} />, label: "dataclass и инварианты" },
+          { icon: <Boxes size={14} />, label: "композиция" },
         ]}
       />
       <TheoryBridge lesson={39} />
 
-      <Section number="01" title={"Почему обычная модель начинает шуметь"}>
+      <Section number="00" title={"С чего начинается живой проект"}>
         <Lead>
-          {"В обычном классе разработчик вручную пишет конструктор, строковое представление и сравнение. После освоения механизма повторяющийся служебный код начинает скрывать реальные поля и правила модели."}
+          {"Планировщик легко начать с одного списка и пары функций. Но у задачи быстро появляются собственные данные, статус и правила. В этот момент ей нужна ясная форма, которая не зависит от будущего файла, меню или базы данных."}
         </Lead>
 
         <div className="lesson-practice-steps">
-          <h3>Ручной класс</h3>
+          <h3>Сейчас</h3>
           <p>
-            {"Поля приходится искать среди присваиваний self, а новое поле добавлять в несколько методов."}
+            {"Мы создаём только Task и её правила. Это первая контрольная точка одного проекта, а не отдельная проба кода."}
           </p>
 
-          <h3>Класс данных</h3>
+          <h3>Позже</h3>
           <p>
-            {"@dataclass строит стандартные методы по объявлениям полей."}
+            {"В следующем занятии впервые появятся MemoryStorage и service, затем pytest, JSON и CLI. Каждый новый слой будет использовать уже готовую часть."}
           </p>
 
-          <h3>Что остаётся вручную</h3>
+          <h3>Главный вопрос</h3>
           <p>
-            {"Валидация, предметные методы и ответственность модели не исчезают."}
+            {"Какая часть отвечает за корректность одной задачи? Ответ не зависит от того, где задача хранится и как пользователь её создаёт."}
           </p>
-
         </div>
 
         <CodeBlock
-          caption={"обычная модель Task"}
+          caption={"путь развития одного продукта"}
           code={
-            "class Task:\n" +
-            "    def __init__(\n" +
-            "        self,\n" +
-            "        task_id,\n" +
-            "        title,\n" +
-            "        priority,\n" +
-            "        is_done=False,\n" +
-            "    ):\n" +
-            "        self.id = task_id\n" +
-            "        self.title = title\n" +
-            "        self.priority = priority\n" +
-            "        self.is_done = is_done\n" +
-            "\n" +
-            "    def __repr__(self):\n" +
-            "        return (\n" +
-            "            f\"Task(id={self.id!r}, \"\n" +
-            "            f\"title={self.title!r}, \"\n" +
-            "            f\"priority={self.priority!r}, \"\n" +
-            "            f\"is_done={self.is_done!r})\"\n" +
-            "        )"
+            "Task\n" +
+            "→ MemoryStorage + PlannerService\n" +
+            "→ pytest для in-memory ядра\n" +
+            "→ JsonStorage + CLI\n" +
+            "→ приёмка и release"
           }
         />
 
         <RecallCard
-          question={"Что именно упрощает dataclass?"}
-          hint={"Не предметные правила, а повторяющийся служебный код."}
-          answer={<p>{"Он создаёт типовой конструктор, repr и сравнение по объявленным полям."}</p>}
+          question={"Почему на старте не стоит добавлять JSON и меню?"}
+          hint={"Сначала найдите слой, который должен оставаться корректным при любом интерфейсе."}
+          answer={
+            <p>
+              {"Пока не определены правила Task, сложно понять источник ошибки. Модель должна стать устойчивой раньше инфраструктуры и интерфейса."}
+            </p>
+          }
         />
-
-        <Callout tone="info">
-          {"Dataclass не заменяет ООП. Он убирает шаблонные части у класса, основная роль которого — хранить понятный набор данных."}
-        </Callout>
       </Section>
 
-      <Section number="02" title={"Что создаёт декоратор @dataclass"}>
+      <Section number="01" title={"Dataclass: модель одной задачи"}>
         <Lead>
-          {"Декоратор получает класс и добавляет стандартные методы на основе полей. Так теория декораторов связывается с реальной моделью Persistent Planner."}
+          {"Dataclass полезен классам, которые прежде всего описывают данные: задачу, заказ, настройку или результат. Он убирает повторяющийся код и оставляет внимание на смысле полей."}
         </Lead>
 
-        <div className="lesson-practice-steps">
-          <h3>Сгенерированный __init__</h3>
-          <p>
-            {"Параметры появляются в порядке объявления полей."}
-          </p>
-
-          <h3>Сгенерированный __repr__</h3>
-          <p>
-            {"Объект удобно читать в терминале, тестах и traceback."}
-          </p>
-
-          <h3>Сгенерированный __eq__</h3>
-          <p>
-            {"Два объекта сравниваются по значениям полей."}
-          </p>
-
-        </div>
-
         <CodeBlock
-          caption={"проверяем созданные методы"}
+          caption={"независимый пример модели"}
           code={
             "from dataclasses import dataclass\n" +
             "\n" +
             "@dataclass\n" +
-            "class Task:\n" +
-            "    id: int\n" +
+            "class Book:\n" +
             "    title: str\n" +
-            "    priority: int\n" +
-            "    is_done: bool = False\n" +
+            "    pages: int\n" +
+            "    is_read: bool = False\n" +
             "\n" +
-            "first = Task(1, \"Python\", 4)\n" +
-            "second = Task(1, \"Python\", 4)\n" +
-            "\n" +
-            "print(first)\n" +
-            "print(first == second)"
+            "book = Book(\"Python\", 420)\n" +
+            "print(book)"
           }
         />
 
-        <TrueFalse
-          statement={<>{"Аннотация title: str сама создаёт runtime-проверку типа."}</>}
-          isTrue={false}
-          explanation={"Обычные type hints не выполняют автоматическую проверку во время запуска."}
+        <div className="lesson-practice-steps">
+          <h3>Что даёт dataclass</h3>
+          <p>
+            {"Он создаёт удобный конструктор, представление объекта и сравнение по полям. Класс при этом остаётся обычным Python-классом с вашими методами."}
+          </p>
+
+          <h3>Чего он не делает</h3>
+          <p>
+            {"Dataclass не знает, допустима ли пустая строка, нужен ли файл и какой приоритет разрешён. Предметные правила остаются частью модели."}
+          </p>
+
+          <h3>Что будет в проекте</h3>
+          <p>
+            {"Task получит id, title, priority, is_done и tags. Пока это только данные и правила одной задачи."}
+          </p>
+        </div>
+
+        <QuizCard
+          question={"Какое правило dataclass не может выбрать сам?"}
+          options={[
+            "Создать конструктор по полям",
+            "Запретить пустой title именно в планировщике",
+            "Показать поля объекта при отладке",
+          ]}
+          correctIndex={1}
+          explanation={"Dataclass не знает предметную область. Правило пустого title относится к модели Task."}
         />
 
         <Callout tone="info">
-          {"Аннотация priority: int документирует ожидание, но обычный Python не запрещает передать строку во время выполнения."}
+          {"Аннотация title: str описывает ожидаемый тип. Она не превращает строку из пробелов в корректное название."}
         </Callout>
       </Section>
 
-      <Section number="03" title={"Обязательные поля и значения по умолчанию"}>
+      <Section number="02" title={"Tags и граница изменяемого состояния"}>
         <Lead>
-          {"Поля без значения по умолчанию обязательны. После первого поля с default нельзя объявлять обязательное поле, иначе сгенерированный конструктор получил бы недопустимый порядок параметров."}
+          {"Список tags меняется после создания Task. Поэтому важно, чтобы у каждой задачи был собственный список, а не один общий список на весь класс."}
         </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>Обязательные данные</h3>
-          <p>
-            {"id, title и priority нужны для создания задачи."}
-          </p>
-
-          <h3>Согласованный default</h3>
-          <p>
-            {"Новая задача создаётся с is_done=False."}
-          </p>
-
-          <h3>Порядок</h3>
-          <p>
-            {"Сначала обязательные поля, затем поля со значениями по умолчанию."}
-          </p>
-
-        </div>
-
-        <CodeBlock
-          caption={"корректный порядок полей"}
-          code={
-            "from dataclasses import dataclass\n" +
-            "\n" +
-            "@dataclass\n" +
-            "class Task:\n" +
-            "    id: int\n" +
-            "    title: str\n" +
-            "    priority: int\n" +
-            "    is_done: bool = False\n" +
-            "    description: str = \"\"\n" +
-            "\n" +
-            "first = Task(\n" +
-            "    id=1,\n" +
-            "    title=\"Python\",\n" +
-            "    priority=4,\n" +
-            ")\n" +
-            "\n" +
-            "print(first.is_done)"
-          }
-        />
 
         <PredictOutput
           code={
-            "print(first.is_done)"
+            "class Playlist:\n" +
+            "    tags = []\n" +
+            "\n" +
+            "first = Playlist()\n" +
+            "second = Playlist()\n" +
+            "first.tags.append(\"study\")\n" +
+            "\n" +
+            "print(second.tags)\n" +
+            "print(first.tags is second.tags)"
           }
-          output={"False"}
-          hint={"Значение взято из default поля is_done."}
+          output={"['study']\nTrue"}
+          hint={"Список создан на классе Playlist один раз, поэтому оба объекта видят одну ссылку."}
         />
 
-        <Callout tone="info">
-          {"Порядок полей становится частью публичного конструктора и проектируется так же внимательно, как параметры функции."}
-        </Callout>
-      </Section>
-
-      <Section number="04" title={"Изменяемые поля и default_factory"}>
-        <Lead>
-          {"Список тегов должен быть отдельным для каждой задачи. field(default_factory=list) вызывает list при создании каждого объекта и не создаёт общее изменяемое состояние."}
-        </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>Проблема общего списка</h3>
-          <p>
-            {"Изменение тегов одной задачи не должно менять другую."}
-          </p>
-
-          <h3>Фабрика значения</h3>
-          <p>
-            {"default_factory=list передаёт функцию без скобок."}
-          </p>
-
-          <h3>Другие варианты</h3>
-          <p>
-            {"Так же создаются новые dict, set или собственные объекты."}
-          </p>
-
-        </div>
+        <p>
+          {"Dataclass решает эту проблему через field(default_factory=list). Python вызовет list отдельно для каждой новой Task. В результате списки могут быть одинаково пустыми, но не будут одним объектом."}
+        </p>
 
         <CodeBlock
-          caption={"независимые списки тегов"}
+          caption={"новый список для каждого объекта"}
           code={
             "from dataclasses import dataclass, field\n" +
             "\n" +
             "@dataclass\n" +
-            "class Task:\n" +
-            "    id: int\n" +
-            "    title: str\n" +
-            "    priority: int\n" +
-            "    tags: list[str] = field(\n" +
-            "        default_factory=list,\n" +
-            "    )\n" +
-            "\n" +
-            "first = Task(1, \"Python\", 4)\n" +
-            "second = Task(2, \"SQL\", 3)\n" +
-            "\n" +
-            "first.tags.append(\"backend\")\n" +
-            "\n" +
-            "print(first.tags)\n" +
-            "print(second.tags)"
+            "class Playlist:\n" +
+            "    name: str\n" +
+            "    tags: list[str] = field(default_factory=list)"
           }
         />
 
         <BugHunt
           code={
-            "tags: list[str] = []"
+            "@dataclass\n" +
+            "class Task:\n" +
+            "    title: str\n" +
+            "    tags: list[str] = []"
           }
-          question={"Почему такой default опасен?"}
+          question={"Что нарушает такое поле tags?"}
           options={[
-            "Один список может стать общим состоянием",
-            "Списки запрещены в классах",
-            "Поле станет строкой",
+            "Несколько Task могут получить общий список",
+            "Dataclass не сможет создать __init__",
+            "Список нельзя использовать в модели",
           ]}
           correctIndex={0}
-          explanation={"Для изменяемого значения нужна фабрика."}
+          explanation={"Проблема не в списке. Изменяемое значение нельзя неявно разделять между экземплярами."}
           fix={"tags: list[str] = field(default_factory=list)"}
         />
 
+        <RecallCard
+          question={"Почему в проверке нужны и ==, и is not?"}
+          hint={"Один оператор сравнивает содержимое, другой проверяет сам объект списка."}
+          answer={
+            <p>
+              {"== доказывает, что у второй задачи нет чужого тега. is not доказывает, что два списка действительно независимы."}
+            </p>
+          }
+        />
+      </Section>
+
+      <Section number="03" title={"Инварианты и действие mark_done"}>
+        <Lead>
+          {"Инвариант это правило, которое должно быть верно у каждой корректной Task. Модель проверяет его при создании, а не надеется на один конкретный интерфейс."}
+        </Lead>
+
+        <CodeBlock
+          caption={"независимый пример проверки модели"}
+          code={
+            "@dataclass\n" +
+            "class Temperature:\n" +
+            "    value: int\n" +
+            "\n" +
+            "    def __post_init__(self):\n" +
+            "        if not -80 <= self.value <= 60:\n" +
+            "            raise ValueError(\"outside allowed range\")"
+          }
+        />
+
+        <p>
+          {"У Task сначала очищается title, затем проверяется его смысл. Такой порядок отличает название с пробелами по краям от строки, в которой после очистки ничего не осталось."}
+        </p>
+
+        <CodeSequence
+          title={"Соберите проверку title"}
+          prompt={"Расположите действия модели в правильном порядке."}
+          pieces={[
+            { id: "receive", code: "Task получает title", note: "Dataclass уже заполнил поле." },
+            { id: "strip", code: "self.title = self.title.strip()", note: "Модель нормализует вход." },
+            { id: "check", code: "if not self.title: raise ValueError", note: "Проверяется уже очищенное значение." },
+            { id: "use", code: "Task передаётся дальше", note: "Остальные слои получают корректный объект." },
+          ]}
+          correctOrder={["receive", "strip", "check", "use"]}
+          explanation={"Проверка после strip не позволяет строке из одних пробелов пройти в приложение."}
+        />
+
+        <div className="lesson-practice-steps">
+          <h3>Кто владеет title и priority</h3>
+          <p>
+            {"Task. Если правила оставить в CLI, другой вход сможет их обойти."}
+          </p>
+
+          <h3>Зачем mark_done</h3>
+          <p>
+            {"Метод выражает предметное действие. Позже внутри него можно добавить дату или аудит, не меняя все вызовы в проекте."}
+          </p>
+
+          <h3>Что пока отсутствует</h3>
+          <p>
+            {"Task не сохраняет себя, не ищет другие задачи и не печатает сообщения. Это будут роли других объектов."}
+          </p>
+        </div>
+
+        <TrueFalse
+          statement={<>{"Правило пустого title достаточно проверить только около input()."}</>}
+          isTrue={false}
+          explanation={"Task может создаваться из теста, файла или будущего API. Инвариант должен жить в модели."}
+        />
+      </Section>
+
+      <Section number="04" title={"Композиция и границы наследования"}>
+        <Lead>
+          {"Композиция описывает связь «содержит» или «использует». Она важна для следующего слоя, но не требует создавать новый класс только ради примера."}
+        </Lead>
+
+        <CodeBlock
+          caption={"независимый пример композиции"}
+          code={
+            "class Library:\n" +
+            "    def __init__(self, books):\n" +
+            "        self.books = list(books)"
+          }
+        />
+
+        <p>
+          {"Library содержит книги, но не является книгой. Поэтому наследование здесь неверно: у библиотеки и книги разные данные, правила и причины изменения."}
+        </p>
+
+        <BugHunt
+          code={
+            "class Library(Book):\n" +
+            "    pass"
+          }
+          question={"Почему это неверная связь?"}
+          options={[
+            "Library содержит книги, но не является книгой",
+            "Наследование нельзя использовать в Python",
+            "Список нельзя хранить в классе",
+          ]}
+          correctIndex={0}
+          explanation={"Наследование отвечает на вопрос «является ли». Для отношения «имеет» или «использует» нужна композиция."}
+          fix={"class Library:\n    def __init__(self, books):\n        self.books = list(books)"}
+        />
+
         <Callout tone="info">
-          {"В default_factory передаётся фабрика без вызова: list, а не list()."}
+          {"В следующем занятии MemoryStorage станет первым объектом учебного проекта, который содержит список Task. Тогда композиция получит прикладную роль и понятный договор load/save."}
         </Callout>
       </Section>
 
-      <Section number="05" title={"__post_init__ и инварианты модели"}>
+      <Section number="05" title={"Граница текущей контрольной точки"}>
         <Lead>
-          {"После присваивания полей dataclass автоматически вызывает __post_init__. Здесь удобно очистить title и проверить диапазон priority."}
+          {"Полнота не означает добавить все технологии в один вечер. Сейчас проект получает модель и in-memory контейнер. Остальные слои появятся, когда для них уже есть понятная проблема."}
         </Lead>
 
         <div className="lesson-practice-steps">
-          <h3>Нормализация</h3>
+          <h3>Готово после этой работы</h3>
           <p>
-            {"Пробелы по краям title удаляются один раз при создании."}
+            {"Task, её инварианты, независимые tags, mark_done и smoke-сценарий модели."}
           </p>
 
-          <h3>Инвариант</h3>
+          <h3>Появится дальше</h3>
           <p>
-            {"Успешно созданная задача всегда имеет непустой title и priority от 1 до 5."}
+            {"MemoryStorage, PlannerService, pytest, JsonStorage, CLI и полный набор пользовательских операций."}
           </p>
 
-          <h3>Граница</h3>
+          <h3>Почему это полезно</h3>
           <p>
-            {"Файловые операции и input внутри модели не нужны."}
+            {"Если ошибка появится позже, мы сможем отделить проблему модели от проблемы storage и интерфейса."}
           </p>
-
         </div>
 
+        <QuizCard
+          question={"Кто должен читать JSON-файл на текущем этапе?"}
+          options={[
+            "Никто, persistent слой ещё не введён",
+            "Task",
+            "Будущий PlannerService",
+          ]}
+          correctIndex={0}
+          explanation={"JSON требует отдельной границы сериализации и хранения. Сейчас она ещё сознательно отсутствует."}
+        />
+      </Section>
+
+      <Section number="06" title={"Где это встретится в production"}>
+        <Lead>
+          {"В большом продукте модель, хранение, прикладной сценарий и интерфейс тоже часто разделены. Меняется масштаб, но не смысл ролей."}
+        </Lead>
+
+        <div className="lesson-practice-steps">
+          <h3>Модель</h3>
+          <p>
+            {"Task похожа на доменную сущность, которая хранит правила предметной области."}
+          </p>
+
+          <h3>Будущее хранилище</h3>
+          <p>
+            {"MemoryStorage в следующем занятии станет первым in-memory хранилищем. Он не переживает перезапуск, но даст сервису понятный контракт."}
+          </p>
+
+          <h3>Будущее storage</h3>
+          <p>
+            {"Файл, база данных или внешний сервис смогут выполнять похожую роль хранения, не меняя смысл Task."}
+          </p>
+        </div>
+
+        <Callout tone="info">
+          {"В production хранилищем может стать файл, база или внешний сервис. В учебном проекте первым будет MemoryStorage, чтобы отделить состояние от прикладного действия."}
+        </Callout>
+      </Section>
+
+      <Section number="07" title={"Минимальная самопроверка"}>
+        <Lead>
+          {"До pytest будет небольшой smoke-скрипт с assert. Он проверит модель и композицию, но ещё не заменит полноценный тестовый набор."}
+        </Lead>
+
         <CodeBlock
-          caption={"модель с правилами"}
+          caption={"что должен подтвердить smoke-скрипт"}
           code={
-            "from dataclasses import dataclass\n" +
-            "\n" +
-            "@dataclass\n" +
-            "class Task:\n" +
-            "    id: int\n" +
-            "    title: str\n" +
-            "    priority: int\n" +
-            "\n" +
-            "    def __post_init__(self):\n" +
-            "        self.title = self.title.strip()\n" +
-            "\n" +
-            "        if not self.title:\n" +
-            "            raise ValueError(\n" +
-            "                \"title не должен быть пустым\"\n" +
-            "            )\n" +
-            "\n" +
-            "        if not 1 <= self.priority <= 5:\n" +
-            "            raise ValueError(\n" +
-            "                \"priority должен быть от 1 до 5\"\n" +
-            "            )"
+            "Task нормализует title\n" +
+            "Task отклоняет неправильный priority\n" +
+            "две Task не делят tags\n" +
+            "mark_done меняет is_done"
           }
         />
 
         <RecallCard
-          question={"Когда dataclass вызывает __post_init__?"}
-          hint={"Сначала поля, затем дополнительная проверка."}
-          answer={<p>{"После того как сгенерированный __init__ присвоил значения полям."}</p>}
+          question={"Какой факт smoke-скрипт пока не может доказать?"}
+          hint={"Вспомните, каких частей ещё нет в проекте."}
+          answer={
+            <p>
+              {"Он не может доказать сохранение после перезапуска, потому что JsonStorage и файловая граница ещё не существуют."}
+            </p>
+          }
         />
-
-        <Callout tone="info">
-          {"__post_init__ защищает правила создания объекта. Сценарий добавления задачи остаётся в сервисе."}
-        </Callout>
       </Section>
 
-      <Section number="06" title={"Композиция: объект содержит другой объект"}>
+      <Section number="08" title={"Что мы будем делать в практике"}>
         <Lead>
-          {"Композиция описывает отношение «содержит» или «использует». PlannerService хранит ссылку на storage и делегирует ему загрузку и сохранение."}
+          {"Практика создаст первую контрольную точку одного Persistent Planner. Она не будет заранее реализовывать service или JSON, которые должны появиться в следующих занятиях."}
         </Lead>
 
         <div className="lesson-practice-steps">
-          <h3>Явная зависимость</h3>
+          <h3>Модель</h3>
           <p>
-            {"Storage передаётся в конструктор PlannerService."}
+            {"Создадите app/models.py, Task, инварианты, независимые tags и mark_done."}
           </p>
 
-          <h3>Разные обязанности</h3>
+          <h3>Smoke-сценарий</h3>
           <p>
-            {"Сервис знает правила задач, storage знает способ хранения."}
+            {"Соберёте один сценарий assert, который связывает правила Task без добавления storage раньше времени."}
           </p>
 
-          <h3>Замена</h3>
+          <h3>Доказательство</h3>
           <p>
-            {"В тесте JsonStorage заменяется MemoryStorage."}
+            {"Напишете smoke-скрипт с assert и document project-path.md, где честно зафиксируете будущие слои."}
           </p>
-
-        </div>
-
-        <CodeBlock
-          caption={"композиция сервиса и хранилища"}
-          code={
-            "class PlannerService:\n" +
-            "    def __init__(self, storage):\n" +
-            "        self.storage = storage\n" +
-            "\n" +
-            "    def list_tasks(self):\n" +
-            "        return self.storage.load()\n" +
-            "\n" +
-            "    def add_task(self, task):\n" +
-            "        tasks = self.storage.load()\n" +
-            "        tasks.append(task)\n" +
-            "        self.storage.save(tasks)\n" +
-            "\n" +
-            "        return task\n" +
-            "\n" +
-            "storage = JsonStorage(\"data/tasks.json\")\n" +
-            "service = PlannerService(storage)"
-          }
-        />
-
-        <TrueFalse
-          statement={<>{"PlannerService является разновидностью JsonStorage."}</>}
-          isTrue={false}
-          explanation={"Сервис использует хранилище, но не является хранилищем."}
-        />
-
-        <Callout tone="info">
-          {"Композиция не требует отдельного фреймворка. Обычного параметра конструктора достаточно."}
-        </Callout>
-      </Section>
-
-      <Section number="07" title={"Где наследование уместно"}>
-        <Lead>
-          {"Наследование полезно, когда дочерний объект действительно является более конкретным вариантом общего типа и сохраняет его контракт."}
-        </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>Хороший мотив</h3>
-          <p>
-            {"MemoryStorage и JsonStorage реализуют один смысл load и save."}
-          </p>
-
-          <h3>Плохой мотив</h3>
-          <p>
-            {"Наследоваться только ради доступа к двум готовым методам."}
-          </p>
-
-          <h3>Глубина</h3>
-          <p>
-            {"Для учебного проекта достаточно одного простого уровня или неформального контракта."}
-          </p>
-
-        </div>
-
-        <CodeBlock
-          caption={"умеренный общий контракт"}
-          code={
-            "class Storage:\n" +
-            "    def load(self):\n" +
-            "        raise NotImplementedError\n" +
-            "\n" +
-            "    def save(self, tasks):\n" +
-            "        raise NotImplementedError\n" +
-            "\n" +
-            "\n" +
-            "class MemoryStorage(Storage):\n" +
-            "    def __init__(self):\n" +
-            "        self.tasks = []\n" +
-            "\n" +
-            "    def load(self):\n" +
-            "        return list(self.tasks)\n" +
-            "\n" +
-            "    def save(self, tasks):\n" +
-            "        self.tasks = list(tasks)"
-          }
-        />
-
-        <PredictOutput
-          code={
-            "print(isinstance(MemoryStorage(), Storage))"
-          }
-          output={"True"}
-          hint={"MemoryStorage наследуется от Storage."}
-        />
-
-        <Callout tone="info">
-          {"Даже при общем Storage сервис не наследуется от него: это два разных объекта с разными обязанностями."}
-        </Callout>
-      </Section>
-
-      <Section number="08" title={"Практика: миграция Task"}>
-        <Lead>
-          {"Переведите существующую модель небольшими шагами. Сначала сохраните поведение, затем замените только модель и повторите проверки."}
-        </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>Шаг 1</h3>
-          <p>
-            {"Зафиксировать рабочий сценарий создания и вывода."}
-          </p>
-
-          <h3>Шаг 2</h3>
-          <p>
-            {"Перенести поля в dataclass и добавить __post_init__."}
-          </p>
-
-          <h3>Шаг 3</h3>
-          <p>
-            {"Добавить mark_done и независимые tags."}
-          </p>
-
-        </div>
-
-        <CodeBlock
-          caption={"итоговая модель урока"}
-          code={
-            "from dataclasses import dataclass, field\n" +
-            "\n" +
-            "@dataclass\n" +
-            "class Task:\n" +
-            "    id: int\n" +
-            "    title: str\n" +
-            "    priority: int\n" +
-            "    is_done: bool = False\n" +
-            "    tags: list[str] = field(\n" +
-            "        default_factory=list,\n" +
-            "    )\n" +
-            "\n" +
-            "    def __post_init__(self):\n" +
-            "        self.title = self.title.strip()\n" +
-            "\n" +
-            "        if not self.title:\n" +
-            "            raise ValueError(\"empty title\")\n" +
-            "\n" +
-            "        if not 1 <= self.priority <= 5:\n" +
-            "            raise ValueError(\"bad priority\")\n" +
-            "\n" +
-            "    def mark_done(self):\n" +
-            "        self.is_done = True"
-          }
-        />
-
-        <Callout tone="info">
-          {"Не подключайте одновременно новый JSON-формат, Enum и дополнительные поля. Цель урока — ясная модель и ясные зависимости."}
-        </Callout>
-
-        <div className="lesson-check-group">
-          <QuizCard
-            question={"Что обычно создаёт @dataclass?"}
-            options={[
-              "__init__, repr и сравнение",
-              "JSON-файл",
-              "виртуальное окружение",
-            ]}
-            correctIndex={0}
-            explanation={"Методы строятся по полям."}
-          />
-          <QuizCard
-            question={"Зачем default_factory=list?"}
-            options={[
-              "создать отдельный список каждому объекту",
-              "запретить списки",
-              "сделать поле обязательным",
-            ]}
-            correctIndex={0}
-            explanation={"Фабрика вызывается для каждого экземпляра."}
-          />
-          <QuizCard
-            question={"Когда вызывается __post_init__?"}
-            options={[
-              "после __init__",
-              "до класса",
-              "только вручную",
-            ]}
-            correctIndex={0}
-            explanation={"Dataclass запускает его после присваивания полей."}
-          />
-          <QuizCard
-            question={"Что связывает PlannerService и storage?"}
-            options={[
-              "композиция",
-              "наследование сервиса от файла",
-              "глобальная переменная",
-            ]}
-            correctIndex={0}
-            explanation={"Сервис использует отдельный объект хранения."}
-          />
         </div>
 
         <KeyTakeaways
           points={[
-            <>{"@dataclass уменьшает шаблонный код модели."}</>,
-            <>{"Default_factory создаёт независимые изменяемые значения."}</>,
-            <>{"__post_init__ защищает инварианты Task."}</>,
-            <>{"Композиция выражает отношение «содержит» или «использует»."}</>,
-            <>{"Наследование требует честного отношения «является»."}</>,
-            <>{"Storage передаётся сервису как явная зависимость."}</>,
+            <>{"Dataclass сокращает технический код, но не выбирает инварианты."}</>,
+            <>{"Task владеет правилами одной задачи."}</>,
+            <>{"default_factory создаёт независимый tags для каждого объекта."}</>,
+            <>{"Композиция отличает связь «содержит» от отношения «является»."}</>,
+            <>{"MemoryStorage, service, JSON и CLI появятся в следующих контрольных точках."}</>,
           ]}
         />
 
-        <PracticeCta text={"Переведите Task на dataclass, добавьте tags через default_factory и подключите storage к PlannerService через композицию."} />
+        <PracticeCta text={"Создайте модель Task и докажите её правила одним smoke-скриптом."} />
       </Section>
 
+      <Section number="09" title={"Самопроверка перед редактором"}>
+        <div className="lesson-check-group">
+          <QuizCard
+            question={"Где должен жить инвариант priority от 1 до 5?"}
+            options={["В Task", "Только в CLI", "В будущем JSON-файле"]}
+            correctIndex={0}
+            explanation={"Правило относится к одной задаче, поэтому его защищает модель."}
+          />
+          <QuizCard
+            question={"Что показывает first.tags is not second.tags?"}
+            options={["Списки являются разными объектами", "Списки одинаковы по содержимому", "Теги нельзя менять"]}
+            correctIndex={0}
+            explanation={"is сравнивает идентичность объектов, а не содержимое."}
+          />
+          <QuizCard
+            question={"Какой вопрос помогает выбрать композицию вместо наследования?"}
+            options={["Объект содержит другую роль или является ею?", "Сколько строк в классе?", "Есть ли в классе список?"]}
+            correctIndex={0}
+            explanation={"Наследование описывает отношение «является», композиция описывает связь «содержит» или «использует»."}
+          />
+        </div>
+      </Section>
     </RichLesson>
   );
 }
-
 // 40. SOLID на примере StudyHub
 export function Lesson40({ module }: { module?: string }) {
   return (
@@ -606,1009 +513,628 @@ export function Lesson40({ module }: { module?: string }) {
       <RichHero
         variant="project"
         chip={module ?? "Месяц 2 · Блок 8"}
-        title={"SOLID на примере StudyHub"}
-        intro={"Разберём пять принципов не как набор лозунгов, а как пять вопросов к небольшому Persistent Planner: где смешаны обязанности, что трудно заменить и какие зависимости скрыты."}
+        title={"40. SOLID на примере StudyHub"}
+         intro={"После Task проект получает первое хранилище и сервис. На этом примере SOLID поможет увидеть ясные границы до появления JSON и CLI."}
         tags={[
-          { icon: <ShieldCheck size={14} />, label: "SOLID без культа" },
-          { icon: <Layers size={14} />, label: "StudyHub как пример" },
+          { icon: <ShieldCheck size={14} />, label: "SOLID как диагностика" },
+          { icon: <Layers size={14} />, label: "границы StudyHub" },
         ]}
       />
       <TheoryBridge lesson={40} />
 
-      <Section number="01" title={"SOLID как диагностические вопросы"}>
+       <Section number="00" title={"Продолжение после предыдущего занятия"}>
         <Lead>
-          {"SOLID не гарантирует хороший проект и не требует пяти интерфейсов для каждой функции. Это набор вопросов о причинах изменения, заменяемости и видимости зависимостей."}
+          {"Предыдущее занятие дало модель Task, её правила и принцип композиции. В этом уроке впервые появятся MemoryStorage и PlannerService. Мы сразу зададим новой связке вопрос: насколько легко её менять, не смешивая роли?"}
         </Lead>
 
-        <div className="lesson-practice-steps">
-          <h3>Не ритуал</h3>
-          <p>
-            {"Принцип применяется к наблюдаемой проблеме."}
-          </p>
+        <p>
+          {"Представьте, что список задач уже нужно использовать в первом прикладном сценарии. Его можно оставить внутри сервиса, но тогда сервис одновременно владеет данными и принимает решения. Хорошая граница сразу отдаёт список storage, а сценарий добавления оставляет service. Позже такую границу можно будет заменить JSON без переписывания правила."}
+        </p>
 
-          <h3>Не запрет простоты</h3>
-          <p>
-            {"Короткая функция может быть лучше иерархии классов."}
-          </p>
-
-          <h3>Цель</h3>
-          <p>
-            {"Изменение должно затрагивать ожидаемую небольшую область."}
-          </p>
-
+        <div className="lesson39-concept-grid">
+          <article className="lesson39-concept">
+            <h3>Уже изучено</h3>
+            <p>{"Что такое объект, модель и композиция. Эти понятия становятся исходной точкой."}</p>
+          </article>
+          <article className="lesson39-concept">
+            <h3>Новый уровень</h3>
+            <p>{"Как оценить причину изменения, заменяемость, ширину зависимости и направление связи."}</p>
+          </article>
+          <article className="lesson39-concept">
+            <h3>Результат</h3>
+            <p>{"Мы не строим новую архитектуру ради терминов. Мы проверяем качество уже знакомых границ."}</p>
+          </article>
         </div>
 
         <CodeBlock
-          caption={"монолитный сценарий"}
-          code={
-            "def run():\n" +
-            "    path = \"data/tasks.json\"\n" +
-            "    tasks = load_json(path)\n" +
-            "    command = input(\"Команда: \")\n" +
-            "\n" +
-            "    # валидация\n" +
-            "    # CRUD\n" +
-            "    # форматирование\n" +
-            "    # запись файла\n" +
-            "    # обработка всех ошибок"
-          }
+          caption={"что меняется в фокусе урока"}
+           code={`Предыдущее занятие
+  Как создать и соединить роли?
+
+Текущее занятие
+  Что произойдёт, если одна роль изменится?
+  Кто должен принять это изменение?
+  Сохраняется ли договор при замене?`}
         />
+
+        <p>
+          {"SOLID будет полезен как язык такого анализа. Его принципы не добавляют проекту магию и не заменяют здравый смысл. Они помогают назвать конкретную проблему и выбрать минимальное изменение."}
+        </p>
 
         <RecallCard
-          question={"Зачем изучать SOLID на маленьком проекте?"}
-          hint={"Смотрите на стоимость изменения."}
-          answer={<p>{"Чтобы раньше замечать смешанные обязанности и жёсткие зависимости."}</p>}
+           question={"Что нового мы делаем в текущем занятии, если базовая композиция была разобрана в предыдущем?"}
+          hint={"Сравните создание границы и проверку её качества."}
+           answer={<p>{"В предыдущем занятии мы изучили саму связь ролей. В текущем занятии проверяем, как эта связь ведёт себя при изменениях, замене реализации и тестировании."}</p>}
         />
-
-        <Callout tone="info">
-          {"Если принцип не помогает объяснить конкретную проблему, его не нужно притягивать к коду искусственно."}
-        </Callout>
       </Section>
 
-      <Section number="02" title={"S — одна связная ответственность"}>
+      <Section number="01" title={"SOLID как система диагностических вопросов"}>
         <Lead>
-          {"Модуль или класс должен иметь одну связанную область и одну основную причину изменения."}
+          {"SOLID это пять принципов проектирования объектного кода. Это не библиотека, не обязательная иерархия классов и не чек-лист для механической расстановки интерфейсов."}
         </Lead>
 
+        <p>
+          {"Принципы нужны, когда код начинает сопротивляться изменению. Например, формат хранения меняется вместе с прикладным сценарием, тест не может обойти настоящий диск или замена одного storage требует переписать сервис. Сначала мы фиксируем такую стоимость, а затем выбираем подходящий вопрос."}
+        </p>
+
         <div className="lesson-practice-steps">
-          <h3>main.py</h3>
-          <p>
-            {"Меню, ввод и пользовательские сообщения."}
-          </p>
+          <h3>S. Single Responsibility</h3>
+          <p>{"Сколько независимых причин может заставить компонент измениться?"}</p>
 
-          <h3>storage.py</h3>
-          <p>
-            {"Чтение и сохранение данных."}
-          </p>
+          <h3>O. Open/Closed</h3>
+          <p>{"Можно ли добавить вариант, не переписывая стабильное правило?"}</p>
 
-          <h3>models.py</h3>
-          <p>
-            {"Структура Task и её инварианты."}
-          </p>
+          <h3>L. Liskov Substitution</h3>
+          <p>{"Сохраняет ли замена обещанное клиенту поведение?"}</p>
 
+          <h3>I. Interface Segregation</h3>
+          <p>{"Не зависит ли клиент от операций, которыми он не пользуется?"}</p>
+
+          <h3>D. Dependency Inversion</h3>
+          <p>{"Зависит ли сценарий от роли и договора, а не от технической детали?"}</p>
         </div>
 
         <CodeBlock
-          caption={"разделение причин изменения"}
-          code={
-            "app/\n" +
-            "├── main.py        # интерфейс\n" +
-            "├── models.py      # Task\n" +
-            "├── services.py    # операции\n" +
-            "├── storage.py     # JSON\n" +
-            "└── exceptions.py  # ошибки"
-          }
+          caption={"один сценарий и несколько причин изменения"}
+          code={`def run_report():
+    rows = read_csv("sales.csv")
+    rows = normalize_rows(rows)
+    total = calculate_total(rows)
+    print(format_report(total))
+    write_log("report finished")`}
         />
+
+        <p>
+          {"В этом коде нет строки, которая всегда является ошибкой. Но здесь смешаны чтение, нормализация, расчёт, вывод и журналирование. Если эти области меняются независимо, стоит проверить SRP. Если нет, раннее дробление может принести больше сложности, чем пользы."}
+        </p>
+
+        <QuizCard
+          question={"С чего начинать SOLID-анализ?"}
+          options={["с причины изменения", "с создания интерфейса", "с подсчёта классов"]}
+          correctIndex={0}
+          explanation={"Сначала нужно увидеть реальную стоимость изменения. Название принципа выбирается после наблюдения за кодом."}
+        />
+
+        <Callout tone="info">
+          {"Один урок не обязан реализовать все пять принципов кодом. Иногда принцип нужен, чтобы увидеть границу и принять решение ничего не усложнять."}
+        </Callout>
+      </Section>
+
+      <Section number="02" title={"S: одна связная причина изменения"}>
+        <Lead>
+          {"Single Responsibility Principle говорит не об одном методе и не об одном файле. Он помогает проверить, объединены ли действия одной связной ответственностью."}
+        </Lead>
+
+        <p>
+          {"У модели счёта могут быть методы для проверки строк и расчёта суммы. Они относятся к состоянию счёта и меняются по близкой причине. Чтение счёта из JSON, отправка письма и вывод HTML уже относятся к другим областям."}
+        </p>
+
+        <CodeBlock
+          caption={"независимый пример для поиска причин"}
+          code={`class ReportRunner:
+    def run(self, path):
+        rows = read_csv(path)
+        total = calculate_total(rows)
+        print(format_report(total))
+        write_log("report finished")`}
+        />
+
+        <p>
+          {"Если формат входа, формула, внешний вид и журналирование развиваются независимо, одна функция становится точкой пересечения изменений. Но не нужно автоматически создавать четыре класса. Сначала проверьте, действительно ли эти причины живут отдельно в вашем проекте."}
+        </p>
+
+        <div className="lesson-practice-steps">
+          <h3>Связность внутри</h3>
+          <p>{"Методы компонента говорят об одной смысловой области и помогают понять его роль."}</p>
+
+          <h3>Связанность снаружи</h3>
+          <p>{"Компонент знает только нужные данные и операции другого компонента, а не всю его внутреннюю жизнь."}</p>
+
+          <h3>В StudyHub</h3>
+          <p>{"Правило Task, формат хранения и прикладной сценарий уже имеют разные причины изменения."}</p>
+        </div>
 
         <TrueFalse
-          statement={<>{"SRP требует, чтобы в каждом классе был ровно один метод."}</>}
+          statement={<>SRP означает, что в каждом классе должен быть только один метод.</>}
           isTrue={false}
-          explanation={"Принцип говорит об одной связной причине изменения."}
+          explanation={"SRP говорит о связной причине изменения. Несколько методов могут обслуживать одну ответственность."}
         />
 
-        <Callout tone="info">
-          {"SRP не означает «один метод на класс». Несколько методов могут обслуживать одну связанную ответственность."}
-        </Callout>
+        <p>
+           {"В практике текущего занятия эта идея помогает не смешать PlannerService и MemoryStorage. Сервис выполняет прикладное действие, а storage владеет состоянием. Мы проверяем эту границу, а не заново проектируем Task."}
+        </p>
       </Section>
 
-      <Section number="03" title={"O — расширение без переписывания сервиса"}>
+      <Section number="03" title={"O: стабильное правило и новые варианты"}>
         <Lead>
-          {"Новое хранилище должно подключаться без изменения правил добавления и поиска задач."}
+          {"Open/Closed Principle помогает отделить правило, которое должно оставаться стабильным, от детали, которая может расширяться."}
         </Lead>
 
-        <div className="lesson-practice-steps">
-          <h3>Стабильная часть</h3>
-          <p>
-            {"PlannerService использует load и save."}
-          </p>
-
-          <h3>Расширение</h3>
-          <p>
-            {"Можно передать MemoryStorage или JsonStorage."}
-          </p>
-
-          <h3>Граница</h3>
-          <p>
-            {"Не нужно заранее проектировать десять реализаций."}
-          </p>
-
-        </div>
+        <p>
+          {"Фраза «открыт для расширения, закрыт для изменения» не означает запрет редактировать код. В реальном проекте изменения неизбежны. Смысл в том, чтобы добавление нового варианта не заставляло переписывать уже проверенный сценарий."}
+        </p>
 
         <CodeBlock
-          caption={"замена компонента"}
-          code={
-            "class PlannerService:\n" +
-            "    def __init__(self, storage):\n" +
-            "        self.storage = storage\n" +
-            "\n" +
-            "    def list_tasks(self):\n" +
-            "        return self.storage.load()\n" +
-            "\n" +
-            "production = PlannerService(\n" +
-            "    JsonStorage(\"data/tasks.json\")\n" +
-            ")\n" +
-            "\n" +
-            "tests = PlannerService(\n" +
-            "    MemoryStorage()\n" +
-            ")"
-          }
+          caption={"расширяемая роль в независимом примере"}
+          code={`def calculate_discount(order, policy):
+    return policy.apply(order)
+
+
+class WeekendPolicy:
+    def apply(self, order):
+        return order.total * 0.9`}
         />
+
+        <p>
+          {"Сценарий знает о роли policy и не перечисляет внутри себя все возможные виды скидки. Другую политику можно добавить отдельно. Но если вариантов всего два, короткая проверка if может быть понятнее. OCP не требует полиморфизма там, где он ничего не упрощает."}
+        </p>
 
         <PredictOutput
-          code={
-            "print(type(tests.storage).__name__)"
-          }
-          output={"MemoryStorage"}
-          hint={"В тестовый сервис передан объект памяти."}
+          code={`class FixedPolicy:
+    def apply(self, order):
+        return order.total - 10
+
+print(FixedPolicy().apply(type("Order", (), {"total": 100})()))`}
+          output={"90"}
+          hint={"Политика получает заказ и возвращает результат своего правила. Сервис не знает формулу."}
         />
 
+        <p>
+          {"В StudyHub вариативной деталью может быть способ хранения. Если PlannerService использует договор storage, новый вариант не обязан менять прикладное правило. Практика не требует создавать ещё одно хранилище. Она подготавливает честную точку замены."}
+        </p>
+
         <Callout tone="info">
-          {"OCP не запрещает менять код. Он отделяет стабильное правило от вариативной технической детали."}
+          {"Плохая причина для новой абстракции: «так велит OCP». Хорошая причина: «у нас уже есть разные варианты, и их изменение постоянно затрагивает стабильный сценарий»."}
         </Callout>
       </Section>
 
-      <Section number="04" title={"L — заменяемые объекты сохраняют контракт"}>
+      <Section number="04" title={"L: замена сохраняет договор"}>
         <Lead>
-          {"Если два storage заявлены как варианты одного хранилища, сервис использует любой из них без проверки конкретного класса."}
+          {"Liskov Substitution Principle проверяет поведение заменяемых объектов. Если клиент рассчитывает на одну роль, подстановка другого объекта не должна менять смысл договора."}
         </Lead>
 
+        <p>
+          {"Для storage мало совпадения имён методов. Важно, что load возвращает согласованный результат, пустое состояние имеет понятный смысл, а save принимает ожидаемые данные и выполняет обещанное действие."}
+        </p>
+
         <div className="lesson-practice-steps">
-          <h3>Одинаковый результат</h3>
-          <p>
-            {"load возвращает list[Task]."}
-          </p>
+          <h3>Предусловие</h3>
+          <p>{"Что клиент должен передать операции до вызова."}</p>
 
-          <h3>Одинаковый вход</h3>
-          <p>
-            {"save принимает list[Task]."}
-          </p>
+          <h3>Постусловие</h3>
+          <p>{"Что операция обещает после успешного вызова."}</p>
 
-          <h3>Одинаковый смысл</h3>
-          <p>
-            {"Первый запуск без данных даёт пустой список."}
-          </p>
-
+          <h3>Инвариант</h3>
+          <p>{"Какое условие продолжает быть истинным для корректного состояния."}</p>
         </div>
 
         <CodeBlock
-          caption={"совместимые реализации"}
-          code={
-            "class MemoryStorage:\n" +
-            "    def load(self):\n" +
-            "        return list(self.tasks)\n" +
-            "\n" +
-            "    def save(self, tasks):\n" +
-            "        self.tasks = list(tasks)\n" +
-            "\n" +
-            "\n" +
-            "class JsonStorage:\n" +
-            "    def load(self):\n" +
-            "        data = self._read_data()\n" +
-            "        return [\n" +
-            "            Task.from_dict(item)\n" +
-            "            for item in data\n" +
-            "        ]\n" +
-            "\n" +
-            "    def save(self, tasks):\n" +
-            "        self._write_data([\n" +
-            "            task.to_dict()\n" +
-            "            for task in tasks\n" +
-            "        ])"
-          }
+          caption={"клиент зависит от поведения роли"}
+          code={`def show_first(source):
+    values = source.read()
+    if not values:
+        return "empty"
+    return values[0]`}
         />
+
+        <p>
+          {"Любой source для этой роли должен позволить сценарию работать одинаково. Если один объект возвращает список, а другой None при пустом состоянии, клиент получил разные обещания. Формальное наследование не исправит такой контракт."}
+        </p>
 
         <BugHunt
-          code={
-            "if isinstance(storage, JsonStorage):\n" +
-            "    tasks = storage.load()\n" +
-            "else:\n" +
-            "    tasks = storage.items"
-          }
-          question={"Что показывает такая проверка?"}
-          options={[
-            "Контракты реализаций несовместимы",
-            "JSON запрещён",
-            "Нужен глобальный список",
-          ]}
+          code={`def show_first(source):
+    if isinstance(source, MemoryScores):
+        values = source.read()
+    else:
+        values = source._scores
+    return values[0] if values else "empty"`}
+          question={"Что здесь показывает проблему границы?"}
+          options={["клиент знает конкретный тип и внутреннее поле", "метод всегда должен возвращать первый элемент", "isinstance запрещён в Python"]}
           correctIndex={0}
-          explanation={"Сервис вынужден знать конкретный тип."}
-          fix={"tasks = storage.load()"}
+          explanation={"Сервис перестал зависеть от роли. Для нового источника придётся добавлять ещё одну ветку и знать его внутреннее устройство."}
+          fix={`values = source.read()
+return values[0] if values else "empty"`}
         />
 
-        <Callout tone="info">
-          {"Если сервис постоянно проверяет isinstance(storage, JsonStorage), общий контракт фактически не работает."}
-        </Callout>
+        <p>
+           {"В предыдущем занятии мы познакомились с контрактом storage. В текущем занятии добавляем к нему критерий совместимости: разные реализации должны сохранять не только названия операций, но и ожидаемое поведение."}
+        </p>
       </Section>
 
-      <Section number="05" title={"I — клиент зависит только от нужных операций"}>
+      <Section number="05" title={"I: клиенту нужен узкий договор"}>
         <Lead>
-          {"Функция подсчёта открытых задач нуждается только в чтении. Ей не нужен объект, который также управляет меню, релизом и экспортом."}
+          {"Interface Segregation Principle говорит, что клиент не должен зависеть от операций, которые ему не нужны."}
         </Lead>
 
-        <div className="lesson-practice-steps">
-          <h3>Узкий контракт</h3>
-          <p>
-            {"Для count_open нужна операция load."}
-          </p>
-
-          <h3>Лишняя зависимость</h3>
-          <p>
-            {"Большой Application раскрывает ненужные методы."}
-          </p>
-
-          <h3>Практический уровень</h3>
-          <p>
-            {"Пока достаточно договорённости по методам."}
-          </p>
-
-        </div>
+        <p>
+          {"Если функции нужно только прочитать оценки, ей не нужен весь объект приложения с меню, экспортом, удалением и настройками. Большой объект увеличивает количество знаний клиента и число причин, по которым клиент может измениться."}
+        </p>
 
         <CodeBlock
-          caption={"узкая зависимость функции"}
-          code={
-            "def count_open(storage):\n" +
-            "    tasks = storage.load()\n" +
-            "\n" +
-            "    return sum(\n" +
-            "        not task.is_done\n" +
-            "        for task in tasks\n" +
-            "    )\n" +
-            "\n" +
-            "storage = MemoryStorage()\n" +
-            "print(count_open(storage))"
-          }
+          caption={"клиент использует только чтение"}
+          code={`def show_best(source):
+    values = source.read()
+    return max(values)`}
         />
+
+        <p>
+          {"Узкий договор проще понять и заменить. Но не создавайте отдельный интерфейс для каждого метода заранее. Сначала найдите реального клиента и запишите минимальный набор операций, без которых он не работает."}
+        </p>
 
         <RecallCard
-          question={"Почему count_open лучше получить storage, а не всё приложение?"}
-          hint={"Смотрите на минимальный необходимый контракт."}
-          answer={<p>{"Потому что функции нужна только операция чтения, а остальные зависимости лишние."}</p>}
+          question={"Что нужно передать клиенту, который только читает данные?"}
+          hint={"Ищите минимальный набор операций для его сценария."}
+          answer={<p>{"Только роль с операцией чтения. Лишние операции записи, экспорта и управления не должны становиться частью его зависимости."}</p>}
         />
 
-        <Callout tone="info">
-          {"Не нужно дробить каждый метод в отдельный интерфейс без реальной причины."}
-        </Callout>
+        <p>
+          {"В текущей практике PlannerService получает storage для конкретного сценария. Он не должен знать меню, путь к файлу или детали JSON. Это делает договор короче и оставляет место для замены реализации."}
+        </p>
       </Section>
 
-      <Section number="06" title={"D — зависимость передаётся извне"}>
+      <Section number="06" title={"D: зависимость направлена к роли"}>
         <Lead>
-          {"PlannerService не создаёт конкретный JsonStorage самостоятельно. Main выбирает реализацию и передаёт готовый объект."}
+          {"Dependency Inversion Principle показывает, кто выбирает техническую деталь. Прикладной сценарий не должен сам создавать конкретное хранилище, если ему нужна только роль хранения."}
         </Lead>
 
-        <div className="lesson-practice-steps">
-          <h3>Жёсткое создание</h3>
-          <p>
-            {"JsonStorage внутри сервиса трудно заменить."}
-          </p>
-
-          <h3>Передача</h3>
-          <p>
-            {"Конструктор получает готовый storage."}
-          </p>
-
-          <h3>Точка сборки</h3>
-          <p>
-            {"Main соединяет конкретные компоненты."}
-          </p>
-
-        </div>
+        <p>
+          {"Высокий уровень говорит на языке задачи: добавить, показать, изменить. Низкий уровень говорит на языке инфраструктуры: файл, JSON, драйвер, база. Чем сильнее сценарий знает детали низкого уровня, тем дороже заменить инфраструктуру."}
+        </p>
 
         <CodeBlock
-          caption={"передача зависимости"}
-          code={
-            "class PlannerService:\n" +
-            "    def __init__(self, storage):\n" +
-            "        self.storage = storage\n" +
-            "\n" +
-            "\n" +
-            "def build_service():\n" +
-            "    storage = JsonStorage(\n" +
-            "        \"data/tasks.json\"\n" +
-            "    )\n" +
-            "\n" +
-            "    return PlannerService(storage)"
-          }
+          caption={"скрытая зависимость"}
+          code={`class ReportService:
+    def __init__(self):
+        self.source = CsvSource("report.csv")`}
+        />
+
+        <p>
+          {"Тест такому сервису должен дать настоящий файл или менять его код. Зависимость нельзя увидеть из места создания объекта. Это не всегда ошибка для короткого скрипта, но становится проблемой, когда появляются альтернативные источники."}
+        </p>
+
+        <CodeBlock
+          caption={"явная зависимость"}
+          code={`class ReportService:
+    def __init__(self, source):
+        self.source = source`}
+        />
+
+        <p>
+          {"Теперь точка сборки выбирает конкретный source, а сервис работает с ролью. Это и есть простая dependency injection. Отдельный DI-фреймворк здесь не нужен."}
+        </p>
+
+        <CodeSequence
+          title={"Соберите направление зависимости"}
+          prompt={"Расставьте события от выбора инфраструктуры до выполнения прикладного действия."}
+          pieces={[
+            { id: "choose", code: "точка сборки выбирает storage" },
+            { id: "inject", code: "PlannerService получает storage" },
+            { id: "call", code: "сервис вызывает публичный договор" },
+            { id: "detail", code: "конкретный storage работает со своим форматом" },
+          ]}
+          correctOrder={["choose", "inject", "call", "detail"]}
+          explanation={"Конкретная деталь выбирается снаружи. Сервис использует договор и не обязан знать устройство реализации."}
         />
 
         <TrueFalse
-          statement={<>{"Для DIP обязательно установить отдельный dependency injection framework."}</>}
+          statement={<>Для DIP обязательно устанавливать отдельный dependency injection framework.</>}
           isTrue={false}
-          explanation={"Обычной передачи объекта через конструктор достаточно."}
+          explanation={"В этом проекте достаточно передать зависимость обычным параметром конструктора."}
+        />
+      </Section>
+
+      <Section number="07" title={"SOLID в уже знакомой архитектуре StudyHub"}>
+        <Lead>
+           {"Теперь не создаём новые роли. Применим пять вопросов к тем объектам, которые уже появились в предыдущем занятии."}
+        </Lead>
+
+        <CodeBlock
+          caption={"аудит существующих границ"}
+          code={`Task
+  правило корректности сущности
+
+PlannerService
+  прикладной сценарий
+
+MemoryStorage / JsonStorage
+  способ хранения
+
+точка сборки
+  соединяет конкретные объекты`}
         />
 
+        <div className="lesson-practice-steps">
+          <h3>Task и SRP</h3>
+          <p>{"Правило корректности остаётся у модели. Storage не должен решать, допустима ли задача."}</p>
+
+          <h3>Service и DIP</h3>
+          <p>{"Сервис получает storage снаружи. Он не создаёт конкретный файл внутри прикладного метода."}</p>
+
+          <h3>Storage и LSP</h3>
+          <p>{"Разные реализации должны сохранять смысл публичного договора."}</p>
+
+          <h3>Новый вариант и OCP</h3>
+          <p>{"Добавление другого storage не должно переписывать прикладное правило."}</p>
+
+          <h3>Клиент и ISP</h3>
+          <p>{"Клиент получает только те операции, которые нужны его сценарию."}</p>
+        </div>
+
+        <p>
+          {"Один путь изменения помогает проверить всю схему. Допустим, завтра локальную память нужно заменить JSON. Сначала назовите, что меняется. Затем назовите, что должно остаться прежним. После этого определите точку новой реализации и запустите тот же сценарий через тот же сервис."}
+        </p>
+
+        <CodeSequence
+          title={"Разберите изменение"}
+          prompt={"Соберите последовательность инженерной проверки перед заменой storage."}
+          pieces={[
+            { id: "change", code: "назвать изменяемую деталь" },
+            { id: "stable", code: "зафиксировать стабильное правило" },
+            { id: "boundary", code: "выбрать место новой реализации" },
+            { id: "proof", code: "повторить сценарий и сравнить договор" },
+          ]}
+          correctOrder={["change", "stable", "boundary", "proof"]}
+          explanation={"SOLID-анализ начинается с изменения и заканчивается наблюдаемым доказательством, а не новой абстракцией."}
+        />
+
+        <p>
+          {"В production к этим вопросам добавятся транзакции, ошибки записи, права доступа, наблюдаемость и параллельные изменения. SOLID не решает их автоматически. Он помогает не смешать все проблемы в одном компоненте."}
+        </p>
+
         <Callout tone="info">
-          {"На текущем уровне DIP реализуется обычным параметром конструктора. Контейнер зависимостей не нужен."}
+          {"Если для простого сценария требуется много специальных условий и переходов, это повод остановиться. Хорошая архитектура уменьшает стоимость изменения, а не увеличивает число файлов."}
         </Callout>
       </Section>
 
-      <Section number="07" title={"Пять принципов в одной схеме"}>
+       <Section number="08" title={"Что мы будем делать в практике"}>
         <Lead>
-          {"Модель отвечает за данные, сервис за операции, хранилища выполняют общий контракт, а main соединяет объекты."}
+          {"Практика вводит первую связку модели, хранилища и прикладного сервиса. Задача не в том, чтобы собрать весь проект, а в том, чтобы с самого начала разделить владельца списка и владельца сценария."}
         </Lead>
 
-        <div className="lesson-practice-steps">
-          <h3>S</h3>
-          <p>
-            {"Каждый модуль имеет связанную причину изменения."}
-          </p>
-
-          <h3>O и L</h3>
-          <p>
-            {"Новое storage подключается и соблюдает тот же контракт."}
-          </p>
-
-          <h3>I и D</h3>
-          <p>
-            {"Сервис использует нужные операции и получает зависимость извне."}
-          </p>
-
+        <div className="lesson39-concept-grid">
+          <article className="lesson39-concept">
+            <h3>MemoryStorage</h3>
+            <p>{"Конкретная реализация storage. Она владеет своим состоянием и выполняет публичный договор."}</p>
+          </article>
+          <article className="lesson39-concept">
+            <h3>PlannerService</h3>
+            <p>{"Прикладной координатор. Он получает зависимость извне и не забирает внутреннюю работу storage."}</p>
+          </article>
+          <article className="lesson39-concept">
+            <h3>Проверка</h3>
+            <p>{"Два исходных сценария показывают, что граница работает не только на одном удачном примере."}</p>
+          </article>
         </div>
 
-        <CodeBlock
-          caption={"production-сборка"}
-          code={
-            "def build_application():\n" +
-            "    storage = JsonStorage(\n" +
-            "        \"data/tasks.json\"\n" +
-            "    )\n" +
-            "\n" +
-            "    service = PlannerService(\n" +
-            "        storage\n" +
-            "    )\n" +
-            "\n" +
-            "    return ConsoleApplication(\n" +
-            "        service\n" +
-            "    )\n" +
-            "\n" +
-            "application = build_application()\n" +
-            "application.run()"
-          }
-        />
+        <p>
+          {"В условии встретятся уже изученные copy, strip, конструктор и методы. Здесь важно связать их с архитектурным смыслом: кто владеет списком, кто выполняет действие и кто соединяет объекты. JSON, CLI и полный CRUD пока не нужны."}
+        </p>
 
-        <PredictOutput
-          code={
-            "print(type(build_application()).__name__)"
-          }
-          output={"ConsoleApplication"}
-          hint={"Функция возвращает собранное приложение."}
-        />
+        <p>
+          {"Практика проверит независимые копии списка, передачу storage в PlannerService, вызовы load и save, очистку строки и одинаково понятный результат для заполненного и пустого состояния. Полная последовательность действий остаётся в редакторе и его подсказках, чтобы вы сначала собрали решение самостоятельно."}
+        </p>
 
-        <Callout tone="info">
-          {"Хорошая структура позволяет собрать рабочую и тестовую версии из тех же предметных компонентов."}
-        </Callout>
+        <p>
+          {"Перед запуском запишите три ответа: что знает PlannerService, чего он не знает и какое минимальное обещание даёт storage. Если в решении появляется обращение к внутреннему полю или проверка конкретного класса, это сигнал вернуться к разделам L и D."}
+        </p>
+
+        <BugHunt
+          code={`class PlannerService:
+    def __init__(self):
+        self.storage = MemoryStorage([])`}
+          question={"Какой вопрос SOLID здесь стоит задать?"}
+          options={["Почему сервис сам выбирает конкретную зависимость?", "Почему у класса есть конструктор?", "Почему список может быть пустым?"]}
+          correctIndex={0}
+          explanation={"Скрытый выбор детали усложняет замену и тестирование. Зависимость должна быть видна в точке сборки или конструкторе."}
+        />
       </Section>
 
-      <Section number="08" title={"Рефакторинг без архитектурного культа"}>
+      <Section number="09" title={"Самопроверка перед редактором"}>
         <Lead>
-          {"Выберите одну реальную боль и исправьте её минимальным изменением. Не добавляйте фабрики и универсальные репозитории только потому, что выучили пять букв."}
+          {"Если вы можете объяснить границы словами, редактор проверит вашу реализацию. Если нет, код превратится в угадывание строк."}
         </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>Диагностика</h3>
-          <p>
-            {"Назовите изменение, которое затрагивает слишком много мест."}
-          </p>
-
-          <h3>Минимальная граница</h3>
-          <p>
-            {"Отделите только вариативную часть."}
-          </p>
-
-          <h3>Остановка</h3>
-          <p>
-            {"Если усложнение не решает новую проблему, рефакторинг закончен."}
-          </p>
-
-        </div>
-
-        <CodeBlock
-          caption={"достаточная структура"}
-          code={
-            "app/\n" +
-            "├── main.py\n" +
-            "├── models.py\n" +
-            "├── services.py\n" +
-            "├── storage.py\n" +
-            "└── exceptions.py\n" +
-            "\n" +
-            "# Для Persistent Planner этого достаточно."
-          }
-        />
-
-        <Callout tone="info">
-          {"Понятные модули, рабочее JSON-хранилище и тесты важнее имитации enterprise-архитектуры."}
-        </Callout>
 
         <div className="lesson-check-group">
           <QuizCard
-            question={"Что означает SRP?"}
-            options={[
-              "одна связная ответственность",
-              "один метод",
-              "один файл",
-            ]}
+            question={"О чём говорит SRP?"}
+            options={["о связной причине изменения", "об одном методе", "об одном файле"]}
             correctIndex={0}
-            explanation={"Речь о причине изменения."}
+            explanation={"Важна группа решений и причина, по которой она меняется."}
           />
           <QuizCard
-            question={"Как OCP проявляется в StudyHub?"}
-            options={[
-              "другой storage без переписывания сервиса",
-              "запрет менять код",
-              "обязательное наследование",
-            ]}
+            question={"Что проверяет LSP для storage?"}
+            options={["замена сохраняет ожидаемое поведение", "у классов одинаковое имя", "все классы наследуются"]}
             correctIndex={0}
-            explanation={"Вариативный компонент подключается снаружи."}
+            explanation={"Совместимость определяется договором и наблюдаемым поведением."}
           />
           <QuizCard
-            question={"Когда нарушается LSP?"}
-            options={[
-              "storage имеют несовместимый контракт",
-              "классы имеют разные имена",
-              "используется dataclass",
-            ]}
+             question={"Как проявляется DIP в практике текущего занятия?"}
+            options={["storage передаётся в PlannerService", "сервис создаёт storage внутри", "storage становится родителем сервиса"]}
             correctIndex={0}
-            explanation={"Замена меняет ожидаемое поведение."}
+            explanation={"Явная зависимость делает роль заменяемой и видимой."}
           />
           <QuizCard
-            question={"Как реализовать DIP сейчас?"}
-            options={[
-              "передать storage в конструктор",
-              "глобальная переменная",
-              "контейнер из 20 классов",
-            ]}
+            question={"Зачем нужен узкий договор?"}
+            options={["клиент не знает лишние операции", "в каждом классе нужен интерфейс", "нужно увеличить число методов"]}
             correctIndex={0}
-            explanation={"Обычной передачи зависимости достаточно."}
+            explanation={"Минимальная зависимость легче понимается, тестируется и заменяется."}
           />
         </div>
 
         <KeyTakeaways
           points={[
-            <>{"SOLID применяется к наблюдаемым проблемам."}</>,
-            <>{"SRP разделяет причины изменения."}</>,
-            <>{"OCP отделяет стабильное правило от вариативного компонента."}</>,
-            <>{"LSP требует совместимого поведения заменяемых объектов."}</>,
-            <>{"ISP уменьшает ненужные зависимости клиента."}</>,
-            <>{"DIP передаёт storage извне."}</>,
+             <>Предыдущее занятие дало базовые роли и композицию, текущее учит оценивать их качество.</>,
+            <>SOLID начинается с наблюдаемой стоимости изменения.</>,
+            <>SRP ищет независимые причины изменения.</>,
+            <>OCP отделяет стабильное правило от вариативной детали.</>,
+            <>LSP проверяет поведение замены, а не имена классов.</>,
+            <>ISP оставляет клиенту только нужные операции.</>,
+            <>DIP делает зависимость явной и заменяемой.</>,
+            <>Текущая практика проверяет эти вопросы через уже знакомую связку storage и PlannerService.</>,
           ]}
         />
 
-        <PracticeCta text={"Найдите по одному реальному нарушению S, O/L и D в текущем StudyHub и исправьте их отдельными коммитами."} />
+        <PracticeCta
+          text={
+            "Соберите MemoryStorage и PlannerService через явную зависимость, сохраните границу их ответственности и проверьте два сценария из практического задания."
+          }
+        />
       </Section>
 
     </RichLesson>
   );
 }
-
-// 41. Первые тесты через pytest
 export function Lesson41({ module }: { module?: string }) {
   return (
     <RichLesson>
       <RichHero
         variant="project"
         chip={module ?? "Месяц 2 · Блок 8"}
-        title={"Первые тесты через pytest"}
-        intro={"Превратим ожидания в исполняемые проверки: установим pytest, напишем первые assert, проверим исключения, параметризуем границы и протестируем JSON через временную папку."}
+        title={"41. Первые тесты через pytest"}
+        intro={"In-memory ядро уже умеет создавать и показывать задачи. Теперь pytest превратит правила Task, MemoryStorage и первых методов service в повторяемые проверки."}
         tags={[
           { icon: <CheckCircle2 size={14} />, label: "pytest и assert" },
-          { icon: <ListChecks size={14} />, label: "5–8 полезных тестов" },
+          { icon: <ListChecks size={14} />, label: "in-memory ядро" },
         ]}
       />
       <TheoryBridge lesson={41} />
 
-      <Section number="01" title={"Тест как исполняемое ожидание"}>
+      <Section number="00" title={"От ручной проверки к повторяемому договору"}>
         <Lead>
-          {"Ручную проверку через print приходится повторять после каждого изменения. Автоматический тест сам подготавливает вход, выполняет действие и сравнивает результат."}
+          {"Когда Task, MemoryStorage и PlannerService только появились, их можно было проверить вручную. Но после каждого изменения легко забыть край приоритета, независимость tags или то, что service обязан сохранить созданную задачу. Тест записывает одно ожидание и запускает его столько раз, сколько нужно."}
         </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>Не абсолютное доказательство</h3>
-          <p>
-            {"Тест подтверждает только записанный сценарий."}
-          </p>
-
-          <h3>Защита поведения</h3>
-          <p>
-            {"После рефакторинга тест быстро показывает изменение контракта."}
-          </p>
-
-          <h3>Документация</h3>
-          <p>
-            {"По тесту видно, как вызывается функция."}
-          </p>
-
-        </div>
-
-        <CodeBlock
-          caption={"первая автоматическая проверка"}
-          code={
-            "def test_normalize_title_removes_spaces():\n" +
-            "    result = normalize_title(\n" +
-            "        \"  SQL  \"\n" +
-            "    )\n" +
-            "\n" +
-            "    assert result == \"SQL\""
-          }
-        />
-
         <RecallCard
-          question={"Что доказывает один тест?"}
-          hint={"Не весь проект, а один сценарий."}
-          answer={<p>{"Что конкретный записанный сценарий даёт ожидаемый результат."}</p>}
+          question={"Что должен доказывать один небольшой тест?"}
+          hint={"Выберите границу, которая объяснит причину падения."}
+          answer={<p>{"Одно наблюдаемое поведение. Большой пользовательский сценарий появится позже, когда проект получит JSON и CLI."}</p>}
         />
-
-        <Callout tone="info">
-          {"Хороший тест проверяет одно наблюдаемое поведение и падает с понятной причиной."}
-        </Callout>
       </Section>
 
-      <Section number="02" title={"Установка, структура и запуск"}>
+      <Section number="01" title={"AAA делает сценарий читаемым"}>
         <Lead>
-          {"Pytest устанавливается в виртуальное окружение. Файлы и функции называются по соглашению, чтобы раннер нашёл их автоматически."}
+          {"Arrange готовит данные и зависимость. Act выполняет одно действие. Assert проверяет результат. Эта форма похожа на короткий эксперимент: сначала условия, затем опыт, затем наблюдение."}
         </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>Установка</h3>
-          <p>
-            {"python -m pip install pytest использует pip выбранного Python."}
-          </p>
-
-          <h3>Файлы</h3>
-          <p>
-            {"Названия начинаются с test_."}
-          </p>
-
-          <h3>Запуск</h3>
-          <p>
-            {"python -m pytest выполняется из корня проекта."}
-          </p>
-
-        </div>
-
         <CodeBlock
-          caption={"структура и команды"}
-          code={
-            "studyhub/\n" +
-            "├── app/\n" +
-            "│   ├── models.py\n" +
-            "│   ├── services.py\n" +
-            "│   └── storage.py\n" +
-            "├── tests/\n" +
-            "│   ├── test_models.py\n" +
-            "│   ├── test_services.py\n" +
-            "│   └── test_storage.py\n" +
-            "└── README.md\n" +
-            "\n" +
-            "# terminal:\n" +
-            "python -m pip install pytest\n" +
-            "python -m pytest -q"
-          }
+          caption={"проверка добавления"}
+          code={"def test_add_task_saves_created_task():\n    storage = MemoryStorage()       # Arrange\n    service = PlannerService(storage)\n\n    created = service.add_task(\"Python\", priority=3)  # Act\n\n    assert storage.load() == [created]  # Assert"}
         />
-
-        <TrueFalse
-          statement={<>{"Функция test_add_task будет найдена pytest по соглашению имени."}</>}
-          isTrue={true}
-          explanation={"Имя начинается с test_."}
-        />
-
-        <Callout tone="info">
-          {"Запускайте pytest тем же Python, которым запускается проект."}
-        </Callout>
-      </Section>
-
-      <Section number="03" title={"Arrange, Act, Assert"}>
-        <Lead>
-          {"Структура AAA отделяет подготовку данных, одно проверяемое действие и сравнение результата."}
-        </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>Arrange</h3>
-          <p>
-            {"Создать storage, service и входные данные."}
-          </p>
-
-          <h3>Act</h3>
-          <p>
-            {"Вызвать один метод или функцию."}
-          </p>
-
-          <h3>Assert</h3>
-          <p>
-            {"Проверить публичный результат или состояние."}
-          </p>
-
-        </div>
-
-        <CodeBlock
-          caption={"тест добавления"}
-          code={
-            "def test_add_task_returns_created_task():\n" +
-            "    storage = MemoryStorage()\n" +
-            "    service = PlannerService(storage)\n" +
-            "\n" +
-            "    task = service.add_task(\n" +
-            "        title=\"Python\",\n" +
-            "        priority=4,\n" +
-            "    )\n" +
-            "\n" +
-            "    assert task.id == 1\n" +
-            "    assert task.title == \"Python\"\n" +
-            "    assert storage.load() == [task]"
-          }
-        />
-
-        <PredictOutput
-          code={
-            "print(1 + 1 == 2)"
-          }
-          output={"True"}
-          hint={"Assert использует обычное логическое выражение."}
-        />
-
-        <Callout tone="info">
-          {"Несколько assert допустимы, если описывают один результат одного сценария."}
-        </Callout>
-      </Section>
-
-      <Section number="04" title={"Понятные имена тестов"}>
-        <Lead>
-          {"Имя теста должно сообщать действие и ожидаемый результат. При падении оно становится частью диагностического сообщения."}
-        </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>Формула имени</h3>
-          <p>
-            {"test_<действие>_<ожидание>."}
-          </p>
-
-          <h3>Публичное поведение</h3>
-          <p>
-            {"Проверяется результат, состояние storage или исключение."}
-          </p>
-
-          <h3>Не детали</h3>
-          <p>
-            {"Тест не зависит от имени локальной переменной."}
-          </p>
-
-        </div>
-
-        <CodeBlock
-          caption={"конкретные имена"}
-          code={
-            "def test_task_strips_title():\n" +
-            "    task = Task(\n" +
-            "        id=1,\n" +
-            "        title=\"  SQL  \",\n" +
-            "        priority=3,\n" +
-            "    )\n" +
-            "\n" +
-            "    assert task.title == \"SQL\"\n" +
-            "\n" +
-            "\n" +
-            "def test_new_task_is_not_done():\n" +
-            "    task = Task(1, \"SQL\", 3)\n" +
-            "\n" +
-            "    assert task.is_done is False"
-          }
-        />
-
-        <BugHunt
-          code={
-            "def test_task():\n" +
-            "    ..."
-          }
-          question={"Что не хватает имени теста?"}
-          options={[
-            "Сценария и ожидаемого результата",
-            "Символа @",
-            "JSON-файла",
-          ]}
+        <QuizCard
+          question={"Что делает assert в этом сценарии?"}
+          options={["Фиксирует ожидаемый результат", "Создаёт задачу", "Запускает pytest"]}
           correctIndex={0}
-          explanation={"Общее имя не помогает диагностике."}
-          fix={"def test_task_strips_title():\n    ..."}
+          explanation={"Создание происходит в Act. Assert сравнивает наблюдаемый итог с договором."}
         />
-
-        <Callout tone="info">
-          {"Когда тест падает, его имя должно сразу объяснять нарушенное обещание проекта."}
-        </Callout>
       </Section>
 
-      <Section number="05" title={"Ожидаемые исключения через pytest.raises"}>
+      <Section number="02" title={"Модель тестируется отдельно"}>
         <Lead>
-          {"Если функция обязана отклонить неверные данные, успешным результатом является исключение нужного типа."}
+          {"Task владеет собственными правилами, поэтому тесты модели не создают storage и не запускают сервис. Они проверяют нормализацию, границы priority, пустой заголовок, tags и mark_done."}
         </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>Точный тип</h3>
-          <p>
-            {"Проверяется ValueError или TaskNotFoundError."}
-          </p>
-
-          <h3>Момент</h3>
-          <p>
-            {"Рискованное действие выполняется внутри with."}
-          </p>
-
-          <h3>Текст</h3>
-          <p>
-            {"При необходимости используется match."}
-          </p>
-
-        </div>
-
         <CodeBlock
-          caption={"проверка исключений"}
-          code={
-            "import pytest\n" +
-            "\n" +
-            "\n" +
-            "def test_task_rejects_empty_title():\n" +
-            "    with pytest.raises(\n" +
-            "        ValueError,\n" +
-            "        match=\"title\",\n" +
-            "    ):\n" +
-            "        Task(\n" +
-            "            id=1,\n" +
-            "            title=\"   \",\n" +
-            "            priority=3,\n" +
-            "        )\n" +
-            "\n" +
-            "\n" +
-            "def test_unknown_id_raises():\n" +
-            "    service = PlannerService(\n" +
-            "        MemoryStorage()\n" +
-            "    )\n" +
-            "\n" +
-            "    with pytest.raises(TaskNotFoundError):\n" +
-            "        service.get_task(999)"
-          }
+          caption={"границы priority"}
+          code={"@pytest.mark.parametrize(\"priority\", [0, 6])\ndef test_rejects_invalid_priority(priority):\n    with pytest.raises(ValueError):\n        Task(1, \"Python\", priority=priority)"}
         />
-
         <TrueFalse
-          statement={<>{"Голый try/except pass надёжно проверяет, что исключение обязательно возникло."}</>}
+          statement={<>{"Аннотация priority: int сама отклоняет строку во время выполнения."}</>}
           isTrue={false}
-          explanation={"Без дополнительного assert тест может ложно пройти."}
+          explanation={"Аннотация описывает ожидание. Проверка и ошибка должны жить в модели."}
         />
-
-        <Callout tone="info">
-          {"pytest.raises падает, если ожидаемое исключение не возникло."}
-        </Callout>
       </Section>
 
-      <Section number="06" title={"Параметризация границ"}>
+      <Section number="03" title={"Storage защищает собственное состояние"}>
         <Lead>
-          {"Parametrize запускает один тест с разными наборами аргументов и показывает отдельное падение для каждого значения."}
+          {"MemoryStorage хранит список в памяти. Его договор включает защитные копии: внешний код может изменить список, который получил от load, но не должен изменить внутреннее состояние без save."}
         </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>Допустимые границы</h3>
-          <p>
-            {"Проверяются 1, значение внутри и 5."}
-          </p>
-
-          <h3>Недопустимые значения</h3>
-          <p>
-            {"Проверяются 0, 6 и другие значения."}
-          </p>
-
-          <h3>Один смысл</h3>
-          <p>
-            {"Меняются данные, но не сценарий."}
-          </p>
-
-        </div>
-
-        <CodeBlock
-          caption={"валидные приоритеты"}
-          code={
-            "import pytest\n" +
-            "\n" +
-            "\n" +
-            "@pytest.mark.parametrize(\n" +
-            "    \"priority\",\n" +
-            "    [1, 3, 5],\n" +
-            ")\n" +
-            "def test_task_accepts_valid_priority(\n" +
-            "    priority,\n" +
-            "):\n" +
-            "    task = Task(\n" +
-            "        id=1,\n" +
-            "        title=\"SQL\",\n" +
-            "        priority=priority,\n" +
-            "    )\n" +
-            "\n" +
-            "    assert task.priority == priority"
-          }
-        />
-
         <PredictOutput
-          code={
-            "Параметры: [1, 3, 5]"
-          }
-          output={"три отдельных запуска теста"}
-          hint={"Каждое значение создаёт тестовый случай."}
+          code={"tasks = storage.load()\ntasks.clear()\nlen(storage.load())"}
+          output={"Исходное количество задач"}
+          hint={"load возвращает копию, а не внутренний список."}
         />
+      </Section>
 
+      <Section number="04" title={"Service проверяется через MemoryStorage"}>
+        <Lead>
+          {"Service получает зависимость снаружи, поэтому его можно проверить без диска. В этом занятии достаточно add_task и list_tasks. Они доказывают первый прикладной путь и не требуют будущего JSON."}
+        </Lead>
         <Callout tone="info">
-          {"Параметризация полезна, когда случаи отличаются только входными данными."}
+          {"Не добавляйте в этот набор JSON, CLI, persistence после перезапуска или полный CRUD. Эти обещания проект ещё не реализовал."}
         </Callout>
       </Section>
 
-      <Section number="07" title={"Фикстуры и tmp_path"}>
+      <Section number="05" title={"Имена и ошибки помогают искать причину"}>
         <Lead>
-          {"Фикстура подготавливает повторяемую зависимость. tmp_path даёт отдельную временную папку, поэтому тест JsonStorage не портит настоящий файл."}
+          {"Имя test_rejects_empty_title сразу говорит, что именно сломалось. pytest.raises проверяет ожидаемую ошибку, а не прячет исключение. Падение assert и ошибка импорта требуют разного поиска."}
         </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>Изоляция</h3>
-          <p>
-            {"Каждый тест получает безопасный каталог."}
-          </p>
-
-          <h3>Реальная запись</h3>
-          <p>
-            {"Storage всё ещё работает с настоящим временным файлом."}
-          </p>
-
-          <h3>Своя фикстура</h3>
-          <p>
-            {"Нужна только при повторяющейся подготовке."}
-          </p>
-
-        </div>
-
-        <CodeBlock
-          caption={"round trip JSON"}
-          code={
-            "def test_json_storage_round_trip(\n" +
-            "    tmp_path,\n" +
-            "):\n" +
-            "    path = tmp_path / \"tasks.json\"\n" +
-            "    storage = JsonStorage(path)\n" +
-            "\n" +
-            "    tasks = [\n" +
-            "        Task(1, \"Python\", 4),\n" +
-            "    ]\n" +
-            "\n" +
-            "    storage.save(tasks)\n" +
-            "    loaded = storage.load()\n" +
-            "\n" +
-            "    assert loaded == tasks"
-          }
+        <BugHunt
+          code={"try:\n    Task(1, \"   \", priority=3)\nexcept Exception:\n    pass"}
+          question={"Почему это не тест правила модели?"}
+          options={["Он скрывает тип и факт ошибки", "В нём нельзя создавать Task", "pytest запрещает try"]}
+          correctIndex={0}
+          explanation={"Нужно явно ожидать согласованный тип ошибки через pytest.raises."}
+          fix={"with pytest.raises(ValueError):\n    Task(1, \"   \", priority=3)"}
         />
-
-        <RecallCard
-          question={"Почему tmp_path лучше data/tasks.json?"}
-          hint={"Каждый тест должен быть изолирован."}
-          answer={<p>{"Тест не портит пользовательские данные и не зависит от прошлых запусков."}</p>}
-        />
-
-        <Callout tone="info">
-          {"Уникальную подготовку можно оставить прямо внутри теста, не превращая всё в фикстуры."}
-        </Callout>
       </Section>
 
-      <Section number="08" title={"Минимальный набор Persistent Planner"}>
+      <Section number="06" title={"Fixture готовит зависимость, не скрывая смысл"}>
         <Lead>
-          {"Первый набор покрывает ключевые контракты, а не каждую строку. Начните с модели, CRUD-сервиса и хранения."}
+          {"Fixture полезна, когда несколько тестов начинают с одинаковой подготовки. Она может вернуть новый MemoryStorage или service. Каждый тест получает своё состояние и не зависит от порядка запуска."}
         </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>Модель</h3>
-          <p>
-            {"Очистка title и границы priority."}
-          </p>
-
-          <h3>Сервис</h3>
-          <p>
-            {"Id, поиск, статус и удаление."}
-          </p>
-
-          <h3>Storage</h3>
-          <p>
-            {"Нет файла, round trip и повреждённый JSON."}
-          </p>
-
-        </div>
-
         <CodeBlock
-          caption={"рекомендуемые тесты"}
-          code={
-            "test_task_strips_title\n" +
-            "test_task_rejects_invalid_priority\n" +
-            "test_add_task_assigns_id\n" +
-            "test_get_task_raises_for_unknown_id\n" +
-            "test_mark_task_done\n" +
-            "test_missing_json_returns_empty_list\n" +
-            "test_json_storage_round_trip\n" +
-            "test_broken_json_raises_storage_error\n" +
-            "\n" +
-            "python -m pytest -q"
-          }
+          caption={"простая fixture"}
+          code={"@pytest.fixture\ndef service():\n    return PlannerService(MemoryStorage())"}
         />
+      </Section>
 
-        <Callout tone="info">
-          {"Пять–восемь качественных тестов важнее искусственной цифры покрытия без понимания сценариев."}
-        </Callout>
+      <Section number="07" title={"Файловая изоляция появится на следующей границе"}>
+        <Lead>
+          {"Когда появится JsonStorage, файловым тестам понадобится tmp_path. Он создаёт отдельную временную папку и защищает рабочий файл пользователя. Сейчас мы не пишем такой тест, потому что файловое хранилище ещё не является частью проекта."}
+        </Lead>
+        <p>{"Принцип уже важен: тест не должен брать скрытое состояние из окружения. Для текущей работы эту изоляцию даёт новый MemoryStorage в каждом сценарии."}</p>
+      </Section>
 
+      <Section number="08" title={"Что мы будем делать в практике"}>
+        <Lead>
+          {"Практика закрепит проверенное in-memory ядро. Она не просит написать JSON или CLI раньше времени."}
+        </Lead>
+        <div className="lesson-practice-steps">
+          <h3>Task</h3>
+          <p>{"Проверить нормализацию, инварианты, независимые tags и mark_done."}</p>
+          <h3>MemoryStorage</h3>
+          <p>{"Проверить защитные копии и явное сохранение."}</p>
+          <h3>PlannerService</h3>
+          <p>{"Проверить add_task и list_tasks через новое in-memory состояние."}</p>
+        </div>
+        <PracticeCta text={"Защитите Task, MemoryStorage и первые методы PlannerService небольшими самостоятельными тестами."} />
+      </Section>
+
+      <Section number="09" title={"Самопроверка перед практикой"}>
         <div className="lesson-check-group">
-          <QuizCard
-            question={"Как pytest находит тест?"}
-            options={[
-              "по имени test_",
-              "по print",
-              "по dataclass",
-            ]}
-            correctIndex={0}
-            explanation={"Используется соглашение имён."}
-          />
-          <QuizCard
-            question={"Что делает assert?"}
-            options={[
-              "проверяет условие",
-              "создаёт фикстуру",
-              "запускает Git",
-            ]}
-            correctIndex={0}
-            explanation={"Ложное условие делает тест падающим."}
-          />
-          <QuizCard
-            question={"Как проверить ValueError?"}
-            options={[
-              "pytest.raises",
-              "голый except",
-              "print(error)",
-            ]}
-            correctIndex={0}
-            explanation={"Raises проверяет обязательность исключения."}
-          />
-          <QuizCard
-            question={"Зачем tmp_path?"}
-            options={[
-              "изолировать файл",
-              "создать package",
-              "установить pytest",
-            ]}
-            correctIndex={0}
-            explanation={"Тест не трогает реальные данные."}
-          />
+          <QuizCard question={"Зачем нужен pytest.raises?"} options={["Проверить ожидаемую ошибку", "Скрыть ошибку", "Запустить CLI"]} correctIndex={0} explanation={"Ошибка является частью публичного договора модели."} />
+          <QuizCard question={"Почему service тестируется через MemoryStorage?"} options={["Нет файловой зависимости", "JSON уже реализован", "Так не нужен assert"]} correctIndex={0} explanation={"Тест получает управляемое состояние и проверяет только прикладной сценарий."} />
+          <QuizCard question={"Что пока не входит в тесты?"} options={["JSON и CLI", "Task", "add_task"]} correctIndex={0} explanation={"Эти слои появятся после архитектурной и файловой работы."} />
         </div>
-
-        <KeyTakeaways
-          points={[
-            <>{"Тест фиксирует конкретное ожидаемое поведение."}</>,
-            <>{"AAA разделяет подготовку, действие и проверку."}</>,
-            <>{"Понятное имя теста ускоряет диагностику."}</>,
-            <>{"pytest.raises проверяет исключения."}</>,
-            <>{"Parametrize повторяет сценарий на разных данных."}</>,
-            <>{"tmp_path изолирует файловые тесты."}</>,
-          ]}
-        />
-
-        <PracticeCta text={"Создайте tests/ и напишите минимум восемь тестовых случаев для Task, PlannerService и JsonStorage."} />
+        <KeyTakeaways points={[<>{"Один тест защищает одно наблюдаемое обещание."}</>, <>{"AAA делает сценарий читаемым."}</>, <>{"MemoryStorage даёт изолированное состояние без диска."}</>, <>{"Текущий набор становится опорой для следующих слоёв."}</>]} />
       </Section>
-
     </RichLesson>
   );
 }
@@ -1620,524 +1146,477 @@ export function Lesson42({ module }: { module?: string }) {
       <RichHero
         variant="project"
         chip={module ?? "Месяц 2 · Блок 8"}
-        title={"Финальный проект 1: архитектура Persistent Planner"}
-        intro={"Спроектируем финальную версию второго месяца до написания новых функций: зафиксируем обязательное поведение, структуру пакета, контракты модулей и безопасный план переноса."}
+        title={"42. Финальный проект 1: архитектура Persistent Planner"}
+        intro={"После отдельных моделей, хранилищ, сервисов и тестов соберём из них понятный проект. Сначала зафиксируем поведение и границы, затем подготовим каркас для реализации."}
         tags={[
           { icon: <FolderGit2 size={14} />, label: "архитектура проекта" },
-          { icon: <Braces size={14} />, label: "план переноса" },
+          { icon: <Braces size={14} />, label: "контракты и импорты" },
         ]}
       />
       <TheoryBridge lesson={42} />
 
-      <Section number="01" title={"Финальный проект начинается с границ"}>
+      <Section number="00" title={"От проверенных частей к цельному проекту"}>
         <Lead>
-          {"Перед добавлением кода нужно определить, что проект обязан делать и что сознательно остаётся за пределами второго месяца."}
+          {"В предыдущем занятии тесты научили нас превращать ожидания в повторяемые проверки. Теперь нужно решить, как соединить эти проверки в один проект, где у каждой части есть ясная роль."}
         </Lead>
 
+        <p>
+          {"Раньше мы смотрели на отдельный класс, функцию или слой. В финальном проекте важен весь путь задачи: пользователь вводит команду, интерфейс передаёт данные сервису, модель применяет правила, storage сохраняет состояние, а следующий запуск восстанавливает его."}
+        </p>
+
+        <p>
+          {"Это похоже на переезд. Коробки уже подписаны, но их нужно расставить по комнатам и понять, как пройти от входной двери к нужному месту. Если всё сложить в одной комнате, сначала быстро, но потом любое изменение превращается в долгий поиск."}
+        </p>
+
         <div className="lesson-practice-steps">
-          <h3>Обязательный результат</h3>
-          <p>
-            {"Консольный Persistent Planner с JSON, Task, модулями, ожидаемыми ошибками и тестами."}
-          </p>
+          <h3>Уже проверено</h3>
+          <p>{"Task, storage, PlannerService, композиция и отдельные тесты."}</p>
 
-          <h3>Не входит</h3>
-          <p>
-            {"FastAPI, база данных, ORM, Docker и авторизация."}
-          </p>
+          <h3>Теперь добавляем</h3>
+          <p>{"Пользовательские сценарии, структуру пакета, импортный граф и точку сборки."}</p>
 
-          <h3>Критерий готовности</h3>
-          <p>
-            {"Проект запускается с чистого состояния, а ученик объясняет путь данных."}
-          </p>
-
+          <h3>Главная граница</h3>
+          <p>{"Сначала проектируем контрольную точку. Полную реализацию CRUD оставляем следующей работе."}</p>
         </div>
-
-        <CodeBlock
-          caption={"обязательные сценарии"}
-          code={
-            "1 — добавить задачу\n" +
-            "2 — показать задачи\n" +
-            "3 — найти задачу\n" +
-            "4 — отметить выполненной\n" +
-            "5 — удалить задачу\n" +
-            "6 — фильтровать задачи\n" +
-            "0 — выйти\n" +
-            "\n" +
-            "Persistent Planner\n" +
-            "├── сохраняет данные после выхода\n" +
-            "├── не скрывает повреждённый JSON\n" +
-            "├── разделён по ответственности\n" +
-            "├── имеет минимум 5 тестов\n" +
-            "└── запускается по README"
-          }
-        />
 
         <RecallCard
-          question={"Какой главный результат второго месяца?"}
-          hint={"Не API, а законченный консольный проект."}
-          answer={<p>{"Persistent Planner с JSON, модулями, Task, ожидаемыми ошибками и тестами."}</p>}
+          question={"Что сейчас важнее: написать ещё один метод или увидеть путь данных от ввода до сохранения?"}
+          hint={"Подумайте, какая проблема будет дороже при неясной структуре."}
+          answer={<p>{"Путь данных. Отдельный метод можно изменить, а неясные связи начинают порождать случайные импорты и смешанные обязанности."}</p>}
         />
-
-        <Callout tone="info">
-          {"Возможность не входит в проект только потому, что её можно реализовать. Она должна поддерживать учебную цель месяца."}
-        </Callout>
       </Section>
 
-      <Section number="02" title={"Пользовательские сценарии до файлов"}>
+      <Section number="01" title={"Границы результата и объём проекта"}>
         <Lead>
-          {"Архитектура обслуживает поведение. Сначала сценарии записываются обычным языком, затем определяется, какие части проекта за них отвечают."}
+          {"Persistent Planner будет консольным приложением со списком задач и сохранением состояния между запусками. Ограничения здесь помогают учиться архитектуре, а не изображать большую платформу."}
         </Lead>
 
-        <div className="lesson-practice-steps">
-          <h3>Добавление</h3>
-          <p>
-            {"Пользователь вводит title и priority, получает Task, данные сохраняются."}
-          </p>
+        <p>
+          {"В текущий результат входят добавление, просмотр, поиск, завершение, удаление и статистика задач. Важен также выход из приложения. У каждой команды должны быть понятные входные данные, успех, ошибка и изменение состояния."}
+        </p>
 
-          <h3>Первый запуск</h3>
-          <p>
-            {"Если файла нет, приложение начинает с пустого списка."}
-          </p>
-
-          <h3>Повреждение</h3>
-          <p>
-            {"Проект сообщает о проблеме и не перезаписывает файл пустым состоянием."}
-          </p>
-
-        </div>
+        <p>
+          {"FastAPI, база данных, ORM, Docker, авторизация и многопользовательский режим появятся в других контекстах. Сейчас они не входят в работу. Если добавить всё сразу, будет трудно понять, какая часть проекта отвечает за конкретное поведение."}
+        </p>
 
         <CodeBlock
-          caption={"два основных пути данных"}
+          caption={"обязательные пользовательские сценарии"}
           code={
-            "ввод пользователя\n" +
-            "→ преобразование priority\n" +
-            "→ PlannerService.add_task\n" +
-            "→ Task\n" +
-            "→ JsonStorage.save\n" +
-            "→ сообщение интерфейса\n" +
-            "\n" +
-            "main\n" +
-            "→ JsonStorage.load\n" +
-            "→ list[Task]\n" +
-            "→ PlannerService\n" +
-            "→ ConsoleApplication.run"
+            "add: создать задачу\n" +
+            "list: показать задачи\n" +
+            "find: найти задачу по id\n" +
+            "done: отметить задачу выполненной\n" +
+            "delete: удалить задачу\n" +
+            "search: найти по тексту\n" +
+            "stats: показать статистику\n" +
+            "exit: завершить работу"
           }
         />
 
+        <div className="lesson-practice-steps">
+          <h3>Функциональное требование</h3>
+          <p>{"Команда add создаёт задачу с заданным заголовком и приоритетом."}</p>
+
+          <h3>Нефункциональное требование</h3>
+          <p>{"После перезапуска корректно сохранённая задача снова доступна."}</p>
+
+          <h3>Ясная граница</h3>
+          <p>{"Повреждённый JSON не превращается молча в пустой список."}</p>
+        </div>
+
         <TrueFalse
-          statement={<>{"Сохранение должно происходить до проверки title и priority."}</>}
+          statement={<>{"Если возможность полезна, её нужно добавить в финальный проект сразу."}</>}
           isTrue={false}
-          explanation={"Неверные данные не должны менять состояние."}
+          explanation={"Учебный объём ограничивает количество решений. Возможность входит в проект, если помогает текущей цели и имеет проверяемый результат."}
+        />
+      </Section>
+
+      <Section number="02" title={"Сценарии до структуры файлов"}>
+        <Lead>
+          {"Сценарий описывает изменение, которое должен увидеть пользователь. Он помогает выбрать границы проекта до вопроса о том, какой файл создать первым."}
+        </Lead>
+
+        <p>
+          {"Для каждого действия зафиксируйте четыре вещи: вход, правило, результат и новое состояние. Ошибочная ветка тоже важна. Если данные неверны, приложение должно объяснить проблему и оставить состояние прежним."}
+        </p>
+
+        <CodeBlock
+          caption={"добавление задачи как переход состояния"}
+          code={
+            "ввод: title и priority\n" +
+            "→ проверка значений\n" +
+            "→ создание Task\n" +
+            "→ PlannerService изменяет список\n" +
+            "→ storage сохраняет состояние\n" +
+            "→ CLI показывает подтверждение"
+          }
+        />
+
+        <p>
+          {"При первом запуске файла может не быть. Это естественно означает пустой список. Повреждённый файл означает другое: данные были, но их нельзя прочитать. Эти два состояния нельзя свести к одному ответу."}
+        </p>
+
+        <CodeSequence
+          title={"Соберите путь корректного добавления"}
+          prompt={"Выберите порядок от ввода пользователя до сообщения об успешном сохранении."}
+          pieces={[
+            { id: "input", code: "прочитать title и priority", note: "данные приходят из интерфейса" },
+            { id: "validate", code: "проверить входные данные", note: "неверный вход не меняет состояние" },
+            { id: "service", code: "вызвать PlannerService", note: "прикладной сценарий" },
+            { id: "model", code: "создать или изменить Task", note: "предметные правила" },
+            { id: "storage", code: "сохранить через storage", note: "состояние переживает процесс" },
+            { id: "output", code: "показать результат", note: "ответ пользователю" },
+          ]}
+          correctOrder={["input", "validate", "service", "model", "storage", "output"]}
+          explanation={"Путь начинается с входа, проходит через проверку и прикладное действие, затем сохраняет новое состояние и только после этого сообщает об успехе."}
         />
 
         <Callout tone="info">
-          {"У каждого перехода должен быть понятный тип: строка, число, Task, list[Task] или предметное исключение."}
+          {"Не начинайте с меню. Сначала опишите, что изменяется в состоянии. Интерфейс станет тонким слоем над уже понятным сценарием."}
         </Callout>
       </Section>
 
-      <Section number="03" title={"Финальная структура проекта"}>
+      <Section number="03" title={"Спецификация как договор"}>
         <Lead>
-          {"Структура должна быть достаточно разделённой для ясности, но не имитировать крупную систему."}
+          {"Спецификация фиксирует наблюдаемое поведение до реализации. Она нужна не для отчётности, а чтобы разные части проекта и будущие тесты говорили об одном результате."}
         </Lead>
 
+        <p>
+          {"Фраза «добавить задачу» оставляет много вопросов. Кто выдаёт id? Разрешён ли пустой title? Что происходит после перезапуска? Как приложение сообщает о повреждённом файле? Хорошая спецификация отвечает на эти вопросы словами."}
+        </p>
+
         <div className="lesson-practice-steps">
-          <h3>app</h3>
-          <p>
-            {"Пакет рабочего кода."}
-          </p>
+          <h3>Вход</h3>
+          <p>{"Какие значения получает команда и какие из них обязательны."}</p>
 
-          <h3>data</h3>
-          <p>
-            {"Каталог пользовательского JSON."}
-          </p>
+          <h3>Успех</h3>
+          <p>{"Что увидит пользователь и какой объект или результат появится."}</p>
 
-          <h3>tests</h3>
-          <p>
-            {"Автоматические проверки."}
-          </p>
+          <h3>Ошибка</h3>
+          <p>{"Какой случай считается неправильным и какая граница состояния сохраняется."}</p>
 
+          <h3>Переход</h3>
+          <p>{"Что изменится в списке, файле или другом наблюдаемом состоянии."}</p>
         </div>
 
         <CodeBlock
-          caption={"дерево проекта"}
+          caption={"из сценария в проверяемые утверждения"}
+          code={
+            "created = service.add_task(\"Разобрать каркас\", priority=3)\n" +
+            "assert created.title == \"Разобрать каркас\"\n" +
+            "assert created.priority == 3\n" +
+            "assert storage.load()[0].title == created.title"
+          }
+        />
+
+        <p>
+          {"Документ и тест дополняют друг друга. Документ объясняет смысл всего сценария. Тест фиксирует маленький наблюдаемый факт. Если они расходятся, нельзя просто подправить тест. Сначала нужно решить, какой договор актуален."}
+        </p>
+
+        <BugHunt
+          code={
+            "def add_task(title: str, priority: int):\n" +
+            "    return Task(title, priority)"
+          }
+          question={"Чего не хватает в таком фрагменте до того, как считать контракт готовым?"}
+          options={[
+            "Правил входа, результата и ожидаемых ошибок",
+            "Ещё одного комментария над функцией",
+            "Переименования priority в value",
+          ]}
+          correctIndex={0}
+          explanation={"Сигнатура показывает форму вызова, но не описывает допустимые значения, смысл результата и поведение ошибки."}
+          fix={"Добавьте в документ и тесты наблюдаемые условия: валидный вход, результат и состояние после ошибки."}
+        />
+      </Section>
+
+      <Section number="04" title={"Пакет как карта ответственности"}>
+        <Lead>
+          {"Структура не должна быть большой ради вида. Она должна помогать быстро ответить, где искать модель, прикладное действие, хранение, интерфейс и запуск."}
+        </Lead>
+
+        <CodeBlock
+          caption={"минимальная структура Persistent Planner"}
           code={
             "studyhub/\n" +
             "├── app/\n" +
             "│   ├── __init__.py\n" +
             "│   ├── main.py\n" +
+            "│   ├── cli.py\n" +
             "│   ├── models.py\n" +
             "│   ├── services.py\n" +
             "│   ├── storage.py\n" +
             "│   └── exceptions.py\n" +
             "├── data/\n" +
-            "│   └── tasks.json\n" +
             "├── tests/\n" +
-            "│   ├── test_models.py\n" +
-            "│   ├── test_services.py\n" +
-            "│   └── test_storage.py\n" +
-            "├── .gitignore\n" +
-            "└── README.md"
+            "└── docs/\n" +
+            "    └── final-project-spec.md"
           }
         />
-
-        <PredictOutput
-          code={
-            "Количество модулей внутри app"
-          }
-          output={"6"}
-          hint={"Считайте __init__, main, models, services, storage и exceptions."}
-        />
-
-        <Callout tone="info">
-          {"Не создавайте отдельную папку для каждого файла. Эта структура достаточна для учебного проекта."}
-        </Callout>
-      </Section>
-
-      <Section number="04" title={"Контракты до реализации"}>
-        <Lead>
-          {"До написания методов нужно записать, что они получают, возвращают и какие ожидаемые исключения создают."}
-        </Lead>
 
         <div className="lesson-practice-steps">
-          <h3>Task</h3>
-          <p>
-            {"Создаётся из валидных данных, умеет mark_done, to_dict и from_dict."}
-          </p>
+          <h3>models.py</h3>
+          <p>{"Task и правила одной сущности. Никаких input и чтения JSON."}</p>
 
-          <h3>Storage</h3>
-          <p>
-            {"load возвращает list[Task], save принимает list[Task]."}
-          </p>
+          <h3>storage.py</h3>
+          <p>{"Загрузка и сохранение состояния. Не решает, допустим ли приоритет."}</p>
 
-          <h3>PlannerService</h3>
-          <p>
-            {"Выполняет CRUD и сохраняет состояние."}
-          </p>
+          <h3>services.py</h3>
+          <p>{"Прикладные действия над задачами. Не печатает меню и не знает формат файла."}</p>
 
+          <h3>cli.py</h3>
+          <p>{"Ввод, вывод и преобразование ответа для человека."}</p>
+
+          <h3>main.py</h3>
+          <p>{"Сборка конкретных зависимостей и запуск приложения."}</p>
         </div>
 
-        <CodeBlock
-          caption={"контракты хранения и сервиса"}
-          code={
-            "class Storage:\n" +
-            "    def load(self) -> list[Task]:\n" +
-            "        ...\n" +
-            "\n" +
-            "    def save(\n" +
-            "        self,\n" +
-            "        tasks: list[Task],\n" +
-            "    ) -> None:\n" +
-            "        ...\n" +
-            "\n" +
-            "\n" +
-            "class PlannerService:\n" +
-            "    def add_task(\n" +
-            "        self,\n" +
-            "        title: str,\n" +
-            "        priority: int,\n" +
-            "    ) -> Task:\n" +
-            "        ...\n" +
-            "\n" +
-            "    def get_task(\n" +
-            "        self,\n" +
-            "        task_id: int,\n" +
-            "    ) -> Task:\n" +
-            "        ..."
-          }
-        />
+        <p>
+          {"Папка tests нужна для проверок, data для состояния пользователя, docs для договорённостей. Каждый файл должен иметь одну причину изменения, но это не требует создавать отдельный слой для каждой строки."}
+        </p>
 
-        <BugHunt
-          code={
-            "def add_task(title: str, priority: int):\n" +
-            "    return Task(1, title, priority)"
-          }
-          question={"Что ещё нужно для runtime-правил?"}
-          options={[
-            "Валидация внутри Task",
-            "Только комментарий",
-            "Смена имени функции",
-          ]}
+        <QuizCard
+          question={"Где должна вычисляться статистика задач?"}
+          options={["В PlannerService как прикладной результат", "В cli.py, потому что статистика показывается человеку", "В storage.py, потому что он читает список"]}
           correctIndex={0}
-          explanation={"Type hints не заменяют проверки."}
-          fix={"Task.__post_init__ проверяет title и priority"}
+          explanation={"CLI оформляет готовый результат, storage хранит данные, а прикладной смысл статистики относится к сервису."}
         />
-
-        <Callout tone="info">
-          {"Type hints документируют ожидания, но не выполняют runtime-валидацию обычного Python-кода."}
-        </Callout>
       </Section>
 
-      <Section number="05" title={"Однонаправленный граф импортов"}>
+      <Section number="05" title={"Одно направление импортов"}>
         <Lead>
-          {"Main является точкой сборки. Services зависит от модели и исключений. Storage знает формат Task. Нижние модули не импортируют main."}
+          {"Импортный граф показывает направление знания. Точка запуска знает, какие детали собрать. Нижние модули не должны тянуть обратно main и cli."}
         </Lead>
 
-        <div className="lesson-practice-steps">
-          <h3>Точка сборки</h3>
-          <p>
-            {"Main создаёт JsonStorage и PlannerService."}
-          </p>
-
-          <h3>Предметный слой</h3>
-          <p>
-            {"Services получает storage и работает с Task."}
-          </p>
-
-          <h3>Запрет</h3>
-          <p>
-            {"Storage не импортирует service, service не импортирует main."}
-          </p>
-
-        </div>
-
         <CodeBlock
-          caption={"граф и точка сборки"}
+          caption={"направление зависимостей"}
           code={
             "main\n" +
-            "  ↓\n" +
-            "services ─────→ exceptions\n" +
-            "  ↓\n" +
-            "models\n" +
-            "  ↑\n" +
-            "storage ──────→ exceptions\n" +
-            "\n" +
-            "\n" +
+            "→ cli\n" +
+            "→ services\n" +
+            "→ models и exceptions\n" +
+            "→ storage\n" +
+            "→ models и exceptions"
+          }
+        />
+
+        <p>
+          {"Если storage импортирует main, а main импортирует storage, появляется цикл. Даже если случайный порядок загрузки пока позволяет запуск, граница уже стала хрупкой. Модуль должен импортироваться ради своих классов и функций, а не запускать всё приложение."}
+        </p>
+
+        <CodeBlock
+          caption={"точка сборки"}
+          code={
             "def build_service():\n" +
-            "    storage = JsonStorage(\n" +
-            "        Path(\"data/tasks.json\")\n" +
-            "    )\n" +
-            "\n" +
+            "    storage = make_storage()\n" +
             "    return PlannerService(storage)"
           }
         />
 
-        <RecallCard
-          question={"Почему services не импортирует main?"}
-          hint={"Нижний уровень не должен знать точку запуска."}
-          answer={<p>{"Main уже зависит от services; обратная стрелка создаёт цикл и смешивает уровни."}</p>}
-        />
-
-        <Callout tone="info">
-          {"Небольшой граф на бумаге предотвращает циклические импорты лучше случайного import внутри функции."}
-        </Callout>
-      </Section>
-
-      <Section number="06" title={"План миграции небольшими коммитами"}>
-        <Lead>
-          {"Финальный проект не переписывается одним огромным изменением. Каждый шаг сохраняет рабочее состояние."}
-        </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>Шаг 1</h3>
-          <p>
-            {"Создать каркас и точку запуска."}
-          </p>
-
-          <h3>Шаг 2</h3>
-          <p>
-            {"Перенести модель и исключения."}
-          </p>
-
-          <h3>Шаг 3</h3>
-          <p>
-            {"Подключить storage, service, меню, тесты и README."}
-          </p>
-
-        </div>
-
-        <CodeBlock
-          caption={"история коммитов"}
-          code={
-            "chore: create application structure\n" +
-            "refactor: move task model\n" +
-            "feat: add JSON storage\n" +
-            "feat: implement planner service\n" +
-            "refactor: connect console menu\n" +
-            "test: cover model and storage\n" +
-            "docs: write project README"
-          }
-        />
-
-        <TrueFalse
-          statement={<>{"Лучше перенести модель, storage и меню одним коммитом, чтобы история была короче."}</>}
-          isTrue={false}
-          explanation={"Небольшие коммиты упрощают проверку и откат."}
-        />
-
-        <Callout tone="info">
-          {"Сообщение final project не объясняет историю. Один коммит должен описывать одно понятное изменение."}
-        </Callout>
-      </Section>
-
-      <Section number="07" title={"Main как точка сборки"}>
-        <Lead>
-          {"Main соединяет зависимости и запускает приложение. Он не читает JSON вручную, не вычисляет id и не проверяет поля Task."}
-        </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>build_service</h3>
-          <p>
-            {"Создаёт конкретное хранилище и сервис."}
-          </p>
-
-          <h3>main</h3>
-          <p>
-            {"Создаёт интерфейс и запускает его."}
-          </p>
-
-          <h3>Граница ошибок</h3>
-          <p>
-            {"Верхний уровень сообщает о StorageError."}
-          </p>
-
-        </div>
-
-        <CodeBlock
-          caption={"app/main.py"}
-          code={
-            "from pathlib import Path\n" +
-            "\n" +
-            "from app.services import PlannerService\n" +
-            "from app.storage import JsonStorage\n" +
-            "\n" +
-            "\n" +
-            "def build_service():\n" +
-            "    storage = JsonStorage(\n" +
-            "        Path(\"data/tasks.json\")\n" +
-            "    )\n" +
-            "\n" +
-            "    return PlannerService(storage)\n" +
-            "\n" +
-            "\n" +
-            "def main():\n" +
-            "    service = build_service()\n" +
-            "    application = ConsoleApplication(service)\n" +
-            "    application.run()\n" +
-            "\n" +
-            "\n" +
-            "if __name__ == \"__main__\":\n" +
-            "    main()"
-          }
-        />
+        <p>
+          {"Здесь выбирается конкретный JsonStorage для обычного запуска. В тесте можно передать временное или MemoryStorage. Сервис не обязан знать, где лежит файл и каким способом он создаётся."}
+        </p>
 
         <PredictOutput
           code={
-            "build_service() возвращает"
+            "def build_service():\n" +
+            "    storage = JsonStorage(path)\n" +
+            "    return PlannerService(storage)\n" +
+            "\n" +
+            "type(build_service()).__name__"
           }
           output={"PlannerService"}
-          hint={"JsonStorage передаётся внутрь сервиса."}
+          hint={"Функция возвращает объект, которому storage уже передан в конструктор."}
         />
 
-        <Callout tone="info">
-          {"ConsoleApplication можно оставить в main.py или перенести в cli.py, если интерфейс не смешан с storage."}
-        </Callout>
+        <RecallCard
+          question={"Почему меню нельзя запускать прямо при импорте main.py?"}
+          hint={"Вспомните, что происходит с тестом, который импортирует модуль."}
+          answer={<p>{"Импорт нужен для доступа к функциям и классам. Если он сразу вызывает input или бесконечный цикл, тест не может безопасно проверить структуру."}</p>}
+        />
       </Section>
 
-      <Section number="08" title={"Контрольная точка проектирования"}>
+      <Section number="06" title={"Контракты до реализации"}>
         <Lead>
-          {"К концу первой проектной сессии CRUD может быть не полностью реализован, но структура, импорты, точка запуска и контракты должны быть готовы."}
+          {"До написания методов нужно договориться о публичных входах, результатах и ошибках. Тогда следующий этап сможет реализовывать части по одной, не угадывая замысел."}
+        </Lead>
+
+        <p>
+          {"Task представляет одну задачу и хранит её инварианты. Storage представляет роль сохранения. PlannerService представляет прикладной сценарий и получает storage снаружи. Эти роли могут быть простыми классами, но их границы должны быть видны."}
+        </p>
+
+        <CodeBlock
+          caption={"форма публичного договора"}
+          code={
+            "class Storage:\n" +
+            "    def load(self) -> list[Task]: ...\n" +
+            "    def save(self, tasks: list[Task]) -> None: ...\n" +
+            "\n" +
+            "class PlannerService:\n" +
+            "    def __init__(self, storage: Storage) -> None: ...\n" +
+            "    def add_task(self, title: str, priority: int) -> Task: ...\n" +
+            "    def list_tasks(self) -> list[Task]: ..."
+          }
+        />
+
+        <p>
+          {"Аннотация list[Task] делает договор читаемым, но не проверяет значение во время выполнения. Нормализация title, диапазон priority и ошибка отсутствующей задачи должны быть описаны как поведение, а не спрятаны только в type hints."}
+        </p>
+
+        <div className="lesson-practice-steps">
+          <h3>Что обещает load</h3>
+          <p>{"Список задач и понятное поведение при отсутствии файла или ошибке чтения."}</p>
+
+          <h3>Что обещает save</h3>
+          <p>{"Сохранение переданного состояния без решения прикладных правил."}</p>
+
+          <h3>Что обещает сервис</h3>
+          <p>{"Операция над задачами и предсказуемый результат для CLI и тестов."}</p>
+        </div>
+
+        <TrueFalse
+          statement={<>{"Если метод имеет type hint, отдельная проверка входа больше не нужна."}</>}
+          isTrue={false}
+          explanation={"Аннотация документирует ожидание. Runtime-правило нужно выполнить там, где живёт ответственность за данные."}
+        />
+      </Section>
+
+      <Section number="07" title={"Контрольная точка и осознанный красный тест"}>
+        <Lead>
+          {"Каркас проекта не обязан сразу проходить весь функциональный набор. Но он обязан импортироваться, иметь понятную точку входа и показывать, какая реализация ещё отсутствует."}
+        </Lead>
+
+        <p>
+          {"Сначала проверяются импорты. Затем проверяется, что запуск не происходит во время импорта. После этого можно добавить одну ожидающую проверку persistence. JsonStorage пока существует как контракт, поэтому xfail честно показывает следующий шаг."}
+        </p>
+
+        <CodeBlock
+          caption={"ожидающая проверка persistence"}
+          code={
+            "@pytest.mark.xfail(reason=\"JsonStorage появится в следующей работе\")\n" +
+            "def test_json_storage_survives_new_instance(tmp_path):\n" +
+            "    storage = JsonStorage(tmp_path / \"tasks.json\")\n" +
+            "    task = Task(1, \"Разобрать каркас\", priority=3)\n" +
+            "\n" +
+            "    storage.save([task])\n" +
+            "\n" +
+            "    tasks = JsonStorage(tmp_path / \"tasks.json\").load()\n" +
+            "    assert tasks[0].title == \"Разобрать каркас\""
+          }
+        />
+
+        <p>
+          {"NotImplementedError и ModuleNotFoundError означают разные проблемы. Первая говорит, что контракт найден, а поведение ещё не написано. Вторая говорит, что каркас или импорт собраны неверно. Нельзя маскировать ошибку импорта изменением теста."}
+        </p>
+
+        <BugHunt
+          code={
+            "try:\n" +
+            "    from app.services import PlannerService\n" +
+            "except Exception:\n" +
+            "    pass"
+          }
+          question={"Почему такой код не подходит для проверки контрольной точки?"}
+          options={[
+            "Он скрывает настоящую причину ошибки импорта",
+            "В нём слишком короткий try",
+            "Импорты нельзя проверять в тестах",
+          ]}
+          correctIndex={0}
+          explanation={"Общий except превращает дефект структуры в молчаливый пропуск. Проверка должна показывать точную ошибку."}
+          fix={"Импортируйте модуль напрямую и исправьте причину падения, не скрывая исключение."}
+        />
+
+        <TrueFalse
+          statement={<>{"Один коммит может одновременно создать каркас, реализовать JSON и подключить все команды."}</>}
+          isTrue={false}
+          explanation={"Маленькие контрольные точки упрощают диагностику. В этой работе коммит фиксирует проектирование и каркас."}
+        />
+      </Section>
+
+      <Section number="08" title={"Что мы будем делать в практике"}>
+        <Lead>
+          {"Практика оформит уже зелёное in-memory ядро как цельный проект. Мы не копируем Task, MemoryStorage и базовые методы service заново. Сначала фиксируем их место в структуре, затем описываем файловый слой и честную контрольную точку."}
         </Lead>
 
         <div className="lesson-practice-steps">
-          <h3>Должно работать</h3>
-          <p>
-            {"Импорт модулей и python -m app.main."}
-          </p>
+          <h3>Общий результат</h3>
+          <p>{"Спецификация семи команд, структура studyhub/app, сохранённое in-memory ядро, контракт JsonStorage, точка сборки и xfail для persistence."}</p>
 
-          <h3>Может быть заглушкой</h3>
-          <p>
-            {"Некоторые методы временно содержат NotImplementedError."}
-          </p>
+          <h3>Роли</h3>
+          <p>{"models сохраняет правила Task, storage содержит MemoryStorage и будущую файловую границу, services сохраняет первые сценарии, cli общается с человеком, main соединяет зависимости."}</p>
 
-          <h3>Не должно быть</h3>
-          <p>
-            {"Циклов, input в storage, JSON в main и голого except."}
-          </p>
-
+          <h3>Доказательство</h3>
+          <p>{"Импорты проходят, запуск не имеет побочных эффектов, спецификация понятна, красный тест объяснён, временные данные не попали в Git."}</p>
         </div>
 
-        <CodeBlock
-          caption={"контрольные команды"}
-          code={
-            "python -m app.main\n" +
-            "python -c \"import app.models\"\n" +
-            "python -c \"import app.services\"\n" +
-            "python -c \"import app.storage\"\n" +
-            "python -m pytest -q\n" +
-            "\n" +
-            "[ ] структура создана\n" +
-            "[ ] импорты однонаправленные\n" +
-            "[ ] main является точкой запуска\n" +
-            "[ ] контракты записаны\n" +
-            "[ ] старый код сохранён в Git"
-          }
-        />
+        <p>
+          {"Работа пойдёт крупными этапами: описать поведение, создать пакет, перенести готовое ядро, зафиксировать JsonStorage, написать проверки импортов и ожидающий persistence, затем сохранить контрольную точку."}
+        </p>
+
+        <p>
+          {"В этой практике не нужно переписывать Task, MemoryStorage или базовые методы service, а также реализовывать JSON, полный CRUD и веб-часть. Это подготовка к следующей вертикальной реализации. Если границы ясны сейчас, следующий этап сможет сосредоточиться на поведении, а не на споре о структуре."}
+        </p>
 
         <Callout tone="info">
-          {"Сессия успешна, если назначение каждого файла можно объяснить без чтения всего проекта."}
+          {"Перед редактором назовите три роли своими словами: кто владеет состоянием, кто выполняет действие и где соединяются конкретные объекты."}
         </Callout>
+
+        <RecallCard
+          question={"Какой результат должен остаться после практики, даже если часть методов ещё заглушка?"}
+          hint={"Назовите документ, структуру, контракты и доказательство."}
+          answer={<p>{"Понятная спецификация, импортируемый каркас, направление зависимостей, точка сборки и тест, чьё ожидаемое падение объяснено."}</p>}
+        />
+      </Section>
+
+      <Section number="09" title={"Самопроверка перед практикой"}>
+        <Lead>
+          {"Попробуйте ответить без кода. Цель не в том, чтобы вспомнить формулировку, а в том, чтобы увидеть причинную связь между поведением и границей."}
+        </Lead>
 
         <div className="lesson-check-group">
           <QuizCard
-            question={"Что проектируют раньше файлов?"}
-            options={[
-              "сценарии",
-              "максимум папок",
-              "release",
-            ]}
+            question={"Что нужно определить до структуры файлов?"}
+            options={["Пользовательские сценарии и результат", "Количество классов", "Название будущего релиза"]}
             correctIndex={0}
-            explanation={"Структура обслуживает поведение."}
+            explanation={"Структура должна обслуживать поведение, а не появляться сама по себе."}
           />
           <QuizCard
-            question={"Где создаётся JsonStorage?"}
-            options={[
-              "в main",
-              "в Task",
-              "в exceptions",
-            ]}
+            question={"Где выбирается конкретный JsonStorage?"}
+            options={["В точке сборки", "В модели Task", "В тестовом assert"]}
             correctIndex={0}
-            explanation={"Main соединяет зависимости."}
+            explanation={"Точка сборки соединяет детали, а сервис работает с ролью storage."}
           />
           <QuizCard
-            question={"Что возвращает storage.load?"}
-            options={[
-              "list[Task]",
-              "меню",
-              "input",
-            ]}
+            question={"Что означает красный тест с NotImplementedError?"}
+            options={["Контракт есть, реализация ещё не готова", "Все импорты сломаны", "Тест нужно скрыть"]}
             correctIndex={0}
-            explanation={"Контракт един для сервиса."}
+            explanation={"Такой результат может быть осознанной контрольной точкой перед реализацией."}
           />
           <QuizCard
-            question={"Что не должно импортировать main?"}
-            options={[
-              "services и storage",
-              "ничто",
-              "README",
-            ]}
+            question={"Почему storage не должен читать input?"}
+            options={["Ввод относится к CLI", "Storage не может иметь методов", "Input всегда запрещён в Python"]}
             correctIndex={0}
-            explanation={"Нижние модули не зависят от точки запуска."}
+            explanation={"Каждый слой должен отвечать за свою роль и быть проверяемым отдельно."}
           />
         </div>
 
         <KeyTakeaways
           points={[
-            <>{"Финальный проект начинается с обязательного поведения."}</>,
-            <>{"Структура разделяет модель, сервис, хранение и интерфейс."}</>,
-            <>{"Контракты записываются до реализации."}</>,
-            <>{"Граф импортов строится сверху вниз."}</>,
-            <>{"Перенос выполняется небольшими коммитами."}</>,
-            <>{"Main соединяет зависимости."}</>,
+            <>{"Поведение фиксируется до выбора файлов."}</>,
+            <>{"Спецификация связывает сценарий с наблюдаемым результатом."}</>,
+            <>{"Каждый модуль получает одну понятную ответственность."}</>,
+            <>{"Main собирает зависимости, нижние модули не импортируют его."}</>,
+            <>{"Контракт описывает вход, результат, ошибки и границы состояния."}</>,
+            <>{"Осознанно красный тест показывает следующий этап работы."}</>,
           ]}
         />
 
-        <PracticeCta text={"Создайте каркас Persistent Planner, карту зависимостей и минимум четыре осмысленных коммита без лишних возможностей."} />
+        <PracticeCta text={"Зафиксируйте спецификацию и соберите импортируемый каркас Persistent Planner по отдельным самостоятельным задачам."} />
       </Section>
-
     </RichLesson>
   );
 }
-
 // 43. Финальный проект 2: модель, сервисы и хранение
 export function Lesson43({ module }: { module?: string }) {
   return (
@@ -2145,1161 +1624,946 @@ export function Lesson43({ module }: { module?: string }) {
       <RichHero
         variant="project"
         chip={module ?? "Месяц 2 · Блок 8"}
-        title={"Финальный проект 2: модель, сервисы и хранение"}
-        intro={"Заполним архитектурный каркас рабочим кодом: Task через dataclass, переходы в JSON, JsonStorage, MemoryStorage, CRUD-сервис и сохранение после каждого изменения."}
+        title={"43. Финальный проект 2: модель, сервисы и хранение"}
+        intro={"Готовое in-memory ядро получает persistence. Разберём, как сохранить Task в JSON, восстановить объект после запуска и расширить сервис без переноса правил в CLI."}
         tags={[
-          { icon: <FileText size={14} />, label: "Task и JSON" },
-          { icon: <KeyRound size={14} />, label: "CRUD через сервис" },
+          { icon: <FileText size={14} />, label: "сериализация и JSON" },
+          { icon: <KeyRound size={14} />, label: "persistence через service" },
         ]}
       />
       <TheoryBridge lesson={43} />
 
-      <Section number="01" title={"Единый путь данных"}>
+      <Section number="00" title={"От готового ядра к сохранённым данным"}>
         <Lead>
-          {"В приложении существуют объект Task и JSON-совместимый словарь. Переходы между ними должны быть явными."}
+          {"В предыдущей работе Persistent Planner уже научился жить в памяти. Task проверяет свои правила, MemoryStorage реализует load и save, а PlannerService умеет добавить задачу и показать список. Сейчас мы не будем переписывать эти части. Мы добавим слой, который позволит закрыть процесс и вернуться к тому же состоянию позже."}
         </Lead>
 
         <div className="lesson-practice-steps">
-          <h3>Внутри приложения</h3>
+          <h3>Что уже работает</h3>
           <p>
-            {"Сервис и интерфейс используют Task."}
+            {"In-memory сценарий хранит объекты Task внутри текущего процесса. Это удобная база для тестов и первый рабочий вариант продукта."}
           </p>
 
-          <h3>На границе хранения</h3>
+          <h3>Какая появилась потребность</h3>
           <p>
-            {"Storage преобразует Task в dict и обратно."}
+            {"После закрытия процесса список исчезает. Пользователю нужно место, которое переживёт запуск, но не должно менять правила самой задачи."}
           </p>
 
-          <h3>В JSON</h3>
+          <h3>Что добавим</h3>
           <p>
-            {"Хранятся строки, числа, bool, списки и словари."}
+            {"Появятся сериализация Task, JsonStorage, явные ошибки файла, оставшиеся операции PlannerService и тонкий CLI."}
           </p>
-
         </div>
 
         <CodeBlock
-          caption={"два направления преобразования"}
+          caption={"граница нового слоя"}
           code={
-            "JSON text\n" +
-            "→ list[dict]\n" +
-            "→ Task.from_dict\n" +
-            "→ list[Task]\n" +
+            "готовая Task\n" +
+            "→ Task.to_dict()\n" +
+            "→ JSON-файл\n" +
+            "→ json.loads()\n" +
+            "→ Task.from_dict()\n" +
             "→ PlannerService\n" +
-            "\n" +
-            "list[Task]\n" +
-            "→ Task.to_dict\n" +
-            "→ list[dict]\n" +
-            "→ json.dumps\n" +
-            "→ tasks.json"
+            "→ CLI"
           }
         />
 
         <RecallCard
-          question={"Какие данные использует PlannerService?"}
-          hint={"Сырые dict существуют на границе хранения."}
-          answer={<p>{"Объекты Task, а не сырые словари JSON."}</p>}
-        />
-
-        <Callout tone="info">
-          {"Main не должен вручную собирать словари. Преобразование сосредоточено в модели и storage."}
-        </Callout>
-      </Section>
-
-      <Section number="02" title={"Полная модель Task"}>
-        <Lead>
-          {"Task хранит данные, защищает инварианты и описывает переход в словарь и обратно."}
-        </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>Dataclass</h3>
-          <p>
-            {"Поля модели видны в начале класса."}
-          </p>
-
-          <h3>Проверка</h3>
-          <p>
-            {"__post_init__ очищает title и проверяет priority."}
-          </p>
-
-          <h3>Сериализация</h3>
-          <p>
-            {"to_dict и from_dict задают формат хранения."}
-          </p>
-
-        </div>
-
-        <CodeBlock
-          caption={"app/models.py"}
-          code={
-            "from dataclasses import dataclass, field\n" +
-            "\n" +
-            "@dataclass\n" +
-            "class Task:\n" +
-            "    id: int\n" +
-            "    title: str\n" +
-            "    priority: int\n" +
-            "    is_done: bool = False\n" +
-            "    tags: list[str] = field(default_factory=list)\n" +
-            "\n" +
-            "    def __post_init__(self):\n" +
-            "        self.title = self.title.strip()\n" +
-            "        if not self.title:\n" +
-            "            raise ValueError(\"empty title\")\n" +
-            "        if not 1 <= self.priority <= 5:\n" +
-            "            raise ValueError(\"bad priority\")\n" +
-            "\n" +
-            "    def mark_done(self):\n" +
-            "        self.is_done = True\n" +
-            "\n" +
-            "    def to_dict(self):\n" +
-            "        return {\n" +
-            "            \"id\": self.id,\n" +
-            "            \"title\": self.title,\n" +
-            "            \"priority\": self.priority,\n" +
-            "            \"is_done\": self.is_done,\n" +
-            "            \"tags\": list(self.tags),\n" +
-            "        }\n" +
-            "\n" +
-            "    @classmethod\n" +
-            "    def from_dict(cls, data):\n" +
-            "        return cls(\n" +
-            "            id=data[\"id\"],\n" +
-            "            title=data[\"title\"],\n" +
-            "            priority=data[\"priority\"],\n" +
-            "            is_done=data.get(\"is_done\", False),\n" +
-            "            tags=list(data.get(\"tags\", [])),\n" +
-            "        )"
+          question={"Что должно измениться, чтобы задачи пережили закрытие процесса?"}
+          hint={"Правила Task уже существуют. Ищите место, где сейчас заканчивается жизнь состояния."}
+          answer={
+            <p>
+              {"Нужен внешний слой persistence. Он сохранит данные и восстановит их при новом запуске, а модель и сервис сохранят свои роли."}
+            </p>
           }
         />
 
-        <TrueFalse
-          statement={<>{"Task.from_dict должен возвращать сырой dict."}</>}
-          isTrue={false}
-          explanation={"Метод создаёт полноценный объект Task."}
-        />
-
         <Callout tone="info">
-          {"list(tags) создаёт отдельный список и не связывает Task с изменяемым списком входного словаря."}
+          <strong>Фокус работы.</strong>{" "}
+          {"Сначала мы проведём границу между Task и простыми данными. Затем подключим файл, обработаем ошибки и только после этого добавим остальные пользовательские операции."}
         </Callout>
       </Section>
 
-      <Section number="03" title={"JsonStorage: сохранение"}>
+      <Section number="01" title={"Сериализация как внешний формат"}>
         <Lead>
-          {"Хранилище получает Path снаружи, создаёт родительский каталог и записывает UTF-8."}
+          {"Python-объект удобен программе, но файл не умеет хранить его методы и правила. Сериализация переводит объект в простые значения, которые можно записать или передать. Десериализация выполняет обратный переход."}
         </Lead>
 
-        <div className="lesson-practice-steps">
-          <h3>Path</h3>
-          <p>
-            {"Путь не зашит внутри класса."}
-          </p>
-
-          <h3>Каталог</h3>
-          <p>
-            {"mkdir поддерживает первый запуск."}
-          </p>
-
-          <h3>Формат</h3>
-          <p>
-            {"ensure_ascii=False и indent=2 делают JSON читаемым."}
-          </p>
-
-        </div>
+        <p>
+          {"Представьте посылку и накладную. Накладная описывает содержимое для перевозки, но не заменяет саму посылку в работе магазина. Так и JSON описывает данные Task, но внутри сервиса должна остаться модель с поведением."}
+        </p>
 
         <CodeBlock
-          caption={"app/storage.py — save"}
+          caption={"небольшой независимый пример"}
           code={
-            "import json\n" +
-            "from pathlib import Path\n" +
+            "@dataclass\n" +
+            "class Bookmark:\n" +
+            "    title: str\n" +
+            "    url: str\n" +
             "\n" +
-            "class JsonStorage:\n" +
-            "    def __init__(self, path: Path):\n" +
-            "        self.path = path\n" +
+            "bookmark = Bookmark(\"Python\", \"https://python.org\")\n" +
+            "plain_data = asdict(bookmark)\n" +
+            "text = json.dumps(plain_data)\n" +
+            "restored_data = json.loads(text)\n" +
             "\n" +
-            "    def save(self, tasks):\n" +
-            "        self.path.parent.mkdir(\n" +
-            "            parents=True,\n" +
-            "            exist_ok=True,\n" +
-            "        )\n" +
-            "\n" +
-            "        data = [\n" +
-            "            task.to_dict()\n" +
-            "            for task in tasks\n" +
-            "        ]\n" +
-            "\n" +
-            "        text = json.dumps(\n" +
-            "            data,\n" +
-            "            ensure_ascii=False,\n" +
-            "            indent=2,\n" +
-            "        )\n" +
-            "\n" +
-            "        self.path.write_text(\n" +
-            "            text,\n" +
-            "            encoding=\"utf-8\",\n" +
-            "        )"
+            "print(type(plain_data).__name__)\n" +
+            "print(type(restored_data).__name__)"
           }
         />
 
         <PredictOutput
           code={
-            "ensure_ascii=False сохраняет"
+            "print(type(plain_data).__name__)\n" +
+            "print(type(restored_data).__name__)"
           }
-          output={"русские символы читаемо"}
-          hint={"Без этого JSON может содержать Unicode-escape последовательности."}
+          output={"dict\ndict"}
+          hint={"asdict и json.loads возвращают простые данные. JSON не знает, какой класс нужно создать обратно."}
         />
 
+        <div className="lesson-practice-steps">
+          <h3>Зачем нужен отдельный формат</h3>
+          <p>
+            {"Внешний формат можно записать в файл, отправить по HTTP или положить в очередь. Внутренний объект при этом сохраняет методы и инварианты."}
+          </p>
+
+          <h3>Где это встречается</h3>
+          <p>
+            {"Сериализация используется в API, кешах, конфигурациях, событиях и обмене между сервисами. При росте проекта появляются версии формата и правила совместимости со старыми данными."}
+          </p>
+
+          <h3>Чего она не делает</h3>
+          <p>
+            {"Она не делает dict полноценной моделью и не решает вопрос надёжной записи. Формат обмена, persistence и бизнес-правила остаются разными ответственностями."}
+          </p>
+        </div>
+
         <Callout tone="info">
-          {"Storage отвечает за файловую границу и не показывает пользовательские сообщения."}
+          {"В проекте переход к внешнему формату будет сосредоточен в Task.to_dict() и Task.from_dict(). Сервис не должен получать сырые словари после загрузки."}
         </Callout>
       </Section>
 
-      <Section number="04" title={"Загрузка и разные состояния файла"}>
+      <Section number="02" title={"Task на границе JSON"}>
         <Lead>
-          {"Отсутствующий файл нормален для первого запуска. Повреждённый JSON должен дать StorageError и не превращаться в пустой список."}
+          {"Task уже защищает title, priority, tags и статус. Новый слой не меняет эти правила. Он добавляет понятный способ представить готовую задачу снаружи и восстановить её обратно."}
         </Lead>
 
         <div className="lesson-practice-steps">
-          <h3>Нет файла</h3>
+          <h3>to_dict()</h3>
           <p>
-            {"Возвращается пустой список."}
+            {"Переводит Task в словарь с согласованными ключами id, title, priority, is_done и tags. Результат должен состоять из JSON-совместимых значений."}
           </p>
 
-          <h3>Пустой текст</h3>
+          <h3>from_dict()</h3>
           <p>
-            {"После strip возвращается пустой список."}
+            {"Создаёт настоящую Task через существующий конструктор. Поэтому данные из файла проходят уже знакомые инварианты модели."}
           </p>
 
-          <h3>Повреждение</h3>
+          <h3>Копия tags</h3>
           <p>
-            {"JSONDecodeError преобразуется в StorageError через raise from."}
+            {"Список изменяемый. Внешний словарь не должен получить общую ссылку на внутренний список Task, иначе изменение сохранённого представления изменит модель."}
           </p>
-
         </div>
 
         <CodeBlock
-          caption={"app/storage.py — load"}
+          caption={"контракт преобразования"}
           code={
-            "def load(self):\n" +
-            "    try:\n" +
-            "        text = self.path.read_text(\n" +
-            "            encoding=\"utf-8\",\n" +
-            "        )\n" +
-            "    except FileNotFoundError:\n" +
-            "        return []\n" +
+            "payload = {\n" +
+            "    \"id\": 7,\n" +
+            "    \"title\": \"Разобрать JSON\",\n" +
+            "    \"priority\": 3,\n" +
+            "    \"is_done\": False,\n" +
+            "    \"tags\": [\"python\"],\n" +
+            "}\n" +
             "\n" +
-            "    if text.strip() == \"\":\n" +
-            "        return []\n" +
-            "\n" +
-            "    try:\n" +
-            "        data = json.loads(text)\n" +
-            "    except json.JSONDecodeError as error:\n" +
-            "        raise StorageError(\n" +
-            "            \"Файл задач повреждён\"\n" +
-            "        ) from error\n" +
-            "\n" +
-            "    if not isinstance(data, list):\n" +
-            "        raise StorageError(\n" +
-            "            \"Корень JSON должен быть списком\"\n" +
-            "        )\n" +
-            "\n" +
-            "    try:\n" +
-            "        return [\n" +
-            "            Task.from_dict(item)\n" +
-            "            for item in data\n" +
-            "        ]\n" +
-            "    except (KeyError, TypeError, ValueError) as error:\n" +
-            "        raise StorageError(\n" +
-            "            \"Структура задачи повреждена\"\n" +
-            "        ) from error"
+            "task = Task.from_dict(payload)\n" +
+            "saved = task.to_dict()\n" +
+            "restored = Task.from_dict(saved)"
           }
         />
 
         <BugHunt
           code={
-            "except json.JSONDecodeError:\n" +
-            "    return []"
+            "def to_dict(self):\n" +
+            "    return {\n" +
+            "        \"title\": self.title,\n" +
+            "        \"tags\": self.tags,\n" +
+            "    }"
           }
-          question={"Что скрывает такой обработчик?"}
+          question={"Что случится, если код после to_dict изменит saved[\"tags\"]?"}
           options={[
-            "Повреждение существующего файла",
-            "Отсутствие Python",
-            "Ошибку Git",
+            "Может измениться внутренний список Task",
+            "Объект автоматически станет JSON",
+            "Список нельзя хранить в dataclass",
           ]}
           correctIndex={0}
-          explanation={"Повреждение выглядит как пустой проект."}
-          fix={"raise StorageError(\"Файл задач повреждён\") from error"}
-        />
-
-        <Callout tone="info">
-          {"Отсутствие данных и невозможность прочитать существующие данные — разные состояния проекта."}
-        </Callout>
-      </Section>
-
-      <Section number="05" title={"MemoryStorage для тестов"}>
-        <Lead>
-          {"MemoryStorage хранит список в памяти и соблюдает тот же контракт load/save. Он позволяет проверять PlannerService без файла."}
-        </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>Копии</h3>
-          <p>
-            {"Load и save не отдают внутренний список напрямую."}
-          </p>
-
-          <h3>Одинаковый контракт</h3>
-          <p>
-            {"Сервис не знает, какое хранилище получил."}
-          </p>
-
-          <h3>Ограничение</h3>
-          <p>
-            {"После завершения процесса данные исчезают, что нормально для теста."}
-          </p>
-
-        </div>
-
-        <CodeBlock
-          caption={"хранилище в памяти"}
-          code={
-            "class MemoryStorage:\n" +
-            "    def __init__(self, tasks=None):\n" +
-            "        self._tasks = list(tasks or [])\n" +
-            "\n" +
-            "    def load(self):\n" +
-            "        return list(self._tasks)\n" +
-            "\n" +
-            "    def save(self, tasks):\n" +
-            "        self._tasks = list(tasks)\n" +
-            "\n" +
-            "production = PlannerService(\n" +
-            "    JsonStorage(Path(\"data/tasks.json\"))\n" +
-            ")\n" +
-            "\n" +
-            "test_service = PlannerService(\n" +
-            "    MemoryStorage()\n" +
-            ")"
-          }
+          explanation={"В словарь попала та же изменяемая ссылка. На границе нужна копия list(self.tags)."}
+          fix={"\"tags\": list(self.tags)"}
         />
 
         <TrueFalse
-          statement={<>{"PlannerService должен проверять isinstance(storage, MemoryStorage)."}</>}
+          statement={<>{"from_dict() должен вернуть входной dict, чтобы storage не создавал лишние объекты."}</>}
           isTrue={false}
-          explanation={"Одинаковый контракт не требует знания класса."}
+          explanation={"После загрузки сервису нужны Task с методами и правилами. from_dict() должен восстановить модель."}
         />
 
         <Callout tone="info">
-          {"MemoryStorage — простая реализация контракта, а не отдельный режим внутри PlannerService."}
+          {"В практике добавляется только слой преобразования. Готовые поля, инварианты, независимые tags и mark_done() остаются исходным ядром."}
         </Callout>
       </Section>
 
-      <Section number="06" title={"PlannerService: добавление и id"}>
+      <Section number="03" title={"JsonStorage и persistence"}>
         <Lead>
-          {"Сервис загружает состояние, вычисляет следующий id по максимуму, создаёт Task и сохраняет изменённый список."}
+          {"Storage уже знаком по MemoryStorage. Его роль состоит в том, чтобы отдать состояние и принять новое. JsonStorage сохраняет тот же договор, но использует файл, поэтому данные переживают завершение процесса."}
         </Lead>
 
         <div className="lesson-practice-steps">
-          <h3>list_tasks</h3>
+          <h3>Path приходит снаружи</h3>
           <p>
-            {"Возвращает загруженные объекты."}
+            {"Тесту нужен временный путь, локальному запуску нужен data/tasks.json, а конфигурации production может понадобиться другой каталог. Поэтому storage не должен зашивать единственный путь внутри себя."}
           </p>
 
-          <h3>Следующий id</h3>
+          <h3>save()</h3>
           <p>
-            {"Пустой список даёт 1, иначе max(id)+1."}
+            {"Storage получает list[Task], вызывает to_dict(), создаёт JSON-текст и записывает UTF-8. Он не решает, почему пользователь изменил задачу."}
           </p>
 
-          <h3>Добавление</h3>
+          <h3>load()</h3>
           <p>
-            {"Task создаётся после вычисления id и сохраняется."}
+            {"Storage читает текст, разбирает JSON и вызывает from_dict(). В сервис возвращается list[Task], а не list[dict]."}
+          </p>
+        </div>
+
+        <CodeSequence
+          title={"Соберите путь сохранения"}
+          prompt={"Расположите действия JsonStorage.save от модели до файла."}
+          pieces={[
+            { id: "tasks", code: "list[Task]", note: "Сервис передаёт storage готовое состояние." },
+            { id: "dicts", code: "[task.to_dict() for task in tasks]", note: "Объекты переходят во внешний формат." },
+            { id: "text", code: "json.dumps(...)", note: "Простые данные становятся JSON-текстом." },
+            { id: "file", code: "write_text(..., encoding=\"utf-8\")", note: "Текст записывается в выбранный Path." },
+          ]}
+          correctOrder={["tasks", "dicts", "text", "file"]}
+          explanation={"Сначала storage получает объекты и переводит их в простые данные. Только затем появляется JSON-текст и запись в файл."}
+        />
+
+        <CodeBlock
+          caption={"первый и повторный запуск"}
+          code={
+            "нет tasks.json\n" +
+            "→ JsonStorage.load() → []\n" +
+            "→ service добавляет Task\n" +
+            "→ JsonStorage.save(tasks)\n" +
+            "→ новый JsonStorage(path)\n" +
+            "→ load() возвращает list[Task]"
+          }
+        />
+
+        <p>
+          {"Отсутствующий файл может означать первый запуск, поэтому [] является понятным результатом. Новый экземпляр storage нужен, чтобы проверить внешний файл, а не случайное состояние старого объекта в памяти."}
+        </p>
+
+        <Callout tone="info">
+          {"JSON подходит небольшому локальному приложению. При нескольких процессах, большом объёме данных и сложных запросах появляется база данных, но прикладная граница storage остаётся полезной."}
+        </Callout>
+      </Section>
+
+      <Section number="04" title={"Ошибки файла и целостность данных"}>
+        <Lead>
+          {"Файл без данных и файл, который нельзя прочитать, имеют разный смысл. Если спутать их, повреждение существующих задач может превратиться в пустой список и затем быть перезаписано."}
+        </Lead>
+
+        <div className="lesson-practice-steps">
+          <h3>Нет файла</h3>
+          <p>
+            {"Новый проект ещё ничего не сохранял. Контракт может вернуть пустой список."}
           </p>
 
+          <h3>Неверный JSON</h3>
+          <p>
+            {"Существующий файл повреждён. Это не повод скрывать проблему и продолжать работу с пустым состоянием."}
+          </p>
+
+          <h3>Неверная структура</h3>
+          <p>
+            {"JSON может быть синтаксически правильным, но содержать не список задач или запись без обязательного поля."}
+          </p>
         </div>
 
         <CodeBlock
-          caption={"основа PlannerService"}
+          caption={"узкая граница ошибки"}
           code={
-            "class PlannerService:\n" +
-            "    def __init__(self, storage):\n" +
-            "        self.storage = storage\n" +
+            "try:\n" +
+            "    data = json.loads(text)\n" +
+            "except json.JSONDecodeError as error:\n" +
+            "    raise StorageError(\n" +
+            "        \"Файл задач повреждён\"\n" +
+            "    ) from error\n" +
             "\n" +
-            "    def list_tasks(self):\n" +
-            "        return self.storage.load()\n" +
-            "\n" +
-            "    def _get_next_id(self, tasks):\n" +
-            "        if not tasks:\n" +
-            "            return 1\n" +
-            "\n" +
-            "        return max(\n" +
-            "            task.id\n" +
-            "            for task in tasks\n" +
-            "        ) + 1\n" +
-            "\n" +
-            "    def add_task(self, title, priority, tags=None):\n" +
-            "        tasks = self.storage.load()\n" +
-            "\n" +
-            "        task = Task(\n" +
-            "            id=self._get_next_id(tasks),\n" +
-            "            title=title,\n" +
-            "            priority=priority,\n" +
-            "            tags=list(tags or []),\n" +
-            "        )\n" +
-            "\n" +
-            "        tasks.append(task)\n" +
-            "        self.storage.save(tasks)\n" +
-            "        return task"
+            "if not isinstance(data, list):\n" +
+            "    raise StorageError(\n" +
+            "        \"Корень JSON должен быть списком\"\n" +
+            "    )"
+          }
+        />
+
+        <BugHunt
+          code={
+            "try:\n" +
+            "    data = json.loads(text)\n" +
+            "except json.JSONDecodeError:\n" +
+            "    return []"
+          }
+          question={"Почему такой код опасен?"}
+          options={[
+            "Повреждение можно принять за новый пустой проект",
+            "json.loads всегда должен возвращать Task",
+            "Path перестаёт быть объектом",
+          ]}
+          correctIndex={0}
+          explanation={"Следующий save может сохранить пустой список поверх состояния, которое не удалось прочитать."}
+          fix={"raise StorageError(\"Файл задач повреждён\") from error"}
+        />
+
+        <p>
+          {"Не используйте общий except Exception. Он скрывает ошибки доступа и программные ошибки. Обрабатывайте только те состояния, смысл которых вы действительно определили."}
+        </p>
+
+        <Callout tone="info">
+          <strong>Безопасная запись.</strong>{" "}
+          {"При критичном сохранении новый JSON сначала пишут во временный файл, а старый заменяют после успешной записи. Это уменьшает риск оставить половину файла при сбое процесса."}
+        </Callout>
+      </Section>
+
+      <Section number="05" title={"Оставшиеся операции PlannerService"}>
+        <Lead>
+          {"После появления JsonStorage service не должен превращаться в файловый адаптер. Его новая задача состоит в том, чтобы добавить оставшиеся пользовательские операции поверх уже готового договора storage."}
+        </Lead>
+
+        <div className="lesson-practice-steps">
+          <h3>Операции чтения</h3>
+          <p>
+            {"get_task(), search_tasks() и get_statistics() читают состояние. Они не должны вызывать save(), если состояние не меняется."}
+          </p>
+
+          <h3>Операции изменения</h3>
+          <p>
+            {"mark_done() и delete_task() загружают список, выполняют действие, сохраняют новое состояние и возвращают результат."}
+          </p>
+
+          <h3>Единая ошибка</h3>
+          <p>
+            {"TaskNotFoundError отличает неизвестный id от пустого результата поиска и от ошибки чтения файла."}
+          </p>
+        </div>
+
+        <CodeBlock
+          caption={"сценарий mark_done"}
+          code={
+            "def mark_done(self, task_id):\n" +
+            "    tasks = self.storage.load()\n" +
+            "    task = self._find_task(tasks, task_id)\n" +
+            "    task.mark_done()\n" +
+            "    self.storage.save(tasks)\n" +
+            "    return task"
           }
         />
 
         <PredictOutput
           code={
-            "max([2, 7, 4]) + 1"
+            "ids = [2, 7, 4]\n" +
+            "print(max(ids, default=0) + 1)"
           }
           output={"8"}
-          hint={"Следующий id не зависит от длины списка."}
+          hint={"Следующий id ищется по максимуму. Длина списка после удаления может совпасть с уже выданным id."}
         />
 
+        <p>
+          {"В текущей работе add_task() уже существует. Не переписывайте его ради новой темы. Важно сохранить его способность работать с MemoryStorage и добавить остальные операции так, чтобы service одинаково использовал память и JSON."}
+        </p>
+
         <Callout tone="info">
-          {"Важнее тестировать публичный результат add_task, а не внутренний helper напрямую."}
+          {"Правило поиска нужно зафиксировать явно. Например, case-insensitive вхождение запроса в title. Конкретная реализация может отличаться, но тест и CLI должны понимать одно и то же слово search."}
         </Callout>
+
+        <QuizCard
+          question={"Когда mark_done() вызывает save()?"}
+          options={[
+            "После успешного поиска и изменения Task",
+            "До поиска id",
+            "Только при выходе из CLI",
+          ]}
+          correctIndex={0}
+          explanation={"Изменение должно попасть в выбранное storage сразу после успешного прикладного действия."}
+        />
       </Section>
 
-      <Section number="07" title={"Поиск, статус и удаление"}>
+      <Section number="06" title={"Тонкий CLI и точка сборки"}>
         <Lead>
-          {"CRUD-операции используют id. Если задача отсутствует, сервис создаёт TaskNotFoundError. После изменения список сохраняется."}
+          {"CLI переводит текстовую команду в вызов сервиса и результат сервиса в сообщение. Он не должен знать, как устроен JSON-файл."}
         </Lead>
 
-        <div className="lesson-practice-steps">
-          <h3>get_task</h3>
-          <p>
-            {"Возвращает Task или создаёт исключение."}
-          </p>
-
-          <h3>mark_done</h3>
-          <p>
-            {"Меняет объект и сохраняет список."}
-          </p>
-
-          <h3>delete_task</h3>
-          <p>
-            {"Удаляет найденную задачу и возвращает её."}
-          </p>
-
-        </div>
-
         <CodeBlock
-          caption={"CRUD-методы"}
+          caption={"команда как переводчик"}
           code={
-            "def get_task(self, task_id):\n" +
-            "    tasks = self.storage.load()\n" +
-            "    for task in tasks:\n" +
-            "        if task.id == task_id:\n" +
-            "            return task\n" +
-            "    raise TaskNotFoundError(task_id)\n" +
-            "\n" +
-            "\n" +
-            "def mark_done(self, task_id):\n" +
-            "    tasks = self.storage.load()\n" +
-            "    for task in tasks:\n" +
-            "        if task.id == task_id:\n" +
-            "            task.mark_done()\n" +
-            "            self.storage.save(tasks)\n" +
-            "            return task\n" +
-            "    raise TaskNotFoundError(task_id)\n" +
-            "\n" +
-            "\n" +
-            "def delete_task(self, task_id):\n" +
-            "    tasks = self.storage.load()\n" +
-            "    for index, task in enumerate(tasks):\n" +
-            "        if task.id == task_id:\n" +
-            "            deleted = tasks.pop(index)\n" +
-            "            self.storage.save(tasks)\n" +
-            "            return deleted\n" +
-            "    raise TaskNotFoundError(task_id)"
+            "пользователь: done 3\n" +
+            "        ↓\n" +
+            "CLI разбирает команду\n" +
+            "        ↓\n" +
+            "service.mark_done(3)\n" +
+            "        ↓\n" +
+            "CLI показывает результат"
           }
         />
 
-        <RecallCard
-          question={"Когда CRUD-метод вызывает save?"}
-          hint={"Поиск сам по себе состояние не меняет."}
-          answer={<p>{"После успешного изменения списка или объекта."}</p>}
+        <div className="lesson-practice-steps">
+          <h3>Точка сборки</h3>
+          <p>
+            {"main.py выбирает JsonStorage и передаёт его в PlannerService. Тест может передать MemoryStorage или временный JsonStorage."}
+          </p>
+
+          <h3>Путь к данным</h3>
+          <p>
+            {"Путь можно вычислить относительно __file__, а затем передать в JsonStorage. Каждая команда не должна самостоятельно искать файл."}
+          </p>
+
+          <h3>Безопасный импорт</h3>
+          <p>
+            {"Меню запускается только под if __name__ == \"__main__\". Иначе импорт ради теста начнёт ждать input()."}
+          </p>
+        </div>
+
+        <BugHunt
+          code={
+            "def done_command(task_id):\n" +
+            "    data = json.loads(PATH.read_text())\n" +
+            "    for item in data:\n" +
+            "        if item[\"id\"] == task_id:\n" +
+            "            item[\"is_done\"] = True\n" +
+            "    PATH.write_text(json.dumps(data))"
+          }
+          question={"Какая ответственность оказалась внутри CLI?"}
+          options={[
+            "Формат JSON и изменение состояния",
+            "Только чтение аргумента",
+            "Только отображение результата",
+          ]}
+          correctIndex={0}
+          explanation={"CLI обошёл Task и PlannerService. Формат файла должен знать JsonStorage, а прикладное изменение должен выполнять service."}
+          fix={"return service.mark_done(task_id)"}
+        />
+
+        <TrueFalse
+          statement={<>{"Путь data/tasks.json должен вычисляться заново в каждой команде CLI."}</>}
+          isTrue={false}
+          explanation={"Путь выбирается в точке сборки и передаётся storage. Это устраняет дублирование и упрощает тесты."}
         />
 
         <Callout tone="info">
-          {"Не смешивайте False, None и пустой Task для одной ситуации отсутствия. Один тип исключения делает контракт стабильным."}
+          {"Тонкий CLI легче заменить. Тот же PlannerService сможет использовать будущий web-интерфейс без копирования правил JSON и статусов."}
         </Callout>
       </Section>
 
-      <Section number="08" title={"Интеграция и ручной сценарий"}>
+      <Section number="07" title={"Проверки границ и вертикальный сценарий"}>
         <Lead>
-          {"Соедините JsonStorage и PlannerService в main. Проверьте добавление, перезапуск, изменение статуса, удаление и повреждённый файл."}
+          {"Одна большая ручная проверка не покажет, где находится ошибка. Разделите доказательства по границам, а затем соедините их в пользовательский путь."}
         </Lead>
 
         <div className="lesson-practice-steps">
-          <h3>Первый запуск</h3>
+          <h3>Модель и формат</h3>
           <p>
-            {"Нет файла — пустой список."}
+            {"Проверьте Task → dict → Task, тип результата и независимость tags."}
           </p>
 
-          <h3>Повторный запуск</h3>
+          <h3>Файл</h3>
           <p>
-            {"Объекты восстанавливаются через Task.from_dict."}
+            {"Через tmp_path проверьте новый экземпляр JsonStorage, отсутствие файла и ошибочные состояния."}
           </p>
 
-          <h3>Повреждение</h3>
+          <h3>Сервис</h3>
           <p>
-            {"Неверный JSON не перезаписывается."}
+            {"Через MemoryStorage проверьте оставшиеся операции без зависимости от настоящего файла."}
           </p>
 
+          <h3>Полный путь</h3>
+          <p>
+            {"Через JsonStorage пройдите добавление, поиск, завершение, статистику, удаление и новый запуск."}
+          </p>
         </div>
 
-        <CodeBlock
-          caption={"точка сборки и сценарий"}
-          code={
-            "from pathlib import Path\n" +
-            "\n" +
-            "\n" +
-            "def build_service():\n" +
-            "    storage = JsonStorage(\n" +
-            "        Path(\"data/tasks.json\")\n" +
-            "    )\n" +
-            "    return PlannerService(storage)\n" +
-            "\n" +
-            "# ручная проверка:\n" +
-            "# 1. удалить tasks.json\n" +
-            "# 2. добавить Python и SQL\n" +
-            "# 3. закрыть приложение\n" +
-            "# 4. запустить снова\n" +
-            "# 5. отметить Python выполненной\n" +
-            "# 6. удалить SQL\n" +
-            "# 7. снова перезапустить"
-          }
+        <CodeSequence
+          title={"Соберите вертикальный сценарий"}
+          prompt={"Расположите события от пустого проекта до проверки persistence."}
+          pieces={[
+            { id: "empty", code: "нет файла → []", note: "Нормальное начало нового проекта." },
+            { id: "add", code: "добавить две Task", note: "Сервис меняет состояние, storage сохраняет его." },
+            { id: "change", code: "найти и завершить Python", note: "Операция изменения проходит через service." },
+            { id: "delete", code: "удалить README", note: "После удаления сохраняется новый список." },
+            { id: "restart", code: "создать новый JsonStorage", note: "Проверяется внешний файл, а не память старого объекта." },
+          ]}
+          correctOrder={["empty", "add", "change", "delete", "restart"]}
+          explanation={"Вертикальная проверка соединяет уже проверенные части и доказывает, что состояние пережило новый экземпляр storage."}
+        />
+
+        <p>
+          {"tmp_path изолирует файловый тест от data/tasks.json. xfail нужно снимать только после того, как исходный сценарий проходит по-настоящему. Ошибка импорта или неправильный путь ещё не означают готовую persistence."}
+        </p>
+
+        <QuizCard
+          question={"Почему повторный load() в том же объекте не является достаточным доказательством persistence?"}
+          options={[
+            "Состояние могло остаться в памяти объекта",
+            "load() запрещено вызывать дважды",
+            "JSON не поддерживает списки",
+          ]}
+          correctIndex={0}
+          explanation={"Новый экземпляр с тем же Path отделяет проверку файла от памяти предыдущего объекта."}
         />
 
         <Callout tone="info">
-          {"К завершению занятия Persistent Planner уже работает. Следующий урок защищает его тестами и документацией."}
+          {"Unit-тесты помогают локализовать проблему. Вертикальный сценарий показывает, что пользовательский результат действительно работает целиком."}
         </Callout>
+      </Section>
 
-        <div className="lesson-check-group">
-          <QuizCard
-            question={"Что использует сервис?"}
-            options={[
-              "Task",
-              "сырой JSON",
-              "input",
-            ]}
-            correctIndex={0}
-            explanation={"Dict появляется на границе хранения."}
-          />
-          <QuizCard
-            question={"Что возвращает load без файла?"}
-            options={[
-              "[]",
-              "StorageError",
-              "None",
-            ]}
-            correctIndex={0}
-            explanation={"Это нормальный первый запуск."}
-          />
-          <QuizCard
-            question={"Почему повреждение не равно []?"}
-            options={[
-              "можно потерять данные",
-              "списки запрещены",
-              "pytest не работает",
-            ]}
-            correctIndex={0}
-            explanation={"Повреждение отличается от пустого состояния."}
-          />
-          <QuizCard
-            question={"Когда CRUD сохраняет?"}
-            options={[
-              "после изменения",
-              "до проверки id",
-              "только при выходе",
-            ]}
-            correctIndex={0}
-            explanation={"Файл отражает новое состояние."}
-          />
+      <Section number="08" title={"Что мы будем делать в практике"}>
+        <Lead>
+          {"Практика продолжает существующее in-memory ядро. Мы не создаём модель и базовый сервис заново, а добавляем новый persistent слой и доводим пользовательский сценарий до рабочего состояния."}
+        </Lead>
+
+        <div className="lesson-practice-steps">
+          <h3>Граница модели</h3>
+          <p>
+            {"Добавьте to_dict() и from_dict() к готовой Task. Сохраните инварианты и защитите tags копиями."}
+          </p>
+
+          <h3>Файловая граница</h3>
+          <p>
+            {"Реализуйте JsonStorage, снимите xfail, проверьте UTF-8, первый запуск, новый экземпляр и восстановление list[Task]."}
+          </p>
+
+          <h3>Ошибки и service</h3>
+          <p>
+            {"Отделите повреждённый файл от пустого проекта. Затем добавьте get_task(), mark_done(), delete_task(), search_tasks() и get_statistics(), не перенося JSON в service."}
+          </p>
+
+          <h3>CLI и доказательство</h3>
+          <p>
+            {"Подключите команды через готовый service, пройдите сценарий с Python и README, создайте новый storage и обновите README с командой запуска."}
+          </p>
         </div>
+
+        <CodeBlock
+          caption={"что должно быть доказано"}
+          code={
+            "Task → dict → Task\n" +
+            "JsonStorage: save → новый load\n" +
+            "ошибочный JSON → StorageError\n" +
+            "service: get, done, delete, search, stats\n" +
+            "CLI → service, без чтения JSON\n" +
+            "pytest -q → зелёный результат"
+          }
+        />
+
+        <p>
+          {"В этой работе не добавляйте FastAPI, базу данных, ORM и авторизацию. База данных будет следующим вариантом persistence. Сейчас нужна ясная и проверенная граница между готовым ядром и файловым хранением."}
+        </p>
 
         <KeyTakeaways
           points={[
-            <>{"Сервис работает с объектами Task."}</>,
-            <>{"To_dict и from_dict задают границу JSON."}</>,
-            <>{"JsonStorage получает Path извне."}</>,
-            <>{"Отсутствующий и повреждённый файл различаются."}</>,
-            <>{"MemoryStorage соблюдает тот же контракт."}</>,
-            <>{"CRUD сохраняет состояние после изменения."}</>,
+            <>{"In-memory ядро является исходной точкой и не переписывается без причины."}</>,
+            <>{"Сериализация переводит Task в простые данные и обратно в модель."}</>,
+            <>{"JsonStorage отвечает за файл, путь, кодировку и ошибки формата."}</>,
+            <>{"MemoryStorage остаётся реализацией того же договора для тестов."}</>,
+            <>{"PlannerService владеет прикладными операциями и сохраняет успешные изменения."}</>,
+            <>{"CLI разбирает команды, но не знает JSON и не дублирует service."}</>,
           ]}
         />
 
-        <PracticeCta text={"Реализуйте Task, JsonStorage, MemoryStorage и полный CRUD PlannerService, затем пройдите сценарий с двумя перезапусками."} />
+        <PracticeCta text={"Добавьте persistence к готовому ядру и докажите полный сценарий через новый экземпляр JsonStorage."} />
       </Section>
 
+      <Section number="09" title={"Самопроверка перед практикой"}>
+        <Lead>
+          {"Попробуйте объяснить ответы без кода. Если вы помните только название метода, восстановите цепочку: проблема, владелец правила, вход, результат и проверка."}
+        </Lead>
+
+        <div className="lesson-check-group">
+          <QuizCard
+            question={"Что является новым слоем в этой работе?"}
+            options={[
+              "Сериализация, JsonStorage и persistence",
+              "Повторное создание dataclass Task",
+              "Новая ORM-модель",
+            ]}
+            correctIndex={0}
+            explanation={"Готовое in-memory ядро остаётся исходной точкой. Новый результат связан с внешним сохранением и продолжением сценария."}
+          />
+          <QuizCard
+            question={"Какой результат должен вернуть JsonStorage.load() после корректного файла?"}
+            options={[
+              "list[Task]",
+              "JSON-строку",
+              "list только сырых dict",
+            ]}
+            correctIndex={0}
+            explanation={"Граница storage восстанавливает объекты модели, чтобы service не работал с сырым форматом."}
+          />
+          <QuizCard
+            question={"Почему повреждённый JSON не превращается в []?"}
+            options={[
+              "Это может скрыть потерю существующих данных",
+              "Пустые списки запрещены в Python",
+              "Storage не умеет возвращать списки",
+            ]}
+            correctIndex={0}
+            explanation={"Отсутствие файла и повреждение сохранённого файла имеют разный смысл."}
+          />
+          <QuizCard
+            question={"Где выбирается JsonStorage для обычного запуска?"}
+            options={[
+              "В точке сборки main.py",
+              "В каждой команде CLI",
+              "В Task",
+            ]}
+            correctIndex={0}
+            explanation={"Точка сборки знает конкретную реализацию и передаёт её service."}
+          />
+        </div>
+
+        <RecallCard
+          question={"Что уже готово и что нужно добавить перед началом практики?"}
+          hint={"Разделите in-memory ядро и новый persistent слой."}
+          answer={
+            <p>
+              {"Готовы Task, MemoryStorage, add_task, list_tasks и их тесты. Добавить нужно сериализацию, JsonStorage, ошибки файла, оставшиеся операции service и тонкий CLI."}
+            </p>
+          }
+        />
+
+        <Callout tone="info">
+          <strong>Готовность к практике.</strong>{" "}
+          {"Вы должны понимать назначение каждой границы и порядок движения данных. Конкретный код будете дописывать самостоятельно, проверяя каждую роль отдельным наблюдаемым результатом."}
+        </Callout>
+      </Section>
     </RichLesson>
   );
 }
-
-// 44. Финальный проект 3: тесты, README, GitHub Release и защита
 export function Lesson44({ module }: { module?: string }) {
   return (
     <RichLesson>
       <RichHero
         variant="project"
         chip={module ?? "Месяц 2 · Блок 8"}
-        title={"Финальный проект 3: тесты, README, GitHub Release и защита"}
-        intro={"Доведём Persistent Planner до защищаемого результата: проверим ключевые сценарии pytest, напишем воспроизводимый README, оформим историю Git и создадим первый GitHub Release."}
+        title={"44. Финальный проект 3: тесты, README, GitHub Release и защита"}
+        intro={"Функциональность уже готова. Теперь посмотрим на Persistent Planner глазами нового пользователя и примем его как воспроизводимый проект."}
         tags={[
-          { icon: <Trophy size={14} />, label: "тесты и документация" },
+          { icon: <Trophy size={14} />, label: "приёмка и документация" },
           { icon: <CheckCircle2 size={14} />, label: "release и защита" },
         ]}
       />
       <TheoryBridge lesson={44} />
 
-      <Section number="01" title={"Готовый проект — не только код"}>
+      <Section number="00" title={"От рабочего к принятому проекту"}>
         <Lead>
-          {"Функция, которая однажды сработала на компьютере автора, ещё не является завершённым проектом."}
+          {"В предыдущей работе у проекта появилось рабочее ядро: Task хранит правила задачи, storage хранит состояние, PlannerService выполняет операции, а CLI даёт вход пользователю. Сейчас мы не собираем всё заново. Мы проверяем, можно ли этому результату доверять и передать его другому человеку."}
         </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>Рабочее поведение</h3>
-          <p>
-            {"CRUD и сохранение проходят обычные и ошибочные сценарии."}
-          </p>
-
-          <h3>Автоматическая проверка</h3>
-          <p>
-            {"Pytest защищает ключевые контракты."}
-          </p>
-
-          <h3>Воспроизводимость</h3>
-          <p>
-            {"README описывает установку с нуля."}
-          </p>
-
+        <div className="lesson39-concept-grid">
+          <Lesson39Concept title="Рабочий сценарий">
+            {"Команда сработала один раз на машине автора."}
+          </Lesson39Concept>
+          <Lesson39Concept title="Принятый проект">
+            {"Сценарий повторяется, ошибки понятны, запуск описан, версия зафиксирована."}
+          </Lesson39Concept>
+          <Lesson39Concept title="Фокус сейчас">
+            {"Доказать связку готовых слоёв, а не добавить новый функциональный слой."}
+          </Lesson39Concept>
         </div>
-
         <CodeBlock
-          caption={"четыре слоя готовности"}
-          code={
-            "код\n" +
-            "→ тесты\n" +
-            "→ документация\n" +
-            "→ релиз и защита\n" +
-            "\n" +
-            "python -m app.main\n" +
-            "python -m pytest -q\n" +
-            "\n" +
-            "# новый человек понимает:\n" +
-            "# что делает проект\n" +
-            "# как установить\n" +
-            "# как запустить\n" +
-            "# где хранятся данные\n" +
-            "# какие ограничения известны"
-          }
+          caption={"карта финальной проверки"}
+          code={"готовые компоненты -> матрица рисков -> integration и acceptance\\nошибки -> README и architecture.md -> чистый Git -> release и защита"}
         />
-
         <RecallCard
-          question={"Чем рабочий скрипт отличается от завершённого проекта?"}
-          hint={"Код — только один слой."}
-          answer={<p>{"Завершённый проект воспроизводимо запускается, защищён тестами, описан и имеет версию."}</p>}
+          question={"Что ещё не доказано одним успешным запуском команды add?"}
+          hint={"Подумайте о новом компьютере, перезапуске и ошибочном файле."}
+          answer={<p>{"Один запуск не доказывает, что данные переживут новый процесс, команды повторятся из README, а повреждённое состояние не будет принято за пустой список."}</p>}
         />
-
-        <Callout tone="info">
-          {"GitHub Release не исправляет плохой код. Он фиксирует уже проверенную версию."}
-        </Callout>
       </Section>
 
-      <Section number="02" title={"Тесты модели Task"}>
+      <Section number="01" title={"Unit, integration и acceptance отвечают на разные вопросы"}>
         <Lead>
-          {"Модель проверяется отдельно от файла и интерфейса: нормализация, границы priority, независимость tags и преобразование."}
+          {"Уровни тестирования отличаются не длиной файла, а масштабом вопроса. Unit-тест смотрит на одну роль, integration-тест проверяет договор соседних ролей, а acceptance-тест проходит пользовательскую историю целиком."}
         </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>Обычный сценарий</h3>
-          <p>
-            {"Title очищается."}
-          </p>
-
-          <h3>Границы</h3>
-          <p>
-            {"1 и 5 принимаются, 0 и 6 отклоняются."}
-          </p>
-
-          <h3>Изменяемое поле</h3>
-          <p>
-            {"У задач разные списки tags."}
-          </p>
-
+        <div className="lesson39-concept-grid">
+          <Lesson39Concept title="Unit">
+            {"Task отклоняет пустой заголовок, а MemoryStorage не отдаёт наружу своё внутреннее состояние."}
+          </Lesson39Concept>
+          <Lesson39Concept title="Integration">
+            {"PlannerService и JsonStorage согласуют операции, формат и восстановление данных."}
+          </Lesson39Concept>
+          <Lesson39Concept title="Acceptance">
+            {"Пользователь добавляет, меняет, сохраняет и снова видит ожидаемый результат."}
+          </Lesson39Concept>
         </div>
-
         <CodeBlock
-          caption={"тесты модели"}
-          code={
-            "import pytest\n" +
-            "from app.models import Task\n" +
-            "\n" +
-            "\n" +
-            "def test_task_strips_title():\n" +
-            "    task = Task(1, \"  Python  \", 4)\n" +
-            "    assert task.title == \"Python\"\n" +
-            "\n" +
-            "\n" +
-            "@pytest.mark.parametrize(\n" +
-            "    \"priority\",\n" +
-            "    [1, 5],\n" +
-            ")\n" +
-            "def test_accepts_boundary_priority(priority):\n" +
-            "    task = Task(1, \"SQL\", priority)\n" +
-            "    assert task.priority == priority\n" +
-            "\n" +
-            "\n" +
-            "@pytest.mark.parametrize(\n" +
-            "    \"priority\",\n" +
-            "    [0, 6],\n" +
-            ")\n" +
-            "def test_rejects_invalid_priority(priority):\n" +
-            "    with pytest.raises(ValueError):\n" +
-            "        Task(1, \"SQL\", priority)"
-          }
+          caption={"независимый пример границы"}
+          code={"class CatalogService:\\n    def __init__(self, catalog):\\n        self.catalog = catalog\\n\\n    def add(self, name):\\n        items = self.catalog.load()\\n        items.append(name)\\n        self.catalog.save(items)"}
         />
-
-        <TrueFalse
-          statement={<>{"Для реалистичности каждый тест Task должен читать data/tasks.json."}</>}
-          isTrue={false}
-          explanation={"Модель тестируется отдельно от файловой границы."}
-        />
-
-        <Callout tone="info">
-          {"Тест Task не должен создавать JsonStorage или запускать меню."}
-        </Callout>
-      </Section>
-
-      <Section number="03" title={"Тесты PlannerService"}>
-        <Lead>
-          {"Сервис проверяется через MemoryStorage. Тесты концентрируются на id, CRUD и предметных исключениях."}
-        </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>Добавление</h3>
-          <p>
-            {"Первый id равен 1, следующий увеличивается."}
-          </p>
-
-          <h3>Изменение</h3>
-          <p>
-            {"mark_done сохраняет новое состояние."}
-          </p>
-
-          <h3>Ошибка</h3>
-          <p>
-            {"Неизвестный id создаёт TaskNotFoundError."}
-          </p>
-
-        </div>
-
-        <CodeBlock
-          caption={"тесты сервиса"}
-          code={
-            "import pytest\n" +
-            "from app.exceptions import TaskNotFoundError\n" +
-            "from app.services import PlannerService\n" +
-            "from app.storage import MemoryStorage\n" +
-            "\n" +
-            "\n" +
-            "def test_add_task_assigns_ids():\n" +
-            "    service = PlannerService(MemoryStorage())\n" +
-            "    first = service.add_task(\"Python\", 4)\n" +
-            "    second = service.add_task(\"SQL\", 3)\n" +
-            "    assert first.id == 1\n" +
-            "    assert second.id == 2\n" +
-            "\n" +
-            "\n" +
-            "def test_mark_done_persists_change():\n" +
-            "    storage = MemoryStorage()\n" +
-            "    service = PlannerService(storage)\n" +
-            "    task = service.add_task(\"Python\", 4)\n" +
-            "    service.mark_done(task.id)\n" +
-            "    assert storage.load()[0].is_done is True\n" +
-            "\n" +
-            "\n" +
-            "def test_unknown_task_raises():\n" +
-            "    service = PlannerService(MemoryStorage())\n" +
-            "    with pytest.raises(TaskNotFoundError):\n" +
-            "        service.get_task(999)"
-          }
-        />
-
-        <PredictOutput
-          code={
-            "Первый add_task в пустом storage получает id"
-          }
-          output={"1"}
-          hint={"Сервис начинает нумерацию с единицы."}
-        />
-
-        <Callout tone="info">
-          {"Проверяйте публичный контракт add_task, а не внутренний _get_next_id без необходимости."}
-        </Callout>
-      </Section>
-
-      <Section number="04" title={"Тесты JsonStorage через tmp_path"}>
-        <Lead>
-          {"Файловая граница получает временную папку. Проверяются первый запуск, round trip и повреждённый JSON."}
-        </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>Нет файла</h3>
-          <p>
-            {"Load возвращает пустой список."}
-          </p>
-
-          <h3>Round trip</h3>
-          <p>
-            {"Сохранённый Task загружается равным объектом."}
-          </p>
-
-          <h3>Повреждение</h3>
-          <p>
-            {"StorageError создаётся явно."}
-          </p>
-
-        </div>
-
-        <CodeBlock
-          caption={"тесты хранения"}
-          code={
-            "import pytest\n" +
-            "from app.exceptions import StorageError\n" +
-            "from app.models import Task\n" +
-            "from app.storage import JsonStorage\n" +
-            "\n" +
-            "\n" +
-            "def test_missing_file_returns_empty_list(tmp_path):\n" +
-            "    storage = JsonStorage(\n" +
-            "        tmp_path / \"tasks.json\"\n" +
-            "    )\n" +
-            "    assert storage.load() == []\n" +
-            "\n" +
-            "\n" +
-            "def test_json_round_trip(tmp_path):\n" +
-            "    storage = JsonStorage(\n" +
-            "        tmp_path / \"tasks.json\"\n" +
-            "    )\n" +
-            "    tasks = [Task(1, \"Python\", 4)]\n" +
-            "    storage.save(tasks)\n" +
-            "    assert storage.load() == tasks\n" +
-            "\n" +
-            "\n" +
-            "def test_broken_json_raises(tmp_path):\n" +
-            "    path = tmp_path / \"tasks.json\"\n" +
-            "    path.write_text(\"{broken\", encoding=\"utf-8\")\n" +
-            "    storage = JsonStorage(path)\n" +
-            "    with pytest.raises(StorageError):\n" +
-            "        storage.load()"
-          }
-        />
-
-        <BugHunt
-          code={
-            "storage = JsonStorage(Path(\"data/tasks.json\"))"
-          }
-          question={"Почему строка опасна внутри теста?"}
-          options={[
-            "Тест может изменить пользовательские данные",
-            "Path запрещён",
-            "JSON нельзя тестировать",
-          ]}
+        <p>
+          {"Отдельный unit-тест может проверить копирование списка. Integration-проверка соединяет service и catalog и убеждается, что один договор действительно используется другим. Acceptance-проверка пошла бы ещё дальше и проверила итог для человека."}
+        </p>
+        <QuizCard
+          question={"Какая проверка доказывает сохранение после нового запуска?"}
+          options={["Integration или acceptance с новым экземпляром", "Только unit-тест Task", "Только наличие README"]}
           correctIndex={0}
-          explanation={"Нужно использовать tmp_path."}
-          fix={"storage = JsonStorage(tmp_path / \"tasks.json\")"}
+          explanation={"Нужно исключить память старого объекта и проверить связку service, storage и внешнего состояния."}
         />
-
-        <Callout tone="info">
-          {"Настоящий data/tasks.json не участвует в автоматических тестах."}
-        </Callout>
-      </Section>
-
-      <Section number="05" title={"README для нового человека"}>
-        <Lead>
-          {"README — не дневник автора, а маршрут человека, который впервые открыл репозиторий. Команды проверяются в чистом терминале."}
-        </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>Описание</h3>
-          <p>
-            {"Что решает Persistent Planner."}
-          </p>
-
-          <h3>Установка</h3>
-          <p>
-            {"Clone, venv и pytest."}
-          </p>
-
-          <h3>Запуск</h3>
-          <p>
-            {"python -m app.main и python -m pytest -q."}
-          </p>
-
-        </div>
-
-        <CodeBlock
-          caption={"структура README"}
-          code={
-            "# Persistent Planner\n" +
-            "\n" +
-            "## Возможности\n" +
-            "## Структура проекта\n" +
-            "## Требования\n" +
-            "## Установка\n" +
-            "## Запуск\n" +
-            "## Запуск тестов\n" +
-            "## Формат хранения\n" +
-            "## Пример работы\n" +
-            "## Известные ограничения\n" +
-            "## Что изучено\n" +
-            "\n" +
-            "# Проверенные команды:\n" +
-            "git clone <repository-url>\n" +
-            "cd persistent-planner\n" +
-            "python -m venv .venv\n" +
-            ".\\.venv\\Scripts\\Activate.ps1\n" +
-            "python -m pip install pytest\n" +
-            "python -m pytest -q\n" +
-            "python -m app.main"
-          }
-        />
-
-        <RecallCard
-          question={"На какой вопрос отвечает раздел «Ограничения»?"}
-          hint={"Ограничение — честная граница, а не недостаток оформления."}
-          answer={<p>{"Чего проект сознательно пока не делает."}</p>}
-        />
-
-        <Callout tone="info">
-          {"Не пишите команду в README, пока не выполнили её из корня проекта."}
-        </Callout>
-      </Section>
-
-      <Section number="06" title={"Git-история и чистота репозитория"}>
-        <Lead>
-          {"Перед релизом история и содержимое очищаются. В коммиты не попадают окружение, кэш Python и личные данные."}
-        </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>.gitignore</h3>
-          <p>
-            {"Исключает .venv, __pycache__, .pytest_cache и рабочий tasks.json."}
-          </p>
-
-          <h3>Коммиты</h3>
-          <p>
-            {"История показывает модель, storage, service, tests и docs отдельными шагами."}
-          </p>
-
-          <h3>Чистый статус</h3>
-          <p>
-            {"git status не показывает случайных изменений."}
-          </p>
-
-        </div>
-
-        <CodeBlock
-          caption={".gitignore и проверки"}
-          code={
-            ".venv/\n" +
-            "__pycache__/\n" +
-            "*.pyc\n" +
-            ".pytest_cache/\n" +
-            ".idea/\n" +
-            ".vscode/\n" +
-            "data/tasks.json\n" +
-            "\n" +
-            "python -m pytest -q\n" +
-            "git status\n" +
-            "git diff\n" +
-            "git log --oneline --decorate -10"
-          }
-        />
-
         <TrueFalse
-          statement={<>{"Папку .venv нужно отправить в GitHub, чтобы проект запускался у всех."}</>}
+          statement={<>{"Длинный acceptance-тест заменяет все unit-тесты."}</>}
           isTrue={false}
-          explanation={"Окружение создаётся локально по инструкции и не коммитится."}
+          explanation={"Acceptance показывает пользовательский результат, но unit-тесты быстрее локализуют конкретную причину сбоя."}
         />
-
-        <Callout tone="info">
-          {"Если нужен пример данных, храните отдельный example-файл, а не личный рабочий tasks.json."}
-        </Callout>
       </Section>
 
-      <Section number="07" title={"Первый тег и GitHub Release"}>
+      <Section number="02" title={"Матрица рисков превращает опасности в проверки"}>
         <Lead>
-          {"Тег фиксирует конкретный коммит как версию. GitHub Release добавляет название и описание изменений."}
+          {"Тесты выбирают не ради количества. Сначала назовите, что может быть потеряно или искажено, затем выберите минимальную проверку и запишите наблюдаемый результат."}
         </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>Версия</h3>
-          <p>
-            {"v1.0.0 — первый завершённый учебный релиз."}
-          </p>
-
-          <h3>Тег</h3>
-          <p>
-            {"Создаётся после тестов и финального коммита."}
-          </p>
-
-          <h3>Release notes</h3>
-          <p>
-            {"Коротко перечисляют возможности и ограничения."}
-          </p>
-
-        </div>
-
         <CodeBlock
-          caption={"тег и описание релиза"}
-          code={
-            "git tag -a v1.0.0 -m \"Persistent Planner v1.0.0\"\n" +
-            "\n" +
-            "git push origin main\n" +
-            "git push origin v1.0.0\n" +
-            "\n" +
-            "Persistent Planner v1.0.0\n" +
-            "\n" +
-            "Что готово:\n" +
-            "- CRUD учебных задач\n" +
-            "- JSON persistence\n" +
-            "- dataclass Task\n" +
-            "- обработка ошибок\n" +
-            "- pytest tests\n" +
-            "- README\n" +
-            "\n" +
-            "Ограничения:\n" +
-            "- консольный интерфейс\n" +
-            "- один локальный пользователь\n" +
-            "- без базы данных"
-          }
+          caption={"риск -> проверка -> наблюдение"}
+          code={"неверный title -> unit Task -> понятное исключение\\nобщий список tags -> unit Task -> списки независимы\\nпотеря после перезапуска -> integration JsonStorage -> новый service видит задачу\\nповреждённый JSON -> проверка ошибки -> StorageError, а не []\\nCLI обходит service -> smoke-приёмка -> JSON-логика не находится в CLI"}
         />
+        <p>
+          {"Матрица похожа на контрольный список перед полётом. Она помогает увидеть пробел до того, как проблема попадёт к пользователю. Строка матрицы должна объяснять не только название функции, но и цену того, что случится при её поломке."}
+        </p>
+        <BugHunt
+          code={"try:\\n    data = read_data()\\nexcept Exception:\\n    return []"}
+          question={"Почему этот обработчик опасен для persistence?"}
+          options={["Он скрывает повреждение и может привести к перезаписи данных", "Он слишком короткий для Python", "Он всегда ускоряет чтение JSON"]}
+          correctIndex={0}
+          explanation={"Отсутствие файла и повреждение имеют разный смысл. Широкий обработчик стирает эту границу и создаёт ложный пустой результат."}
+        />
+        <RecallCard
+          question={"Какой вопрос нужно задать вместо «какие функции протестировать»?"}
+          hint={"Начните со слова «что» и подумайте о пользователе."}
+          answer={<p>{"Спросите: «Что будет потеряно, нарушено или непонятно, если эта граница сломается?» Так риск связывается с уровнем проверки и результатом."}</p>}
+        />
+      </Section>
 
+      <Section number="03" title={"Приёмочный сценарий проходит путь пользователя"}>
+        <Lead>
+          {"Приёмочный тест превращает отдельные действия в одну историю. В нашем случае важно не просто вызвать save, а пройти через публичный service, изменить состояние и увидеть его после создания нового экземпляра."}
+        </Lead>
+        <CodeSequence
+          title={"Соберите persistent-сценарий"}
+          prompt={"Расположите действия так, чтобы проверка исключала состояние старого объекта."}
+          pieces={[
+            { id: "path", code: "создать новый временный путь" },
+            { id: "first", code: "собрать первый service и выполнить действия" },
+            { id: "changes", code: "завершить одну задачу и удалить другую" },
+            { id: "second", code: "создать новый service с тем же путём" },
+            { id: "result", code: "проверить задачу и статистику" },
+          ]}
+          correctOrder={["path", "first", "changes", "second", "result"]}
+          explanation={"Новый экземпляр читает внешний источник заново. Итог доказывает persistence, а не только список в памяти."}
+        />
+        <CodeBlock
+          caption={"как читать сценарий"}
+          code={"Arrange: временный путь, storage и service\\nAct: пользовательские операции\\nAssert: типы, состояние и статистика после нового экземпляра"}
+        />
+        <p>
+          {"tmp_path изолирует тест. Он не зависит от настоящего data/tasks.json, личных данных автора или порядка запуска других тестов. Такой сценарий одинаково понятен локально и в CI."}
+        </p>
+        <TrueFalse
+          statement={<>{"Повторный load() в том же service полностью доказывает перезапуск приложения."}</>}
+          isTrue={false}
+          explanation={"Состояние могло остаться в памяти. Новый service с тем же путём проверяет внешний файл и восстановление модели."}
+        />
+      </Section>
+
+      <Section number="04" title={"Ошибки являются частью договора"}>
+        <Lead>
+          {"Надёжное приложение описывает не только успех, но и предсказуемый отказ. Неизвестный id, повреждённый JSON и неверная команда должны остановить неправильное действие на своей границе."}
+        </Lead>
+        <div className="lesson39-concept-grid">
+          <Lesson39Concept title="TaskNotFoundError">
+            {"Service не нашёл задачу по id. Список и файл не должны измениться."}
+          </Lesson39Concept>
+          <Lesson39Concept title="StorageError">
+            {"Storage не может безопасно прочитать или записать внешнее состояние."}
+          </Lesson39Concept>
+          <Lesson39Concept title="Сообщение CLI">
+            {"Известная ошибка переводится в понятную реакцию без traceback для пользователя."}
+          </Lesson39Concept>
+        </div>
+        <CodeBlock
+          caption={"две разные ситуации"}
+          code={"нет файла -> нормальный первый запуск -> пустое состояние\\nесть файл, но JSON повреждён -> StorageError -> данные не маскируются"}
+        />
+        <BugHunt
+          code={"try:\\n    service.mark_done(unknown_id)\\n    service.save()"}
+          question={"Что проверить в этом ошибочном пути прежде всего?"}
+          options={["Ошибка неизвестного id не меняет состояние и не запускает ошибочное сохранение", "Нужно заменить все ошибки на []", "Нужно перенести поиск id в CLI"]}
+          correctIndex={0}
+          explanation={"Неудачная операция должна быть наблюдаемой и безопасной. Обработчик не должен сохранять частичный или пустой результат."}
+        />
+        <TrueFalse
+          statement={<>{"Чтобы пользователь не увидел ошибку, CLI должен ловить любые исключения через except Exception."}</>}
+          isTrue={false}
+          explanation={"Обрабатываются ожидаемые ошибки с понятными сообщениями. Неожиданные дефекты должны оставаться заметными разработчику."}
+        />
+      </Section>
+
+      <Section number="05" title={"README и architecture.md передают проект новому человеку"}>
+        <Lead>
+          {"README ведёт от чистого клона к первому результату. architecture.md объясняет, почему данные и правила проходят через такие границы."}
+        </Lead>
+        <div className="lesson39-concept-grid">
+          <Lesson39Concept title="README">
+            {"Назначение, зависимости, запуск CLI, тесты, данные и известные ограничения."}
+          </Lesson39Concept>
+          <Lesson39Concept title="architecture.md">
+            {"Роли модели, service, storage, CLI и точки сборки."}
+          </Lesson39Concept>
+          <Lesson39Concept title="Проверка">
+            {"Каждая команда выполняется из чистой копии, а не только выглядит правдоподобно."}
+          </Lesson39Concept>
+        </div>
+        <CodeBlock
+          caption={"маршрут нового разработчика"}
+          code={"чистый клон -> установка -> pytest -> запуск CLI -> контрольный результат\\n\\nCLI -> PlannerService -> Task и Storage contract\\n                         -> MemoryStorage / JsonStorage"}
+        />
+        <Callout tone="info">
+          {"README отвечает на вопрос «как запустить и проверить». Архитектурная схема отвечает на вопрос «почему части связаны именно так». Рабочий JSON, кэш и секреты не становятся частью примера только потому, что лежат рядом с кодом."}
+        </Callout>
+        <RecallCard
+          question={"Куда помещается команда запуска: в README или только в архитектурный документ?"}
+          hint={"Представьте человека, который открыл чистый репозиторий и ещё не знает его устройства."}
+          answer={<p>{"Команда запуска должна быть в README. Архитектурный документ может дополнительно объяснить, почему выбрана конкретная точка сборки."}</p>}
+        />
+      </Section>
+
+      <Section number="06" title={"Git и Release фиксируют доказанный результат"}>
+        <Lead>
+          {"Commit, tag и GitHub Release связаны, но выполняют разные роли. Коммит сохраняет изменения, тег даёт имя конкретному коммиту, а release объясняет людям, что находится в этой версии."}
+        </Lead>
+        <CodeBlock
+          caption={"последовательность выпуска"}
+          code={"изменения -> pytest -> чистый status -> проверенный commit\\n    -> tag -> push -> GitHub Release с фактическими notes"}
+        />
+        <p>
+          {"Перед выпуском нужно исключить рабочий JSON, кэш, виртуальное окружение, токены и личные пути. Тег не проверяет код и не исправляет документацию. Он только отмечает состояние, которое уже прошло проверку."}
+        </p>
         <PredictOutput
-          code={
-            "После git push origin v1.0.0 на GitHub появится"
-          }
-          output={"отправленный тег версии"}
-          hint={"Release затем создаётся на основе этого тега."}
+          code={"git push origin v2.0.0"}
+          output={"На удалённом репозитории станет доступен тег v2.0.0, но сам GitHub Release нужно оформить отдельно."}
+          hint={"Разделите отправку тега и публикацию описания версии."}
         />
-
-        <Callout tone="info">
-          {"Не создавайте релиз после каждой опечатки. Релиз фиксирует осмысленную принятую точку."}
-        </Callout>
+        <QuizCard
+          question={"Когда можно создавать release?"}
+          options={["После успешного чистого запуска и проверки тестов", "Сразу после первого локального запуска", "До проверки README, чтобы зафиксировать надежду"]}
+          correctIndex={0}
+          explanation={"Release должен описывать уже проверенный коммит, а не заменять проверку."}
+        />
       </Section>
 
-      <Section number="08" title={"Защита и финальная точка"}>
+      <Section number="07" title={"Защита показывает путь данных"}>
         <Lead>
-          {"Защита проверяет понимание, а не скорость кликов. Ученик показывает запуск, CRUD, перезапуск, тесты и объясняет решения."}
+          {"Защита не требует пересказать каждую строку. Она показывает, понимаете ли вы, где возникает правило, кто меняет состояние, кто сохраняет его и как доказать результат тестом."}
         </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>Демонстрация</h3>
-          <p>
-            {"Чистый запуск, сохранение, повторный запуск и ожидаемая ошибка."}
-          </p>
-
-          <h3>Путь данных</h3>
-          <p>
-            {"Input → service → Task → storage → JSON."}
-          </p>
-
-          <h3>Решения</h3>
-          <p>
-            {"Почему dataclass, композиция, конкретные except и tmp_path."}
-          </p>
-
-        </div>
-
         <CodeBlock
-          caption={"план защиты на 7–10 минут"}
-          code={
-            "1. цель Persistent Planner\n" +
-            "2. структура репозитория\n" +
-            "3. запуск приложения\n" +
-            "4. CRUD и перезапуск\n" +
-            "5. запуск pytest\n" +
-            "6. разбор одного теста\n" +
-            "7. объяснение storage injection\n" +
-            "8. известные ограничения\n" +
-            "9. следующий этап: Planner API\n" +
-            "\n" +
-            "python -m pytest -q\n" +
-            "python -m app.main\n" +
-            "git status\n" +
-            "git tag\n" +
-            "git log --oneline -8"
-          }
+          caption={"история одной задачи"}
+          code={"CLI -> PlannerService -> Task проверяет правила\\n                         -> storage сохраняет состояние\\n                         -> JSON -> новый запуск -> Task снова доступна"}
         />
-
+        <div className="lesson39-concept-grid">
+          <Lesson39Concept title="Причина">
+            {"Почему правило находится именно в этом слое."}
+          </Lesson39Concept>
+          <Lesson39Concept title="Доказательство">
+            {"Какой тест или запуск показывает, что решение работает."}
+          </Lesson39Concept>
+          <Lesson39Concept title="Граница">
+            {"Что текущая работа не решает и почему это честно оставить на будущее."}
+          </Lesson39Concept>
+        </div>
         <Callout tone="info">
-          {"Контрольная точка пройдена, если ученик объясняет код своими словами и исправляет небольшой дефект по traceback."}
+          {"Удобная формула ответа: риск, уровень проверки, действие, наблюдаемый результат. Она показывает понимание причин, а не память о синтаксисе."}
         </Callout>
+        <RecallCard
+          question={"Что важнее на защите: показать много кликов или объяснить один путь данных?"}
+          hint={"Один путь может связать CLI, service, модель, storage, файл и тест."}
+          answer={<p>{"Один понятный путь обычно сильнее. Он показывает владельца правил, границу хранения и наблюдаемый пользовательский результат."}</p>}
+        />
+      </Section>
 
+      <Section number="08" title={"Что мы будем делать в практике"}>
+        <Lead>
+          {"Практика принимает уже созданный Persistent Planner. Новые бизнес-функции не добавляются. Мы проверяем связку, ошибки, документацию и воспроизводимость, чтобы получить один честный результат."}
+        </Lead>
+        <div className="lesson39-concept-grid">
+          <Lesson39Concept title="Матрица">
+            {"Связать риск, уровень проверки, сценарий и наблюдаемый результат."}
+          </Lesson39Concept>
+          <Lesson39Concept title="Persistence">
+            {"Проверить временный JSON и новый экземпляр service."}
+          </Lesson39Concept>
+          <Lesson39Concept title="Ошибки">
+            {"Проверить неизвестный id, повреждённый JSON и сохранность состояния."}
+          </Lesson39Concept>
+          <Lesson39Concept title="CLI">
+            {"Пройти smoke-сценарий и оставить JSON-логику за пределами CLI."}
+          </Lesson39Concept>
+          <Lesson39Concept title="Документы">
+            {"Обновить README и описать связи в docs/architecture.md."}
+          </Lesson39Concept>
+          <Lesson39Concept title="Release">
+            {"Проверить чистую копию, подготовить tag, notes и защиту."}
+          </Lesson39Concept>
+        </div>
+        <CodeBlock
+          caption={"итоговый маршрут"}
+          code={"матрица -> persistent acceptance -> ошибки -> CLI smoke\\n    -> README и architecture.md -> чистая приёмка -> release"}
+        />
+        <Callout tone="info">
+          {"Готовность видна по наблюдениям: новый service восстанавливает состояние, ошибочные пути не меняют данные, README повторяется из чистого окружения, Git не содержит личных файлов, а release привязан к проверенному коммиту."}
+        </Callout>
+        <PracticeCta text={"Примите Persistent Planner как готовый проект: докажите путь пользователя, обновите документацию и зафиксируйте проверенную версию."} />
+      </Section>
+
+      <Section number="09" title={"Самопроверка перед практикой"}>
         <div className="lesson-check-group">
           <QuizCard
-            question={"Что тестируется отдельно от JsonStorage?"}
-            options={[
-              "Task",
-              "README",
-              "Release",
-            ]}
+            question={"Чем integration отличается от unit?"}
+            options={["Проверяет договор нескольких настоящих компонентов", "Всегда запускается только в браузере", "Проверяет только текст README"]}
             correctIndex={0}
-            explanation={"Модель имеет отдельные тесты."}
+            explanation={"Integration смотрит на границу между ролями, а unit изолирует одну роль."}
           />
           <QuizCard
-            question={"Через что тестируется service?"}
-            options={[
-              "MemoryStorage",
-              "личный JSON",
-              "input",
-            ]}
+            question={"Почему нужен новый service с тем же временным путём?"}
+            options={["Чтобы проверить состояние после нового источника", "Чтобы повторно использовать память первого объекта", "Чтобы CLI сам прочитал JSON"]}
             correctIndex={0}
-            explanation={"Сервис проверяется без файла."}
+            explanation={"Новый экземпляр лучше приближает проверку к реальному перезапуску."}
           />
           <QuizCard
-            question={"Что должен содержать README?"}
-            options={[
-              "проверенные команды",
-              "только скриншот",
-              "личные заметки",
-            ]}
+            question={"Что должно произойти с повреждённым JSON?"}
+            options={["StorageError и безопасная остановка", "Тихий возврат пустого списка", "Удаление файла без сообщения"]}
             correctIndex={0}
-            explanation={"Документация воспроизводит запуск."}
+            explanation={"Повреждение может скрывать сохранённые данные и не равно нормальному первому запуску."}
           />
           <QuizCard
-            question={"Когда ставится v1.0.0?"}
-            options={[
-              "после тестов и коммита",
-              "до проекта",
-              "после каждой строки",
-            ]}
+            question={"Что фиксирует tag?"}
+            options={["Конкретный проверенный коммит", "Будущие изменения до их проверки", "Только содержимое README"]}
             correctIndex={0}
-            explanation={"Тег фиксирует проверенную версию."}
+            explanation={"Tag даёт имя уже выбранному состоянию истории."}
           />
         </div>
-
         <KeyTakeaways
           points={[
-            <>{"Завершённый проект включает код, тесты, документацию и версию."}</>,
-            <>{"Task тестируется независимо от файла."}</>,
-            <>{"PlannerService проверяется через MemoryStorage."}</>,
-            <>{"JsonStorage тестируется через tmp_path."}</>,
-            <>{"README содержит проверенные команды."}</>,
-            <>{"Git-тег фиксирует принятый коммит."}</>,
-            <>{"Защита проверяет понимание пути данных."}</>,
+            <>{"Unit, integration и acceptance отвечают на разные вопросы."}</>,
+            <>{"Матрица превращает риск в проверку с наблюдаемым результатом."}</>,
+            <>{"Новый экземпляр с тем же путём доказывает persistence сильнее, чем повторное чтение старого объекта."}</>,
+            <>{"Ошибки, README, Git и защита являются частью готовности проекта."}</>,
           ]}
         />
-
-        <PracticeCta text={"Доведите Persistent Planner до v1.0.0: запустите тесты, проверьте README, создайте тег, GitHub Release и подготовьте защиту."} />
       </Section>
-
     </RichLesson>
   );
 }

@@ -35,8 +35,8 @@ export { CodeBlock };
 
 // ---------- Каркас ----------
 
-export function RichLesson({ children }: { children: React.ReactNode }) {
-  return <div className="rich-lesson">{children}</div>;
+export function RichLesson({ children, className }: { children: React.ReactNode; className?: string }) {
+  return <div className={`rich-lesson${className ? ` ${className}` : ""}`}>{children}</div>;
 }
 
 export function RichHero({

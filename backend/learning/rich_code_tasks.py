@@ -561,7 +561,7 @@ FOUNDATIONS_CODE_TASKS: dict[int, list[dict[str, Any]]] = {1: [{'title': 'Ста
                                   'неизвестная команда'],
                         'names': ['command', 'raw_title', 'clean_title'],
                         'attributes': ['strip'],
-                        'nodes': ['If', 'JoinedStr'],
+                        'nodes': ['If'],
                         'calls': ['print']},
        'starter_code': '# command и raw_title уже созданы\n'
                        '# Получите clean_title и обработайте add, list, exit, неизвестную команду\n',
@@ -933,7 +933,7 @@ DEEPER_CODE_TASKS: dict[int, list[dict[str, Any]]] = {22: [{'title': 'Контр
                                   'вложенная transform',
                                   'замыкание хранит operation и offset',
                                   'новый список результата'],
-                        'nodes': ['FunctionDef', 'IfExp', 'For'],
+                        'nodes': ['FunctionDef', 'For'],
                         'attributes': ['append']},
        'starter_code': 'def solve(values, mode, offset):\n'
                        '    def double(value):\n'
@@ -993,7 +993,7 @@ DEEPER_CODE_TASKS: dict[int, list[dict[str, Any]]] = {22: [{'title': 'Контр
                                   'operation(*args, **kwargs)',
                                   'return result',
                                   '@log_call'],
-                        'nodes': ['FunctionDef', 'JoinedStr'],
+                        'nodes': ['FunctionDef'],
                         'calls': ['print'],
                         'names': ['args', 'kwargs', 'operation']},
        'starter_code': '# title и priority уже созданы\n'
@@ -1165,7 +1165,7 @@ DEEPER_CODE_TASKS: dict[int, list[dict[str, Any]]] = {22: [{'title': 'Контр
                     'check': 'Проверяются завершённая и открытая задачи. Сравнивается одна итоговая строка. '
                              'Обязательны два предметных метода и __str__.'},
        'requirements': {'items': ['rename', 'mark_done', '__str__', 'изменение состояния конкретного объекта'],
-                        'nodes': ['ClassDef', 'If', 'IfExp', 'JoinedStr'],
+                        'nodes': ['ClassDef', 'If'],
                         'attributes': ['strip', 'rename', 'mark_done'],
                         'calls': ['print']},
        'starter_code': '# Все входные значения уже созданы\n# Опишите Task, измените объект и напечатайте его\n',
@@ -1222,7 +1222,7 @@ DEEPER_CODE_TASKS: dict[int, list[dict[str, Any]]] = {22: [{'title': 'Контр
                                   'getter и setter',
                                   'проверка 1-5',
                                   'старое значение сохраняется при ошибке'],
-                        'nodes': ['ClassDef', 'If', 'Try', 'Raise', 'JoinedStr'],
+                        'nodes': ['ClassDef', 'If', 'Try', 'Raise'],
                         'names': ['property'],
                         'calls': ['print']},
        'starter_code': '# initial_priority и next_priority уже созданы\n'
@@ -1260,84 +1260,24 @@ DEEPER_CODE_TASKS: dict[int, list[dict[str, Any]]] = {22: [{'title': 'Контр
                          'except ValueError as error:\n'
                          "    print(f'ERROR {error}')\n"
                          "print(f'PRIORITY {task.priority}')\n"}],
- 40: [{'title': 'Сервис зависит от контракта хранилища',
-       'level': 'medium',
-       'mode': 'script',
-       'prompt': 'Объявите MemoryStorage: __init__ сохраняет отдельную копию initial, load() возвращает копию '
-                 'данных, save(items) сохраняет копию items. Объявите PlannerService(storage): add_task(title) '
-                 'загружает список, добавляет title.strip(), сохраняет список через storage и возвращает добавленный '
-                 'заголовок; list_tasks() возвращает storage.load(). Создайте storage из initial_titles и service '
-                 'через передачу зависимости. Добавьте new_title. Выведите добавленный заголовок, затем итоговый '
-                 'список.',
-       'contract': {'given': 'Интерпретатор создаёт initial_titles — список строк и new_title — строку с возможными '
-                             'пробелами.',
-                    'todo': 'Объявите MemoryStorage: __init__ сохраняет отдельную копию initial, load() возвращает '
-                            'копию данных, save(items) сохраняет копию items. Объявите PlannerService(storage): '
-                            'add_task(title) загружает список, добавляет title.strip(), сохраняет список через '
-                            'storage и возвращает добавленный заголовок; list_tasks() возвращает storage.load(). '
-                            'Создайте storage из initial_titles и service через передачу зависимости. Добавьте '
-                            'new_title. Выведите добавленный заголовок, затем итоговый список.',
-                    'check': 'Проверяются пустое и заполненное хранилища. Сравниваются две строки. PlannerService не '
-                             'должен наследоваться от MemoryStorage и не должен обращаться к его внутреннему списку '
-                             'напрямую.'},
-       'requirements': {'items': ['MemoryStorage отвечает только за данные',
-                                  'PlannerService получает storage через конструктор',
-                                  'load и save вместо доступа к _items',
-                                  'копии списков на границе'],
-                        'nodes': ['ClassDef'],
-                        'attributes': ['copy', 'append', 'strip', 'load', 'save'],
-                        'calls': ['print']},
-       'starter_code': '# initial_titles и new_title уже созданы\n'
-                       '# Опишите MemoryStorage и PlannerService, затем выполните сценарий\n',
-       'tests': [{'name': 'заполненное хранилище',
-                  'namespace': {'initial_titles': ['Python', 'Git'], 'new_title': '  SQL  '},
-                  'expected': "SQL\n['Python', 'Git', 'SQL']",
-                  'assert': 'stdout'},
-                 {'name': 'пустое хранилище',
-                  'namespace': {'initial_titles': [], 'new_title': 'README'},
-                  'expected': "README\n['README']",
-                  'assert': 'stdout'}],
-       'reference_code': 'class MemoryStorage:\n'
-                         '    def __init__(self, initial):\n'
-                         '        self._items = initial.copy()\n'
-                         '\n'
-                         '    def load(self):\n'
-                         '        return self._items.copy()\n'
-                         '\n'
-                         '    def save(self, items):\n'
-                         '        self._items = items.copy()\n'
-                         '\n'
-                         '\n'
-                         'class PlannerService:\n'
-                         '    def __init__(self, storage):\n'
-                         '        self.storage = storage\n'
-                         '\n'
-                         '    def add_task(self, title):\n'
-                         '        items = self.storage.load()\n'
-                         '        clean_title = title.strip()\n'
-                         '        items.append(clean_title)\n'
-                         '        self.storage.save(items)\n'
-                         '        return clean_title\n'
-                         '\n'
-                         '    def list_tasks(self):\n'
-                         '        return self.storage.load()\n'
-                         '\n'
-                         'storage = MemoryStorage(initial_titles)\n'
-                         'service = PlannerService(storage)\n'
-                         'added = service.add_task(new_title)\n'
-                         'print(added)\n'
-                         'print(service.list_tasks())\n'}]}
+}
 
 PLANNER_API_CODE_TASKS: dict[int, list[dict[str, Any]]] = {46: [{'title': 'Соберите модель HTTP request',
        'level': 'easy',
        'mode': 'solve',
        'prompt': 'Создайте словарь headers с Accept: application/json и X-Client-Version со значением '
                  'client_version. Когда body не равен None, добавьте Content-Type: application/json. Верните словарь '
-                 'с точными ключами method, path, headers, body. Значение method переведите в верхний регистр через '
-                 'upper(), path и body верните без изменения.',
-       'contract': {'given': 'Автопроверка вызывает solve(method, path, client_version, body). method и path — '
-                             'строки, client_version — строка версии клиента, body — словарь или None. Все значения '
-                             'передаются готовыми, сетевой запрос отправлять не нужно.',
+                  'с точными ключами method, path, headers, body. Значение method переведите в верхний регистр через '
+                  'upper(), path и body верните без изменения.',
+       'hints': ['Сначала отделите постоянные headers от условного Content-Type. Затем соберите результат из четырёх '
+                 'частей request.',
+                 'Проверьте два контрастных случая: body равен None и body содержит словарь. Path и body не '
+                 'перестраивайте.',
+                 'Для method используйте уже знакомое приведение строки к верхнему регистру, а Content-Type добавляйте '
+                 'только после проверки body.'],
+       'contract': {'given': 'Автопроверка вызывает solve(method, path, client_version, body). method и path: '
+                              'строки, client_version: строка версии клиента, body: словарь или None. Все значения '
+                              'передаются готовыми, сетевой запрос отправлять не нужно.',
                     'todo': 'Создайте словарь headers с Accept: application/json и X-Client-Version со значением '
                             'client_version. Когда body не равен None, добавьте Content-Type: application/json. '
                             'Верните словарь с точными ключами method, path, headers, body. Значение method '
@@ -1394,11 +1334,15 @@ PLANNER_API_CODE_TASKS: dict[int, list[dict[str, Any]]] = {46: [{'title': 'Со�
        'level': 'easy',
        'mode': 'solve',
        'prompt': 'Создайте headers с X-Request-ID, равным request_id. Если body не равен None, добавьте '
-                 'Content-Type: application/json. Верните словарь с точными ключами status, headers, body. Не '
-                 'заменяйте None пустым словарём и не печатайте результат.',
-       'contract': {'given': 'Автопроверка вызывает solve(status, body, request_id). status — целое число '
-                             'HTTP-статуса, body — словарь или None, request_id — строка. Нужно представить готовый '
-                             'response обычным словарём Python.',
+                  'Content-Type: application/json. Верните словарь с точными ключами status, headers, body. Не '
+                  'заменяйте None пустым словарём и не печатайте результат.',
+       'hints': ['Сначала создайте постоянный X-Request-ID. Затем отдельно решите, появляется ли Content-Type.',
+                 'Проверяйте именно наличие body, а не его truthiness. None и пустой словарь имеют разный смысл.',
+                 'В конце верните status, headers и body без изменения. Функция только описывает response и ничего не '
+                 'печатает.'],
+       'contract': {'given': 'Автопроверка вызывает solve(status, body, request_id). status: целое число '
+                              'HTTP-статуса, body: словарь или None, request_id: строка. Нужно представить готовый '
+                              'response обычным словарём Python.',
                     'todo': 'Создайте headers с X-Request-ID, равным request_id. Если body не равен None, добавьте '
                             'Content-Type: application/json. Верните словарь с точными ключами status, headers, '
                             'body. Не заменяйте None пустым словарём и не печатайте результат.',
@@ -1428,22 +1372,26 @@ PLANNER_API_CODE_TASKS: dict[int, list[dict[str, Any]]] = {46: [{'title': 'Со�
                          '    if body is not None:\n'
                          '        headers["Content-Type"] = "application/json"\n'
                          '    return {"status": status, "headers": headers, "body": body}\n'}],
- 48: [{'title': 'Выберите HTTP method по действию',
+  48: [{'title': 'Выберите HTTP method по действию',
        'level': 'easy',
        'mode': 'solve',
        'prompt': 'Создайте словарь methods со следующими парами: list → GET, get → GET, create → POST, replace → '
                  'PUT, update → PATCH, delete → DELETE. Верните method по ключу action. Не используйте print().',
-       'contract': {'given': 'Автопроверка вызывает solve(action). action — одна из строк: list, get, create, '
-                             'replace, update, delete. Каждому действию соответствует один HTTP method.',
+       'contract': {'given': 'Автопроверка вызывает solve(action). action: одна из строк: list, get, create, '
+                            'replace, update, delete. Каждому действию соответствует один HTTP method.',
                     'todo': 'Создайте словарь methods со следующими парами: list → GET, get → GET, create → POST, '
                             'replace → PUT, update → PATCH, delete → DELETE. Верните method по ключу action. Не '
                             'используйте print().',
                     'check': 'Проверяются все шесть действий. Сравнивается возвращённая строка в верхнем регистре. '
                              'Названия действий и методов должны совпасть с условием точно.'},
+       'hints': ['Сначала определите смысл каждого действия: чтение, создание, полная замена, частичное изменение '
+                 'или удаление.',
+                 'Соберите одну таблицу соответствий methods. Отдельно проверьте, чем replace отличается от update.',
+                 'Верните значение по ключу action. Проверьте функцию на всех шести входах, а не только на create.'],
        'requirements': {'items': ['словарь methods', 'шесть действий', 'return выбранного метода'],
                         'names': ['action', 'methods'],
                         'nodes': ['FunctionDef']},
-       'starter_code': 'def solve(action):\n    # Создайте таблицу соответствий action → HTTP method\n    pass\n',
+       'starter_code': 'def solve(action):\n    # Создайте таблицу соответствий action → HTTP method\n    # Верните method для переданного action\n    pass\n',
        'tests': [{'name': 'collection read', 'args': ['list'], 'expected': 'GET'},
                  {'name': 'item read', 'args': ['get'], 'expected': 'GET'},
                  {'name': 'create', 'args': ['create'], 'expected': 'POST'},
@@ -1460,80 +1408,6 @@ PLANNER_API_CODE_TASKS: dict[int, list[dict[str, Any]]] = {46: [{'title': 'Со�
                          '        "delete": "DELETE",\n'
                          '    }\n'
                          '    return methods[action]\n'}],
- 49: [{'title': 'Постройте endpoint ресурса',
-       'level': 'easy',
-       'mode': 'solve',
-       'prompt': 'Если resource_id равен None, endpoint должен иметь вид /resource, а scope — collection. Иначе '
-                 'endpoint должен иметь вид /resource/id, а scope — item. Верните словарь с точными ключами '
-                 'resource, endpoint, scope.',
-       'contract': {'given': 'Автопроверка вызывает solve(resource, resource_id). resource — имя collection во '
-                             'множественном числе, например tasks или users. resource_id — целое число для одного '
-                             'объекта или None для всей collection.',
-                    'todo': 'Если resource_id равен None, endpoint должен иметь вид /resource, а scope — collection. '
-                            'Иначе endpoint должен иметь вид /resource/id, а scope — item. Верните словарь с точными '
-                            'ключами resource, endpoint, scope.',
-                    'check': 'Проверяются collection и отдельные объекты разных ресурсов. Сравнивается весь словарь, '
-                             'включая начальный символ / и отсутствие лишнего / в конце.'},
-       'requirements': {'items': ['ветка collection',
-                                  'ветка item',
-                                  'endpoint через f-строку',
-                                  'три ключа результата'],
-                        'names': ['resource', 'resource_id', 'endpoint', 'scope'],
-                        'nodes': ['FunctionDef', 'If', 'JoinedStr']},
-       'starter_code': 'def solve(resource, resource_id):\n    # Постройте endpoint и определите scope\n    pass\n',
-       'tests': [{'name': 'tasks collection',
-                  'args': ['tasks', None],
-                  'expected': {'resource': 'tasks', 'endpoint': '/tasks', 'scope': 'collection'}},
-                 {'name': 'one task',
-                  'args': ['tasks', 7],
-                  'expected': {'resource': 'tasks', 'endpoint': '/tasks/7', 'scope': 'item'}},
-                 {'name': 'one user',
-                  'args': ['users', 3],
-                  'expected': {'resource': 'users', 'endpoint': '/users/3', 'scope': 'item'}}],
-       'reference_code': 'def solve(resource, resource_id):\n'
-                         '    if resource_id is None:\n'
-                         '        endpoint = f"/{resource}"\n'
-                         '        scope = "collection"\n'
-                         '    else:\n'
-                         '        endpoint = f"/{resource}/{resource_id}"\n'
-                         '        scope = "item"\n'
-                         '    return {"resource": resource, "endpoint": endpoint, "scope": scope}\n'}],
- 50: [{'title': 'Разделите path, query и body',
-       'level': 'easy',
-       'mode': 'solve',
-       'prompt': 'Верните словарь API-контракта с тремя точными ключами. В path поместите словарь с task_id. В query '
-                 'поместите is_done и limit. В body поместите title и priority. Не перемещайте значения между '
-                 'частями request.',
-       'contract': {'given': 'Автопроверка вызывает solve(task_id, is_done, limit, title, priority). task_id '
-                             'выбирает конкретную задачу, is_done и limit настраивают запрос, title и priority '
-                             'описывают передаваемые данные задачи.',
-                    'todo': 'Верните словарь API-контракта с тремя точными ключами. В path поместите словарь с '
-                            'task_id. В query поместите is_done и limit. В body поместите title и priority. Не '
-                            'перемещайте значения между частями request.',
-                    'check': 'Проверяются два разных набора значений, включая is_done=None. Сравнивается вся '
-                             'вложенная структура и точные имена ключей.'},
-       'requirements': {'items': ['отдельный path', 'отдельный query', 'отдельный body', 'точные имена пяти полей'],
-                        'names': ['task_id', 'is_done', 'limit', 'title', 'priority'],
-                        'nodes': ['FunctionDef']},
-       'starter_code': 'def solve(task_id, is_done, limit, title, priority):\n'
-                       '    # Верните path, query и body как три вложенных словаря\n'
-                       '    pass\n',
-       'tests': [{'name': 'фильтр открытых задач',
-                  'args': [42, False, 10, 'Изучить HTTP', 4],
-                  'expected': {'path': {'task_id': 42},
-                               'query': {'is_done': False, 'limit': 10},
-                               'body': {'title': 'Изучить HTTP', 'priority': 4}}},
-                 {'name': 'фильтр не задан',
-                  'args': [3, None, 25, 'FastAPI', 2],
-                  'expected': {'path': {'task_id': 3},
-                               'query': {'is_done': None, 'limit': 25},
-                               'body': {'title': 'FastAPI', 'priority': 2}}}],
-       'reference_code': 'def solve(task_id, is_done, limit, title, priority):\n'
-                         '    return {\n'
-                         '        "path": {"task_id": task_id},\n'
-                         '        "query": {"is_done": is_done, "limit": limit},\n'
-                         '        "body": {"title": title, "priority": priority},\n'
-                         '    }\n'}],
  54: [{'title': 'Найдите объект по path-параметру',
        'level': 'easy',
        'mode': 'solve',
@@ -2749,7 +2623,7 @@ PERSONAL_API_CODE_TASKS: dict[int, list[dict[str, Any]]] = {93: [{'title': 'Тр
                               'этот словарь за готовый JWT.'},
         'requirements': {'items': ['sub как строка', 'type access', 'iat и exp', 'строгая проверка expiration'],
                          'names': ['user_id', 'issued_at', 'ttl_seconds', 'now', 'claims', 'valid'],
-                         'nodes': ['FunctionDef', 'BoolOp'],
+                         'nodes': ['FunctionDef'],
                          'calls': ['str']},
         'starter_code': 'def solve(user_id, issued_at, ttl_seconds, now):\n'
                         '    # Соберите claims и вычислите valid\n'
@@ -2950,7 +2824,7 @@ PERSONAL_API_CODE_TASKS: dict[int, list[dict[str, Any]]] = {93: [{'title': 'Тр
                                    '403 при отсутствии права',
                                    '404 при отсутствующем resource'],
                          'names': ['user', 'resource', 'action', 'known_actions'],
-                         'nodes': ['FunctionDef', 'If', 'BoolOp']},
+                         'nodes': ['FunctionDef', 'If']},
         'starter_code': 'def solve(user, resource, action):\n    # Верните status и decision\n    pass\n',
         'tests': [{'name': 'нет пользователя',
                    'args': [None, None, 'create_task'],
@@ -3229,7 +3103,7 @@ POSTGRESQL_CODE_TASKS: dict[int, list[dict[str, Any]]] = {117: [{'title': 'Со�
                                    'parameterized UPDATE',
                                    'parameterized DELETE'],
                          'names': ['operation', 'task_id', 'has_where', 'matched_count'],
-                         'nodes': ['FunctionDef', 'If', 'BoolOp']},
+                         'nodes': ['FunctionDef', 'If']},
         'starter_code': 'def solve(operation, task_id, has_where, matched_count):\n'
                         '    # Проверьте безопасность mutation\n'
                         '    pass\n',
@@ -3316,7 +3190,7 @@ POSTGRESQL_CODE_TASKS: dict[int, list[dict[str, Any]]] = {117: [{'title': 'Со�
                                    'connection_url',
                                    'layers',
                                    'target'],
-                         'nodes': ['FunctionDef', 'JoinedStr']},
+                         'nodes': ['FunctionDef']},
         'starter_code': 'def solve(role, password, host, port, database, schema):\n'
                         '    # Соберите URL и карту уровней подключения\n'
                         '    pass\n',
@@ -3371,7 +3245,7 @@ POSTGRESQL_CODE_TASKS: dict[int, list[dict[str, Any]]] = {117: [{'title': 'Со�
                                    'строка только при обеих найденных связях',
                                    'порядок tasks'],
                          'names': ['tasks', 'users', 'categories', 'rows'],
-                         'nodes': ['FunctionDef', 'For', 'If', 'BoolOp'],
+                         'nodes': ['FunctionDef', 'For', 'If'],
                          'attributes': ['get', 'append']},
         'starter_code': 'def solve(tasks, users, categories):\n'
                         '    rows = []\n'
@@ -4063,7 +3937,7 @@ ASYNC_CODE_TASKS: dict[int, list[dict[str, Any]]] = {141: [{'title': 'Разде
                                    'gather result в исходном порядке',
                                    'total как максимум'],
                          'names': ['jobs', 'completion_order', 'gathered_results', 'total_ms'],
-                         'nodes': ['FunctionDef', 'For', 'Lambda'],
+                         'nodes': ['FunctionDef', 'For'],
                          'calls': ['enumerate', 'max'],
                          'attributes': ['append', 'sort']},
         'starter_code': 'def solve(jobs):\n    # Верните два разных порядка и total_ms\n    pass\n',
@@ -4190,7 +4064,7 @@ ASYNC_CODE_TASKS: dict[int, list[dict[str, Any]]] = {141: [{'title': 'Разде
                                    'total как сумма batches',
                                    'max_active'],
                          'names': ['durations_ms', 'limit', 'batches', 'total_ms', 'max_active'],
-                         'nodes': ['FunctionDef', 'While', 'IfExp'],
+                         'nodes': ['FunctionDef', 'While'],
                          'calls': ['len', 'max', 'min'],
                          'attributes': ['append']},
         'starter_code': 'def solve(durations_ms, limit):\n'
@@ -4376,7 +4250,7 @@ ASYNC_CODE_TASKS: dict[int, list[dict[str, Any]]] = {141: [{'title': 'Разде
                                    '502 для upstream HTTP error',
                                    'retryable зависит от вида сбоя'],
                          'names': ['outcome', 'upstream_status'],
-                         'nodes': ['FunctionDef', 'If', 'BoolOp']},
+                         'nodes': ['FunctionDef', 'If']},
         'starter_code': 'def solve(outcome, upstream_status):\n'
                         '    # Преобразуйте upstream outcome в StudyHub contract\n'
                         '    pass\n',
@@ -4516,7 +4390,7 @@ ASYNC_CODE_TASKS: dict[int, list[dict[str, Any]]] = {141: [{'title': 'Разде
                                    'active_connections',
                                    'queued_requests',
                                    'n_plus_one'],
-                         'nodes': ['FunctionDef', 'If', 'BoolOp'],
+                         'nodes': ['FunctionDef', 'If'],
                          'calls': ['min', 'max']},
         'starter_code': 'def solve(parent_count, loading_strategy, concurrent_requests, pool_size):\n'
                         '    # Посчитайте SQL и состояние pool\n'
@@ -4571,7 +4445,7 @@ DEPLOY_CODE_TASKS: dict[int, list[dict[str, Any]]] = {166: [{'title': 'Диаг�
                                    'SIGINT и SIGTERM как graceful',
                                    'SIGKILL как forced'],
                          'names': ['processes', 'target_port', 'signal', 'found', 'graceful', 'final_state'],
-                         'nodes': ['FunctionDef', 'For', 'If', 'BoolOp']},
+                         'nodes': ['FunctionDef', 'For', 'If']},
         'starter_code': 'def solve(processes, target_port, signal):\n'
                         '    # Найдите process и определите результат сигнала\n'
                         '    pass\n',
@@ -4705,7 +4579,7 @@ DEPLOY_CODE_TASKS: dict[int, list[dict[str, Any]]] = {166: [{'title': 'Диаг�
                                    'стабильный порядок context',
                                    'безопасное событие'],
                          'names': ['level', 'message', 'context', 'secret_keys', 'safe_context'],
-                         'nodes': ['FunctionDef', 'For', 'If', 'Set'],
+                         'nodes': ['FunctionDef', 'For', 'If'],
                          'calls': ['sorted'],
                          'attributes': ['lower', 'upper']},
         'starter_code': 'def solve(level, message, context):\n    # Удалите секреты и соберите log event\n    pass\n',
@@ -4771,7 +4645,7 @@ DEPLOY_CODE_TASKS: dict[int, list[dict[str, Any]]] = {166: [{'title': 'Диаг�
                                    'health_status',
                                    'ready_status',
                                    'state'],
-                         'nodes': ['FunctionDef', 'If', 'BoolOp', 'IfExp']},
+                         'nodes': ['FunctionDef', 'If']},
         'starter_code': 'def solve(process_running, startup_complete, database_ok, draining):\n'
                         '    # Определите liveness, readiness и lifecycle state\n'
                         '    pass\n',
@@ -4914,7 +4788,7 @@ DEPLOY_CODE_TASKS: dict[int, list[dict[str, Any]]] = {166: [{'title': 'Диаг�
                                    'предыдущие layers hit',
                                    'порядок сохраняется'],
                          'names': ['layers', 'changed_inputs', 'changed', 'invalidated', 'result'],
-                         'nodes': ['FunctionDef', 'For', 'If', 'IfExp'],
+                         'nodes': ['FunctionDef', 'For', 'If'],
                          'calls': ['set'],
                          'attributes': ['intersection', 'append']},
         'starter_code': 'def solve(layers, changed_inputs):\n'
@@ -4984,7 +4858,7 @@ DEPLOY_CODE_TASKS: dict[int, list[dict[str, Any]]] = {166: [{'title': 'Диаг�
                                    'service_names',
                                    'internal_url',
                                    'host_url'],
-                         'nodes': ['FunctionDef', 'If', 'BoolOp', 'JoinedStr'],
+                         'nodes': ['FunctionDef', 'If'],
                          'calls': ['set']},
         'starter_code': 'def solve(services, source_service, target_service, target_port, published_ports):\n'
                         '    # Соберите внутренний и host URL\n'
@@ -5039,7 +4913,7 @@ DEPLOY_CODE_TASKS: dict[int, list[dict[str, Any]]] = {166: [{'title': 'Диаг�
                                    'down -v удаляет volume',
                                    'row живёт вместе с volume'],
                          'names': ['events', 'volume_exists', 'container_exists', 'database_running', 'row_exists'],
-                         'nodes': ['FunctionDef', 'For', 'If', 'BoolOp']},
+                         'nodes': ['FunctionDef', 'For', 'If']},
         'starter_code': 'def solve(events):\n'
                         '    volume_exists = False\n'
                         '    container_exists = False\n'
@@ -5228,7 +5102,7 @@ DEPLOY_CODE_TASKS: dict[int, list[dict[str, Any]]] = {166: [{'title': 'Диаг�
                                    'release tag добавляется явно',
                                    'latest не используется'],
                          'names': ['commit_sha', 'release_tag', 'branch', 'tests_passed', 'tags'],
-                         'nodes': ['FunctionDef', 'If', 'JoinedStr'],
+                         'nodes': ['FunctionDef', 'If'],
                          'attributes': ['append', 'startswith']},
         'starter_code': 'def solve(commit_sha, release_tag, branch, tests_passed):\n'
                         '    # Соберите список безопасных image tags\n'
@@ -5370,7 +5244,7 @@ LMS_CODE_TASKS: dict[int, list[dict[str, Any]]] = {189: [{'title': 'Отбери
                                    'причина исключения явная',
                                    'порядок requirements сохраняется'],
                          'names': ['requirements', 'mvp', 'out_of_scope', 'reason'],
-                         'nodes': ['FunctionDef', 'For', 'If', 'BoolOp', 'IfExp'],
+                         'nodes': ['FunctionDef', 'For', 'If'],
                          'attributes': ['append']},
         'starter_code': 'def solve(requirements):\n'
                         '    mvp = []\n'
@@ -5428,7 +5302,7 @@ LMS_CODE_TASKS: dict[int, list[dict[str, Any]]] = {189: [{'title': 'Отбери
                                    'positions уникальны внутри parent',
                                    'результат сортируется по position'],
                          'names': ['course_id', 'modules', 'errors', 'module_positions', 'lessons_by_module'],
-                         'nodes': ['FunctionDef', 'For', 'If', 'Lambda', 'ListComp'],
+                         'nodes': ['FunctionDef', 'For', 'If'],
                          'calls': ['set', 'sorted'],
                          'attributes': ['append', 'add']},
         'starter_code': 'def solve(course_id, modules):\n'
@@ -5556,7 +5430,7 @@ LMS_CODE_TASKS: dict[int, list[dict[str, Any]]] = {189: [{'title': 'Отбери
                                    'withdrawn enrollment реактивируется',
                                    'входной список не изменяется'],
                          'names': ['enrollments', 'student_id', 'course_id', 'course_published', 'updated'],
-                         'nodes': ['FunctionDef', 'For', 'If', 'BoolOp', 'ListComp'],
+                         'nodes': ['FunctionDef', 'For', 'If'],
                          'calls': ['dict', 'max'],
                          'attributes': ['append']},
         'starter_code': 'def solve(enrollments, student_id, course_id, course_published):\n'
@@ -5654,7 +5528,7 @@ LMS_CODE_TASKS: dict[int, list[dict[str, Any]]] = {189: [{'title': 'Отбери
                                    'completed_seen',
                                    'ignored',
                                    'percent'],
-                         'nodes': ['FunctionDef', 'For', 'If', 'IfExp'],
+                         'nodes': ['FunctionDef', 'For', 'If'],
                          'calls': ['set', 'len', 'round'],
                          'attributes': ['add', 'append']},
         'starter_code': 'def solve(published_lesson_ids, completed_lesson_ids, enrolled):\n'
@@ -5750,7 +5624,7 @@ LMS_CODE_TASKS: dict[int, list[dict[str, Any]]] = {189: [{'title': 'Отбери
                                    'student access через enrollment',
                                    'admin override'],
                          'names': ['user', 'action', 'resource', 'enrolled', 'known_actions'],
-                         'nodes': ['FunctionDef', 'If', 'BoolOp', 'Set']},
+                         'nodes': ['FunctionDef', 'If']},
         'starter_code': 'def solve(user, action, resource, enrolled):\n'
                         '    # Примените правила role, ownership и enrollment\n'
                         '    pass\n',
@@ -5955,7 +5829,7 @@ LMS_CODE_TASKS: dict[int, list[dict[str, Any]]] = {189: [{'title': 'Отбери
                                    'явные publication preconditions',
                                    'копия course вместо изменения input'],
                          'names': ['course', 'user', 'modules', 'missing', 'published_course'],
-                         'nodes': ['FunctionDef', 'If', 'BoolOp', 'GeneratorExp'],
+                         'nodes': ['FunctionDef', 'If'],
                          'calls': ['dict', 'any'],
                          'attributes': ['strip', 'append']},
         'starter_code': 'def solve(course, user, modules):\n'
@@ -6171,7 +6045,7 @@ LMS_CODE_TASKS: dict[int, list[dict[str, Any]]] = {189: [{'title': 'Отбери
                                    'database_value',
                                    'parts',
                                    'cache_key'],
-                         'nodes': ['FunctionDef', 'For', 'If', 'JoinedStr'],
+                         'nodes': ['FunctionDef', 'For', 'If'],
                          'calls': ['sorted'],
                          'attributes': ['append', 'join']},
         'starter_code': 'def solve(filters, page, page_size, cached_value, redis_available, database_value):\n'
@@ -6402,7 +6276,7 @@ LMS_CODE_TASKS: dict[int, list[dict[str, Any]]] = {189: [{'title': 'Отбери
                                    'response не ждёт operation',
                                    'background failure не меняет HTTP status'],
                          'names': ['commit_ok', 'operation_critical', 'duration_ms', 'operation_fails'],
-                         'nodes': ['FunctionDef', 'If', 'BoolOp', 'IfExp']},
+                         'nodes': ['FunctionDef', 'If']},
         'starter_code': 'def solve(commit_ok, operation_critical, duration_ms, operation_fails):\n'
                         '    # Выберите допустимый механизм\n'
                         '    pass\n',
@@ -6483,7 +6357,7 @@ LMS_CODE_TASKS: dict[int, list[dict[str, Any]]] = {189: [{'title': 'Отбери
                                    'domain status получает стабильный code',
                                    'unexpected скрывает внутренние details'],
                          'names': ['source', 'status', 'public_message', 'details', 'request_id', 'code', 'message'],
-                         'nodes': ['FunctionDef', 'If', 'IfExp', 'Dict'],
+                         'nodes': ['FunctionDef', 'If'],
                          'attributes': ['get']},
         'starter_code': 'def solve(source, status, public_message, details, request_id):\n'
                         '    # Нормализуйте ошибку\n'

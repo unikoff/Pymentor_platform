@@ -526,6 +526,7 @@ def _task_from_override(
         "prompt": task["prompt"],
         "contract": task.get("contract"),
         "requirements": task.get("requirements", {}),
+        "hints": task.get("hints", []),
         "starter_code": task.get("starter_code", _starter_code()),
         "tests": task.get("tests", []),
     }

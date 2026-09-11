@@ -19,3 +19,5 @@ pymentor-dist.zip
 
 # Local deployment notes with production details.
 DEPLOYMENT.local.md
+
+.docs

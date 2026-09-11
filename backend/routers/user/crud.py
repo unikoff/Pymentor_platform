@@ -1,7 +1,7 @@
 
 import uuid
 from calendar import monthrange
-from datetime import date, datetime, timedelta, timezone
+from datetime import date, datetime, time, timedelta, timezone
 from fastapi import HTTPException, status, Response, Request
 from sqlalchemy import or_, text
 from sqlalchemy.exc import IntegrityError
@@ -105,26 +105,40 @@ def get_activity_days(user_id: int, year: int, month: int, db: Session) -> list[
 # ==================== Слоты записи на занятия ====================
 
 
+MOSCOW_TZ = timezone(timedelta(hours=3))
+
+
 def _month_bounds(year: int, month: int) -> tuple[date, date]:
     last_day = monthrange(year, month)[1]
     return date(year, month, 1), date(year, month, last_day)
 
 
-def _slot_is_past(slot: models.BookingSlot) -> bool:
-    now = datetime.now()
-    today = now.date()
-    if slot.slot_date < today:
-        return True
-    return slot.slot_date == today and slot.start_time <= now.strftime("%H:%M")
+def _now_moscow(now: datetime | None = None) -> datetime:
+    current = now or datetime.now(MOSCOW_TZ)
+    if current.tzinfo is None:
+        return current.replace(tzinfo=MOSCOW_TZ)
+    return current.astimezone(MOSCOW_TZ)
+
+
+def _slot_starts_at(slot_date: date, start_time: str) -> datetime:
+    hours, minutes = start_time.split(":")
+    return datetime.combine(slot_date, time(int(hours), int(minutes)), tzinfo=MOSCOW_TZ)
+
+
+def _slot_time_is_past(slot_date: date, start_time: str, *, now: datetime | None = None) -> bool:
+    return _slot_starts_at(slot_date, start_time) <= _now_moscow(now)
+
+
+def _slot_is_past(slot: models.BookingSlot, *, now: datetime | None = None) -> bool:
+    return _slot_time_is_past(slot.slot_date, slot.start_time, now=now)
 
 
 CANCELLATION_DEADLINE = timedelta(hours=36)
 
 
-def _can_cancel_booking(slot: models.BookingSlot) -> bool:
+def _can_cancel_booking(slot: models.BookingSlot, *, now: datetime | None = None) -> bool:
     """Return whether the student can cancel this slot under the 36-hour policy."""
-    start_at = datetime.combine(slot.slot_date, datetime.strptime(slot.start_time, "%H:%M").time())
-    return start_at - datetime.now() >= CANCELLATION_DEADLINE
+    return _slot_starts_at(slot.slot_date, slot.start_time) - _now_moscow(now) >= CANCELLATION_DEADLINE
 
 
 def _time_to_minutes(hhmm: str) -> int:
@@ -203,31 +217,40 @@ def get_quota_status(user_id: int, year: int, month: int, db: Session) -> dict:
     return {"granted": granted, "used": used, "remaining": max(0, granted - used)}
 
 
-def serialize_slot_admin(slot: models.BookingSlot, student: models.User | None) -> dict:
+def serialize_slot_admin(slot: models.BookingSlot, student: models.User | None, *, now: datetime | None = None) -> dict:
     return {
         "id": slot.id,
         "date": slot.slot_date.isoformat(),
         "start_time": slot.start_time,
         "duration_minutes": slot.duration_minutes,
-        "is_past": _slot_is_past(slot),
+        "is_past": _slot_is_past(slot, now=now),
         "student": {"id": student.id, "username": student.username, "email": student.email} if student else None,
     }
 
 
-def serialize_slot_student(slot: models.BookingSlot, viewer_id: int) -> dict:
+def serialize_slot_student(slot: models.BookingSlot, viewer_id: int, *, now: datetime | None = None) -> dict:
     return {
         "id": slot.id,
         "date": slot.slot_date.isoformat(),
         "start_time": slot.start_time,
         "duration_minutes": slot.duration_minutes,
         "status": "mine" if slot.student_id == viewer_id else "free",
-        "can_cancel": slot.student_id == viewer_id and _can_cancel_booking(slot),
+        "can_cancel": slot.student_id == viewer_id and _can_cancel_booking(slot, now=now),
     }
 
 
-def create_slot(slot_date: date, start_time: str, duration_minutes: int, db: Session) -> models.BookingSlot:
+def create_slot(
+    slot_date: date,
+    start_time: str,
+    duration_minutes: int,
+    db: Session,
+    *,
+    now: datetime | None = None,
+) -> models.BookingSlot:
     if duration_minutes not in {60, 90, 120}:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail="Длительность слота: 60, 90 или 120 минут")
+    if _slot_time_is_past(slot_date, start_time, now=now):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Нельзя создать слот в уже прошедшее время")
 
     _start_write_transaction(db)
     # Проверяем, что новый слот не пересекается по времени с существующими в этот день.
@@ -267,7 +290,8 @@ def delete_slot(slot_id: int, db: Session) -> None:
     db.commit()
 
 
-def list_slots_for_month_admin(year: int, month: int, db: Session) -> list[dict]:
+def list_slots_for_month_admin(year: int, month: int, db: Session, *, now: datetime | None = None) -> list[dict]:
+    current_time = _now_moscow(now)
     start_date, end_date = _month_bounds(year, month)
     slots = (
         db.query(models.BookingSlot)
@@ -275,16 +299,18 @@ def list_slots_for_month_admin(year: int, month: int, db: Session) -> list[dict]
         .order_by(models.BookingSlot.slot_date.asc(), models.BookingSlot.start_time.asc())
         .all()
     )
-    student_ids = {slot.student_id for slot in slots if slot.student_id is not None}
+    future_slots = [slot for slot in slots if not _slot_is_past(slot, now=current_time)]
+    student_ids = {slot.student_id for slot in future_slots if slot.student_id is not None}
     students = {}
     if student_ids:
         rows = db.query(models.User).filter(models.User.id.in_(student_ids)).all()
         students = {user.id: user for user in rows}
-    return [serialize_slot_admin(slot, students.get(slot.student_id)) for slot in slots]
+    return [serialize_slot_admin(slot, students.get(slot.student_id), now=current_time) for slot in future_slots]
 
 
-def list_bookable_slots(year: int, month: int, user_id: int, db: Session) -> list[dict]:
-    """Свободные будущие слоты + собственные брони студента за месяц."""
+def list_bookable_slots(year: int, month: int, user_id: int, db: Session, *, now: datetime | None = None) -> list[dict]:
+    """Будущие свободные слоты и будущие собственные брони студента за месяц."""
+    current_time = _now_moscow(now)
     start_date, end_date = _month_bounds(year, month)
     slots = (
         db.query(models.BookingSlot)
@@ -296,9 +322,8 @@ def list_bookable_slots(year: int, month: int, user_id: int, db: Session) -> lis
         .order_by(models.BookingSlot.slot_date.asc(), models.BookingSlot.start_time.asc())
         .all()
     )
-    # Свободные прошедшие окна студенту не показываем; свои брони — показываем всегда.
-    visible = [slot for slot in slots if slot.student_id == user_id or not _slot_is_past(slot)]
-    return [serialize_slot_student(slot, user_id) for slot in visible]
+    visible = [slot for slot in slots if not _slot_is_past(slot, now=current_time)]
+    return [serialize_slot_student(slot, user_id, now=current_time) for slot in visible]
 
 
 def book_slot(slot_id: int, user_id: int, db: Session) -> models.BookingSlot:

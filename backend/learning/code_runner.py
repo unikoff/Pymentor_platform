@@ -61,6 +61,25 @@ def _blocked_reason(code: str) -> str | None:
     return None
 
 
+def _syntax_error_reason(code: str) -> str | None:
+    """Проверяет синтаксис до запуска тестов, чтобы ошибка не выглядела как расхождение ответа."""
+    try:
+        ast.parse(code)
+    except IndentationError as error:
+        error_kind = "Ошибка отступа"
+        line_number = error.lineno
+        detail = error.msg or str(error)
+    except SyntaxError as error:
+        error_kind = "Синтаксическая ошибка"
+        line_number = error.lineno
+        detail = error.msg or str(error)
+    else:
+        return None
+
+    line = f" в строке {line_number}" if line_number else ""
+    return f"{error_kind}{line}: {detail}."
+
+
 
 def _requirements_error(code: str, requirements: Any) -> str | None:
     if not isinstance(requirements, dict):
@@ -75,11 +94,18 @@ def _requirements_error(code: str, requirements: Any) -> str | None:
         "For": "цикл for",
         "While": "цикл while",
         "If": "ветвление if",
+        "IfExp": "условное выражение `x if condition else y`",
         "Try": "обработчик try / except",
+        "Raise": "оператор raise",
         "ClassDef": "класс",
         "FunctionDef": "функция",
         "JoinedStr": "f-строка",
         "BoolOp": "логическое выражение",
+        "Lambda": "lambda-функция",
+        "ListComp": "включение списка",
+        "GeneratorExp": "генераторное выражение",
+        "Set": "множество",
+        "Dict": "словарь",
     }
     node_types = {type(node).__name__ for node in ast.walk(tree)}
     loaded_names = {
@@ -198,6 +224,10 @@ def run_python_task(code: str, task: dict[str, Any]) -> dict[str, Any]:
     blocked_reason = _blocked_reason(code)
     if blocked_reason:
         return {"ok": False, "score": 0, "error": blocked_reason, "tests": [], "stdout": ""}
+
+    syntax_error = _syntax_error_reason(code)
+    if syntax_error:
+        return {"ok": False, "score": 0, "error": syntax_error, "tests": [], "stdout": ""}
 
     requirements_error = _requirements_error(code, task.get("requirements"))
     if requirements_error:

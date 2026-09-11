@@ -145,6 +145,9 @@ type TaskContract = {
   given: string;
   todo: string;
   check: string;
+  given_items?: string[];
+  todo_items?: string[];
+  check_items?: string[];
 };
 
 type TaskRequirements = {
@@ -160,13 +163,30 @@ type LessonTask = {
   prompt: string;
   contract?: TaskContract | null;
   requirements?: TaskRequirements;
+  hints?: string[];
   starter_code: string;
+};
+
+type ManualPracticeTaskAnswer = {
+  explanation: string;
+  steps: string[];
+  code?: string;
+  checks?: string[];
+};
+
+type ManualPracticeTask = {
+  title: string;
+  task: string;
+  requirements: string[];
+  hint: string;
+  answer: ManualPracticeTaskAnswer;
 };
 
 type LessonManualPractice = {
   title: string;
   task: string;
-  steps: string[];
+  steps?: string[];
+  tasks?: ManualPracticeTask[];
   result: string;
 };
 
@@ -676,7 +696,7 @@ function Workspace({
 
   const progress = useMemo(() => {
     // Прогресс считаем только по «зачётным» урокам: с практикой или self_check.
-    // Обзорные страницы вроде «Карты обучения» зачесть нельзя — они не в счёте.
+    // Обзорные страницы вроде «Карты обучения» зачесть нельзя: они не в счёте.
     const countable = courseLessons.filter((lesson) => (lesson.tasks?.length ?? 0) > 0 || lesson.self_check);
     if (countable.length === 0) {
       return 0;
@@ -2207,15 +2227,22 @@ function SelfCheckPanel({
 }) {
   const manualPractice = lesson.manual_practice ?? [];
   const [checkedSteps, setCheckedSteps] = useState<Set<string>>(() => new Set());
+  const [openTaskPanels, setOpenTaskPanels] = useState<Record<string, "hint" | "answer" | undefined>>({});
+  const [activeTaskIndexes, setActiveTaskIndexes] = useState<Record<string, number>>({});
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
     setCheckedSteps(new Set());
+    setOpenTaskPanels({});
+    setActiveTaskIndexes({});
     setError("");
   }, [lesson.id]);
 
-  const totalStepCount = manualPractice.reduce((total, exercise) => total + exercise.steps.length, 0);
+  const totalStepCount = manualPractice.reduce(
+    (total, exercise) => total + (exercise.tasks?.length ?? exercise.steps?.length ?? 0),
+    0,
+  );
   const checkedStepCount = checkedSteps.size;
   const isPracticeComplete = totalStepCount === 0 || checkedStepCount === totalStepCount;
 
@@ -2229,6 +2256,18 @@ function SelfCheckPanel({
       }
       return next;
     });
+  }
+
+  function toggleTaskPanel(taskId: string, panel: "hint" | "answer") {
+    setOpenTaskPanels((current) => ({
+      ...current,
+      [taskId]: current[taskId] === panel ? undefined : panel,
+    }));
+  }
+
+  function switchPracticeTask(exerciseId: string, currentIndex: number, direction: -1 | 1, taskCount: number) {
+    const nextIndex = Math.max(0, Math.min(taskCount - 1, currentIndex + direction));
+    setActiveTaskIndexes((current) => ({ ...current, [exerciseId]: nextIndex }));
   }
 
   async function markCompleted() {
@@ -2255,50 +2294,161 @@ function SelfCheckPanel({
 
   return (
     <>
-      <section className="self-check-card self-check-card--intro">
-        <div>
-          <h2>{lesson.completed ? "Практика занятия пройдена" : "Практика без автоматической проверки"}</h2>
-          <p>
-            {manualPractice.length > 0
-              ? `Выполните ${manualPractice.length} задания по порядку. Отмечайте каждый сделанный шаг — после этого занятие можно зачесть в прогресс.`
-              : "Изучите теорию и выполните упражнения из урока самостоятельно, затем отметьте занятие выполненным."}
-          </p>
-        </div>
-        {lesson.completed && <CheckCircle2 className="lesson-done-icon" size={28} aria-label="Занятие зачтено" />}
-      </section>
-
       {manualPractice.length > 0 && (
         <section className="manual-practice-list" aria-label="Практические задания урока">
-          {manualPractice.map((exercise, exerciseIndex) => (
-            <article className="manual-practice-card" key={`${lesson.id}-${exercise.title}`}>
+          {manualPractice.map((exercise, exerciseIndex) => {
+            const exerciseId = [lesson.id, exerciseIndex].join(":");
+            const taskCount = exercise.tasks?.length ?? 0;
+            const activeTaskIndex = taskCount > 0
+              ? Math.min(activeTaskIndexes[exerciseId] ?? 0, taskCount - 1)
+              : 0;
+            const practiceTask = exercise.tasks?.[activeTaskIndex];
+
+            return (
+              <article className="manual-practice-card" key={`${lesson.id}-${exercise.title}`}>
               <div className="manual-practice-card__head">
                 <span>Практика {exerciseIndex + 1}</span>
                 <h2>{exercise.title}</h2>
               </div>
               <p className="manual-practice-card__task">{exercise.task}</p>
-              <div className="manual-practice-steps">
-                {exercise.steps.map((step, stepIndex) => {
-                  const stepId = `${lesson.id}:${exerciseIndex}:${stepIndex}`;
-                  return (
-                    <label className="manual-practice-step" key={stepId}>
-                      <input
-                        type="checkbox"
-                        checked={checkedSteps.has(stepId) || lesson.completed === true}
-                        disabled={lesson.completed}
-                        onChange={() => toggleStep(stepId)}
-                      />
-                      <span>
-                        <strong>Шаг {stepIndex + 1}.</strong> {step}
-                      </span>
-                    </label>
-                  );
-                })}
-              </div>
+              {practiceTask && (
+                <div className="manual-practice-task-list">
+                  {(() => {
+                    const taskId = [lesson.id, exerciseIndex, activeTaskIndex].join(":");
+                    const isDone = checkedSteps.has(taskId) || lesson.completed === true;
+                    const activePanel = openTaskPanels[taskId];
+
+                    return (
+                      <article className={["manual-practice-task", isDone ? "is-done" : ""].filter(Boolean).join(" ")} key={taskId}>
+                        <div className="manual-practice-task__toolbar">
+                          <span>Задача {activeTaskIndex + 1} из {taskCount}</span>
+                          <div className="manual-practice-task__navigation" aria-label="Переключение задач">
+                            <button
+                              className="manual-practice-task__navigation-button"
+                              type="button"
+                              disabled={activeTaskIndex === 0}
+                              onClick={() => switchPracticeTask(exerciseId, activeTaskIndex, -1, taskCount)}
+                            >
+                              Назад
+                            </button>
+                            <button
+                              className="manual-practice-task__navigation-button manual-practice-task__navigation-button--next"
+                              type="button"
+                              disabled={activeTaskIndex === taskCount - 1}
+                              onClick={() => switchPracticeTask(exerciseId, activeTaskIndex, 1, taskCount)}
+                            >
+                              Следующая
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="manual-practice-task__head">
+                          <h3>{practiceTask.title}</h3>
+                        </div>
+                        <p className="manual-practice-task__summary">{practiceTask.task}</p>
+
+                        <section className="manual-practice-task__requirements" aria-label={"Техническое задание: " + practiceTask.title}>
+                          <h4>Техническое задание</h4>
+                          <ol>
+                            {practiceTask.requirements.map((requirement) => (
+                              <li key={requirement}>{requirement}</li>
+                            ))}
+                          </ol>
+                        </section>
+
+                        <div className="manual-practice-task__actions">
+                          <button
+                            className={["manual-practice-task__action", activePanel === "answer" ? "is-active" : ""].filter(Boolean).join(" ")}
+                            type="button"
+                            aria-pressed={activePanel === "answer"}
+                            onClick={() => toggleTaskPanel(taskId, "answer")}
+                          >
+                            Ответ
+                          </button>
+                          <button
+                            className={["manual-practice-task__action", activePanel === "hint" ? "is-active" : ""].filter(Boolean).join(" ")}
+                            type="button"
+                            aria-pressed={activePanel === "hint"}
+                            onClick={() => toggleTaskPanel(taskId, "hint")}
+                          >
+                            Подсказка
+                          </button>
+                          <button
+                            className={["manual-practice-task__action", "manual-practice-task__done", isDone ? "is-done" : ""].filter(Boolean).join(" ")}
+                            type="button"
+                            aria-pressed={isDone}
+                            disabled={lesson.completed}
+                            onClick={() => toggleStep(taskId)}
+                          >
+                            {isDone ? "Готово" : "Отметить готовым"}
+                          </button>
+                        </div>
+
+                        {activePanel === "hint" && (
+                          <aside className="manual-practice-task__panel manual-practice-task__panel--hint">
+                            <strong>Подсказка</strong>
+                            <p>{practiceTask.hint}</p>
+                          </aside>
+                        )}
+
+                        {activePanel === "answer" && (
+                          <aside className="manual-practice-task__panel manual-practice-task__panel--answer">
+                            <strong>Разбор решения</strong>
+                            <p>{practiceTask.answer.explanation}</p>
+                            <ol>
+                              {practiceTask.answer.steps.map((step) => (
+                                <li key={step}>{step}</li>
+                              ))}
+                            </ol>
+                            {practiceTask.answer.code && (
+                              <pre className="manual-practice-task__code">
+                                <code>{practiceTask.answer.code}</code>
+                              </pre>
+                            )}
+                            {practiceTask.answer.checks && practiceTask.answer.checks.length > 0 && (
+                              <div className="manual-practice-task__checks">
+                                <strong>Проверьте себя</strong>
+                                <ul>
+                                  {practiceTask.answer.checks.map((check) => (
+                                    <li key={check}>{check}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                          </aside>
+                        )}
+                      </article>
+                    );
+                  })()}
+                </div>
+              )}
+
+              {(!exercise.tasks || exercise.tasks.length === 0) && (
+                <div className="manual-practice-steps">
+                  {(exercise.steps ?? []).map((step, stepIndex) => {
+                    const stepId = `${lesson.id}:${exerciseIndex}:${stepIndex}`;
+                    return (
+                      <label className="manual-practice-step" key={stepId}>
+                        <input
+                          type="checkbox"
+                          checked={checkedSteps.has(stepId) || lesson.completed === true}
+                          disabled={lesson.completed}
+                          onChange={() => toggleStep(stepId)}
+                        />
+                        <span>
+                          <strong>Шаг {stepIndex + 1}.</strong> {step}
+                        </span>
+                      </label>
+                    );
+                  })}
+                </div>
+              )}
               <p className="manual-practice-card__result">
                 <strong>Готово, если:</strong> {formatManualPracticeResult(exercise.result)}
               </p>
-            </article>
-          ))}
+              </article>
+            );
+          })}
         </section>
       )}
 
@@ -2354,7 +2504,7 @@ function LearningPracticeView({
         <h1>Задания: {lesson.title}</h1>
         <p>
           {lesson.self_check
-            ? "Здесь практика выполняется вне интерпретатора. Пройдите шаги по порядку и только затем зафиксируйте результат."
+            ? "Здесь практика выполняется вне интерпретатора. Выполняйте задачи по порядку, отмечайте каждую готовую задачу или шаг, затем зафиксируйте результат."
             : tasks[0]?.mode === "script"
               ? "Напишите полноценную программу в редакторе. Backend запустит её в изолированном интерпретаторе и сверит вывод."
               : "Напишите функцию solve. Backend запустит код в отдельном процессе и проверит её на скрытых тестах."}
@@ -2369,8 +2519,14 @@ function LearningPracticeView({
         />
       ) : tasks.length > 0 ? (
         <div className="task-list">
-          {tasks.map((task) => (
-            <TaskRunner task={task} key={task.id} onSolved={onLessonCompleted} />
+          {tasks.map((task, taskIndex) => (
+            <TaskRunner
+              task={task}
+              key={task.id}
+              taskNumber={taskIndex + 1}
+              taskTotal={tasks.length}
+              onSolved={onLessonCompleted}
+            />
           ))}
         </div>
       ) : (
@@ -2383,12 +2539,23 @@ function LearningPracticeView({
   );
 }
 
-function TaskRunner({ task, onSolved }: { task: LessonTask; onSolved?: () => void }) {
+function TaskRunner({
+  task,
+  taskNumber,
+  taskTotal,
+  onSolved,
+}: {
+  task: LessonTask;
+  taskNumber: number;
+  taskTotal: number;
+  onSolved?: () => void;
+}) {
   const [code, setCode] = useState(task.starter_code);
   const [result, setResult] = useState<TaskSubmitResponse | null>(null);
   const [runResult, setRunResult] = useState<TaskRunResponse | null>(null);
   const [isRunning, setIsRunning] = useState(false);
   const [isChecking, setIsChecking] = useState(false);
+  const [visibleHintCount, setVisibleHintCount] = useState(0);
   const isBusy = isRunning || isChecking;
   const taskPrompt = useMemo(() => splitTaskPrompt(task.prompt), [task.prompt]);
   const taskContract: TaskContract = task.contract ?? {
@@ -2400,6 +2567,11 @@ function TaskRunner({ task, onSolved }: { task: LessonTask; onSolved?: () => voi
     check: task.mode === "script" ? "Сверим вывод программы." : "Сверим результат, который вернёт solve.",
   };
   const requirementItems = task.requirements?.items ?? [];
+  const hints = task.hints ?? [];
+
+  function revealNextHint() {
+    setVisibleHintCount((current) => Math.min(current + 1, hints.length));
+  }
 
   async function runCode() {
     setIsRunning(true);
@@ -2449,76 +2621,146 @@ function TaskRunner({ task, onSolved }: { task: LessonTask; onSolved?: () => voi
   }
 
   return (
-    <section className="task-card">
+    <section className="task-card task-card--editor">
       <div className="task-head">
         <div>
-          <span>
-            {task.level === "easy" ? "Старт" : task.level === "medium" ? "Практика" : "Вызов"}
-          </span>
+          <div className="task-head__meta">
+            <span>Задача {taskNumber} из {taskTotal}</span>
+            <span>{task.mode === "script" ? "Программа Python" : "Функция solve"}</span>
+          </div>
           <h2>{task.title}</h2>
         </div>
-        <div className="task-actions">
-          <button
-            className="run-button run-button--ghost"
-            type="button"
-            onClick={runCode}
-            disabled={isBusy}
-            title="Демонстрационный запуск: проверка выполнит один пример без зачёта урока"
-          >
-            <Terminal size={16} />
-            {isRunning ? "Запуск..." : "Запустить пример"}
-          </button>
-          <button className="run-button" type="button" onClick={submitCode} disabled={isBusy}>
-            <Play size={16} />
-            {isChecking ? "Проверка..." : "Проверить"}
-          </button>
-        </div>
       </div>
-      <div className="task-spec" aria-label="Техническое задание">
-        <section className="task-spec__item">
-          <span>Дано</span>
-          <p>{taskContract.given}</p>
-        </section>
-        <section className="task-spec__item">
-          <span>Нужно сделать</span>
-          <p>{taskContract.todo}</p>
-        </section>
-        <section className="task-spec__item task-spec__item--check">
-          <span>Как проверим</span>
-          <p>{taskContract.check}</p>
-        </section>
-      </div>
-      {requirementItems.length > 0 && (
-        <section className="task-requirements" aria-label="Обязательные элементы решения">
-          <span>В решении должно быть</span>
-          <ul>
-            {requirementItems.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-        </section>
-      )}
-      {taskPrompt.examples.length > 0 && (
-        <div className="task-examples" aria-label="Примеры ввода и вывода">
-          <span className="task-examples-title">Пример ввода и вывода</span>
-          {taskPrompt.examples.map((example, index) => (
-            <div className="task-example" key={`${example.input}-${example.output}-${index}`}>
-              <div className="task-example-cell">
-                <span>Ввод</span>
-                <code>{example.input}</code>
-              </div>
-              <i className="task-example-arrow" aria-hidden="true">→</i>
-              <div className="task-example-cell task-example-cell--output">
-                <span>Вывод</span>
-                <code>{example.output}</code>
-              </div>
+      <div className="task-workspace">
+        <div className="task-brief" aria-label="Техническое задание">
+          <div className="task-brief__head">
+            <span>Техническое задание</span>
+            <p>Сначала разберите договор, затем соберите решение в редакторе.</p>
+          </div>
+          <div className="task-spec">
+            <section className="task-spec__item">
+              <span>Дано</span>
+              <p>{taskContract.given}</p>
+              {taskContract.given_items && taskContract.given_items.length > 0 && (
+                <ul className="task-spec__list">
+                  {taskContract.given_items.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              )}
+            </section>
+            <section className="task-spec__item">
+              <span>Нужно сделать</span>
+              <p>{taskContract.todo}</p>
+              {taskContract.todo_items && taskContract.todo_items.length > 0 && (
+                <ol className="task-spec__list task-spec__list--ordered">
+                  {taskContract.todo_items.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ol>
+              )}
+            </section>
+            <section className="task-spec__item task-spec__item--check">
+              <span>Как проверим</span>
+              <p>{taskContract.check}</p>
+              {taskContract.check_items && taskContract.check_items.length > 0 && (
+                <ul className="task-spec__list">
+                  {taskContract.check_items.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              )}
+            </section>
+          </div>
+          {requirementItems.length > 0 && (
+            <section className="task-requirements" aria-label="Обязательные элементы решения">
+              <span>Опорные условия</span>
+              <ol>
+                {requirementItems.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ol>
+            </section>
+          )}
+          {taskPrompt.examples.length > 0 && (
+            <div className="task-examples" aria-label="Примеры ввода и вывода">
+              <span className="task-examples-title">Пример ввода и вывода</span>
+              {taskPrompt.examples.map((example, index) => (
+                <div className="task-example" key={`${example.input}-${example.output}-${index}`}>
+                  <div className="task-example-cell">
+                    <span>Ввод</span>
+                    <code>{example.input}</code>
+                  </div>
+                  <i className="task-example-arrow" aria-hidden="true">→</i>
+                  <div className="task-example-cell task-example-cell--output">
+                    <span>Вывод</span>
+                    <code>{example.output}</code>
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
+          )}
         </div>
-      )}
-      <CodeEditor value={code} onChange={setCode} ariaLabel={`Код для задания ${task.title}`} />
-      {runResult && <RunOutput result={runResult} />}
-      {result && <TaskResult result={result} />}
+
+        <section className="task-code-panel" aria-label="Редактор решения">
+          <div className="task-code-panel__head">
+            <div>
+              <span>Редактор решения</span>
+              <p>Сначала запустите один пример, затем отправьте решение на полную проверку.</p>
+            </div>
+            <code>Python</code>
+          </div>
+          <CodeEditor value={code} onChange={setCode} ariaLabel={`Код для задания ${task.title}`} />
+          <div className="task-editor-actions">
+            <p>Демонстрационный запуск не засчитывает урок.</p>
+            <div className="task-actions">
+              {hints.length > 0 && (
+                <button
+                  className="run-button run-button--hint"
+                  type="button"
+                  onClick={revealNextHint}
+                  disabled={isBusy || visibleHintCount === hints.length}
+                >
+                  {visibleHintCount === 0
+                    ? "Подсказка"
+                    : visibleHintCount === hints.length
+                      ? "Все подсказки открыты"
+                      : `Ещё подсказка ${visibleHintCount + 1} из ${hints.length}`}
+                </button>
+              )}
+              <button
+                className="run-button run-button--ghost"
+                type="button"
+                onClick={runCode}
+                disabled={isBusy}
+                title="Демонстрационный запуск: проверка выполнит один пример без зачёта урока"
+              >
+                <Terminal size={16} />
+                {isRunning ? "Запуск..." : "Запустить пример"}
+              </button>
+              <button className="run-button" type="button" onClick={submitCode} disabled={isBusy}>
+                <Play size={16} />
+                {isChecking ? "Проверка..." : "Проверить решение"}
+              </button>
+            </div>
+          </div>
+          {visibleHintCount > 0 && (
+            <aside className="task-hints" aria-label="Подсказки к заданию">
+              <div className="task-hints__head">
+                <strong>Подсказки</strong>
+                <span>{visibleHintCount} из {hints.length}</span>
+              </div>
+              <ol>
+                {hints.slice(0, visibleHintCount).map((hint) => (
+                  <li key={hint}>{hint}</li>
+                ))}
+              </ol>
+            </aside>
+          )}
+          {runResult && <RunOutput result={runResult} />}
+          {result && <TaskResult result={result} />}
+        </section>
+      </div>
     </section>
   );
 }
@@ -2579,7 +2821,7 @@ function RunOutput({ result }: { result: TaskRunResponse }) {
       </div>
       {errorMessage && <p>{errorMessage}</p>}
       <pre className="task-output">
-        <code>{result.stdout?.trim() ? result.stdout : "— программа ничего не вывела —"}</code>
+        <code>{result.stdout?.trim() ? result.stdout : "Программа ничего не вывела."}</code>
       </pre>
       {result.stderr && (
         <pre className="task-output task-output--stderr">
@@ -2605,14 +2847,15 @@ function formatTestValue(value: unknown): string {
 
 function TaskResult({ result }: { result: TaskSubmitResponse }) {
   const errorMessage = formatCompilerMessage(result.error);
+  const hasExecutionError = Boolean(errorMessage);
 
   return (
     <div className={`task-result ${result.ok ? "is-success" : "is-failed"}`}>
       <div className="task-result-summary">
-        <strong>{result.ok ? "Задание принято" : "Нужно доработать"}</strong>
+        <strong>{result.ok ? "Задание принято" : hasExecutionError ? "Ошибка в коде" : "Нужно доработать"}</strong>
         <span>{result.score}%</span>
       </div>
-      {errorMessage && <p>{errorMessage}</p>}
+      {errorMessage && <p className="task-result__error">{errorMessage}</p>}
       {result.stdout && (
         <pre className="task-output">
           <code>{result.stdout}</code>
@@ -2630,21 +2873,24 @@ function TaskResult({ result }: { result: TaskSubmitResponse }) {
               <span>{test.passed ? "passed" : "failed"}</span>
               <strong>{test.name}</strong>
               {!test.passed && (
-                <div className="test-diff">
-                  <div>
-                    <span>Ожидалось</span>
-                    <pre>
-                      <code>{formatTestValue(test.expected)}</code>
-                    </pre>
+                test.error ? (
+                  <p className="test-diff__error">Выполнение прервано: {formatCompilerMessage(test.error)}</p>
+                ) : (
+                  <div className="test-diff">
+                    <div>
+                      <span>Ожидалось</span>
+                      <pre>
+                        <code>{formatTestValue(test.expected)}</code>
+                      </pre>
+                    </div>
+                    <div>
+                      <span>Получено</span>
+                      <pre>
+                        <code>{formatTestValue(test.actual)}</code>
+                      </pre>
+                    </div>
                   </div>
-                  <div>
-                    <span>Получено</span>
-                    <pre>
-                      <code>{formatTestValue(test.actual)}</code>
-                    </pre>
-                  </div>
-                  {test.error && <p className="test-diff__error">Ошибка: {test.error}</p>}
-                </div>
+                )
               )}
             </li>
           ))}
@@ -2791,7 +3037,7 @@ function CalendarPanel({
           <div className={`quota-badge ${bookingQuota.remaining <= 0 ? "is-empty" : ""}`}>
             <CalendarClock size={15} />
             {bookingQuota.granted === 0 ? (
-              <span>Занятия на этот месяц не выданы — обратитесь к преподавателю</span>
+              <span>Занятия на этот месяц не выданы. Обратитесь к преподавателю.</span>
             ) : (
               <span>
                 Осталось занятий: <strong>{bookingQuota.remaining}</strong> из {bookingQuota.granted}

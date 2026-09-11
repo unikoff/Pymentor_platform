@@ -471,7 +471,7 @@ export function Lesson34({ module }: { module?: string }) {
       <RichHero
         variant="project"
         chip={module ?? BLOCK_TITLE}
-        title="Файлы, pathlib, with и кодировка"
+        title="34. Файлы, pathlib, with и кодировка"
         intro="Научим Persistent Planner работать с диском: построим путь через pathlib, прочитаем и запишем текст в UTF-8, разберём режимы открытия и гарантированно закроем файл через контекстный менеджер with."
         tags={[
           { icon: <HardDrive size={14} />, label: "путь и файловая система" },
@@ -479,6 +479,46 @@ export function Lesson34({ module }: { module?: string }) {
         ]}
       />
       <TheoryBridge lesson={34} />
+
+      <Section number="00" title="От списка в памяти к данным на диске">
+        <Lead>
+          В предыдущей работе storage был границей на будущее. Теперь дадим ему первое настоящее поведение:
+          сохраним список заголовков в текстовый файл и прочитаем его после завершения процесса.
+        </Lead>
+
+        <TypeCards>
+          <TypeCard badge="RAM" title="Память">
+            Список доступен, пока работает процесс Python, и исчезает после его завершения.
+          </TypeCard>
+          <TypeCard badge="disk" title="Файл">
+            Содержимое остаётся на диске и может быть прочитано следующим запуском.
+          </TypeCard>
+          <TypeCard badge="API" title="Граница">
+            storage переводит список в текст и обратно, а остальные слои не управляют файлом напрямую.
+          </TypeCard>
+        </TypeCards>
+
+        <CodeBlock
+          caption="путь данных"
+          code={'список Python\n    ↓ запись\nтекстовый файл\n    ↓ чтение\nсписок Python'}
+        />
+
+        <Callout tone="info">
+          Файл не является вторым списком Python. Между объектом в памяти и байтами на диске всегда есть договор о
+          формате, пути и кодировке.
+        </Callout>
+
+        <RecallCard
+          question="Что не доказывает один успешный запуск add?"
+          hint="Подумайте о перезапуске, другой рабочей папке и русских символах."
+          answer={
+            <p>
+              Он не доказывает persistence, устойчивый путь и корректную кодировку. Для этого нужны отдельная запись,
+              чтение и проверки после нового запуска.
+            </p>
+          }
+        />
+      </Section>
 
       <Section number="01" title="От памяти процесса к данным на диске">
         <Lead>
@@ -586,7 +626,7 @@ export function Lesson34({ module }: { module?: string }) {
         </Callout>
       </Section>
 
-      <Section number="03" title="Path — объект с операциями над путём">
+      <Section number="03" title="Path: объект с операциями над путём">
         <Lead>
           <code className="lesson-token">Path</code> хранит адрес и предоставляет именованные операции: проверить
           существование, создать папку, получить имя файла или прочитать текст. Это выразительнее набора строковых
@@ -876,10 +916,57 @@ export function Lesson34({ module }: { module?: string }) {
         />
       </Section>
 
-      <Section number="08" title="Проверка файлового слоя">
+      <Section number="08" title="Что мы будем делать в практике">
         <Lead>
-          Файловый код нужно проверять не только чтением функций. Выполните полный цикл: отсутствующий файл,
-          первая запись, повторное чтение, перезапись и русский текст.
+          Практика собирает только первый текстовый storage. JSON, полноценные Task и новая бизнес-логика появятся
+          позже. Сейчас нужно доказать, что путь, запись, чтение и запуск образуют один понятный договор.
+        </Lead>
+
+        <TypeCards>
+          <TypeCard badge="1" title="Путь">
+            Собрать DATA_FILE от расположения storage.py через Path, а не от случайной папки терминала.
+          </TypeCard>
+          <TypeCard badge="2" title="Запись">
+            Создать data и записать заголовки по одному на строку через with и UTF-8.
+          </TypeCard>
+          <TypeCard badge="3" title="Чтение">
+            Вернуть пустой список на первом запуске и непустые строки из существующего файла.
+          </TypeCard>
+          <TypeCard badge="4" title="Round trip">
+            Сохранить три заголовка, прочитать их и сравнить точный список через assert.
+          </TypeCard>
+          <TypeCard badge="5" title="Режимы">
+            Объяснить разницу r, w и a и связать её с намерением каждой функции.
+          </TypeCard>
+          <TypeCard badge="6" title="Две папки">
+            Отделить поиск пакета от cwd и доказать, что DATA_FILE остаётся одним и тем же.
+          </TypeCard>
+        </TypeCards>
+
+        <CodeSequence
+          title="Финальная проверка пути"
+          prompt="Что нужно сделать после смены рабочей папки?"
+          pieces={[
+            { id: "import", code: "сделать пакет studyhub доступным Python" },
+            { id: "print", code: "вывести DATA_FILE.resolve()" },
+            { id: "change", code: "сменить cwd и повторить вывод" },
+            { id: "compare", code: "сравнить два абсолютных пути" },
+          ]}
+          correctOrder={["import", "print", "change", "compare"]}
+          explanation="Сначала отделяем проблему импорта от проблемы пути. Затем сравниваем абсолютный адрес файла при двух cwd."
+        />
+
+        <Callout tone="info">
+          Если из project-parent появляется ModuleNotFoundError, это проблема поиска пакета. Временно задайте
+          PYTHONPATH равным project, повторите импорт и только потом проверяйте DATA_FILE.
+        </Callout>
+
+        <PracticeCta text="Соберите storage.py с устойчивым DATA_FILE, записью и чтением UTF-8, затем докажите round trip и одинаковый путь из разных рабочих каталогов." />
+      </Section>
+
+      <Section number="09" title="Самопроверка перед практикой">
+        <Lead>
+          Перед практикой проверьте, можете ли вы объяснить не только синтаксис, но и причину каждого решения.
         </Lead>
 
         <div className="lesson-check-group">
@@ -921,7 +1008,6 @@ export function Lesson34({ module }: { module?: string }) {
           ]}
         />
 
-        <PracticeCta text="Реализуйте storage.py с DATA_FILE на основе Path. Проверьте первый запуск без файла, запись русского текста, повторное чтение и полную перезапись содержимого." />
       </Section>
     </RichLesson>
   );
