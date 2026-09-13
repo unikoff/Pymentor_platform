@@ -1,6 +1,6 @@
 from datetime import date
 
-from fastapi import APIRouter, Depends, Query, Request, Response
+from fastapi import APIRouter, BackgroundTasks, Depends, Query, Request, Response
 from sqlalchemy.orm import Session
 
 from services.telegram import notify_booking_cancelled, notify_booking_created
@@ -71,10 +71,16 @@ async def get_bookable_slots(
 
 
 @user_router.post("/slots/{slot_id}/book")
-async def book_slot(slot_id: int, request: Request, db: Session = Depends(get_db)):
+async def book_slot(
+    slot_id: int,
+    request: Request,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+):
     user_db = await crud.get_current_user(request=request, db=db)
     slot = crud.book_slot(slot_id=slot_id, user_id=user_db.id, db=db)
-    await notify_booking_created(
+    background_tasks.add_task(
+        notify_booking_created,
         username=user_db.username,
         email=user_db.email,
         slot_date=slot.slot_date,
@@ -84,10 +90,16 @@ async def book_slot(slot_id: int, request: Request, db: Session = Depends(get_db
 
 
 @user_router.post("/slots/{slot_id}/cancel")
-async def cancel_slot(slot_id: int, request: Request, db: Session = Depends(get_db)):
+async def cancel_slot(
+    slot_id: int,
+    request: Request,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+):
     user_db = await crud.get_current_user(request=request, db=db)
     slot = crud.cancel_booking(slot_id=slot_id, user_id=user_db.id, db=db)
-    await notify_booking_cancelled(
+    background_tasks.add_task(
+        notify_booking_cancelled,
         username=user_db.username,
         email=user_db.email,
         slot_date=slot.slot_date,
