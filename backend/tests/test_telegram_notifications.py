@@ -15,7 +15,11 @@ from services.telegram import (
 
 class TelegramBookingNotificationTests(unittest.IsolatedAsyncioTestCase):
     async def test_missing_credentials_skip_notification(self) -> None:
-        with patch.dict(os.environ, {"TELEGRAM_BOT_TOKEN": "", "TELEGRAM_CHAT_ID": ""}, clear=False), patch(
+        with patch.dict(
+            os.environ,
+            {"PYMENTOR_PLATFORM_TELEGRAM_BOT_TOKEN": "", "PYMENTOR_PLATFORM_TELEGRAM_CHAT_ID": ""},
+            clear=False,
+        ), patch(
             "services.telegram._send_telegram_message"
         ) as send_message:
             sent = await notify_booking_created(
@@ -31,7 +35,7 @@ class TelegramBookingNotificationTests(unittest.IsolatedAsyncioTestCase):
     async def test_successful_notification_formats_booking_details(self) -> None:
         with patch.dict(
             os.environ,
-            {"TELEGRAM_BOT_TOKEN": "token", "TELEGRAM_CHAT_ID": "chat"},
+            {"PYMENTOR_PLATFORM_TELEGRAM_BOT_TOKEN": "token", "PYMENTOR_PLATFORM_TELEGRAM_CHAT_ID": "chat"},
             clear=False,
         ), patch("services.telegram._send_telegram_message") as send_message:
             sent = await notify_booking_created(
@@ -56,7 +60,7 @@ class TelegramBookingNotificationTests(unittest.IsolatedAsyncioTestCase):
     async def test_telegram_failure_does_not_raise(self) -> None:
         with patch.dict(
             os.environ,
-            {"TELEGRAM_BOT_TOKEN": "token", "TELEGRAM_CHAT_ID": "chat"},
+            {"PYMENTOR_PLATFORM_TELEGRAM_BOT_TOKEN": "token", "PYMENTOR_PLATFORM_TELEGRAM_CHAT_ID": "chat"},
             clear=False,
         ), patch(
             "services.telegram._send_telegram_message",
@@ -74,7 +78,7 @@ class TelegramBookingNotificationTests(unittest.IsolatedAsyncioTestCase):
     async def test_cancelled_notification_uses_cancelled_title(self) -> None:
         with patch.dict(
             os.environ,
-            {"TELEGRAM_BOT_TOKEN": "token", "TELEGRAM_CHAT_ID": "chat"},
+            {"PYMENTOR_PLATFORM_TELEGRAM_BOT_TOKEN": "token", "PYMENTOR_PLATFORM_TELEGRAM_CHAT_ID": "chat"},
             clear=False,
         ), patch("services.telegram._send_telegram_message") as send_message:
             sent = await notify_booking_cancelled(
@@ -95,6 +99,27 @@ class TelegramBookingNotificationTests(unittest.IsolatedAsyncioTestCase):
                 "🗓 *Дата:* 11\\.09 18:00 \\(через 6 часов\\)"
             ),
         )
+
+    async def test_shared_mentoring_credentials_are_not_a_booking_fallback(self) -> None:
+        with patch.dict(
+            os.environ,
+            {
+                "PYMENTOR_PLATFORM_TELEGRAM_BOT_TOKEN": "",
+                "PYMENTOR_PLATFORM_TELEGRAM_CHAT_ID": "",
+                "TELEGRAM_BOT_TOKEN": "mentoring-token",
+                "TELEGRAM_CHAT_ID": "mentoring-chat",
+            },
+            clear=False,
+        ), patch("services.telegram._send_telegram_message") as send_message:
+            sent = await notify_booking_created(
+                username="Никита",
+                email="student@example.com",
+                slot_date=date(2026, 9, 15),
+                start_time="18:00",
+            )
+
+        self.assertFalse(sent)
+        send_message.assert_not_called()
 
     def test_message_uses_requested_compact_format_and_escapes_markdown(self) -> None:
         message = _format_booking_message(

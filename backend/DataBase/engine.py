@@ -5,8 +5,8 @@ from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
-load_dotenv()
 BACKEND_ROOT = Path(__file__).resolve().parent.parent
+load_dotenv(BACKEND_ROOT / ".env")
 DEFAULT_DATABASE_URL = f"sqlite:///{(BACKEND_ROOT / 'test.db').as_posix()}"
 configured_database_url = os.getenv("DATABASE_URL")
 

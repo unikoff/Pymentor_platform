@@ -1,4 +1,4 @@
-"""Telegram notifications for important booking events."""
+"""Telegram notifications for booking events, isolated from mentoring leads."""
 
 from __future__ import annotations
 
@@ -16,11 +16,13 @@ from urllib.parse import urlencode
 logger = logging.getLogger(__name__)
 MOSCOW_TZ = timezone(timedelta(hours=3))
 _MARKDOWN_V2_SPECIAL_CHARS = re.compile(r"([_\*\[\]\(\)~`>#+\-=|{}.!\\])")
+_PLATFORM_BOT_TOKEN_ENV = "PYMENTOR_PLATFORM_TELEGRAM_BOT_TOKEN"
+_PLATFORM_CHAT_ID_ENV = "PYMENTOR_PLATFORM_TELEGRAM_CHAT_ID"
 
 
 def _get_telegram_credentials() -> tuple[str, str] | None:
-    token = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
-    chat_id = os.getenv("TELEGRAM_CHAT_ID", "").strip()
+    token = os.getenv(_PLATFORM_BOT_TOKEN_ENV, "").strip()
+    chat_id = os.getenv(_PLATFORM_CHAT_ID_ENV, "").strip()
     if not token or not chat_id:
         return None
     return token, chat_id
