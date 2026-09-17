@@ -2279,7 +2279,7 @@ export function Lesson44({ module }: { module?: string }) {
         </div>
         <CodeBlock
           caption={"карта финальной проверки"}
-          code={"готовые компоненты -> матрица рисков -> integration и acceptance\\nошибки -> README и architecture.md -> чистый Git -> release и защита"}
+          code={"готовые компоненты -> матрица рисков -> integration и acceptance\nошибки -> README и architecture.md -> чистый Git -> release и защита"}
         />
         <RecallCard
           question={"Что ещё не доказано одним успешным запуском команды add?"}
@@ -2305,7 +2305,7 @@ export function Lesson44({ module }: { module?: string }) {
         </div>
         <CodeBlock
           caption={"независимый пример границы"}
-          code={"class CatalogService:\\n    def __init__(self, catalog):\\n        self.catalog = catalog\\n\\n    def add(self, name):\\n        items = self.catalog.load()\\n        items.append(name)\\n        self.catalog.save(items)"}
+          code={"class CatalogService:\n    def __init__(self, catalog):\n        self.catalog = catalog\n\n    def add(self, name):\n        items = self.catalog.load()\n        items.append(name)\n        self.catalog.save(items)"}
         />
         <p>
           {"Отдельный unit-тест может проверить копирование списка. Integration-проверка соединяет service и catalog и убеждается, что один договор действительно используется другим. Acceptance-проверка пошла бы ещё дальше и проверила итог для человека."}
@@ -2329,13 +2329,13 @@ export function Lesson44({ module }: { module?: string }) {
         </Lead>
         <CodeBlock
           caption={"риск -> проверка -> наблюдение"}
-          code={"неверный title -> unit Task -> понятное исключение\\nобщий список tags -> unit Task -> списки независимы\\nпотеря после перезапуска -> integration JsonStorage -> новый service видит задачу\\nповреждённый JSON -> проверка ошибки -> StorageError, а не []\\nCLI обходит service -> smoke-приёмка -> JSON-логика не находится в CLI"}
+          code={"неверный title -> unit Task -> понятное исключение\nобщий список tags -> unit Task -> списки независимы\nпотеря после перезапуска -> integration JsonStorage -> новый service видит задачу\nповреждённый JSON -> проверка ошибки -> StorageError, а не []\nCLI обходит service -> smoke-приёмка -> JSON-логика не находится в CLI"}
         />
         <p>
           {"Матрица похожа на контрольный список перед полётом. Она помогает увидеть пробел до того, как проблема попадёт к пользователю. Строка матрицы должна объяснять не только название функции, но и цену того, что случится при её поломке."}
         </p>
         <BugHunt
-          code={"try:\\n    data = read_data()\\nexcept Exception:\\n    return []"}
+          code={"try:\n    data = read_data()\nexcept Exception:\n    return []"}
           question={"Почему этот обработчик опасен для persistence?"}
           options={["Он скрывает повреждение и может привести к перезаписи данных", "Он слишком короткий для Python", "Он всегда ускоряет чтение JSON"]}
           correctIndex={0}
@@ -2367,7 +2367,7 @@ export function Lesson44({ module }: { module?: string }) {
         />
         <CodeBlock
           caption={"как читать сценарий"}
-          code={"Arrange: временный путь, storage и service\\nAct: пользовательские операции\\nAssert: типы, состояние и статистика после нового экземпляра"}
+          code={"Arrange: временный путь, storage и service\nAct: пользовательские операции\nAssert: типы, состояние и статистика после нового экземпляра"}
         />
         <p>
           {"tmp_path изолирует тест. Он не зависит от настоящего data/tasks.json, личных данных автора или порядка запуска других тестов. Такой сценарий одинаково понятен локально и в CI."}
@@ -2396,10 +2396,10 @@ export function Lesson44({ module }: { module?: string }) {
         </div>
         <CodeBlock
           caption={"две разные ситуации"}
-          code={"нет файла -> нормальный первый запуск -> пустое состояние\\nесть файл, но JSON повреждён -> StorageError -> данные не маскируются"}
+          code={"нет файла -> нормальный первый запуск -> пустое состояние\nесть файл, но JSON повреждён -> StorageError -> данные не маскируются"}
         />
         <BugHunt
-          code={"try:\\n    service.mark_done(unknown_id)\\n    service.save()"}
+          code={"try:\n    service.mark_done(unknown_id)\n    service.save()"}
           question={"Что проверить в этом ошибочном пути прежде всего?"}
           options={["Ошибка неизвестного id не меняет состояние и не запускает ошибочное сохранение", "Нужно заменить все ошибки на []", "Нужно перенести поиск id в CLI"]}
           correctIndex={0}
@@ -2429,7 +2429,7 @@ export function Lesson44({ module }: { module?: string }) {
         </div>
         <CodeBlock
           caption={"маршрут нового разработчика"}
-          code={"чистый клон -> установка -> pytest -> запуск CLI -> контрольный результат\\n\\nCLI -> PlannerService -> Task и Storage contract\\n                         -> MemoryStorage / JsonStorage"}
+          code={"чистый клон -> установка -> pytest -> запуск CLI -> контрольный результат\n\nCLI -> PlannerService -> Task и Storage contract\n                         -> MemoryStorage / JsonStorage"}
         />
         <Callout tone="info">
           {"README отвечает на вопрос «как запустить и проверить». Архитектурная схема отвечает на вопрос «почему части связаны именно так». Рабочий JSON, кэш и секреты не становятся частью примера только потому, что лежат рядом с кодом."}
@@ -2447,7 +2447,7 @@ export function Lesson44({ module }: { module?: string }) {
         </Lead>
         <CodeBlock
           caption={"последовательность выпуска"}
-          code={"изменения -> pytest -> чистый status -> проверенный commit\\n    -> tag -> push -> GitHub Release с фактическими notes"}
+          code={"изменения -> pytest -> чистый status -> проверенный commit\n    -> tag -> push -> GitHub Release с фактическими notes"}
         />
         <p>
           {"Перед выпуском нужно исключить рабочий JSON, кэш, виртуальное окружение, токены и личные пути. Тег не проверяет код и не исправляет документацию. Он только отмечает состояние, которое уже прошло проверку."}
@@ -2471,7 +2471,7 @@ export function Lesson44({ module }: { module?: string }) {
         </Lead>
         <CodeBlock
           caption={"история одной задачи"}
-          code={"CLI -> PlannerService -> Task проверяет правила\\n                         -> storage сохраняет состояние\\n                         -> JSON -> новый запуск -> Task снова доступна"}
+          code={"CLI -> PlannerService -> Task проверяет правила\n                         -> storage сохраняет состояние\n                         -> JSON -> новый запуск -> Task снова доступна"}
         />
         <div className="lesson39-concept-grid">
           <Lesson39Concept title="Причина">
@@ -2520,7 +2520,7 @@ export function Lesson44({ module }: { module?: string }) {
         </div>
         <CodeBlock
           caption={"итоговый маршрут"}
-          code={"матрица -> persistent acceptance -> ошибки -> CLI smoke\\n    -> README и architecture.md -> чистая приёмка -> release"}
+          code={"матрица -> persistent acceptance -> ошибки -> CLI smoke\n    -> README и architecture.md -> чистая приёмка -> release"}
         />
         <Callout tone="info">
           {"Готовность видна по наблюдениям: новый service восстанавливает состояние, ошибочные пути не меняют данные, README повторяется из чистого окружения, Git не содержит личных файлов, а release привязан к проверенному коммиту."}
