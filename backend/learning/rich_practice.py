@@ -3226,34 +3226,450 @@ FastAPI, schemas, storage и серверная реализация
                  'success status и response shape для каждого route, показывает три сценария, фиксирует 404 и '
                  '400, а также отделяет текущий договор от будущих schemas, FastAPI и storage.'}],
  51: [{'title': 'Сохраните два воспроизводимых request в Postman',
-       'task': 'На этом занятии нужен реальный HTTP-клиент, но локального FastAPI ещё нет. Создайте Postman '
-               'collection на безопасном echo-сервисе и сохраните request вместе с проверками результата.',
-       'steps': ['Создайте collection StudyHub HTTP Lab и environment с переменной '
-                 'base_url=https://postman-echo.com.',
-                 'Добавьте GET {{base_url}}/get с query-параметрами course=python и block=10.',
-                 'Отправьте GET и проверьте status 200, URL в request и отражённые query-параметры в JSON response.',
-                 'Добавьте POST {{base_url}}/post, header Content-Type: application/json и JSON body с title=Изучить '
-                 'HTTP и priority=4.',
-                 'Отправьте POST и найдите отражённый body внутри response.',
-                 'Добавьте Postman tests: status равен 200 и response содержит переданный title.',
-                 'Сохраните оба request, экспортируйте collection в папку postman/ и удалите из экспорта секретные '
-                 'значения, если они появились.'],
-       'result': 'Готово, если два сохранённых request повторно выполняются, GET отражает query, POST отражает JSON '
-                 'body, tests зелёные, а collection экспортирована в проект.'}],
+       'task': 'Соберите переносимый учебный набор ручных проверок. В нём будут два сохранённых request к Postman Echo: '
+                'GET с query и POST с JSON body. Вы проверите не только status, но и то, что сервер действительно получил '
+                'переданные значения. Собственный Planner API пока не запускается.',
+       'tasks': [
+           {'title': 'Подготовьте папку будущего проекта',
+            'task': 'Выберите свою учебную рабочую папку, не исходники платформы, и создайте в ней studyhub-api/postman. '
+                    'Сюда попадут экспортированные запросы; в следующем занятии в studyhub-api появится FastAPI-приложение. '
+                    'Сейчас не создавайте сервер и не удаляйте уже существующие файлы.',
+            'requirements': [
+                'В выбранной учебной папке существует studyhub-api/postman/.',
+                'Если studyhub-api или postman уже существуют, их содержимое сохранено.',
+                'В этой практике не создаются FastAPI-приложение и виртуальное окружение.',
+                'Путь относится к вашей учебной работе, а не к репозиторию Pymentor.'
+            ],
+            'hint': 'Это пока только место для артефактов. Отличайте папку будущего проекта от запущенного приложения: наличие каталога ещё не означает, что сервер уже создан.',
+            'answer': {
+                'explanation': 'Экспорт будет частью проекта, который продолжим в следующем занятии. Если сохранить его в случайную папку, при создании приложения артефакты окажутся разрозненными. На этом шаге мы готовим только каталог, без кода сервера.',
+                'steps': [
+                    'Откройте выбранную папку для учебных проектов. Не работайте внутри исходников самой платформы.',
+                    'Создайте каталог studyhub-api, а внутри него каталог postman.',
+                    'Если один из каталогов уже есть, используйте его и не очищайте.',
+                    'Проверьте, что путь назначения для файлов будет studyhub-api/postman.'
+                ],
+                'code': '''# PowerShell, из папки для учебных проектов
+New-Item -ItemType Directory -Force -Path studyhub-api/postman
+
+# macOS или Linux, из папки для учебных проектов
+mkdir -p studyhub-api/postman''',
+                'checks': [
+                    'Созданы только папки, а не приложение или окружение.',
+                    'Существующие пользовательские файлы не удалены и не перезаписаны.',
+                    'Папка postman находится внутри studyhub-api.'
+                ]
+            }},
+           {'title': 'Подготовьте collection и environment',
+            'task': 'Создайте рабочее место для двух связанных HTTP-запросов. Collection будет хранить сценарии, '
+                    'а environment задаст общий адрес Echo, чтобы не повторять его в каждом URL.',
+            'requirements': [
+                'Создайте collection с названием StudyHub HTTP Lab.',
+                'Создайте environment с названием Echo.',
+                'Добавьте переменную base_url со значением https://postman-echo.com.',
+                'Выберите environment Echo активным перед отправкой запросов.',
+                'Убедитесь, что {{base_url}} подставляется и итоговый URL GET заканчивается на /get.',
+                'Войдите в личное Postman workspace: для сохранения collection и environment в этом сценарии нужен аккаунт.',
+                'Не путайте аккаунт Postman с доступом к Echo: для запросов к Echo credentials не нужны.',
+                'Не добавляйте токены, пароли или реальные данные пользователя.'
+            ],
+            'hint': 'Спросите себя, какое значение должно меняться между серверами. Сохранённый method и path должны '
+                    'остаться прежними, когда меняется только общий адрес.',
+            'answer': {
+                'explanation': 'Collection хранит связанные запросы и их проверки. Environment хранит значения '
+                               'конкретной цели, в данном случае базовый URL. Это позволяет позднее направить те же '
+                               'сценарии на другой сервер.',
+                'steps': [
+                    'Войдите в Postman и выберите личное рабочее пространство для сохранения объектов.',
+                    'Создайте collection StudyHub HTTP Lab.',
+                    'Создайте environment Echo.',
+                    'Добавьте variable base_url со значением https://postman-echo.com.',
+                    'Выберите Echo активным environment.',
+                    'Проверьте подстановку: {{base_url}}/get должен разрешиться в https://postman-echo.com/get.',
+                    'Проверьте, что в учебном environment нет секретных значений.'
+                ],
+                'code': '''Collection: StudyHub HTTP Lab
+Environment: Echo
+base_url: https://postman-echo.com
+
+В URL request используйте переменную:
+{{base_url}}/get''',
+                'checks': [
+                    'Есть отдельные collection и environment.',
+                    'base_url содержит адрес Echo без завершающего path.',
+                    'Environment Echo выбран перед отправкой.',
+                    'В экспортируемых данных нет credentials.'
+                ]
+            }},
+           {'title': 'Сохраните GET с query-параметрами',
+            'task': 'Добавьте в collection чтение через GET. Query нужен для настройки запроса и должен остаться в URL, '
+                    'а не превратиться в JSON body.',
+            'requirements': [
+                'Создайте request с понятным именем, например Read query from Echo.',
+                'Укажите method GET и URL {{base_url}}/get.',
+                'Через Params добавьте course=python и block=10.',
+                'Отправьте request и проверьте status 200.',
+                'Найдите course и block внутри response.args.',
+                'Добавьте post-response checks для status 200, course=python и block=10.',
+                'После добавления проверок сохраните request в StudyHub HTTP Lab.'
+            ],
+            'hint': 'Сначала проверьте фактический response без скрипта. Найдите в JSON место, куда Echo поместил '
+                    'query. Затем напишите сравнение для этого значения.',
+            'answer': {
+                'explanation': 'GET передаёт query в URL, а Echo отражает пары в объекте args. Post-response script '
+                               'запускается после ответа и может сравнить каждое фактическое значение с ожидаемым.',
+                'steps': [
+                    'Создайте GET request внутри collection.',
+                    'Введите {{base_url}}/get и добавьте две пары в Params.',
+                    'Отправьте request и осмотрите status, Content-Type и response body.',
+                    'Убедитесь, что args.course содержит python, а args.block содержит 10.',
+                    'В Scripts, затем Post-response, добавьте проверки.',
+                    'Сохраните request и проверьте Test Results.'
+                ],
+                'code': '''pm.test("Status is 200", function () {
+  pm.response.to.have.status(200);
+});
+
+const responseData = pm.response.json();
+
+pm.test("Echo received course", function () {
+  pm.expect(responseData.args.course).to.eql("python");
+});
+
+pm.test("Echo received block", function () {
+  pm.expect(responseData.args.block).to.eql("10");
+});''',
+                'checks': [
+                    'Method равен GET.',
+                    'Обе пары query находятся в Params и отражены в args.',
+                    'Response имеет status 200.',
+                    'Проверки status, course и block видны в Test Results и проходят.',
+                    'Request сохранён после добавления post-response script.'
+                ]
+            }},
+           {'title': 'Сохраните POST с JSON body',
+            'task': 'Добавьте request, который отправляет данные объекта в body. Echo вернёт полученный JSON, но не создаст '
+                    'Task и не сохранит состояние Planner.',
+            'requirements': [
+                'Создайте второй request с понятным именем, например Send JSON to Echo.',
+                'Укажите method POST и URL {{base_url}}/post.',
+                'В Body выберите raw и формат JSON, затем передайте title=Изучить HTTP и числовое priority=4.',
+                'Перед отправкой проверьте, что выбранный JSON-формат задаёт Content-Type: application/json; не добавляйте дублирующий header вручную.',
+                'Отправьте request и найдите title и priority в response.json.',
+                'Добавьте post-response checks для status 200, title и priority.',
+                'После добавления проверок сохраните request в ту же collection.'
+            ],
+            'hint': 'Echo помещает разобранное тело в response.json. Разделите ожидания: status, текстовый title и числовой priority. В JSON число 4 не нужно заключать в кавычки.',
+            'answer': {
+                'explanation': 'Postman формирует JSON body, а Content-Type сообщает его формат. Echo отражает распознанный '
+                               'JSON в поле response.json. Проверка доказывает, что запрос передал ожидаемое значение, '
+                               'но не означает, что запись появилась в Planner.',
+                'steps': [
+                    'Создайте POST request и укажите {{base_url}}/post.',
+                    'Откройте Body, выберите raw и формат JSON. Postman автоматически добавит подходящий Content-Type.',
+                    'Передайте JSON-объект с title равным Изучить HTTP и числом priority равным 4.',
+                    'Проверьте в headers запроса Content-Type: application/json. Не добавляйте второй такой header вручную.',
+                    'Отправьте request и найдите поля в response.json.',
+                    'Добавьте проверки status 200, title и priority.',
+                    'Сохраните request и проверьте Test Results.'
+                ],
+                'code': '''pm.test("Status is 200", function () {
+  pm.response.to.have.status(200);
+});
+
+const responseData = pm.response.json();
+
+pm.test("Echo received title", function () {
+  pm.expect(responseData.json.title).to.eql("Изучить HTTP");
+});
+
+pm.test("Echo received numeric priority", function () {
+  pm.expect(responseData.json.priority).to.eql(4);
+});''',
+                'checks': [
+                    'Method равен POST, тело выбрано как JSON.',
+                    'Echo отразил title и priority внутри response.json.',
+                    'Content-Type сообщает application/json.',
+                    'Проверки status, title и numeric priority проходят.',
+                    'Результат не назван созданной Task.'
+                ]
+            }},
+           {'title': 'Повторите запросы и экспортируйте лабораторию',
+            'task': 'Сначала повторно отправьте оба запроса и добейтесь прохождения проверок. Затем экспортируйте '
+                    'collection и environment как JSON, поместите их в папку будущего проекта studyhub-api/postman '
+                    'и задайте файлам согласованные имена.',
+            'requirements': [
+                'Убедитесь, что оба request и post-response checks сохранены в collection.',
+                'Повторно отправьте GET и POST; все проверки должны пройти до экспорта.',
+                'Экспортируйте collection как JSON и поместите файл в studyhub-api/postman/http-lab.collection.json.',
+                'Экспортируйте environment отдельно и поместите файл в studyhub-api/postman/echo.environment.json.',
+                'Проверьте, что collection-файл содержит оба request с checks, а environment-файл сохраняет base_url=https://postman-echo.com.',
+                'Убедитесь, что оба файла содержат JSON и не включают токены, пароли или личные данные.'
+            ],
+            'hint': 'Collection и environment решают разные задачи. При переносе одного файла убедитесь, что доступен и второй: '
+                    'без активного значения base_url переменная не даст полный адрес.',
+            'answer': {
+                'explanation': 'Повторный запуск проверяет воспроизводимость, а экспорт делает сценарии переносимыми. '
+                               'Collection содержит запросы и тесты. Environment содержит base_url. При импорте нужны '
+                               'оба файла, иначе переменной адреса не будет.',
+                'steps': [
+                    'Сверьте, что в collection лежат GET и POST, а в каждом сохранён post-response script.',
+                    'Выберите Echo и повторно отправьте оба request. До экспорта проверьте status и все assertions.',
+                    'Экспортируйте collection как JSON. Если Postman или браузер скачал файл в Downloads, переместите его в studyhub-api/postman и назовите http-lab.collection.json.',
+                    'Экспортируйте environment Echo отдельно. Переместите скачанный файл туда же и назовите echo.environment.json.',
+                    'Откройте оба файла: в collection проверьте GET, POST и checks, в environment найдите base_url со значением https://postman-echo.com.',
+                    'Убедитесь, что экспорт не содержит credentials или персональных данных.'
+                ],
+                'code': '''studyhub-api/
+└── postman/
+    ├── http-lab.collection.json
+    └── echo.environment.json
+
+Collection: GET query + POST JSON + checks
+Environment: base_url = https://postman-echo.com''',
+                'checks': [
+                    'Оба request повторно выполняются.',
+                    'Тесты обоих request проходят.',
+                    'Collection и environment экспортированы отдельно.',
+                    'В collection JSON находятся оба запроса и их checks, а environment JSON содержит правильный base_url.',
+                    'В файлах отсутствуют credentials и персональные данные.'
+                ]
+            }}
+       ],
+       'result': 'Готово, если collection содержит воспроизводимые GET и POST, query и JSON body отражены в response, '
+                 'post-response checks проходят, collection и environment экспортированы в studyhub-api/postman, а ученик объясняет, '
+                 'почему Echo не создаёт Task и почему эти проверки не заменяют тесты Planner API.'}],
  52: [{'title': 'Запустите первое FastAPI-приложение',
-       'task': 'Создайте минимальный локальный Planner API. На этом шаге приложение содержит только health endpoint '
-               'и автоматически сгенерированную документацию.',
-       'steps': ['Создайте папку studyhub-api, виртуальное окружение и установите fastapi и uvicorn.',
-                 'Создайте app/main.py, объявите app = FastAPI(title="StudyHub Planner API").',
-                 'Добавьте синхронный endpoint GET /health, который возвращает словарь status=ok.',
-                 'Запустите uvicorn app.main:app --reload из корня studyhub-api.',
-                 'Откройте /health и проверьте status 200 и JSON body {"status": "ok"}.',
-                 'Откройте /docs, найдите GET /health и выполните его через Try it out.',
-                 'Остановите сервер, запустите его из неправильной директории, прочитайте ошибку импорта и затем '
-                 'снова запустите корректно.',
-                 'Создайте requirements.txt или pyproject.toml и коммит feat: start Planner API.'],
-       'result': 'Готово, если команда запуска воспроизводима, /health и /docs работают, а ученик объясняет роли '
-                 'Uvicorn, объекта app, decorator и return.'}],
+       'task': 'Соберите отдельный локальный API-проект, который принимает HTTP-запрос, возвращает health-ответ и показывает зарегистрированный маршрут в Swagger UI. Проверяйте результат через клиента, а не только по наличию кода.',
+       'tasks': [
+           {'title': 'Продолжите проект и подготовьте виртуальное окружение',
+            'task': 'Продолжите studyhub-api из прошлой практики: сохраните каталог postman с экспортами и создайте в корне виртуальное окружение. FastAPI и Uvicorn должны устанавливаться в это окружение, чтобы другие Python-проекты не влияли на запуск.',
+            'requirements': [
+                'В корне studyhub-api создано окружение .venv.',
+                'Каталог postman и два экспорта из прошлой практики сохранены.',
+                'Окружение активировано перед установкой пакетов.',
+                'В него установлены fastapi и uvicorn.',
+                'python -m pip show fastapi находит пакет в активном окружении.'
+            ],
+            'hint': 'Сначала проверьте, каким Python выполняется команда. Если окружение не активировано, pip может установить пакеты не туда, откуда позже запускается сервер.',
+            'answer': {
+                'explanation': 'Виртуальное окружение изолирует зависимости проекта. Команда python -m pip использует pip того интерпретатора Python, который выбран сейчас.',
+                'steps': [
+                    'Из учебной рабочей папки перейдите в studyhub-api, не удаляя и не пересоздавая существующую папку postman.',
+                    'Создайте окружение: python -m venv .venv.',
+                    'В PowerShell активируйте .\\.venv\\Scripts\\Activate.ps1. В macOS или Linux используйте source .venv/bin/activate.',
+                    'Установите пакеты командой python -m pip install fastapi uvicorn.',
+                    'Проверьте установку командами python -m pip show fastapi и python -m pip show uvicorn.'
+                ],
+                'code': '''# PowerShell, из папки для учебных проектов
+cd studyhub-api
+python -m venv .venv
+.\\.venv\\Scripts\\Activate.ps1
+python -m pip install fastapi uvicorn
+
+# macOS или Linux, из папки для учебных проектов
+cd studyhub-api
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install fastapi uvicorn''',
+                'checks': [
+                    'В корне проекта есть .venv.',
+                    'Активный Python и pip относятся к .venv.',
+                    'Оба пакета находятся командами python -m pip show.'
+                ]
+            }},
+           {'title': 'Создайте импортируемое приложение',
+            'task': 'Подготовьте пакет app и создайте в app/main.py объект FastAPI с названием StudyHub Planner API. Позже Uvicorn должен импортировать именно этот объект.',
+            'requirements': [
+                'Внутри studyhub-api создана папка app и пустой файл app/__init__.py.',
+                'В app/main.py импортирован FastAPI.',
+                'Объявлен app = FastAPI(title="StudyHub Planner API").',
+                'Из корня проекта команда python -c "from app.main import app; print(app.title)" выводит StudyHub Planner API.'
+            ],
+            'hint': 'Пока сервер не нужен. Проверьте более простой контракт: может ли обычный Python импортировать модуль и прочитать из него переменную app?',
+            'answer': {
+                'explanation': 'FastAPI() создаёт объект приложения, но не запускает сервер и не открывает порт. Файл __init__.py явно показывает, что app является Python-пакетом, а main.py становится модулем приложения.',
+                'steps': [
+                    'Создайте папку app и пустой app/__init__.py.',
+                    'Создайте app/main.py.',
+                    'Импортируйте FastAPI и создайте объект с нужным title.',
+                    'Из корня studyhub-api проверьте импорт командой из условия.'
+                ],
+                'code': '''# app/main.py
+from fastapi import FastAPI
+
+app = FastAPI(title="StudyHub Planner API")''',
+                'checks': [
+                    'Файл app/main.py импортируется из корня проекта.',
+                    'У объекта app title равен StudyHub Planner API.',
+                    'Для проверки импорта Uvicorn пока не требуется.'
+                ]
+            }},
+           {'title': 'Зарегистрируйте GET /health',
+            'task': 'Добавьте один маршрут для проверки доступности приложения. Он обрабатывает GET по path /health и возвращает небольшой JSON-объект без чтения или изменения задач.',
+            'requirements': [
+                'Маршрут зарегистрирован для метода GET и path /health.',
+                'Под декоратором объявлена синхронная функция health без параметров.',
+                'Функция возвращает словарь с единственным полем status и значением ok.',
+                'Маршрут не обращается к базе, файлам или данным задач.'
+            ],
+            'hint': 'Разделите две роли: декоратор задаёт, на какой запрос реагировать, а функция возвращает данные ответа. Какой Python-объект должен вернуть health?',
+            'answer': {
+                'explanation': 'FastAPI связывает пару method и path с функцией. При подходящем запросе функция возвращает словарь, который FastAPI преобразует в JSON. Этот health-сигнал подтверждает только ответ приложения, а не состояние ещё не подключённых баз или внешних систем.',
+                'steps': [
+                    'Оставьте объект app на верхнем уровне app/main.py.',
+                    'Зарегистрируйте для него GET-маршрут с path /health.',
+                    'Объявите функцию health без параметров.',
+                    'Верните словарь status=ok.'
+                ],
+                'code': '''from fastapi import FastAPI
+
+app = FastAPI(title="StudyHub Planner API")
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}''',
+                'checks': [
+                    'Метод и path равны GET /health.',
+                    'Функция не вызывается вручную при импорте.',
+                    'Возвращается {"status": "ok"}.',
+                    'Список задач и CRUD в этом приложении ещё не добавлены.'
+                ]
+            }},
+           {'title': 'Запустите Uvicorn из корня проекта',
+             'task': 'Запустите приложение как локальный HTTP-сервер. Команда выполняется из studyhub-api, где Python может найти пакет app.',
+             'requirements': [
+                 'Текущая папка перед запуском является корнем studyhub-api.',
+                 'В активном окружении доступен Uvicorn.',
+                 'Выполнена команда python -m uvicorn app.main:app --reload.',
+                 'В консоли указан адрес http://127.0.0.1:8000.',
+                 'Сервер оставлен запущенным для следующей проверки endpoint и Swagger UI.'
+            ],
+            'hint': 'Прочитайте import string по частям: до двоеточия указан модуль, после него имя объекта. Затем проверьте, откуда Python ищет этот модуль.',
+            'answer': {
+                'explanation': 'Uvicorn принимает HTTP-соединения. Строка app.main:app просит импортировать модуль app.main и взять из него объект app. Флаг --reload перезапускает сервер после изменений кода и предназначен для разработки.',
+                'steps': [
+                    'Откройте терминал в корне studyhub-api.',
+                    'Активируйте .venv.',
+                    'Выполните команду запуска.',
+                    'Убедитесь, что Uvicorn сообщает об успешном старте и адресе.',
+                    'Оставьте терминал открытым: следующая карточка проверяет работающий сервер.'
+                ],
+                'code': '''python -m uvicorn app.main:app --reload
+
+# app.main : app
+# модуль    : объект приложения''',
+                'checks': [
+                    'Команда выполнена из studyhub-api, а не из app.',
+                    'Uvicorn смог импортировать объект приложения.',
+                    'В консоли виден адрес http://127.0.0.1:8000.',
+                    'Сервер работает, пока процесс не остановлен.'
+                ]
+            }},
+           {'title': 'Проверьте ответ и Swagger UI',
+            'task': 'Подтвердите результат двумя клиентскими способами: откройте endpoint напрямую и выполните его из автоматически созданной документации. Сверьте status и body ответа.',
+            'requirements': [
+                'GET http://127.0.0.1:8000/health возвращает HTTP status 200.',
+                'В JSON body находится {"status": "ok"}.',
+                'На http://127.0.0.1:8000/docs показан GET /health.',
+                'Try it out и Execute возвращают тот же успешный ответ.',
+                'Вы можете объяснить, почему GET / может вернуть 404 при работающем GET /health.'
+            ],
+            'hint': 'Проверьте отдельно соединение, совпадение маршрута и содержимое ответа. Swagger UI является клиентским интерфейсом, а не местом, где объявляется маршрут.',
+            'answer': {
+                'explanation': 'Браузер проверяет обычный HTTP-путь. Swagger UI показывает известный FastAPI контракт и позволяет выполнить тот же запрос. Status и body являются двумя отдельными наблюдениями.',
+                'steps': [
+                    'Пока Uvicorn работает, откройте http://127.0.0.1:8000/health.',
+                    'Сверьте JSON со значением status=ok.',
+                    'Откройте http://127.0.0.1:8000/docs.',
+                    'Запустите GET /health через Try it out и Execute.',
+                    'Сравните status и response body с ответом браузера.',
+                    'Проверьте GET /. Ответ 404 ожидаем, потому что такой маршрут не зарегистрирован.'
+                ],
+                'code': '''GET http://127.0.0.1:8000/health
+
+HTTP 200 OK
+Content-Type: application/json
+
+{"status": "ok"}''',
+                'checks': [
+                    'Сервер всё ещё запущен во время запроса.',
+                    'Прямой запрос вернул 200 и ожидаемый JSON.',
+                    'Swagger показывает и выполняет GET /health.',
+                    '404 для незарегистрированного GET / не считается ошибкой запуска.'
+                ]
+            }},
+           {'title': 'Разберите ошибку рабочей директории',
+            'task': 'Безопасно воспроизведите ошибку импорта: запустите ту же команду из папки app. Объясните, почему модуль не найден, затем вернитесь в корень и восстановите работающий сервер.',
+            'requirements': [
+                'До эксперимента остановлен запущенный Uvicorn.',
+                'Команда запуска выполнена из studyhub-api/app.',
+                'Сообщение об ошибке импорта прочитано и связано с путём поиска Python.',
+                'После ошибки остановлен процесс-наблюдатель Uvicorn через Ctrl+C.',
+                'Объяснено, что HTTP-запрос ещё не дошёл до endpoint.',
+                'Из корня studyhub-api сервер снова запускается, а GET /health возвращает прежний результат.'
+            ],
+            'hint': 'Если HTTP-ответа ещё нет, не отлаживайте JSON body. Сначала выясните, смог ли сервер импортировать app.main и из какой директории выполнялся запуск.',
+            'answer': {
+                 'explanation': 'Import string ищется относительно путей импорта процесса. Из каталога app команда app.main ищет пакет app внутри текущего пути, и ожидаемая структура не совпадает. Это ошибка до начала HTTP-обработки.',
+                'steps': [
+                    'Остановите сервер через Ctrl+C.',
+                    'Из корня studyhub-api перейдите в app.',
+                    'Повторите команду запуска и прочитайте ошибку импорта. Процесс-наблюдатель с --reload может остаться в терминале.',
+                    'Нажмите Ctrl+C и дождитесь приглашения командной строки.',
+                    'Вернитесь на уровень выше, в studyhub-api.',
+                    'Запустите Uvicorn снова, проверьте GET /health и затем остановите сервер через Ctrl+C.'
+                ],
+                'code': '''# Начните из корня studyhub-api
+cd app
+python -m uvicorn app.main:app --reload
+
+# После ошибки нажмите Ctrl+C и дождитесь приглашения командной строки.
+# Затем вернитесь в корень проекта и запустите снова:
+cd ..
+python -m uvicorn app.main:app --reload''',
+                'checks': [
+                    'Изменена только рабочая директория запуска.',
+                    'Файлы не удалялись и не переименовывались.',
+                    'Причина относится к импорту до получения HTTP response.',
+                    'После остановки процесса-наблюдателя команда cd .. выполняется из app.',
+                    'После возврата в корень GET /health снова работает.'
+                ]
+            }},
+           {'title': 'Сохраните команду запуска и зависимости',
+             'task': 'Оставьте в проекте короткую инструкцию запуска и список установленных зависимостей. Другой человек должен понять, из какой папки запускать сервер и чем восстановить окружение.',
+             'requirements': [
+                 'В корне studyhub-api создан requirements.txt из активного окружения.',
+                 'В requirements.txt присутствуют FastAPI и Uvicorn.',
+                 'README.md содержит команду установки зависимостей из requirements.txt.',
+                 'README.md содержит команду запуска сервера и указывает запускать её из корня studyhub-api.',
+                 'README.md предлагает создать новое .venv, а не переносить готовую папку окружения.'
+             ],
+             'hint': 'Разделите инструкцию и содержимое окружения: README объясняет команды человеку, requirements.txt перечисляет пакеты, а .venv содержит их локальные установленные файлы.',
+             'answer': {
+                 'explanation': 'README сохраняет шаги запуска, а requirements.txt позволяет установить перечисленные пакеты в новое окружение. Папку .venv обычно создают заново на каждой машине. Для этой карточки Git-репозиторий и коммит не требуются.',
+                 'steps': [
+                     'Убедитесь, что активировано окружение studyhub-api.',
+                     'Создайте список зависимостей командой python -m pip freeze > requirements.txt.',
+                     'Откройте requirements.txt и проверьте, что в нём есть fastapi и uvicorn. Команды python -m pip show fastapi и python -m pip show uvicorn дополнительно проверят установку в активном окружении.',
+                     'Создайте или дополните README.md в корне проекта.',
+                     'Запишите в README порядок восстановления окружения: создать .venv, активировать её, установить пакеты из requirements.txt.',
+                     'Укажите команду установки python -m pip install -r requirements.txt после активации .venv.',
+                     'Запишите команду python -m uvicorn app.main:app --reload и укажите, что её выполняют из корня studyhub-api.',
+                     'Не добавляйте содержимое .venv в эти файлы.'
+                 ],
+                  'code': '''python -m pip freeze > requirements.txt
+python -m pip show fastapi
+python -m pip show uvicorn''',
+                 'checks': [
+                     'requirements.txt находится в корне проекта и содержит FastAPI и Uvicorn.',
+                     'README позволяет найти команду установки зависимостей и команду запуска.',
+                     'Из README понятно, что серверную команду выполняют из корня studyhub-api.',
+                     'Git-репозиторий или коммит для завершения этой практики не нужны.'
+                 ]
+             }}
+       ],
+        'result': 'Готово, если README фиксирует одну команду запуска из корня проекта, requirements.txt сохраняет зависимости, GET /health проверен напрямую и через Swagger, а ученик различает ошибку импорта, отказ соединения и 404.'}],
  53: [{'title': 'Добавьте первые GET endpoints',
        'task': 'Расширьте минимальный FastAPI-проект двумя операциями чтения без path-параметров. Данные пока '
                'хранятся в обычном списке Python.',

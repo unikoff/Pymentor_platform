@@ -11,9 +11,14 @@ import {
 } from "lucide-react";
 import {
   Callout,
+  BugHunt,
   CodeBlock,
+  CodeSequence,
+  CompareSolutions,
+  FillBlank,
   KeyTakeaways,
   Lead,
+  MatchPairs,
   PracticeCta,
   QuizCard,
   RecallCard,
@@ -78,515 +83,361 @@ export function Lesson51({ module }: { module?: string }) {
     <RichLesson>
       <RichHero
         chip={module ?? BLOCK_TITLE}
-        title={"Postman: отправляем запрос вручную"}
-        intro={"Возьмём HTTP-контракт из прошлого блока и впервые соберём настоящий запрос руками: выберем method, введём URL, добавим query и body, нажмём Send и разберём response без написания frontend."}
+        title={"51. Postman: отправляем запрос вручную"}
+        intro={"В прошлом блоке мы записали контракт Planner API. Теперь отправим настоящий HTTP request через клиент, увидим response и сохраним два проверяемых сценария, которые позже адаптируем под реальные маршруты нашего API."}
         tags={[
-          { icon: <Terminal size={14} />, label: "ручной HTTP request" },
-          { icon: <Cloud size={14} />, label: "status · headers · body" },
+          { icon: <Terminal size={14} />, label: "HTTP-клиент" },
+          { icon: <Cloud size={14} />, label: "request → response" },
         ]}
       />
       <TheoryBridge lesson={51} />
 
-      <Section number="01" title={"Зачем нужен HTTP-клиент"}>
+      <Section number="00" title={"От контракта к настоящему сообщению"}>
         <Lead>
-          {"Браузер удобен для простого GET, но не показывает весь request. Postman позволяет отдельно выбрать method, URL, query, headers и body."}
+          {"В прошлом блоке у Planner API появились методы, адреса, входные данные и ожидаемые ответы. Это был договор на бумаге. Теперь мы проверим саму форму HTTP-сообщения руками, пока без собственного сервера."}
         </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>Клиент</h3>
-          <p>
-            {"Postman начинает взаимодействие и обращается к серверу."}
-          </p>
-
-          <h3>Без frontend</h3>
-          <p>
-            {"Кнопки сайта пока не нужны: request собирается вручную."}
-          </p>
-
-          <h3>Диагностика</h3>
-          <p>
-            {"Можно проверить API отдельно от интерфейса сайта."}
-          </p>
-
-        </div>
-
+        <p>
+          {"Для первого опыта используем Postman Echo. Он принимает request и возвращает сведения о нём. К концу практики у нас будут два сохранённых сценария: GET с query и POST с JSON body. Когда подключим их к Planner, одного изменения base_url будет недостаточно: пути и ожидания тоже должны совпасть с контрактом API."}
+        </p>
         <CodeBlock
-          caption={"путь одного запроса"}
-          code={
-            "разработчик\n" +
-            "    ↓\n" +
-            "Postman\n" +
-            "    ↓ HTTP request\n" +
-            "сервер\n" +
-            "    ↑ HTTP response\n" +
-            "Postman\n" +
-            "    ↑\n" +
-            "разработчик"
-          }
+          caption={"что мы научимся делать"}
+          code={"выбрать method и URL\nдобавить query или body\nнажать Send\nпрочитать response\nсохранить сценарий и повторить его"}
         />
-
         <RecallCard
-          question={"Postman выполняет роль HTTP-клиента."}
-          answer={
-            <p>
-              {"Он формирует request и показывает response."}
-            </p>
-          }
+          question={"Что изменится по сравнению с прошлой работой над контрактом?"}
+          answer={<p>{"Мы впервые отправим настоящий HTTP request и получим сетевой response."}</p>}
         />
-
-        <Callout tone="info">
-          {"На этом этапе Postman используется как измерительный прибор для HTTP."}
-        </Callout>
       </Section>
 
-      <Section number="02" title={"Пять областей первого окна"}>
+      <Section number="01" title={"Postman выполняет роль HTTP-клиента"}>
         <Lead>
-          {"Не нужно изучать все панели. Для первого запроса достаточно method, URL, вкладок request, кнопки Send и панели response."}
+          {"HTTP-клиент начинает обмен: формирует request и отправляет его серверу. Сервер обрабатывает сообщение и возвращает response. Postman показывает полученный ответ."}
         </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>Method</h3>
-          <p>
-            {"Выражает действие: GET, POST, PATCH и другие."}
-          </p>
-
-          <h3>URL</h3>
-          <p>
-            {"Указывает сервер и endpoint."}
-          </p>
-
-          <h3>Params, Headers, Body</h3>
-          <p>
-            {"Размещают дополнительные части request."}
-          </p>
-
-          <h3>Send</h3>
-          <p>
-            {"Отправляет уже собранное сообщение."}
-          </p>
-
-          <h3>Response</h3>
-          <p>
-            {"Показывает status, headers и body."}
-          </p>
-
-        </div>
-
+        <p>
+          {"Представьте стойку выдачи заказов и посетителя с бланком. Посетитель передаёт просьбу, стойка возвращает результат. Postman играет роль посетителя и бланка. Он не становится стойкой и не придумывает ответ за сервер."}
+        </p>
         <CodeBlock
-          caption={"минимальная карта"}
-          code={
-            "[ GET ▼ ] [ https://postman-echo.com/get ] [ Send ]\n" +
-            "\n" +
-            "Params | Headers | Body\n" +
-            "\n" +
-            "Status: 200 OK\n" +
-            "Headers\n" +
-            "Body"
-          }
+          caption={"сетевая граница"}
+          code={"Postman\n  → HTTP request\n  → сервер\n  ← HTTP response\nPostman показывает ответ"}
         />
+        <p>
+          {"Postman не является сервером, базой данных или frontend. Он не запускает Planner API и не исправляет ошибки автоматически. Зато он позволяет проверить request независимо от кнопок сайта. Если запрос уже неверен в Postman, искать ошибку в интерфейсе ещё рано."}
+        </p>
+        <p>
+          {"В рабочих проектах API-клиент помогает исследовать endpoint, проверить новый контракт и воспроизвести конкретную проблему. Он дополняет автоматические тесты, которые повторяют проверки без ручных действий."}
+        </p>
+        <MatchPairs
+          prompt={"Соедините роль с участником обмена."}
+          leftTitle={"Участник"}
+          rightTitle={"Ответственность"}
+          pairs={[
+            { left: "Postman", right: "собирает и отправляет request" },
+            { left: "Echo", right: "принимает request и возвращает response" },
+            { left: "разработчик", right: "сравнивает результат с ожиданием" },
+          ]}
+          explanation={"Клиент инициирует обмен, сервер отвечает, а человек анализирует результат."}
+        />
+        <CompareSolutions
+          question={"Какой вывод точнее после успешного Send?"}
+          left={{
+            title: "Слишком широкий",
+            code: "Planner API работает",
+            note: "Запрос ушёл на Echo, а не на наш API.",
+          }}
+          right={{
+            title: "Подтверждённый",
+            code: "Echo получил request и вернул response",
+            note: "Именно этот результат наблюдался.",
+          }}
+          preferred={"right"}
+          explanation={"Вывод должен соответствовать системе, на которую реально отправлен запрос."}
+        />
+      </Section>
 
+      <Section number="02" title={"Собираем request из видимых частей"}>
+        <Lead>
+          {"Рабочая область Postman показывает отдельные поля одного HTTP-сообщения. Расположение вкладок может меняться между версиями, но роли частей остаются прежними."}
+        </Lead>
+        <div className="lesson-practice-steps">
+          <h3>Method и URL</h3>
+          <p>{"Метод выражает действие, адрес показывает, куда отправить request."}</p>
+          <h3>Params и Headers</h3>
+          <p>{"Params добавляет query к URL. Headers передаёт метаданные, например формат body."}</p>
+          <h3>Body и Scripts</h3>
+          <p>{"Body содержит отправляемые данные. Scripts позволяет проверять ответ после обмена."}</p>
+          <h3>Send и Response</h3>
+          <p>{"Send запускает отправку. Response показывает status, headers и body, которые вернул сервер."}</p>
+        </div>
+        <CodeBlock
+          caption={"части request и response"}
+          code={"REQUEST\nmethod + URL + Params + Headers + Body\n                     ↓ Send\n                    сервер\n                     ↓\nRESPONSE\nstatus + Headers + Body"}
+        />
         <TrueFalse
-          statement={
-            <>
-              {"Кнопка Send запускает отправку request."}
-            </>
-          }
-          isTrue={true}
-          explanation={"До нажатия сервер ничего не получает."}
+          statement={<>{"Изменение полей в Postman уже отправляет сообщение серверу."}</>}
+          isTrue={false}
+          explanation={"Пока не нажата Send, в рабочей области меняется черновик request. Сервер ещё ничего не получил."}
         />
-
         <Callout tone="info">
-          {"Изменяйте одну область за раз, иначе источник ошибки становится неясным."}
+          {"Не смешивайте вкладку Body, которая относится к исходящему request, с response body, который вернул сервер."}
         </Callout>
       </Section>
 
-      <Section number="03" title={"Первый GET-запрос"}>
+      <Section number="03" title={"Первый GET к Postman Echo"}>
         <Lead>
-          {"Для первого опыта используем echo-endpoint. Он возвращает информацию о полученном запросе и помогает проверить работу Postman."}
+          {"Echo-сервис нужен, чтобы учиться работать с клиентом без подключения к реальному API. Он возвращает JSON со сведениями о полученном запросе и не требует ключей Planner."}
         </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>Шаг 1</h3>
-          <p>
-            {"Создайте новый HTTP request."}
-          </p>
-
-          <h3>Шаг 2</h3>
-          <p>
-            {"Оставьте method GET."}
-          </p>
-
-          <h3>Шаг 3</h3>
-          <p>
-            {"Введите https://postman-echo.com/get."}
-          </p>
-
-          <h3>Шаг 4</h3>
-          <p>
-            {"Нажмите Send и найдите status 200."}
-          </p>
-
-        </div>
-
         <CodeBlock
-          caption={"request и упрощённый response"}
-          code={
-            "GET https://postman-echo.com/get\n" +
-            "\n" +
-            "200 OK\n" +
-            "Content-Type: application/json\n" +
-            "\n" +
-            "{\n" +
-            "  \"args\": {},\n" +
-            "  \"url\": \"https://postman-echo.com/get\"\n" +
-            "}"
-          }
+          caption={"первый request"}
+          code={"GET https://postman-echo.com/get"}
         />
-
-        <RecallCard
-          question={"Успешный GET обычно возвращает 200."}
-          answer={
-            <p>
-              {"Status показывает успешную обработку request."}
-            </p>
-          }
+        <p>
+          {"Адрес состоит из схемы https, host postman-echo.com и path /get. После Send Postman показывает HTTP response. В успешном примере Echo возвращает status 200, JSON body и URL, по которому получил request."}
+        </p>
+        <CodeBlock
+          caption={"упрощённый ответ"}
+          code={'{\n  "args": {},\n  "url": "https://postman-echo.com/get"\n}'}
         />
+        <p>
+          {"Это не ответ Planner и не созданная Task. Echo только показывает, что принял. Даже status 200 не доказывает ничего о нашем будущем сервере."}
+        </p>
+        <BugHunt
+          code={"https://postman-echo.invalid/get"}
+          question={"Что вероятнее всего произойдёт при опечатке в host?"}
+          options={[
+            "Echo вернёт обычный status 404",
+            "Postman не сможет получить HTTP response от нужного host",
+            "Postman автоматически исправит домен",
+          ]}
+          correctIndex={1}
+          explanation={"При неправильном host соединение может не дойти до HTTP endpoint. Тогда status от ожидаемого сервера неоткуда получить."}
+          fix={"Проверьте host и повторите GET к https://postman-echo.com/get"}
+        />
+        <p>
+          {"Если сервер вернул 404, response существует и его можно изучить. Если ответ вообще не получен, status может отсутствовать. Это две разные ситуации диагностики."}
+        </p>
+      </Section>
 
-        <Callout tone="info">
-          {"Внешний echo нужен только до запуска собственного FastAPI-сервера."}
+      <Section number="04" title={"Передаём query через Params"}>
+        <Lead>
+          {"Query настраивает чтение через URL. Например, он может задать фильтр или ограничить размер списка. В Postman пары удобно вводить в таблицу Params, а не собирать строку вручную."}
+        </Lead>
+        <CodeBlock
+          caption={"один URL и две query-пары"}
+          code={"GET https://postman-echo.com/get?course=python&block=10"}
+        />
+        <p>
+          {"Знак вопроса начинает query-часть URL, а амперсанд разделяет пары. В таблицу Params добавьте ключи course и block и соответствующие значения. Echo отразит их в объекте args."}
+        </p>
+        <CodeBlock
+          caption={"фрагмент response"}
+          code={'{\n  "args": {\n    "course": "python",\n    "block": "10"\n  }\n}'}
+        />
+        <p>
+          {"Значения URL передаются как текст. Позже сервер может преобразовать block в число и проверить границы. Сам Postman не знает тип параметра, он отправляет настроенную пару."}
+        </p>
+        <FillBlank
+          prompt={"Куда попадёт значение limit=5, если добавить его в Params?"}
+          before={"Params → "}
+          after={""}
+          options={["query в URL", "request body", "response body"]}
+          answer={"query в URL"}
+          explanation={"Params формирует query-часть URL. Body и response body выполняют другие роли."}
+        />
+        <Callout tone="warn">
+          {"Не передавайте пароли и приватные токены в query. URL может попадать в историю, логи и диагностические записи."}
         </Callout>
       </Section>
 
-      <Section number="04" title={"Читаем response в правильном порядке"}>
+      <Section number="05" title={"Отправляем JSON в POST body"}>
         <Lead>
-          {"После Send не ограничивайтесь красивым JSON. Сначала определите status, затем формат через Content-Type и только потом читайте body."}
+          {"GET из предыдущей части не переносил данные новой задачи. Теперь соберём POST и передадим JSON в body. Echo вернёт тело обратно, но не создаст Task."}
         </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>Status</h3>
-          <p>
-            {"Категория результата."}
-          </p>
-
-          <h3>Content-Type</h3>
-          <p>
-            {"Формат response body."}
-          </p>
-
-          <h3>Body</h3>
-          <p>
-            {"Конкретные данные или detail ошибки."}
-          </p>
-
-          <h3>Time и Size</h3>
-          <p>
-            {"Дополнительные измерения, а не главный критерий успеха."}
-          </p>
-
-        </div>
-
         <CodeBlock
-          caption={"порядок чтения"}
-          code={
-            "1. Status\n" +
-            "2. Content-Type\n" +
-            "3. Body\n" +
-            "4. Остальные headers\n" +
-            "5. Time и Size"
-          }
+          caption={"body будущей задачи"}
+          code={'{\n  "title": "Изучить HTTP",\n  "priority": 4\n}'}
         />
+        <p>
+          {"В Postman выберите POST, откройте Body, используйте raw и задайте формат JSON. Postman автоматически добавит Content-Type: application/json. Проверьте заголовок request, но не добавляйте такой же вручную. Имена полей и текстовые значения JSON пишутся в двойных кавычках. Число priority записывается без кавычек."}
+        </p>
+        <p>
+          {"Content-Type описывает формат отправленного body. Accept сообщает, какой формат ответа предпочитает клиент. Это разные заголовки. В нашем примере Content-Type должен указывать на JSON."}
+        </p>
+        <CodeBlock
+          caption={"что вернёт Echo"}
+          code={'{\n  "json": {\n    "title": "Изучить HTTP",\n    "priority": 4\n  }\n}'}
+        />
+        <CompareSolutions
+          question={"Где передать поля создаваемой Task в контракте Planner?"}
+          left={{
+            title: "Query",
+            code: "?title=Изучить+HTTP",
+            note: "Query обычно настраивает чтение или выборку.",
+          }}
+          right={{
+            title: "JSON body",
+            code: '{"title": "Изучить HTTP", "priority": 4}',
+            note: "Body переносит данные нового resource.",
+          }}
+          preferred={"right"}
+          explanation={"В контракте создания body описывает данные Task. Echo лишь отражает их и не сохраняет."}
+        />
+        <Callout tone="info">
+          {"Status 200 относится к обработке тестового запроса Echo. Он не равен ожидаемому статусу создания задачи в Planner API."}
+        </Callout>
+      </Section>
 
+      <Section number="06" title={"Читаем response и добавляем проверки"}>
+        <Lead>
+          {"Сначала изучите сам response, затем решите, какие ожидания стоит проверять автоматически. Status, headers и body отвечают на разные вопросы."}
+        </Lead>
+        <CodeSequence
+          title={"Порядок чтения ответа"}
+          prompt={"Соберите маршрут от отправки до проверки результата."}
+          pieces={[
+            { id: "send", code: "нажать Send" },
+            { id: "response", code: "получить HTTP response" },
+            { id: "inspect", code: "прочитать status, Content-Type и body" },
+            { id: "script", code: "выполнить post-response script" },
+            { id: "results", code: "посмотреть Test Results" },
+          ]}
+          correctOrder={["send", "response", "inspect", "script", "results"]}
+          explanation={"Скрипт получает уже пришедший ответ. Он не заменяет сам HTTP request."}
+        />
+        <p>
+          {"Status 200 подтверждает успешный сценарий на Echo, но не проверяет, вернулось ли ожидаемое поле. Для этого Postman может выполнить JavaScript после response. Результат называется тестом и отображается отдельно."}
+        </p>
+        <CodeBlock
+          caption={"проверка query-поля после ответа"}
+          code={"const responseData = pm.response.json();\n\npm.test(\"Echo вернул course\", function () {\n  pm.expect(responseData.args.course).to.eql(\"python\");\n});"}
+        />
+        <p>
+          {"pm.response.json() читает JSON body. Затем мы обращаемся к args.course. pm.test задаёт именованную проверку, а pm.expect сравнивает фактическое значение с ожидаемым. В practice такая проверка будет применена к GET и POST."}
+        </p>
         <TrueFalse
-          statement={
-            <>
-              {"Status и body выполняют разные роли."}
-            </>
-          }
-          isTrue={true}
-          explanation={"Status задаёт категорию, body передаёт данные."}
+          statement={<>{"Зелёный status 200 сам по себе доказывает, что Echo получил нужный title."}</>}
+          isTrue={false}
+          explanation={"Status проверяет исход HTTP-обмена. Значение title нужно проверить отдельно в response body."}
         />
-
+        <QuizCard
+          question={"Что делать, если Test Results показывает failed?"}
+          options={[
+            "Сначала сравнить ожидание с фактическим response",
+            "Изменить ожидаемое значение, чтобы тест стал зелёным",
+            "Удалить response body",
+          ]}
+          correctIndex={0}
+          explanation={"Проверьте request, фактическое значение и само условие. Не скрывайте несоответствие изменением ожидания без причины."}
+        />
         <Callout tone="info">
-          {"Текст success внутри body не отменяет ошибочный HTTP status."}
+          {"Postman tests наблюдают реальный ответ внешнего сервиса. Они не заменяют unit-тесты Python, которые позже проверят внутреннюю логику Planner."}
         </Callout>
       </Section>
 
-      <Section number="05" title={"Query через вкладку Params"}>
+      <Section number="07" title={"Сохраняем сценарии в collection и environment"}>
         <Lead>
-          {"Query можно написать после знака вопроса, но таблица Params снижает количество ошибок с символами ? и &."}
+          {"Один request годится для эксперимента. Сохранённые сценарии можно повторить, перенести и использовать для ручных проверок после изменений."}
         </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>Key</h3>
-          <p>
-            {"Имя параметра, например topic."}
-          </p>
-
-          <h3>Value</h3>
-          <p>
-            {"Значение, например http."}
-          </p>
-
-          <h3>Несколько строк</h3>
-          <p>
-            {"Postman соединяет пары через &."}
-          </p>
-
-          <h3>Итоговый URL</h3>
-          <p>
-            {"Обновляется автоматически."}
-          </p>
-
-        </div>
-
+        <p>
+          {"Collection группирует requests и их post-response checks. Дайте запросам имена, по которым сразу понятно действие: чтение query или отправка JSON."}
+        </p>
+        <p>
+          {"Environment хранит значения, связанные с выбранным адресом сервера. Переменная base_url позволяет не повторять host в каждом URL. В активном окружении Postman подставляет значение переменной в двойных фигурных скобках. Она меняет только базовую часть адреса, но не path, body или проверки. Поэтому Echo-запросы /get и /post нельзя превратить в запросы Planner одной подстановкой другого base_url."}
+        </p>
         <CodeBlock
-          caption={"Params и URL"}
-          code={
-            "KEY      VALUE\n" +
-            "topic    http\n" +
-            "limit    5\n" +
-            "\n" +
-            "https://postman-echo.com/get?topic=http&limit=5"
-          }
+          caption={"адрес можно заменить отдельно"}
+          code={"Environment Echo:\nbase_url = https://postman-echo.com\n\nRequest URL:\n{{base_url}}/get"}
         />
-
-        <RecallCard
-          question={"Вкладка Params используется для query."}
-          answer={
-            <p>
-              {"Пары key/value становятся частью URL."}
-            </p>
-          }
+        <MatchPairs
+          prompt={"Сопоставьте место хранения с его содержимым."}
+          leftTitle={"Объект Postman"}
+          rightTitle={"Что хранит"}
+          pairs={[
+            { left: "Collection", right: "requests и их проверки" },
+            { left: "Environment", right: "значения выбранной цели, например base_url" },
+          ]}
+          explanation={"Collection описывает набор сценариев. Environment задаёт значения для выбранного сервера."}
         />
-
+        <p>
+          {"Экспорт превращает collection и environment в переносимые JSON-файлы. Их можно импортировать в другой экземпляр Postman. Экспортируйте оба объекта: request использует переменную окружения, поэтому одному файлу без другого может не хватить base_url."}
+        </p>
+        <p>
+          {"Отправить запрос через Lightweight API Client можно без аккаунта. Но для сохранения collection и environment в рабочей области и их последующего экспорта в этой практике нужно войти в личный Postman workspace. Это вход в инструмент, а не авторизация на Echo: самому Echo ключи и credentials не нужны."}
+        </p>
+        <p>
+          {"Не сохраняйте в общем экспорте пароли, токены и реальные персональные данные. Для учебной Echo-коллекции credentials не нужны."}
+        </p>
         <Callout tone="info">
-          {"Query в URL сначала является текстом. FastAPI позже преобразует типы."}
+          <p>{"Официальные пояснения: "}<a href="https://learning.postman.com/docs/getting-started/quick-start" target="_blank" rel="noreferrer">quick start</a>{", "}<a href="https://learning.postman.com/docs/developer/echo-api" target="_blank" rel="noreferrer">Postman Echo</a>{", "}<a href="https://learning.postman.com/docs/tests-and-scripts/write-scripts/test-scripts" target="_blank" rel="noreferrer">post-response tests</a>{" и "}<a href="https://learning.postman.com/docs/getting-started/importing-and-exporting/exporting-data" target="_blank" rel="noreferrer">export</a>{"."}</p>
         </Callout>
       </Section>
 
-      <Section number="06" title={"Headers и Body без перегрузки"}>
+      <Section number="08" title={"Что мы будем делать в практике"}>
         <Lead>
-          {"Headers описывают request, а body переносит данные. Пока достаточно увидеть их места и не смешивать с query."}
+          {"Сначала подготовим studyhub-api/postman в своей учебной папке. Это только место для файлов, не исходники платформы и пока не приложение. Затем создадим collection StudyHub HTTP Lab и environment Echo с базовым URL."}
         </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>Headers</h3>
-          <p>
-            {"Например Content-Type: application/json."}
-          </p>
-
-          <h3>Body</h3>
-          <p>
-            {"Для JSON выбирается raw и JSON."}
-          </p>
-
-          <h3>GET</h3>
-          <p>
-            {"Обычно не требует request body."}
-          </p>
-
-          <h3>POST</h3>
-          <p>
-            {"Позже отправит новую задачу в JSON body."}
-          </p>
-
-        </div>
-
         <CodeBlock
-          caption={"будущий POST request"}
-          code={
-            "POST http://127.0.0.1:8000/tasks\n" +
-            "Content-Type: application/json\n" +
-            "\n" +
-            "{\n" +
-            "  \"title\": \"Изучить FastAPI\",\n" +
-            "  \"priority\": 4\n" +
-            "}"
-          }
+          caption={"файлы после экспорта"}
+          code={"studyhub-api/\n" +
+            "└── postman/\n" +
+            "    ├── http-lab.collection.json\n" +
+            "    └── echo.environment.json"}
         />
-
-        <TrueFalse
-          statement={
-            <>
-              {"Title новой задачи логичнее передавать в body."}
-            </>
-          }
-          isTrue={true}
-          explanation={"Body содержит данные создаваемого объекта."}
-        />
-
-        <Callout tone="info">
-          {"При выборе raw JSON Postman обычно добавляет Content-Type автоматически."}
-        </Callout>
+        <p>
+          {"Затем сохраним GET с query-параметрами и POST с JSON body. Для обоих сценариев добавим проверки status, а для данных проверим, что Echo действительно вернул ожидаемые значения."}
+        </p>
+        <div className="lesson-practice-steps">
+          <h3>Роли</h3>
+          <p>{"Postman отправляет request, Echo возвращает response, тест сравнивает ответ с ожиданием."}</p>
+          <h3>Путь</h3>
+          <p>{"Подготовить папку проекта, создать collection и environment, добавить два request, изучить ответы, добавить checks и экспортировать файлы в studyhub-api/postman/."}</p>
+          <h3>Доказательство</h3>
+          <p>{"Оба сценария повторно запускаются, проверки проходят, JSON-экспорт содержит collection и environment."}</p>
+          <h3>Граница</h3>
+          <p>{"Echo не является Planner API. Практика не создаёт задачу, не запускает FastAPI и не требует credentials."}</p>
+        </div>
+        <PracticeCta text={"Создайте studyhub-api/postman/, настройте collection StudyHub HTTP Lab и environment Echo, сохраните GET и POST с проверками, затем экспортируйте http-lab.collection.json и echo.environment.json в эту папку."} />
       </Section>
 
-      <Section number="07" title={"Collection и base_url"}>
+      <Section number="09" title={"Самопроверка перед следующим занятием"}>
         <Lead>
-          {"Collection группирует requests одного API. Переменная base_url позволяет не повторять localhost в каждом адресе."}
+          {"Перед завершением объясните каждый шаг без подсказки. Если ответ звучит как «Postman сам всё проверил», уточните, какой именно request и какое ожидание вы задали."}
         </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>Collection</h3>
-          <p>
-            {"Создайте Planner API."}
-          </p>
-
-          <h3>Имена</h3>
-          <p>
-            {"Health check и Get tasks понятнее New Request."}
-          </p>
-
-          <h3>base_url</h3>
-          <p>
-            {"Хранит http://127.0.0.1:8000."}
-          </p>
-
-          <h3>Шаблон</h3>
-          <p>
-            {"Используется как {{base_url}}/tasks."}
-          </p>
-
-        </div>
-
-        <CodeBlock
-          caption={"структура коллекции"}
-          code={
-            "Planner API\n" +
-            "├── Health check\n" +
-            "├── Get tasks\n" +
-            "├── Get task by id\n" +
-            "└── Create task\n" +
-            "\n" +
-            "base_url = http://127.0.0.1:8000"
-          }
+        <MatchPairs
+          prompt={"Повторите назначение частей и объектов."}
+          leftTitle={"Термин"}
+          rightTitle={"Короткий смысл"}
+          pairs={[
+            { left: "Params", right: "query в URL" },
+            { left: "Body", right: "данные исходящего request" },
+            { left: "Collection", right: "сохранённые сценарии" },
+            { left: "Environment", right: "значения для выбранного адреса" },
+          ]}
+          explanation={"Разные части сохраняют разные роли даже в окне одного клиента."}
         />
-
-        <RecallCard
-          question={"Base URL хранит общую часть адреса."}
-          answer={
-            <p>
-              {"Endpoint добавляется после переменной."}
-            </p>
-          }
+        <QuizCard
+          question={"Что означает ответ Echo со status 200?"}
+          options={[
+            "Echo вернул успешный response на этот request",
+            "Planner сохранил новую Task",
+            "Все будущие endpoint уже протестированы",
+          ]}
+          correctIndex={0}
+          explanation={"Подтверждён только ответ сервиса, на который действительно отправили request."}
         />
-
-        <Callout tone="info">
-          {"Collection постепенно станет ручным набором регрессионных проверок."}
-        </Callout>
-      </Section>
-
-      <Section number="08" title={"Практика перед FastAPI"}>
-        <Lead>
-          {"Закрепите интерфейс Postman до появления локального сервера. После этого в следующем уроке изменится только адрес request."}
-        </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>Проверка 1</h3>
-          <p>
-            {"GET без query."}
-          </p>
-
-          <h3>Проверка 2</h3>
-          <p>
-            {"GET с topic=http."}
-          </p>
-
-          <h3>Проверка 3</h3>
-          <p>
-            {"Найдите status, Content-Type и body."}
-          </p>
-
-          <h3>Проверка 4</h3>
-          <p>
-            {"Сохраните request в Planner API."}
-          </p>
-
-        </div>
-
-        <CodeBlock
-          caption={"контрольная карточка"}
-          code={
-            "Request:\n" +
-            "method + URL + query + headers + optional body\n" +
-            "\n" +
-            "Response:\n" +
-            "status + headers + body"
-          }
-        />
-
-        <TrueFalse
-          statement={
-            <>
-              {"Request и response имеют собственные body."}
-            </>
-          }
-          isTrue={true}
-          explanation={"Request body идёт на сервер, response body возвращается клиенту."}
-        />
-
-        <Callout tone="info">
-          {"Не нужно знать все функции Postman. Нужен уверенный базовый маршрут."}
-        </Callout>
-
-        <div className="lesson-check-group">
-          <QuizCard
-            question={"Какую роль выполняет Postman?"}
-            options={[
-              "HTTP-клиент",
-              "сервер",
-              "интерпретатор",
-            ]}
-            correctIndex={0}
-            explanation={"Он отправляет request."}
-          />
-          <QuizCard
-            question={"Где добавляют query?"}
-            options={[
-              "Params",
-              "Body",
-              "Console",
-            ]}
-            correctIndex={0}
-            explanation={"Params формирует query."}
-          />
-          <QuizCard
-            question={"Что смотреть первым?"}
-            options={[
-              "status",
-              "цвет JSON",
-              "размер окна",
-            ]}
-            correctIndex={0}
-            explanation={"Status задаёт исход."}
-          />
-          <QuizCard
-            question={"Зачем Collection?"}
-            options={[
-              "сохранять requests",
-              "запускать Python",
-              "хранить базу",
-            ]}
-            correctIndex={0}
-            explanation={"Collection группирует проверки."}
-          />
-        </div>
-
         <KeyTakeaways
           points={[
             <>{"Postman является HTTP-клиентом."}</>,
-            <>{"Request собирается из отдельных частей."}</>,
-            <>{"Send является моментом отправки."}</>,
-            <>{"Response читается начиная со status."}</>,
-            <>{"Params формирует query."}</>,
-            <>{"Body и query не взаимозаменяемы."}</>,
-            <>{"Collection хранит готовые requests."}</>,
-            <>{"Base_url сокращает повторение адреса."}</>,
+            <>{"Params формирует query, Body переносит данные request."}</>,
+            <>{"Echo отражает полученный запрос, но не создаёт Task."}</>,
+            <>{"Status и содержимое body проверяются отдельно."}</>,
+            <>{"Collection сохраняет сценарии, Environment хранит base_url."}</>,
+            <>{"Следующая работа создаст сервер; Echo-запросы подключим к Planner позже, после адаптации под его маршруты."}</>,
           ]}
         />
-
-        <PracticeCta text={"Создайте Planner API collection, отправьте два GET request к echo-endpoint, добавьте query и сохраните base_url."} />
+        <p>
+          {"В следующей работе мы поднимем собственный сервер и проверим GET /health через браузер и Swagger UI. Экспорты Postman останутся в studyhub-api/postman без изменений. Позже, когда у Planner появятся подходящие маршруты, мы адаптируем пути и ожидания запросов, а затем направим их на локальный сервер через base_url."}
+        </p>
       </Section>
-
     </RichLesson>
   );
 }
@@ -597,518 +448,376 @@ export function Lesson52({ module }: { module?: string }) {
     <RichLesson>
       <RichHero
         chip={module ?? BLOCK_TITLE}
-        title={"Первое FastAPI-приложение, Uvicorn и Swagger"}
-        intro={"Создадим минимальное FastAPI-приложение, запустим его через Uvicorn, откроем JSON в браузере и увидим, как один Python endpoint автоматически появляется в Swagger UI."}
+        title={"52. Первое FastAPI-приложение, Uvicorn и Swagger"}
+        intro={"В прошлой работе мы отправляли запросы через Postman Echo и сохранили collection с environment в studyhub-api/postman. Теперь продолжим тот же проект, добавим FastAPI-сервер и проверим его через браузер и Swagger UI."}
         tags={[
           { icon: <Wrench size={14} />, label: "FastAPI + Uvicorn" },
-          { icon: <Cloud size={14} />, label: "Swagger и OpenAPI" },
+          { icon: <Cloud size={14} />, label: "GET /health" },
         ]}
       />
       <TheoryBridge lesson={52} />
 
-      <Section number="01" title={"Четыре части первого сервера"}>
+      <Section number="00" title={"Из клиента теперь виден сервер"}>
         <Lead>
-          {"Первое приложение содержит наш Python-модуль, объект FastAPI, процесс Uvicorn и отдельный HTTP-клиент."}
+          {"HTTP-клиент уже умеет отправлять request. Теперь разберём, что должно работать на другой стороне, чтобы Python смог ответить."}
         </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>Модуль</h3>
-          <p>
-            {"app/main.py хранит объект приложения."}
-          </p>
-
-          <h3>FastAPI</h3>
-          <p>
-            {"Связывает method и path с функцией."}
-          </p>
-
-          <h3>Uvicorn</h3>
-          <p>
-            {"Слушает адрес и принимает requests."}
-          </p>
-
-          <h3>Клиент</h3>
-          <p>
-            {"Браузер, Swagger или Postman."}
-          </p>
-
-        </div>
-
+        <p>
+          {"В прошлой работе мы проверяли сообщения через Postman Echo. Файлы collection и environment уже лежат в studyhub-api/postman. Мы видели request и response, но не создавали программу-сервер. Теперь у StudyHub появится локальное приложение с одним маршрутом GET /health. Сохранённые пути /get и /post относятся к Echo, поэтому старые запросы пока не направляем на локальный сервер."}
+        </p>
+        <p>
+          {"В этой цепочке FastAPI описывает приложение и маршруты. Uvicorn запускает приложение как HTTP-сервер. Браузер, Swagger UI или Postman отправляет запрос и показывает ответ. Представьте меню, кухню и посетителя кафе: меню описывает заказ, кухня выполняет работу, посетитель передаёт заказ и получает результат. Технически FastAPI и Uvicorn общаются через интерфейс ASGI."}
+        </p>
         <CodeBlock
-          caption={"цепочка"}
-          code={
-            "Postman\n" +
-            "   ↓ request\n" +
-            "Uvicorn\n" +
-            "   ↓\n" +
-            "FastAPI endpoint\n" +
-            "   ↓ return\n" +
-            "Uvicorn\n" +
-            "   ↑ response\n" +
-            "Postman"
-          }
+          caption={"Части локального URL"}
+          code={"URL:    http://127.0.0.1:8000/health\n\n" +
+            "scheme: http\n" +
+            "host:   127.0.0.1\n" +
+            "port:   8000\n" +
+            "path:   /health"}
         />
-
         <RecallCard
-          question={"FastAPI и Uvicorn не являются одним инструментом."}
-          answer={
-            <p>
-              {"Фреймворк описывает API, сервер запускает процесс."}
-            </p>
-          }
+          question={"Если в app/main.py есть маршрут, но Uvicorn не запущен, кто слушает порт 8000?"}
+          answer={<p>{"Никто. Код маршрута описывает поведение приложения, но отдельный процесс должен запустить сервер и держать порт открытым."}</p>}
         />
-
         <Callout tone="info">
-          {"Uvicorn не содержит бизнес-правила задач."}
+          {"127.0.0.1 это IPv4 loopback-адрес, который в нашей локальной настройке указывает на эту же машину. Порт 8000 это стандартный порт Uvicorn, если другой не задан. /health должен совпасть с зарегистрированным path. Локальная проверка не публикует приложение в интернете."}
         </Callout>
       </Section>
 
-      <Section number="02" title={"Окружение и установка"}>
+      <Section number="01" title={"FastAPI создаёт приложение, но не запускает его"}>
         <Lead>
-          {"FastAPI устанавливается в виртуальное окружение проекта, чтобы зависимости не смешивались с другими программами."}
+          {"FastAPI это Python-фреймворк для описания HTTP API. Мы создаём объект приложения, к которому затем добавим маршруты."}
         </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>Корень</h3>
-          <p>
-            {"Создайте studyhub-api."}
-          </p>
-
-          <h3>Venv</h3>
-          <p>
-            {"Создаётся один раз."}
-          </p>
-
-          <h3>Установка</h3>
-          <p>
-            {"Используем fastapi[standard]."}
-          </p>
-
-          <h3>Проверка</h3>
-          <p>
-            {"Import FastAPI должен работать."}
-          </p>
-
-        </div>
-
+        <p>
+          {"Класс FastAPI предоставляет готовые механизмы, а конкретное поведение задаём мы. Вызов FastAPI(...) создаёт экземпляр. Переменная app станет местом, где приложение собирается и где регистрируются endpoint."}
+        </p>
         <CodeBlock
-          caption={"команды"}
-          code={
-            "mkdir studyhub-api\n" +
-            "cd studyhub-api\n" +
-            "python -m venv .venv\n" +
-            "python -m pip install \"fastapi[standard]\""
-          }
+          caption={"Объект приложения"}
+          code={"from fastapi import FastAPI\n\n" +
+            "app = FastAPI(title=\"StudyHub Planner API\")"}
         />
-
+        <p>
+          {"Параметр title даёт API понятное название. Он не меняет URL и не задаёт бизнес-логику. Вызов FastAPI() также не открывает сетевой порт: для этого позднее запустим сервер."}
+        </p>
         <TrueFalse
-          statement={
-            <>
-              {"FastAPI нужно устанавливать в окружение проекта."}
-            </>
-          }
-          isTrue={true}
-          explanation={"Это делает запуск воспроизводимым."}
+          statement={<>{"После выполнения app = FastAPI() Python уже принимает запросы на порту 8000."}</>}
+          isTrue={false}
+          explanation={"Создан только объект приложения. Сетевой сервер и открытый порт появятся после запуска Uvicorn."}
         />
-
         <Callout tone="info">
-          {"Команды pip и uvicorn запускайте тем же Python."}
+          {"Объект app и работающий процесс сервера связаны, но это не одно и то же."}
         </Callout>
       </Section>
 
-      <Section number="03" title={"Объект app"}>
+      <Section number="02" title={"Endpoint связывает method, path и функцию"}>
         <Lead>
-          {"Импортируем класс FastAPI и создаём один объект приложения. Именно его будет искать Uvicorn."}
+          {"Маршрут описывает, какую функцию вызвать для конкретной пары HTTP-метода и path."}
         </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>Импорт</h3>
-          <p>
-            {"from fastapi import FastAPI."}
-          </p>
-
-          <h3>Создание</h3>
-          <p>
-            {"app = FastAPI()."}
-          </p>
-
-          <h3>Имя</h3>
-          <p>
-            {"app является обычной переменной Python."}
-          </p>
-
-          <h3>Пока без route</h3>
-          <p>
-            {"Объект существует, endpoint ещё не зарегистрирован."}
-          </p>
-
-        </div>
-
+        <p>
+          {"Endpoint, или маршрут, определяется не одним адресом. GET /status и POST /status являются разными операциями. Декоратор @app.get(\"/status\") регистрирует обработчик для GET по этому path."}
+        </p>
+        <p>
+          {"Декоратор в Python получает функцию и связывает с ней дополнительную информацию. Здесь FastAPI сохраняет правило маршрутизации. Функция ниже не выполняется сразу при чтении файла. FastAPI вызовет её после подходящего request."}
+        </p>
         <CodeBlock
-          caption={"app/main.py"}
-          code={
-            "from fastapi import FastAPI\n" +
-            "\n" +
-            "app = FastAPI()"
-          }
+          caption={"Независимый пример"}
+          code={"from fastapi import FastAPI\n\n" +
+            "app = FastAPI()\n\n" +
+            "@app.get(\"/status\")\n" +
+            "def read_status():\n" +
+            "    return {\"service\": \"notifications\", \"active\": True}"}
         />
-
-        <RecallCard
-          question={"app = FastAPI() создаёт приложение."}
-          answer={
-            <p>
-              {"Без скобок переменная получила бы класс."}
-            </p>
-          }
+        <MatchPairs
+          prompt={"Соедините часть маршрута с её ролью."}
+          leftTitle={"Часть"}
+          rightTitle={"Роль"}
+          pairs={[
+            { left: "@app.get(\"/status\")", right: "Регистрирует GET и path" },
+            { left: "def read_status():", right: "Объявляет функцию-обработчик" },
+            { left: "return {...}", right: "Задаёт данные ответа" },
+          ]}
+          explanation={"Метод и path выбирают функцию, а возвращаемое значение задаёт результат её работы."}
         />
-
-        <Callout tone="info">
-          {"Скобки после FastAPI создают объект."}
-        </Callout>
+        <p>
+          {"Если method или path не совпал с зарегистрированным маршрутом, эта функция не будет обработчиком запроса. GET /unknown обычно даст 404, потому что path не зарегистрирован. Если path существует, но для него объявлен только GET, запрос POST вернёт 405 Method Not Allowed."}
+        </p>
       </Section>
 
-      <Section number="04" title={"Первый endpoint"}>
+      <Section number="03" title={"Python-значение становится HTTP-ответом"}>
         <Lead>
-          {"Decorator сообщает FastAPI, что функция root обрабатывает GET request по пути /. Return dict становится JSON body."}
+          {"Endpoint возвращает значение Python. FastAPI формирует из него HTTP response, а Uvicorn передаёт ответ клиенту."}
         </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>Decorator</h3>
-          <p>
-            {"@app.get(\"/\") регистрирует route."}
-          </p>
-
-          <h3>Функция</h3>
-          <p>
-            {"Обычный def вызывается после request."}
-          </p>
-
-          <h3>Return</h3>
-          <p>
-            {"Словарь сериализуется в JSON."}
-          </p>
-
-          <h3>Status</h3>
-          <p>
-            {"Успешный ответ по умолчанию 200."}
-          </p>
-
-        </div>
-
+        <p>
+          {"Например, функция может вернуть словарь. В Python это dict, а клиент получает данные как JSON body. FastAPI выполняет преобразование. При обычном успешном завершении используется status 200 OK."}
+        </p>
         <CodeBlock
-          caption={"минимальное приложение"}
-          code={
-            "from fastapi import FastAPI\n" +
-            "\n" +
-            "app = FastAPI()\n" +
-            "\n" +
-            "\n" +
-            "@app.get(\"/\")\n" +
-            "def root():\n" +
-            "    return {\n" +
-            "        \"message\": \"Planner API works\"\n" +
-            "    }"
-          }
+          caption={"Значение и его JSON-представление"}
+          code={"def read_status():\n" +
+            "    return {\"service\": \"notifications\", \"active\": True}\n\n" +
+            "# Клиент увидит JSON body:\n" +
+            "{\"service\": \"notifications\", \"active\": true}"}
         />
-
-        <TrueFalse
-          statement={
-            <>
-              {"Тело root не выполняется при запуске файла."}
-            </>
-          }
-          isTrue={true}
-          explanation={"Оно ждёт подходящий GET request."}
+        <p>
+          {"Словарь не открывает порт и не отправляет сетевые пакеты. Это результат функции. FastAPI преобразует поддерживаемое значение в HTTP-ответ, а Uvicorn доставляет его через соединение."}
+        </p>
+        <p>
+          {"Маршрут health обычно помогает проверить, отвечает ли приложение. Наш будущий ответ status=ok подтвердит только работу конкретного endpoint. Он не докажет исправность базы данных или почтовой системы, которых пока нет."}
+        </p>
+        <CompareSolutions
+          question={"Какой вывод точнее после возврата словаря из функции?"}
+          left={{
+            title: "Слишком широкий",
+            code: "Функция сама отправила HTTP-пакеты и запустила сервер",
+            note: "Функция сформировала только значение Python.",
+          }}
+          right={{
+            title: "По ролям",
+            code: "FastAPI подготовит response, Uvicorn доставит его клиенту",
+            note: "Сетевые обязанности остаются у сервера.",
+          }}
+          preferred={"right"}
+          explanation={"Разделяйте результат endpoint, формирование HTTP-ответа и передачу ответа по сети."}
         />
-
-        <Callout tone="info">
-          {"Async пока не нужен. Сначала важен обычный поток request → function → response."}
-        </Callout>
       </Section>
 
-      <Section number="05" title={"Команда Uvicorn"}>
+      <Section number="04" title={"Uvicorn принимает HTTP и вызывает FastAPI"}>
         <Lead>
-          {"Команду легче читать как адрес объекта: модуль app.main и переменная app после двоеточия."}
+          {"Uvicorn это ASGI-сервер. Он принимает соединения, передаёт request приложению и отправляет сформированный response обратно."}
         </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>python -m uvicorn</h3>
-          <p>
-            {"Запускает модуль Uvicorn."}
-          </p>
-
-          <h3>app.main</h3>
-          <p>
-            {"Импортный путь к app/main.py."}
-          </p>
-
-          <h3>:app</h3>
-          <p>
-            {"Объект FastAPI внутри модуля."}
-          </p>
-
-          <h3>--reload</h3>
-          <p>
-            {"Перезапуск после сохранения для разработки."}
-          </p>
-
-        </div>
-
+        <p>
+          {"ASGI задаёт общий интерфейс между Python web-приложением и сервером. Сервер передаёт приложению сведения о запросе, а приложение формирует response через тот же контракт. Не нужно запоминать внутренние функции ASGI. Достаточно понимать, что Uvicorn и FastAPI взаимодействуют через общий интерфейс, не зная деталей реализации друг друга."}
+        </p>
         <CodeBlock
-          caption={"запуск"}
-          code={
-            "python -m uvicorn app.main:app --reload\n" +
-            "\n" +
+          caption={"Путь запроса"}
+          code={"браузер или Postman\n" +
+            "  → HTTP request\n" +
+            "Uvicorn принимает соединение\n" +
+            "  → передаёт запрос приложению\n" +
+            "FastAPI находит endpoint\n" +
+            "  → функция возвращает значение\n" +
+            "Uvicorn отправляет HTTP response"}
+        />
+        <p>
+          {"Мы запустим сервер из командной строки. Флаг --reload следит за изменениями файлов и перезапускает процесс. Это удобно при разработке, но не является production-конфигурацией."}
+        </p>
+        <CodeBlock
+          caption={"Команда запуска"}
+          code={"python -m uvicorn app.main:app --reload\n\n" +
             "app.main : app\n" +
-            "модуль     объект"
-          }
+            "модуль    : объект FastAPI"}
         />
-
-        <RecallCard
-          question={"app.main:app содержит путь и имя объекта."}
-          answer={
-            <p>
-              {"Слева модуль, справа переменная."}
-            </p>
-          }
+        <CodeSequence
+          title={"Путь от клиента к ответу"}
+          prompt={"Расставьте действия по порядку."}
+          pieces={[
+            { id: "request", code: "клиент отправляет GET" },
+            { id: "server", code: "Uvicorn принимает соединение" },
+            { id: "route", code: "FastAPI находит маршрут" },
+            { id: "function", code: "функция возвращает значение" },
+            { id: "response", code: "клиент получает response" },
+          ]}
+          correctOrder={["request", "server", "route", "function", "response"]}
+          explanation={"FastAPI не получает запрос, пока сервер не примет соединение. Ответ проходит обратно через Uvicorn."}
         />
-
-        <Callout tone="info">
-          {"Reload не является production-настройкой."}
-        </Callout>
       </Section>
 
-      <Section number="06" title={"Проверка через клиента"}>
+      <Section number="05" title={"Import string зависит от структуры и текущей папки"}>
         <Lead>
-          {"После запуска Uvicorn отдельный клиент обращается к http://127.0.0.1:8000/."}
+          {"Команда запуска сообщает Uvicorn, где найти модуль и какой объект импортировать. Поэтому важны имена файлов и рабочая директория."}
         </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>127.0.0.1</h3>
-          <p>
-            {"Адрес текущего компьютера."}
-          </p>
-
-          <h3>8000</h3>
-          <p>
-            {"Порт Uvicorn."}
-          </p>
-
-          <h3>/</h3>
-          <p>
-            {"Path первого endpoint."}
-          </p>
-
-          <h3>Ctrl+C</h3>
-          <p>
-            {"Останавливает сервер."}
-          </p>
-
-        </div>
-
+        <p>
+          {"Структура проекта будет такой. Пустой __init__.py явно показывает, что app является пакетом Python."}
+        </p>
         <CodeBlock
-          caption={"request и body"}
-          code={
-            "GET http://127.0.0.1:8000/\n" +
-            "\n" +
-            "200 OK\n" +
-            "\n" +
-            "{\n" +
-            "  \"message\": \"Planner API works\"\n" +
-            "}"
-          }
+          caption={"Файлы проекта"}
+          code={"studyhub-api/\n" +
+            "  README.md\n" +
+            "  requirements.txt\n" +
+            "  postman/\n" +
+            "    http-lab.collection.json\n" +
+            "    echo.environment.json\n" +
+            "  app/\n" +
+            "    __init__.py\n" +
+            "    main.py"}
         />
-
-        <TrueFalse
-          statement={
-            <>
-              {"Успех подтверждает реальный request."}
-            </>
-          }
-          isTrue={true}
-          explanation={"Чтения кода недостаточно."}
+        <p>
+          {"Команду python -m uvicorn app.main:app --reload выполняют из корня studyhub-api. В app.main первая часть app означает пакет, main означает модуль main.py, а часть после двоеточия указывает на переменную приложения внутри модуля."}
+        </p>
+        <FillBlank
+          prompt={"Какое имя объекта Uvicorn возьмёт после двоеточия?"}
+          before={"app.main:"}
+          after={""}
+          options={["app", "main", "uvicorn"]}
+          answer={"app"}
+          explanation={"Слева от двоеточия находится модуль app.main. Справа записано имя объекта FastAPI внутри этого модуля."}
         />
-
-        <Callout tone="info">
-          {"Connection refused обычно означает, что сервер не работает."}
-        </Callout>
+        <p>
+          {"Если запустить команду из app, Python будет искать пакет относительно другого места и может не найти app.main. Это ошибка импорта до HTTP-обработки. Сначала сервер должен успешно загрузить объект, и только после этого клиент сможет отправить запрос."}
+        </p>
+        <p>
+          {"Флаг --reload запускает также процесс-наблюдатель. После ошибки импорта серверный дочерний процесс может завершиться, а наблюдатель оставить терминал занятым. Нажмите Ctrl+C и дождитесь приглашения командной строки перед сменой папки."}
+        </p>
+        <BugHunt
+          code={"Терминал открыт в studyhub-api/app\npython -m uvicorn app.main:app --reload"}
+          question={"Сервер сообщает, что не может импортировать app.main. Что проверить первым?"}
+          options={[
+            "Рабочую директорию и путь импорта",
+            "JSON body ответа",
+            "Список задач в памяти",
+          ]}
+          correctIndex={0}
+          explanation={"Сервер ещё не загрузил приложение, поэтому HTTP body и данные endpoint пока не участвуют."}
+          fix={"Вернитесь в корень studyhub-api и повторите команду запуска."}
+        />
       </Section>
 
-      <Section number="07" title={"Swagger, ReDoc и OpenAPI"}>
+      <Section number="06" title={"Различайте ошибку запуска и HTTP-ответ"}>
         <Lead>
-          {"FastAPI строит OpenAPI-схему из decorators и type hints, а затем предоставляет готовую документацию."}
+          {"Похожие на первый взгляд сообщения относятся к разным этапам. Определите, дошёл ли запрос до приложения."}
         </Lead>
-
         <div className="lesson-practice-steps">
-          <h3>/docs</h3>
-          <p>
-            {"Swagger UI с Try it out."}
-          </p>
-
-          <h3>/redoc</h3>
-          <p>
-            {"Альтернативная документация."}
-          </p>
-
-          <h3>/openapi.json</h3>
-          <p>
-            {"Машинная schema API."}
-          </p>
-
-          <h3>Автоматизация</h3>
-          <p>
-            {"Новый endpoint появляется без ручного HTML."}
-          </p>
-
-        </div>
-
-        <CodeBlock
-          caption={"адреса"}
-          code={
-            "http://127.0.0.1:8000/docs\n" +
-            "http://127.0.0.1:8000/redoc\n" +
-            "http://127.0.0.1:8000/openapi.json"
-          }
-        />
-
-        <RecallCard
-          question={"Swagger генерируется автоматически."}
-          answer={
-            <p>
-              {"Источником является OpenAPI schema."}
-            </p>
-          }
-        />
-
-        <Callout tone="info">
-          {"Swagger не заменяет тесты."}
-        </Callout>
-      </Section>
-
-      <Section number="08" title={"Диагностика запуска"}>
-        <Lead>
-          {"Первые ошибки чаще относятся к окружению, пути модуля или остановленному процессу, а не к HTTP."}
-        </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>ModuleNotFoundError</h3>
-          <p>
-            {"Пакет установлен не в выбранный Python."}
-          </p>
-
-          <h3>Could not import module</h3>
-          <p>
-            {"Неверен app.main."}
-          </p>
-
-          <h3>Address already in use</h3>
-          <p>
-            {"Порт занят."}
-          </p>
-
-          <h3>Старый response</h3>
-          <p>
-            {"Файл не сохранён."}
-          </p>
-
+          <h3>Ошибка импорта при запуске</h3>
+          <p>{"Uvicorn не загрузил app.main или не нашёл переменную app. Клиентский запрос ещё не обработан."}</p>
           <h3>Connection refused</h3>
-          <p>
-            {"Uvicorn остановлен."}
-          </p>
-
+          <p>{"По адресу и порту никто не слушает либо сервер уже остановлен. HTTP response от приложения не получен."}</p>
+          <h3>HTTP 404</h3>
+          <p>{"Соединение состоялось, сервер ответил, но запрошенный path не зарегистрирован."}</p>
+          <h3>HTTP 405</h3>
+          <p>{"Path существует, но сервер не разрешает для него отправленный method, например POST /health при единственном GET /health."}</p>
+          <h3>HTTP 200</h3>
+          <p>{"Маршрут найден и обработчик завершился успешно. Body всё ещё нужно сравнить с ожиданием."}</p>
         </div>
-
         <CodeBlock
-          caption={"порядок проверки"}
-          code={
-            "1. активное окружение\n" +
-            "2. pip show fastapi\n" +
-            "3. существует app/main.py\n" +
-            "4. есть app = FastAPI()\n" +
-            "5. команда app.main:app\n" +
-            "6. Uvicorn сообщает адрес\n" +
-            "7. GET / возвращает JSON\n" +
-            "8. /docs открывается"
-          }
+          caption={"Пример границы"}
+          code={"GET /health  → 200, если маршрут зарегистрирован\n" +
+            "GET /        → 404, если маршрут корня не объявляли\n" +
+            "POST /health → 405, если зарегистрирован только GET\n" +
+            "сервер не запущен → connection refused"}
         />
-
         <TrueFalse
-          statement={
-            <>
-              {"Команда запуска зависит от структуры проекта."}
-            </>
-          }
-          isTrue={true}
-          explanation={"Путь должен совпадать с папками и именем объекта."}
+          statement={<>{"Если GET /health работает, то GET / обязан возвращать тот же ответ."}</>}
+          isTrue={false}
+          explanation={"Каждый method и path должны быть зарегистрированы. Маршрут /health не создаёт автоматически маршрут корня /."}
         />
-
         <Callout tone="info">
-          {"Меняйте одну причину за раз."}
+          {"404 может быть полезной диагностикой: сервер доступен, но запрошенного маршрута нет."}
         </Callout>
+      </Section>
 
-        <div className="lesson-check-group">
-          <QuizCard
-            question={"Что делает Uvicorn?"}
-            options={[
-              "запускает сервер",
-              "создаёт модель",
-              "хранит коллекцию",
-            ]}
-            correctIndex={0}
-            explanation={"Он слушает address."}
-          />
-          <QuizCard
-            question={"Что значит app.main:app?"}
-            options={[
-              "модуль и объект",
-              "два path",
-              "логин",
-            ]}
-            correctIndex={0}
-            explanation={"Это импортный адрес."}
-          />
-          <QuizCard
-            question={"Где Swagger?"}
-            options={[
-              "/docs",
-              "/swagger.py",
-              "/body",
-            ]}
-            correctIndex={0}
-            explanation={"FastAPI предоставляет /docs."}
-          />
-          <QuizCard
-            question={"Что делает return dict?"}
-            options={[
-              "JSON body",
-              "новый порт",
-              "query",
-            ]}
-            correctIndex={0}
-            explanation={"FastAPI сериализует данные."}
-          />
+      <Section number="07" title={"Swagger UI показывает контракт приложения"}>
+        <Lead>
+          {"FastAPI строит OpenAPI-описание на основе зарегистрированных маршрутов. Swagger UI отображает его как интерактивную документацию."}
+        </Lead>
+        <p>
+          {"OpenAPI это структурированное описание API: paths, методы и известные параметры. Swagger UI это человекочитаемый интерфейс, который использует описание и позволяет вручную вызвать операцию."}
+        </p>
+        <CodeBlock
+          caption={"Локальные страницы"}
+          code={"http://127.0.0.1:8000/docs\n" +
+            "http://127.0.0.1:8000/openapi.json"}
+        />
+        <p>
+          {"В /docs мы раскроем GET /health, нажмём Try it out и Execute, затем проверим status и body. Сам маршрут всё равно объявлен в коде приложения. Документация помогает увидеть контракт, но не доказывает, что бизнес-логика верна, и не заменяет автоматические тесты."}
+        </p>
+        <QuizCard
+          question={"Как соотносятся OpenAPI и Swagger UI?"}
+          options={[
+            "OpenAPI описывает контракт, Swagger UI показывает его интерактивно",
+            "Swagger UI запускает Uvicorn, а OpenAPI хранит базу",
+            "Это две функции одного endpoint /health",
+          ]}
+          correctIndex={0}
+          explanation={"FastAPI формирует схему OpenAPI из известных маршрутов, а интерфейс /docs показывает её человеку."}
+        />
+        <Callout tone="warn">
+          {"В production публичную интерактивную документацию включают осознанно. Она раскрывает устройство API."}
+        </Callout>
+      </Section>
+
+      <Section number="08" title={"Что мы будем делать в практике"}>
+        <Lead>
+          {"Продолжим studyhub-api из прошлой работы. Сохраним существующую папку postman с экспортами и добавим серверную часть, проверив её через HTTP."}
+        </Lead>
+        <p>
+          {"Папка studyhub-api уже содержит postman-экспорты. Не удаляйте их и не создавайте второй проект. Добавьте в корень виртуальное окружение .venv: оно отделяет библиотеки этого проекта от других Python-программ. FastAPI и Uvicorn установим в активное окружение через python -m pip. Затем внутри пакета app создадим объект приложения и один GET /health. Маршрут вернёт status=ok, а сервер запустит его из корня проекта."}
+        </p>
+        <p>
+          {"Мы проверим status и JSON body напрямую, затем повторим запрос через /docs. После этого намеренно запустим команду из неверной папки, прочитаем ошибку импорта и восстановим правильный запуск. В конце запишем в README команду установки зависимостей и команду запуска из корня проекта. requirements.txt сохранит список пакетов для нового окружения. Сам каталог .venv обычно не включают в Git; правило .venv/ добавляют в .gitignore, если проект ведётся в Git, но на этом шаге Git-настройку не выполняем."}
+        </p>
+        <div className="lesson-practice-steps">
+          <h3>FastAPI</h3>
+          <p>{"Объект приложения и маршрут."}</p>
+          <h3>Endpoint</h3>
+          <p>{"GET /health и короткий JSON-ответ."}</p>
+          <h3>Uvicorn</h3>
+          <p>{"HTTP-сервер и команда запуска, записанная в README."}</p>
+          <h3>Клиент и Swagger</h3>
+          <p>{"Внешняя проверка status, body и описанного маршрута."}</p>
         </div>
-
+        <p>
+          {"Мы не добавляем список задач, Pydantic-схемы, базу, авторизацию или production-развёртывание. Следующая работа расширит уже запущенное приложение маршрутами чтения. Сейчас важно отделить настройку сервера от поведения данных."}
+        </p>
         <KeyTakeaways
           points={[
-            <>{"FastAPI и Uvicorn имеют разные роли."}</>,
-            <>{"App создаётся через FastAPI()."}</>,
-            <>{"Decorator связывает method и path."}</>,
-            <>{"Return dict становится JSON."}</>,
-            <>{"App.main:app указывает модуль и объект."}</>,
-            <>{"Reload нужен для разработки."}</>,
-            <>{"Swagger строится из OpenAPI."}</>,
-            <>{"Endpoint проверяется request."}</>,
+            <>{"FastAPI описывает приложение и его маршруты."}</>,
+            <>{"Uvicorn принимает HTTP и передаёт запрос приложению."}</>,
+            <>{"app.main:app означает модуль и имя объекта."}</>,
+            <>{"GET /health можно проверить снаружи приложения."}</>,
+            <>{"Swagger UI показывает OpenAPI-контракт, но не заменяет тесты."}</>,
           ]}
         />
-
-        <PracticeCta text={"Создайте app/main.py, запустите Uvicorn и проверьте GET / через браузер, Postman и Swagger."} />
+        <PracticeCta text={"Продолжите studyhub-api, сохраните каталог postman с экспортами, запустите GET /health через Uvicorn и проверьте его в браузере и Swagger UI."} />
       </Section>
 
+      <Section number="09" title={"Проверьте свою модель сервера"}>
+        <Lead>
+          {"Перед практикой попробуйте объяснить цепочку без подсказки и без кода."}
+        </Lead>
+        <div className="lesson-check-group">
+          <QuizCard
+            question={"Что означает app.main:app?"}
+            options={[
+              "Импортировать модуль app.main и взять объект app",
+              "Открыть path /app/main",
+              "Создать второй сервер с именем main",
+            ]}
+            correctIndex={0}
+            explanation={"Левая часть указывает модуль, правая часть после двоеточия указывает переменную в модуле."}
+          />
+          <QuizCard
+            question={"Что означает HTTP 404 при работающем Uvicorn?"}
+            options={[
+              "Соединение состоялось, но маршрут не найден",
+              "FastAPI не установлен",
+              "Python не смог импортировать приложение",
+            ]}
+            correctIndex={0}
+            explanation={"При ошибке импорта сервер не стартовал бы. HTTP 404 уже является полученным ответом сервера."}
+          />
+          <QuizCard
+            question={"Что означает HTTP 405 для POST /health, если зарегистрирован только GET /health?"}
+            options={[
+              "Path существует, но для него не разрешён POST",
+              "Uvicorn не смог импортировать приложение",
+              "Сервер не получил HTTP request",
+            ]}
+            correctIndex={0}
+            explanation={"405 относится к несовпадению метода для существующего path. При незарегистрированном path обычно приходит 404."}
+          />
+          <RecallCard
+            question={"Что именно подтверждает GET /health со status=ok?"}
+            answer={<p>{"Что приложение обработало этот запрос и вернуло ответ. Это не проверка базы или других ещё не подключённых зависимостей."}</p>}
+          />
+        </div>
+        <Callout tone="info">
+          {"Если вы можете разделить роли клиента, Uvicorn, FastAPI и endpoint, можно переходить к самостоятельной сборке проекта."}
+        </Callout>
+      </Section>
     </RichLesson>
   );
 }
 
+// 53. GET-endpoints и ответы FastAPI
 // 53. GET-endpoints и ответы FastAPI
 export function Lesson53({ module }: { module?: string }) {
   return (

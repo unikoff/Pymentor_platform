@@ -24,11 +24,12 @@
 
 ~~~text
 studyhub-api/
+  postman/
+    http-lab.collection.json
+    echo.environment.json
   app/
     main.py
   requirements.txt или pyproject.toml
-  postman/
-    http-lab.collection.json
 ~~~
 
 Он умеет:
@@ -107,11 +108,11 @@ is_done: bool
 - разницу между collection и отдельным несохранённым request;
 - почему export collection не должен содержать токены и личные данные.
 
-**Практика.** Ручная, на echo-сервисе. Сначала GET с двумя query-параметрами, затем POST с JSON body. Для обоих request ученик проверяет status, URL и отражённые сервером данные. После этого добавляет два простых Postman test, сохраняет collection и экспортирует её в проект.
+**Практика.** Ручная, на Echo-сервисе. Сначала ученик подготавливает `studyhub-api/postman/`, затем создаёт collection и environment. Он сохраняет GET с двумя query-параметрами и POST с JSON body, проверяет status и отражённые значения, добавляет post-response checks, повторно запускает оба запроса и экспортирует collection и environment в эту папку. В следующем занятии он продолжает тот же каталог проекта.
 
 **Не вводить.** Собственный FastAPI, auth headers, реальные production API, чужие credentials и сложные pre-request scripts.
 
-**Мостик.** В следующем уроке Postman переключится с echo base_url на локальный Uvicorn-сервер, но навыки сборки и чтения request останутся теми же.
+**Мостик.** В следующем уроке в подготовленном `studyhub-api` появятся FastAPI и Uvicorn, а экспорты Postman останутся на месте. Сначала ученик проверит `GET /health` через браузер и Swagger UI; затем клиентские навыки пригодятся для проверки собственного сервера.
 
 ### 52. Первое FastAPI-приложение, Uvicorn и Swagger
 
