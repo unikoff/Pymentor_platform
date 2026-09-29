@@ -1,6 +1,8 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
+const apiTarget = process.env.VITE_API_TARGET ?? "http://127.0.0.1:8001";
+
 export default defineConfig({
   plugins: [react()],
   // На проде платформа живёт под префиксом /platform внутри сайта лендинга
@@ -12,15 +14,15 @@ export default defineConfig({
   server: {
     proxy: {
       "/user": {
-        target: "http://127.0.0.1:8001",
+        target: apiTarget,
         changeOrigin: true,
       },
       "/learning": {
-        target: "http://127.0.0.1:8001",
+        target: apiTarget,
         changeOrigin: true,
       },
       "/admin": {
-        target: "http://127.0.0.1:8001",
+        target: apiTarget,
         changeOrigin: true,
       },
     },

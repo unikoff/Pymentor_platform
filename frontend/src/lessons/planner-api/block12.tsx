@@ -37,8 +37,8 @@ const BLOCK_TITLE = "Блок 12 · Архитектура, тесты и рел
 
 const THEORY_BRIDGES: Record<number, TheoryBridgeData> = {
   63: {
-    link: "CRUD уже работает в одном файле. Теперь мы сохраняем поведение и только организуем маршруты.",
-    boundary: "APIRouter не является отдельным сервером или базой данных.",
+    link: "Сначала перенесите проверенные алгоритмы 59-62 в рабочие API-маршруты и проверьте их. Затем отдельно организуйте готовые маршруты через APIRouter.",
+    boundary: "Практики в интерпретаторе не создали маршруты в studyhub-api. APIRouter тоже не реализует CRUD.",
   },
   64: {
     link: "Router сделал контракт стабильнее, поэтому его можно закрепить автоматическими HTTP-тестами.",
@@ -81,7 +81,7 @@ export function Lesson63({ module }: { module?: string }) {
         variant="project"
         chip={module ?? BLOCK_TITLE}
         title={"APIRouter, prefix, tags и include_router"}
-        intro={"Полный CRUD уже работает, но main.py одновременно создаёт приложение, хранит маршруты и содержит детали ресурса tasks. Мы не меняем HTTP-контракт, а только уменьшаем область чтения кода. Материал развивается маленькими шагами и использует только уже знакомые части Planner API."}
+        intro={"Упражнения 59-62 проверяли Python-логику отдельно и не добавляли маршруты в studyhub-api. Поэтому практика сначала собирает и проверяет CRUD в app/main.py. Только после этой контрольной точки мы переносим готовые маршруты в APIRouter, не меняя HTTP-контракт."}
         tags={[
           { icon: <FolderGit2 size={14} />, label: "маршруты по файлам" },
           { icon: <GitFork size={14} />, label: "подключение router" },
@@ -91,18 +91,18 @@ export function Lesson63({ module }: { module?: string }) {
 
       <Section number="01" title={"Почему main.py стал перегруженным"}>
         <Lead>
-          {"Полный CRUD уже работает, но main.py одновременно создаёт приложение, хранит маршруты и содержит детали ресурса tasks. Мы не меняем HTTP-контракт, а только уменьшаем область чтения кода."}
+          {"Сейчас проект содержит ранние GET-маршруты, а функции из интерпретатора ещё не стали HTTP-endpoints. Сначала практика добавит и проверит полный CRUD. После этого main.py действительно станет перегружен маршрутами, и их можно будет безопасно сгруппировать."}
         </Lead>
 
         <div className="lesson-practice-steps">
           <h3>{"Опора на прошлый шаг"}</h3>
           <p>
-            {"Используем то, что уже было проверено в предыдущих занятиях, и меняем только одну часть системы."}
+            {"Повторно используем результаты интерпретаторных задач, но не считаем их готовыми маршрутами."}
           </p>
 
           <h3>{"Новый небольшой шаг"}</h3>
           <p>
-            {"Разбираем «Почему main.py стал перегруженным» на одном небольшом примере и связываем его с текущим Planner API."}
+            {"Сначала проверяем интеграционный checkpoint, затем изучаем перенос уже работающих endpoints."}
           </p>
 
           <h3>{"Граница сложности"}</h3>
@@ -125,18 +125,18 @@ export function Lesson63({ module }: { module?: string }) {
 
         <CodeBlock
           caption={"Почему main.py стал перегруженным"}
-          code={"app = FastAPI()\n\n@app.get(\"/tasks/\")\ndef list_tasks():\n    ...\n\n@app.post(\"/tasks/\", status_code=201)\ndef create_task(payload: TaskCreate):\n    ..."}
+          code={"app = FastAPI()\n\n@app.get(\"/tasks\")\ndef list_tasks():\n    ...\n\n@app.post(\"/tasks\", status_code=201)\ndef create_task(payload: TaskCreate):\n    ..."}
         />
 
         <RecallCard
           question={"Сформулируйте главную идею раздела своими словами."}
           answer={<p>
-            {"Полный CRUD уже работает, но main.py одновременно создаёт приложение, хранит маршруты и содержит детали ресурса tasks. Мы не меняем HTTP-контракт, а только уменьшаем область чтения кода."}
+            {"Контрольная точка создаёт полный CRUD в существующем приложении. Когда это поведение проверено, извлечение router меняет только расположение маршрутов, а не сам API."}
           </p>}
         />
 
         <Callout tone="info">
-          {"Не добавляем новый стек: текущая цель — уверенно понять почему main.py стал перегруженным и проверить наблюдаемый результат."}
+          {"Практика состоит из двух отдельных результатов: сначала рабочие и проверенные CRUD-маршруты, затем их перенос без изменения поведения."}
         </Callout>
       </Section>
 
@@ -233,18 +233,18 @@ export function Lesson63({ module }: { module?: string }) {
 
         <CodeBlock
           caption={"Общий prefix для ресурса"}
-          code={"router = APIRouter(prefix=\"/tasks\")\n\n@router.get(\"/\")\ndef list_tasks():\n    ...\n\n@router.get(\"/{task_id}\")\ndef get_task(task_id: int):\n    ..."}
+          code={"router = APIRouter(prefix=\"/tasks\")\n\n@router.get(\"\")\ndef list_tasks():\n    ...\n\n@router.get(\"/{task_id}\")\ndef get_task(task_id: int):\n    ..."}
         />
 
         <RecallCard
           question={"Сформулируйте главную идею раздела своими словами."}
           answer={<p>
-            {"Параметр prefix задаёт повторяющуюся часть URL один раз. Путь внутри декоратора читается относительно prefix: корень router становится списком задач, а /{task_id} — одной задачей."}
+            {"Параметр prefix задаёт повторяющуюся часть URL один раз. Пустой локальный путь вместе с prefix /tasks сохраняет публичный адрес /tasks, а /{task_id} добавляет адрес одной задачи."}
           </p>}
         />
 
         <Callout tone="info">
-          {"Не добавляем новый стек: текущая цель — уверенно понять общий prefix для ресурса и проверить наблюдаемый результат."}
+          {"Для сохранения уже работающего URL используйте @router.get(\"\") и @router.post(\"\") для коллекции. Вариант с \"/\" создаёт адрес /tasks/ и может добавить перенаправление."}
         </Callout>
       </Section>
 
@@ -540,7 +540,7 @@ export function Lesson63({ module }: { module?: string }) {
 
         <CodeBlock
           caption={"Практика: готовый router задач"}
-          code={"router = APIRouter(prefix=\"/tasks\", tags=[\"tasks\"])\n\n@router.get(\"/\", response_model=list[TaskRead])\ndef list_tasks():\n    return crud.list_tasks()\n\n@router.get(\"/{task_id}\", response_model=TaskRead)\ndef get_task(task_id: int):\n    return get_task_or_404(task_id)"}
+          code={"router = APIRouter(prefix=\"/tasks\", tags=[\"tasks\"])\n\n@router.get(\"\", response_model=list[TaskRead])\ndef list_tasks():\n    return crud.list_tasks()\n\n@router.get(\"/{task_id}\", response_model=TaskRead)\ndef get_task(task_id: int):\n    return get_task_or_404(task_id)"}
         />
 
         <RecallCard
@@ -608,7 +608,7 @@ export function Lesson63({ module }: { module?: string }) {
           ]}
         />
 
-        <PracticeCta text={"Повторите все восемь разделов урока на Planner API и сохраните проверенный результат отдельным коммитом."} />
+        <PracticeCta text={"Сначала соберите и вручную проверьте CRUD в app/main.py. Только после этого перенесите маршруты в APIRouter и сравните прежние URL, статусы и ответы."} />
       </Section>
 
     </RichLesson>
@@ -667,7 +667,7 @@ export function Lesson64({ module }: { module?: string }) {
 
         <CodeBlock
           caption={"Почему ручной проверки недостаточно"}
-          code={"GET /tasks/\nожидаемый статус: 200\nожидаемое тело: []"}
+          code={"GET /tasks\nожидаемый статус: 200\nожидаемое тело: []"}
         />
 
         <RecallCard
@@ -718,11 +718,11 @@ export function Lesson64({ module }: { module?: string }) {
 
         <CodeBlock
           caption={"Создание TestClient"}
-          code={"from fastapi.testclient import TestClient\nfrom app.main import app\n\nclient = TestClient(app)\n\ndef test_list_tasks():\n    response = client.get(\"/tasks/\")\n    assert response.status_code == 200"}
+          code={"from fastapi.testclient import TestClient\nfrom app.main import app\n\nclient = TestClient(app)\n\ndef test_list_tasks():\n    response = client.get(\"/tasks\")\n    assert response.status_code == 200"}
         />
 
         <PredictOutput
-          code={"from fastapi.testclient import TestClient\nfrom app.main import app\n\nclient = TestClient(app)\n\ndef test_list_tasks():\n    response = client.get(\"/tasks/\")\n    assert response.status_code == 200"}
+          code={"from fastapi.testclient import TestClient\nfrom app.main import app\n\nclient = TestClient(app)\n\ndef test_list_tasks():\n    response = client.get(\"/tasks\")\n    assert response.status_code == 200"}
           output={"Результат соответствует контракту текущего раздела"}
           hint={"Сначала проследите вход, затем действие и только потом итог."}
         />
@@ -775,7 +775,7 @@ export function Lesson64({ module }: { module?: string }) {
 
         <CodeBlock
           caption={"Статус и JSON проверяются отдельно"}
-          code={"response = client.get(\"/tasks/\")\n\nassert response.status_code == 200\nassert response.json() == []"}
+          code={"response = client.get(\"/tasks\")\n\nassert response.status_code == 200\nassert response.json() == []"}
         />
 
         <RecallCard
@@ -826,7 +826,7 @@ export function Lesson64({ module }: { module?: string }) {
 
         <CodeBlock
           caption={"POST-запрос через параметр json"}
-          code={"response = client.post(\n    \"/tasks/\",\n    json={\"title\": \"Python\", \"priority\": 4},\n)\n\nassert response.status_code == 201\nassert response.json()[\"is_done\"] is False"}
+          code={"response = client.post(\n    \"/tasks\",\n    json={\"title\": \"Python\", \"priority\": 4},\n)\n\nassert response.status_code == 201\nassert response.json()[\"is_done\"] is False"}
         />
 
         <CompareSolutions
@@ -838,7 +838,7 @@ export function Lesson64({ module }: { module?: string }) {
           }}
           right={{
             title: "Оставить явный контракт",
-            code: "response = client.post(\n    \"/tasks/\",\n    json={\"title\": \"Python\", \"priority\": 4},\n)\n\nassert response.status_code == 201\nassert response.json()[\"is_done\"] is False",
+            code: "response = client.post(\n    \"/tasks\",\n    json={\"title\": \"Python\", \"priority\": 4},\n)\n\nassert response.status_code == 201\nassert response.json()[\"is_done\"] is False",
             note: "Каждая часть делает одну понятную работу.",
           }}
           preferred="right"
@@ -957,11 +957,11 @@ export function Lesson64({ module }: { module?: string }) {
 
         <CodeBlock
           caption={"Ошибочный сценарий 422"}
-          code={"response = client.post(\n    \"/tasks/\",\n    json={\"title\": \"SQL\", \"priority\": 10},\n)\nassert response.status_code == 422\nassert client.get(\"/tasks/\").json() == []"}
+          code={"response = client.post(\n    \"/tasks\",\n    json={\"title\": \"SQL\", \"priority\": 10},\n)\nassert response.status_code == 422\nassert client.get(\"/tasks\").json() == []"}
         />
 
         <StepThrough
-          code={"response = client.post(\n    \"/tasks/\",\n    json={\"title\": \"SQL\", \"priority\": 10},\n)\nassert response.status_code == 422\nassert client.get(\"/tasks/\").json() == []"}
+          code={"response = client.post(\n    \"/tasks\",\n    json={\"title\": \"SQL\", \"priority\": 10},\n)\nassert response.status_code == 422\nassert client.get(\"/tasks\").json() == []"}
           steps={[
             { line: 0, note: "Определяется вход текущей операции.", vars: { этап: "input" } },
             { line: 1, note: "Выполняется одна основная ответственность.", vars: { этап: "action" } },
@@ -1317,7 +1317,7 @@ export function Lesson65({ module }: { module?: string }) {
 
         <CodeBlock
           caption={"Таблица endpoint как карта"}
-          code={"POST   /tasks/      TaskCreate -> 201 TaskRead\nGET    /tasks/                 -> 200 list[TaskRead]\nGET    /tasks/{id}             -> 200 TaskRead | 404\nPUT    /tasks/{id} TaskCreate  -> 200 TaskRead | 404\nPATCH  /tasks/{id} TaskUpdate  -> 200 TaskRead | 404\nDELETE /tasks/{id}             -> 204 | 404"}
+          code={"POST   /tasks       TaskCreate  -> 201 TaskRead\nGET    /tasks                   -> 200 list[TaskRead]\nGET    /tasks/{id}              -> 200 TaskRead | 404\nPUT    /tasks/{id}  TaskUpdate  -> 200 TaskRead | 404\nPATCH  /tasks/{id}  TaskPatch   -> 200 TaskRead | 404\nDELETE /tasks/{id}              -> 204 | 404"}
         />
 
         <RecallCard
@@ -1332,9 +1332,9 @@ export function Lesson65({ module }: { module?: string }) {
         </Callout>
       </Section>
 
-      <Section number="04" title={"Контракты TaskCreate, TaskUpdate, TaskRead"}>
+      <Section number="04" title={"TaskCreate, TaskUpdate, TaskPatch и TaskRead"}>
         <Lead>
-          {"Разные направления обмена получают разные схемы. Клиент не передаёт id при создании, PATCH допускает отсутствие полей, а публичный ответ всегда содержит полный объект."}
+          {"У каждой операции свой вход: TaskCreate для создания, TaskUpdate для полного PUT и TaskPatch для частичного PATCH. TaskRead описывает полный ответ. Клиент не передаёт серверный id в теле."}
         </Lead>
 
         <div className="lesson-practice-steps">
@@ -1345,7 +1345,7 @@ export function Lesson65({ module }: { module?: string }) {
 
           <h3>{"Новый небольшой шаг"}</h3>
           <p>
-            {"Разбираем «Контракты TaskCreate, TaskUpdate, TaskRead» на одном небольшом примере и связываем его с текущим Planner API."}
+            {"Разбираем «TaskCreate, TaskUpdate, TaskPatch и TaskRead» на одном небольшом примере и связываем его с текущим Planner API."}
           </p>
 
           <h3>{"Граница сложности"}</h3>
@@ -1358,8 +1358,8 @@ export function Lesson65({ module }: { module?: string }) {
           <TypeCard badge={"вход"} title={"Что уже известно"} code={"проверенный контракт"}>
             {"Начинаем с существующего поведения и не переписываем соседние части без необходимости."}
           </TypeCard>
-          <TypeCard badge={"шаг"} badgeTone="float" title={"Что делаем"} code={"Контракты TaskCreate, TaskUpdate, TaskRead"}>
-            {"Разбираем «Контракты TaskCreate, TaskUpdate, TaskRead» на одном небольшом примере и связываем его с текущим Planner API."}
+          <TypeCard badge={"шаг"} badgeTone="float" title={"Что делаем"} code={"TaskCreate, TaskUpdate, TaskPatch и TaskRead"}>
+            {"Разбираем «TaskCreate, TaskUpdate, TaskPatch и TaskRead» на одном небольшом примере и связываем его с текущим Planner API."}
           </TypeCard>
           <TypeCard badge={"результат"} badgeTone="str" title={"Что проверяем"} code={"status + JSON + state"}>
             {"Проверяем публичный результат и только затем переходим к следующему разделу."}
@@ -1367,8 +1367,8 @@ export function Lesson65({ module }: { module?: string }) {
         </TypeCards>
 
         <CodeBlock
-          caption={"Контракты TaskCreate, TaskUpdate, TaskRead"}
-          code={"class TaskCreate(BaseModel):\n    title: str\n    priority: int\n\nclass TaskUpdate(BaseModel):\n    title: str | None = None\n    priority: int | None = None\n    is_done: bool | None = None\n\nclass TaskRead(BaseModel):\n    id: int\n    title: str\n    priority: int\n    is_done: bool"}
+          caption={"Четыре отдельных контракта"}
+          code={"class TaskCreate(BaseModel):\n    title: str\n    priority: int\n\nclass TaskUpdate(BaseModel):  # полный PUT\n    title: str\n    priority: int\n    is_done: bool\n\nclass TaskPatch(BaseModel):  # частичный PATCH\n    title: str | None = None\n    priority: int | None = None\n    is_done: bool | None = None\n\nclass TaskRead(BaseModel):\n    id: int\n    title: str\n    priority: int\n    is_done: bool"}
         />
 
         <CompareSolutions
@@ -1380,7 +1380,7 @@ export function Lesson65({ module }: { module?: string }) {
           }}
           right={{
             title: "Оставить явный контракт",
-            code: "class TaskCreate(BaseModel):\n    title: str\n    priority: int\n\nclass TaskUpdate(BaseModel):\n    title: str | None = None\n    priority: int | None = None\n    is_done: bool | None = None\n\nclass TaskRead(BaseModel):\n    id: int\n    title: str\n    priority: int\n    is_done: bool",
+            code: "class TaskCreate(BaseModel):\n    title: str\n    priority: int\n\nclass TaskUpdate(BaseModel):  # полный PUT\n    title: str\n    priority: int\n    is_done: bool\n\nclass TaskPatch(BaseModel):  # частичный PATCH\n    title: str | None = None\n    priority: int | None = None\n    is_done: bool | None = None\n\nclass TaskRead(BaseModel):\n    id: int\n    title: str\n    priority: int\n    is_done: bool",
             note: "Каждая часть делает одну понятную работу.",
           }}
           preferred="right"
@@ -1390,7 +1390,7 @@ export function Lesson65({ module }: { module?: string }) {
         <RecallCard
           question={"Сформулируйте главную идею раздела своими словами."}
           answer={<p>
-            {"Разные направления обмена получают разные схемы. Клиент не передаёт id при создании, PATCH допускает отсутствие полей, а публичный ответ всегда содержит полный объект."}
+            {"TaskCreate описывает создание, TaskUpdate требует полный снимок для PUT, TaskPatch допускает частичное тело для PATCH, а TaskRead задаёт полный ответ."}
           </p>}
         />
 
@@ -1768,7 +1768,7 @@ export function Lesson66({ module }: { module?: string }) {
 
       <Section number="02" title={"Файл schemas.py"}>
         <Lead>
-          {"TaskCreate, TaskUpdate и TaskRead находятся рядом. Ограничения title и priority применяются до endpoint, а response model описывает полный публичный объект."}
+          {"TaskCreate, TaskUpdate, TaskPatch и TaskRead находятся рядом. Полный PUT и частичный PATCH не делят одну входную схему, а response model описывает полный публичный объект."}
         </Lead>
 
         <div className="lesson-practice-steps">
@@ -1802,11 +1802,11 @@ export function Lesson66({ module }: { module?: string }) {
 
         <CodeBlock
           caption={"Файл schemas.py"}
-          code={"from pydantic import BaseModel, Field\n\nclass TaskCreate(BaseModel):\n    title: str = Field(min_length=1, max_length=120)\n    priority: int = Field(ge=1, le=5)\n\nclass TaskUpdate(BaseModel):\n    title: str | None = None\n    priority: int | None = Field(default=None, ge=1, le=5)\n    is_done: bool | None = None"}
+          code={"from pydantic import BaseModel, Field\n\nclass TaskCreate(BaseModel):\n    title: str = Field(min_length=1, max_length=120)\n    priority: int = Field(ge=1, le=5)\n\nclass TaskUpdate(BaseModel):\n    title: str = Field(min_length=1, max_length=120)\n    priority: int = Field(ge=1, le=5)\n    is_done: bool\n\nclass TaskPatch(BaseModel):\n    title: str | None = Field(default=None, min_length=1, max_length=120)\n    priority: int | None = Field(default=None, ge=1, le=5)\n    is_done: bool | None = None\n\nclass TaskRead(BaseModel):\n    id: int\n    title: str\n    priority: int\n    is_done: bool"}
         />
 
         <PredictOutput
-          code={"from pydantic import BaseModel, Field\n\nclass TaskCreate(BaseModel):\n    title: str = Field(min_length=1, max_length=120)\n    priority: int = Field(ge=1, le=5)\n\nclass TaskUpdate(BaseModel):\n    title: str | None = None\n    priority: int | None = Field(default=None, ge=1, le=5)\n    is_done: bool | None = None"}
+          code={"from pydantic import BaseModel, Field\n\nclass TaskCreate(BaseModel):\n    title: str = Field(min_length=1, max_length=120)\n    priority: int = Field(ge=1, le=5)\n\nclass TaskUpdate(BaseModel):\n    title: str = Field(min_length=1, max_length=120)\n    priority: int = Field(ge=1, le=5)\n    is_done: bool\n\nclass TaskPatch(BaseModel):\n    title: str | None = Field(default=None, min_length=1, max_length=120)\n    priority: int | None = Field(default=None, ge=1, le=5)\n    is_done: bool | None = None\n\nclass TaskRead(BaseModel):\n    id: int\n    title: str\n    priority: int\n    is_done: bool"}
           output={"Результат соответствует контракту текущего раздела"}
           hint={"Сначала проследите вход, затем действие и только потом итог."}
         />
@@ -1814,7 +1814,7 @@ export function Lesson66({ module }: { module?: string }) {
         <RecallCard
           question={"Сформулируйте главную идею раздела своими словами."}
           answer={<p>
-            {"TaskCreate, TaskUpdate и TaskRead находятся рядом. Ограничения title и priority применяются до endpoint, а response model описывает полный публичный объект."}
+          {"TaskCreate, TaskUpdate, TaskPatch и TaskRead находятся рядом. Полный PUT и частичный PATCH имеют разные входные схемы, а response model описывает полный публичный объект."}
           </p>}
         />
 
@@ -1977,11 +1977,11 @@ export function Lesson66({ module }: { module?: string }) {
 
         <CodeBlock
           caption={"PUT, PATCH и DELETE в CRUD"}
-          code={"def replace_task(task: dict, payload: TaskCreate) -> dict:\n    task[\"title\"] = payload.title\n    task[\"priority\"] = payload.priority\n    task[\"is_done\"] = False\n    return task\n\ndef update_task(task: dict, payload: TaskUpdate) -> dict:\n    task.update(payload.model_dump(exclude_unset=True))\n    return task\n\ndef delete_task(task: dict) -> None:\n    tasks.remove(task)"}
+          code={"def replace_task(task: dict, payload: TaskUpdate) -> dict:\n    task[\"title\"] = payload.title\n    task[\"priority\"] = payload.priority\n    task[\"is_done\"] = payload.is_done\n    return task\n\ndef update_task(task: dict, payload: TaskPatch) -> dict:\n    task.update(payload.model_dump(exclude_unset=True, exclude_none=True))\n    return task\n\ndef delete_task(task: dict) -> None:\n    tasks.remove(task)"}
         />
 
         <BugHunt
-          code={"# ошибка: важное правило пропущено\ndef replace_task(task: dict, payload: TaskCreate) -> dict:\n    task[\"title\"] = payload.title\n    task[\"priority\"] = payload.priority\n    task[\"is_done\"] = False\n    return task\n\ndef update_task(task: dict, payload: TaskUpdate) -> dict:\n    task.update(payload.model_dump(exclude_unset=True))\n    return task\n\ndef delete_task(task: dict) -> None:\n    tasks.remove(task)"}
+          code={"# Ошибка: PUT игнорирует переданный is_done и всегда сбрасывает его в False.\ndef replace_task(task: dict, payload: TaskUpdate) -> dict:\n    task[\"title\"] = payload.title\n    task[\"priority\"] = payload.priority\n    task[\"is_done\"] = False\n    return task\n\ndef update_task(task: dict, payload: TaskPatch) -> dict:\n    task.update(payload.model_dump(exclude_unset=True, exclude_none=True))\n    return task\n\ndef delete_task(task: dict) -> None:\n    tasks.remove(task)"}
           question={"Какую проблему нужно проверить в первую очередь?"}
           options={[
             "Нарушен публичный контракт текущей операции",
@@ -1990,7 +1990,7 @@ export function Lesson66({ module }: { module?: string }) {
           ]}
           correctIndex={0}
           explanation={"Сначала сравнивают метод, путь, статус, JSON и состояние с утверждённым контрактом."}
-          fix={"def replace_task(task: dict, payload: TaskCreate) -> dict:\n    task[\"title\"] = payload.title\n    task[\"priority\"] = payload.priority\n    task[\"is_done\"] = False\n    return task\n\ndef update_task(task: dict, payload: TaskUpdate) -> dict:\n    task.update(payload.model_dump(exclude_unset=True))\n    return task\n\ndef delete_task(task: dict) -> None:\n    tasks.remove(task)"}
+          fix={"def replace_task(task: dict, payload: TaskUpdate) -> dict:\n    task[\"title\"] = payload.title\n    task[\"priority\"] = payload.priority\n    task[\"is_done\"] = payload.is_done\n    return task\n\ndef update_task(task: dict, payload: TaskPatch) -> dict:\n    task.update(payload.model_dump(exclude_unset=True, exclude_none=True))\n    return task\n\ndef delete_task(task: dict) -> None:\n    tasks.remove(task)"}
         />
 
         <RecallCard
@@ -2041,11 +2041,11 @@ export function Lesson66({ module }: { module?: string }) {
 
         <CodeBlock
           caption={"Тонкий router"}
-          code={"router = APIRouter(prefix=\"/tasks\", tags=[\"tasks\"])\n\ndef get_task_or_404(task_id: int) -> dict:\n    task = crud.find_task(task_id)\n    if task is None:\n        raise HTTPException(status_code=404, detail=\"Task not found\")\n    return task\n\n@router.post(\"/\", response_model=TaskRead, status_code=201)\ndef create_task(payload: TaskCreate):\n    return crud.create_task(payload)"}
+          code={"router = APIRouter(prefix=\"/tasks\", tags=[\"tasks\"])\n\ndef get_task_or_404(task_id: int) -> dict:\n    task = crud.find_task(task_id)\n    if task is None:\n        raise HTTPException(status_code=404, detail=\"Task not found\")\n    return task\n\n@router.post(\"\", response_model=TaskRead, status_code=201)\ndef create_task(payload: TaskCreate):\n    return crud.create_task(payload)"}
         />
 
         <StepThrough
-          code={"router = APIRouter(prefix=\"/tasks\", tags=[\"tasks\"])\n\ndef get_task_or_404(task_id: int) -> dict:\n    task = crud.find_task(task_id)\n    if task is None:\n        raise HTTPException(status_code=404, detail=\"Task not found\")\n    return task\n\n@router.post(\"/\", response_model=TaskRead, status_code=201)\ndef create_task(payload: TaskCreate):\n    return crud.create_task(payload)"}
+          code={"router = APIRouter(prefix=\"/tasks\", tags=[\"tasks\"])\n\ndef get_task_or_404(task_id: int) -> dict:\n    task = crud.find_task(task_id)\n    if task is None:\n        raise HTTPException(status_code=404, detail=\"Task not found\")\n    return task\n\n@router.post(\"\", response_model=TaskRead, status_code=201)\ndef create_task(payload: TaskCreate):\n    return crud.create_task(payload)"}
           steps={[
             { line: 0, note: "Определяется вход текущей операции.", vars: { этап: "input" } },
             { line: 1, note: "Выполняется одна основная ответственность.", vars: { этап: "action" } },
@@ -2166,7 +2166,7 @@ export function Lesson66({ module }: { module?: string }) {
 
         <CodeBlock
           caption={"Проверка собранного каркаса"}
-          code={"1. POST /tasks/ -> 201\n2. GET /tasks/ -> one item\n3. GET /tasks/1 -> created item\n4. GET /tasks/999 -> 404\n5. restart -> storage becomes empty"}
+          code={"1. POST /tasks -> 201\n2. GET /tasks -> one item\n3. GET /tasks/1 -> created item\n4. GET /tasks/999 -> 404\n5. restart -> storage becomes empty"}
         />
 
         <RecallCard
@@ -2293,7 +2293,7 @@ export function Lesson67({ module }: { module?: string }) {
 
         <CodeBlock
           caption={"Жизненный цикл одного ресурса"}
-          code={"POST   /tasks/  -> id=1\nGET    /tasks/1 -> 200\nPUT    /tasks/1 -> 200\nPATCH  /tasks/1 -> 200\nDELETE /tasks/1 -> 204\nGET    /tasks/1 -> 404"}
+          code={"POST   /tasks  -> id=1\nGET    /tasks/1 -> 200\nPUT    /tasks/1 -> 200\nPATCH  /tasks/1 -> 200\nDELETE /tasks/1 -> 204\nGET    /tasks/1 -> 404"}
         />
 
         <RecallCard
@@ -2344,11 +2344,11 @@ export function Lesson67({ module }: { module?: string }) {
 
         <CodeBlock
           caption={"POST и GET согласуют состояние"}
-          code={"@router.post(\"/\", response_model=TaskRead, status_code=201)\ndef create_task(payload: TaskCreate):\n    return crud.create_task(payload)\n\n@router.get(\"/\", response_model=list[TaskRead])\ndef list_tasks():\n    return crud.list_tasks()"}
+          code={"@router.post(\"\", response_model=TaskRead, status_code=201)\ndef create_task(payload: TaskCreate):\n    return crud.create_task(payload)\n\n@router.get(\"\", response_model=list[TaskRead])\ndef list_tasks():\n    return crud.list_tasks()"}
         />
 
         <PredictOutput
-          code={"@router.post(\"/\", response_model=TaskRead, status_code=201)\ndef create_task(payload: TaskCreate):\n    return crud.create_task(payload)\n\n@router.get(\"/\", response_model=list[TaskRead])\ndef list_tasks():\n    return crud.list_tasks()"}
+          code={"@router.post(\"\", response_model=TaskRead, status_code=201)\ndef create_task(payload: TaskCreate):\n    return crud.create_task(payload)\n\n@router.get(\"\", response_model=list[TaskRead])\ndef list_tasks():\n    return crud.list_tasks()"}
           output={"Результат соответствует контракту текущего раздела"}
           hint={"Сначала проследите вход, затем действие и только потом итог."}
         />
@@ -2401,7 +2401,7 @@ export function Lesson67({ module }: { module?: string }) {
 
         <CodeBlock
           caption={"Полная замена через PUT"}
-          code={"@router.put(\"/{task_id}\", response_model=TaskRead)\ndef replace_task(task_id: int, payload: TaskCreate):\n    task = get_task_or_404(task_id)\n    return crud.replace_task(task, payload)"}
+          code={"@router.put(\"/{task_id}\", response_model=TaskRead)\ndef replace_task(task_id: int, payload: TaskUpdate):\n    task = get_task_or_404(task_id)\n    return crud.replace_task(task, payload)"}
         />
 
         <RecallCard
@@ -2418,7 +2418,7 @@ export function Lesson67({ module }: { module?: string }) {
 
       <Section number="04" title={"Частичное обновление через PATCH"}>
         <Lead>
-          {"PATCH принимает TaskUpdate и меняет только поля, присутствующие в body. Title и priority не должны исчезать при обновлении одного is_done."}
+          {"PATCH принимает TaskPatch и меняет только поля, присутствующие в body. Title и priority не должны исчезать при обновлении одного is_done."}
         </Lead>
 
         <div className="lesson-practice-steps">
@@ -2452,7 +2452,7 @@ export function Lesson67({ module }: { module?: string }) {
 
         <CodeBlock
           caption={"Частичное обновление через PATCH"}
-          code={"@router.patch(\"/{task_id}\", response_model=TaskRead)\ndef update_task(task_id: int, payload: TaskUpdate):\n    task = get_task_or_404(task_id)\n    return crud.update_task(task, payload)"}
+          code={"@router.patch(\"/{task_id}\", response_model=TaskRead)\ndef update_task(task_id: int, payload: TaskPatch):\n    task = get_task_or_404(task_id)\n    return crud.update_task(task, payload)"}
         />
 
         <CompareSolutions
@@ -2464,7 +2464,7 @@ export function Lesson67({ module }: { module?: string }) {
           }}
           right={{
             title: "Оставить явный контракт",
-            code: "@router.patch(\"/{task_id}\", response_model=TaskRead)\ndef update_task(task_id: int, payload: TaskUpdate):\n    task = get_task_or_404(task_id)\n    return crud.update_task(task, payload)",
+            code: "@router.patch(\"/{task_id}\", response_model=TaskRead)\ndef update_task(task_id: int, payload: TaskPatch):\n    task = get_task_or_404(task_id)\n    return crud.update_task(task, payload)",
             note: "Каждая часть делает одну понятную работу.",
           }}
           preferred="right"
@@ -2474,7 +2474,7 @@ export function Lesson67({ module }: { module?: string }) {
         <RecallCard
           question={"Сформулируйте главную идею раздела своими словами."}
           answer={<p>
-            {"PATCH принимает TaskUpdate и меняет только поля, присутствующие в body. Title и priority не должны исчезать при обновлении одного is_done."}
+            {"PATCH принимает TaskPatch и меняет только поля, присутствующие в body. Title и priority не должны исчезать при обновлении одного is_done."}
           </p>}
         />
 

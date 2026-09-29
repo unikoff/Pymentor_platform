@@ -1,0 +1,124 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1672" height="836" viewBox="0 0 1672 836" role="img" aria-labelledby="title desc">
+  <title id="title">Filter, sort, and limit a task list</title>
+  <desc id="desc">The source order is 5, 2, 4, 1, 3. Filtering is_done false leaves 5, 4, 1. Sorting by id ascending gives 1, 4, 5. A limit of two returns 1 and 4, while the source stays unchanged.</desc>
+  <defs>
+    <marker id="arrow-green" markerWidth="28" markerHeight="28" viewBox="0 0 12 12" refX="9" refY="6" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M1 1L10 6L1 11" stroke="#82E0AA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <symbol id="shape-circle" viewBox="0 0 40 40"><circle cx="20" cy="20" r="17" fill="#EEF4F0"/></symbol>
+    <symbol id="shape-triangle" viewBox="0 0 40 40"><path d="M20 3L38 36H2Z" fill="#EEF4F0"/></symbol>
+    <symbol id="shape-diamond" viewBox="0 0 40 40"><path d="M20 1L39 20L20 39L1 20Z" fill="#EEF4F0"/></symbol>
+    <symbol id="shape-square" viewBox="0 0 40 40"><rect x="4" y="4" width="32" height="32" rx="2" fill="#EEF4F0"/></symbol>
+    <symbol id="shape-hex" viewBox="0 0 40 40"><path d="M20 1L37 10.5V29.5L20 39L3 29.5V10.5Z" fill="#EEF4F0"/></symbol>
+    <style>
+      .source { fill: #121A17; stroke: #2B3B35; stroke-width: 2.5; }
+      .card { fill: #202A25; stroke: #45564E; stroke-width: 2; }
+      .card-muted { fill: #171E1B; stroke: #37433D; stroke-width: 2; }
+      .label { fill: #99AAA1; font: 700 17px Inter, "Segoe UI", sans-serif; letter-spacing: 1.6px; }
+      .code { fill: #DCE8E0; font: 500 17px Consolas, "SFMono-Regular", monospace; }
+      .task-id { fill: #DCE8E0; font: 600 15px Consolas, "SFMono-Regular", monospace; }
+      .muted-id { fill: #839088; font: 600 15px Consolas, "SFMono-Regular", monospace; }
+      .open { fill: #65E8B4; }
+      .done { fill: #92A0AA; }
+      .arrow { fill: none; stroke: #65E8B4; stroke-width: 5.25; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#arrow-green); }
+    </style>
+  </defs>
+
+  <rect width="1672" height="836" rx="28" fill="#0D1411"/>
+
+  <rect x="46" y="74" width="1580" height="218" rx="24" class="source"/>
+  <text x="78" y="111" class="label">SOURCE</text>
+
+  <g transform="translate(260 133)">
+    <rect width="116" height="126" rx="14" class="card"/><use href="#shape-circle" x="38" y="21" width="40" height="40"/>
+    <text x="18" y="107" class="task-id">5</text><circle cx="94" cy="99" r="8" class="open"/>
+  </g>
+  <g transform="translate(530 133)">
+    <rect width="116" height="126" rx="14" class="card"/><use href="#shape-triangle" x="38" y="21" width="40" height="40"/>
+    <text x="18" y="107" class="task-id">2</text><circle cx="94" cy="99" r="8" class="done"/>
+  </g>
+  <g transform="translate(800 133)">
+    <rect width="116" height="126" rx="14" class="card"/><use href="#shape-diamond" x="38" y="21" width="40" height="40"/>
+    <text x="18" y="107" class="task-id">4</text><circle cx="94" cy="99" r="8" class="open"/>
+  </g>
+  <g transform="translate(1070 133)">
+    <rect width="116" height="126" rx="14" class="card"/><use href="#shape-square" x="38" y="21" width="40" height="40"/>
+    <text x="18" y="107" class="task-id">1</text><circle cx="94" cy="99" r="8" class="open"/>
+  </g>
+  <g transform="translate(1340 133)">
+    <rect width="116" height="126" rx="14" class="card"/><use href="#shape-hex" x="38" y="21" width="40" height="40"/>
+    <text x="18" y="107" class="task-id">3</text><circle cx="94" cy="99" r="8" class="done"/>
+  </g>
+
+  <path d="M78 296V468" stroke="#586A61" stroke-width="2.5" stroke-dasharray="5 9" marker-end="url(#arrow-green)"/>
+
+  <g transform="translate(34 490)">
+    <rect width="78" height="104" rx="12" class="card"/><use href="#shape-circle" x="19" y="17" width="40" height="40"/>
+    <text x="14" y="89" class="task-id">5</text><circle cx="62" cy="81" r="7" class="open"/>
+  </g>
+  <g transform="translate(126 490)">
+    <rect width="78" height="104" rx="12" class="card"/><use href="#shape-triangle" x="19" y="17" width="40" height="40"/>
+    <text x="14" y="89" class="task-id">2</text><circle cx="62" cy="81" r="7" class="done"/>
+  </g>
+  <g transform="translate(218 490)">
+    <rect width="78" height="104" rx="12" class="card"/><use href="#shape-diamond" x="19" y="17" width="40" height="40"/>
+    <text x="14" y="89" class="task-id">4</text><circle cx="62" cy="81" r="7" class="open"/>
+  </g>
+  <g transform="translate(310 490)">
+    <rect width="78" height="104" rx="12" class="card"/><use href="#shape-square" x="19" y="17" width="40" height="40"/>
+    <text x="14" y="89" class="task-id">1</text><circle cx="62" cy="81" r="7" class="open"/>
+  </g>
+  <g transform="translate(402 490)">
+    <rect width="78" height="104" rx="12" class="card"/><use href="#shape-hex" x="19" y="17" width="40" height="40"/>
+    <text x="14" y="89" class="task-id">3</text><circle cx="62" cy="81" r="7" class="done"/>
+  </g>
+
+  <path d="M493 542H539" class="arrow"/>
+  <text x="551" y="451" class="code">is_done = False</text>
+  <path d="M548 480H696L641 532V579L622 607L603 579V532Z" fill="#18312A" stroke="#65E8B4" stroke-width="5.25" stroke-linejoin="round"/>
+  <path d="M704 542H786" class="arrow"/>
+
+  <text x="936" y="411" class="code">id ↑</text>
+  <rect x="943" y="425" width="82" height="15" rx="7" fill="#55C7E8"/>
+  <rect x="925" y="447" width="100" height="15" rx="7" fill="#55C7E8"/>
+  <rect x="907" y="469" width="118" height="15" rx="7" fill="#55C7E8"/>
+
+  <g transform="translate(822 490)">
+    <rect width="86" height="104" rx="12" class="card"/><use href="#shape-square" x="23" y="17" width="40" height="40"/>
+    <text x="17" y="89" class="task-id">1</text><circle cx="70" cy="81" r="7" class="open"/>
+  </g>
+  <g transform="translate(922 490)">
+    <rect width="86" height="104" rx="12" class="card"/><use href="#shape-diamond" x="23" y="17" width="40" height="40"/>
+    <text x="17" y="89" class="task-id">4</text><circle cx="70" cy="81" r="7" class="open"/>
+  </g>
+  <g transform="translate(1022 490)">
+    <rect width="86" height="104" rx="12" class="card"/><use href="#shape-circle" x="23" y="17" width="40" height="40"/>
+    <text x="17" y="89" class="task-id">5</text><circle cx="70" cy="81" r="7" class="open"/>
+  </g>
+
+  <path d="M1117 542H1240" class="arrow"/>
+  <text x="1265" y="451" class="code">limit = 2</text>
+  <rect x="1248" y="474" width="210" height="137" rx="17" fill="none" stroke="#65E8B4" stroke-width="3.5" stroke-dasharray="10 8"/>
+  <g transform="translate(1261 490)">
+    <rect width="86" height="104" rx="12" class="card"/><use href="#shape-square" x="23" y="17" width="40" height="40"/>
+    <text x="17" y="89" class="task-id">1</text><circle cx="70" cy="81" r="7" class="open"/>
+  </g>
+  <g transform="translate(1359 490)">
+    <rect width="86" height="104" rx="12" class="card"/><use href="#shape-diamond" x="23" y="17" width="40" height="40"/>
+    <text x="17" y="89" class="task-id">4</text><circle cx="70" cy="81" r="7" class="open"/>
+  </g>
+  <g transform="translate(1485 490)" opacity="0.48">
+    <rect width="86" height="104" rx="12" class="card-muted"/><use href="#shape-circle" x="23" y="17" width="40" height="40"/>
+    <text x="17" y="89" class="muted-id">5</text><circle cx="70" cy="81" r="7" class="done"/>
+  </g>
+
+  <path d="M622 611C622 635 643 642 658 666" fill="none" stroke="#87959D" stroke-width="3" stroke-dasharray="6 9" stroke-linecap="round"/>
+  <g transform="translate(574 681)" opacity="0.62">
+    <rect width="70" height="88" rx="11" class="card-muted"/><use href="#shape-triangle" x="16" y="14" width="38" height="38"/>
+    <text x="12" y="76" class="muted-id">2</text><circle cx="56" cy="68" r="6" class="done"/>
+  </g>
+  <g transform="translate(656 681)" opacity="0.62">
+    <rect width="70" height="88" rx="11" class="card-muted"/><use href="#shape-hex" x="16" y="14" width="38" height="38"/>
+    <text x="12" y="76" class="muted-id">3</text><circle cx="56" cy="68" r="6" class="done"/>
+  </g>
+</svg>

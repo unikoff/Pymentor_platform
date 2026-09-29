@@ -4,7 +4,7 @@ import unittest
 from fastapi import HTTPException
 
 from learning.code_runner import run_python_task
-from learning.content import build_task_revision
+from learning.content import _task_from_override, build_task_revision
 from learning import rich_code_tasks
 from routers.learning.routers import _require_current_task_revision
 
@@ -78,6 +78,116 @@ class CodeRunnerRegressionTests(unittest.TestCase):
 
         self.assertTrue(result["ok"], result)
         self.assertEqual([], [test for test in result["tests"] if not test["passed"]])
+
+    def test_path_search_task_checks_copy_identity_and_input_immutability(self) -> None:
+        task = rich_code_tasks.PLANNER_API_CODE_TASKS[54][0]
+        reference = run_python_task(task["reference_code"], task)
+
+        mutating = run_python_task(
+            '''def solve(tasks, task_id):
+    for task in tasks:
+        if task["id"] == task_id:
+            task["title"] = "изменено"
+            return task.copy()
+    return None
+''',
+            task,
+        )
+        returning_original = run_python_task(
+            '''def solve(tasks, task_id):
+    for task in tasks:
+        if task["id"] == task_id:
+            task.copy()
+            return task
+    return None
+''',
+            task,
+        )
+        printing = run_python_task(
+            '''def solve(tasks, task_id):
+    for task in tasks:
+        if task["id"] == task_id:
+            print(task["title"])
+            return task.copy()
+    return None
+''',
+            task,
+        )
+        printing_during_setup = run_python_task(
+            '''print("лишний вывод")
+
+def solve(tasks, task_id):
+    for task in tasks:
+        if task["id"] == task_id:
+            return task.copy()
+    return None
+''',
+            task,
+        )
+
+        self.assertTrue(reference["ok"], reference)
+        self.assertFalse(mutating["ok"])
+        self.assertIn("изменила входные данные", mutating["tests"][0]["error"])
+        self.assertFalse(returning_original["ok"])
+        self.assertIn("отдельную копию", returning_original["tests"][0]["error"])
+        self.assertFalse(printing["ok"])
+        self.assertIn("выводить результат", printing["tests"][0]["error"])
+        self.assertFalse(printing_during_setup["ok"])
+        self.assertIn("выводить результат", printing_during_setup["tests"][0]["error"])
+
+    def test_query_task_checks_pipeline_copies_and_input_immutability(self) -> None:
+        task = rich_code_tasks.PLANNER_API_CODE_TASKS[55][0]
+        reference = run_python_task(task["reference_code"], task)
+        returning_original_dicts = run_python_task(
+            '''def solve(tasks, is_done, sort_desc, limit):
+    selected = [task for task in tasks if is_done is None or task["is_done"] == is_done]
+    ordered = sorted(selected, key=lambda task: task["id"], reverse=sort_desc)
+    safe_limit = min(max(limit, 1), 50)
+    return ordered[:safe_limit]
+''',
+            task,
+        )
+        applying_limit_too_early = run_python_task(
+            '''def solve(tasks, is_done, sort_desc, limit):
+    safe_limit = min(max(limit, 1), 50)
+    selected = tasks[:safe_limit]
+    matching = [task.copy() for task in selected if is_done is None or task["is_done"] == is_done]
+    return sorted(matching, key=lambda task: task["id"], reverse=sort_desc)
+''',
+            task,
+        )
+        mutating_input = run_python_task(
+            '''def solve(tasks, is_done, sort_desc, limit):
+    tasks[0]["title"] = "изменено"
+    matching = [task.copy() for task in tasks if is_done is None or task["is_done"] == is_done]
+    ordered = sorted(matching, key=lambda task: task["id"], reverse=sort_desc)
+    safe_limit = min(max(limit, 1), 50)
+    return ordered[:safe_limit]
+''',
+            task,
+        )
+
+        self.assertTrue(reference["ok"], reference)
+        self.assertFalse(returning_original_dicts["ok"])
+        self.assertIn("отдельные копии задач", returning_original_dicts["tests"][0]["error"])
+        self.assertFalse(applying_limit_too_early["ok"])
+        pipeline_test = next(
+            test for test in applying_limit_too_early["tests"]
+            if test["name"] == "limit применяется после отбора подходящих задач"
+        )
+        self.assertFalse(pipeline_test["passed"])
+        self.assertFalse(mutating_input["ok"])
+        self.assertTrue(
+            any("изменила входные данные" in test["error"] for test in mutating_input["tests"])
+        )
+
+    def test_query_task_publishes_structured_contract_checklists(self) -> None:
+        task = rich_code_tasks.PLANNER_API_CODE_TASKS[55][0]
+        published = _task_from_override("lesson-55", "legacy-55", 0, task)
+
+        self.assertEqual(task["contract"]["given_items"], published["contract"]["given_items"])
+        self.assertEqual(task["contract"]["todo_items"], published["contract"]["todo_items"])
+        self.assertEqual(task["contract"]["check_items"], published["contract"]["check_items"])
 
     def test_nested_dict_is_compared_semantically(self) -> None:
         task = {

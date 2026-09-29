@@ -1265,25 +1265,28 @@ DEEPER_CODE_TASKS: dict[int, list[dict[str, Any]]] = {22: [{'title': 'Контр
 PLANNER_API_CODE_TASKS: dict[int, list[dict[str, Any]]] = {46: [{'title': 'Соберите модель HTTP request',
        'level': 'easy',
        'mode': 'solve',
-       'prompt': 'Создайте словарь headers с Accept: application/json и X-Client-Version со значением '
-                 'client_version. Когда body не равен None, добавьте Content-Type: application/json. Верните словарь '
-                  'с точными ключами method, path, headers, body. Значение method переведите в верхний регистр через '
-                  'upper(), path и body верните без изменения.',
-       'hints': ['Сначала отделите постоянные headers от условного Content-Type. Затем соберите результат из четырёх '
-                 'частей request.',
-                 'Проверьте два контрастных случая: body равен None и body содержит словарь. Path и body не '
-                 'перестраивайте.',
-                 'Для method используйте уже знакомое приведение строки к верхнему регистру, а Content-Type добавляйте '
-                 'только после проверки body.'],
-       'contract': {'given': 'Автопроверка вызывает solve(method, path, client_version, body). method и path: '
-                              'строки, client_version: строка версии клиента, body: словарь или None. Все значения '
-                              'передаются готовыми, сетевой запрос отправлять не нужно.',
-                    'todo': 'Создайте словарь headers с Accept: application/json и X-Client-Version со значением '
-                            'client_version. Когда body не равен None, добавьте Content-Type: application/json. '
-                            'Верните словарь с точными ключами method, path, headers, body. Значение method '
-                            'переведите в верхний регистр через upper(), path и body верните без изменения.',
-                    'check': 'Проверяются GET без body, POST с JSON body и PATCH с другим path. Сравнивается весь '
-                             'возвращённый словарь, включая отсутствие Content-Type у request без body.'},
+        'prompt': 'Соберите словарь headers с Accept: application/json и Planner-Client-Version со значением '
+                  'client_version. Если body не равен None, добавьте Content-Type: application/json, в том числе для '
+                  'пустого словаря. Верните словарь с точными ключами method, path, headers, body. Входной method '
+                  'задан короткой строчной записью get, post или patch до сборки сообщения; преобразуйте его вызовом '
+                  'method.upper(). Path и body верните без изменения.',
+       'hints': ['Сначала отделите заголовки, которые есть всегда, от Content-Type, зависящего от наличия body. Затем '
+                 'соберите четыре части результата.',
+                 'Сравните три значения: None, пустой словарь и заполненный словарь. Пустой словарь передан, хотя '
+                 'он пуст; path и body при сборке не меняйте.',
+                  'Входной method здесь является короткой записью до составления сообщения. Примените к нему '
+                  'method.upper(); отдельно решите, когда именно body отсутствует.'],
+       'contract': {'given': 'Автопроверка вызывает solve(method, path, client_version, body). method: одна из '
+                              'коротких записей get, post или patch до составления сообщения; path: строка, '
+                              'client_version: строка версии, body: словарь или None. Это не готовое сообщение HTTP, '
+                              'сеть отправлять не нужно.',
+                    'todo': 'Создайте словарь headers с Accept: application/json и Planner-Client-Version со значением '
+                            'client_version. Если body не равен None, добавьте Content-Type: application/json, даже '
+                             'если body равен пустому словарю. Верните словарь с точными ключами method, path, headers, '
+                             'body. Приведите короткую запись вызовом method.upper(); path и body верните без изменения.',
+                     'check': 'Проверяются GET без body, POST с пустым JSON, POST с заполненным JSON и короткая запись '
+                              'patch с другим path. Сравнивается весь словарь, включая Content-Type только при '
+                              'существующем JSON body.'},
        'requirements': {'items': ['словарь headers',
                                   'условное добавление Content-Type',
                                   'method.upper()',
@@ -1299,28 +1302,36 @@ PLANNER_API_CODE_TASKS: dict[int, list[dict[str, Any]]] = {46: [{'title': 'Со�
                   'args': ['get', '/tasks', '1.0', None],
                   'expected': {'method': 'GET',
                                'path': '/tasks',
-                               'headers': {'Accept': 'application/json', 'X-Client-Version': '1.0'},
+                               'headers': {'Accept': 'application/json', 'Planner-Client-Version': '1.0'},
                                'body': None}},
-                 {'name': 'POST с JSON',
+                 {'name': 'POST с пустым JSON-объектом',
+                  'args': ['post', '/tasks', '1.0', {}],
+                  'expected': {'method': 'POST',
+                               'path': '/tasks',
+                               'headers': {'Accept': 'application/json',
+                                           'Planner-Client-Version': '1.0',
+                                           'Content-Type': 'application/json'},
+                               'body': {}}},
+                 {'name': 'POST с заполненным JSON',
                   'args': ['post', '/tasks', '1.1', {'title': 'HTTP', 'priority': 4}],
                   'expected': {'method': 'POST',
                                'path': '/tasks',
                                'headers': {'Accept': 'application/json',
-                                           'X-Client-Version': '1.1',
+                                           'Planner-Client-Version': '1.1',
                                            'Content-Type': 'application/json'},
                                'body': {'title': 'HTTP', 'priority': 4}}},
-                 {'name': 'PATCH другого ресурса',
+                  {'name': 'Короткая запись метода и другой path',
                   'args': ['patch', '/tasks/7', '2.0', {'is_done': True}],
                   'expected': {'method': 'PATCH',
                                'path': '/tasks/7',
                                'headers': {'Accept': 'application/json',
-                                           'X-Client-Version': '2.0',
+                                           'Planner-Client-Version': '2.0',
                                            'Content-Type': 'application/json'},
                                'body': {'is_done': True}}}],
        'reference_code': 'def solve(method, path, client_version, body):\n'
                          '    headers = {\n'
                          '        "Accept": "application/json",\n'
-                         '        "X-Client-Version": client_version,\n'
+                         '        "Planner-Client-Version": client_version,\n'
                          '    }\n'
                          '    if body is not None:\n'
                          '        headers["Content-Type"] = "application/json"\n'
@@ -1333,23 +1344,26 @@ PLANNER_API_CODE_TASKS: dict[int, list[dict[str, Any]]] = {46: [{'title': 'Со�
  47: [{'title': 'Соберите модель HTTP response',
        'level': 'easy',
        'mode': 'solve',
-       'prompt': 'Создайте headers с X-Request-ID, равным request_id. Если body не равен None, добавьте '
-                  'Content-Type: application/json. Верните словарь с точными ключами status, headers, body. Не '
-                  'заменяйте None пустым словарём и не печатайте результат.',
-       'hints': ['Сначала создайте постоянный X-Request-ID. Затем отдельно решите, появляется ли Content-Type.',
-                 'Проверяйте именно наличие body, а не его truthiness. None и пустой словарь имеют разный смысл.',
+       'prompt': 'Создайте словарь headers и добавьте в него поле X-Request-ID со значением request_id. Если body не '
+                  'равен None, добавьте Content-Type: application/json. Верните словарь с точными ключами status, '
+                  'headers, body. Не заменяйте None пустым словарём и не печатайте результат.',
+       'hints': ['Имя поля X-Request-ID всегда одинаковое, а его значение берётся из request_id.',
+                 'Проверяйте наличие body: пустой словарь {} всё ещё является body, в отличие от None.',
                  'В конце верните status, headers и body без изменения. Функция только описывает response и ничего не '
                  'печатает.'],
        'contract': {'given': 'Автопроверка вызывает solve(status, body, request_id). status: целое число '
-                              'HTTP-статуса, body: словарь или None, request_id: строка. Нужно представить готовый '
-                              'response обычным словарём Python.',
-                    'todo': 'Создайте headers с X-Request-ID, равным request_id. Если body не равен None, добавьте '
-                            'Content-Type: application/json. Верните словарь с точными ключами status, headers, '
-                            'body. Не заменяйте None пустым словарём и не печатайте результат.',
-                    'check': 'Проверяются успешный ответ 200, ошибка 404 с JSON body и ответ 204 без body. Для 204 в '
-                             'headers должен остаться только X-Request-ID.'},
-       'requirements': {'items': ['заголовок X-Request-ID',
+                              'HTTP-статуса, body: словарь Python, представляющий JSON-объект, или None, request_id: строка. Нужно представить готовый '
+                              'response обычным словарём Python. Пары status и body уже согласованы, выбирать статус '
+                              'или проверять смысл операции не нужно.',
+                    'todo': 'Создайте словарь headers и добавьте в него поле X-Request-ID со значением request_id. Если '
+                            'body не равен None, добавьте Content-Type: application/json. Верните словарь с точными '
+                            'ключами status, headers, body. Не заменяйте None пустым словарём и не печатайте результат.',
+                    'check': 'Проверяются ответы 200 и 201 с JSON body, ошибка 404 с JSON body, ответ 204 без body и пустой '
+                             'JSON-объект как существующее body. Для 204 Content-Type не добавляется.'},
+       'requirements': {'items': ['словарь headers с полем X-Request-ID со значением request_id',
                                   'Content-Type только для body',
+                                  'пустой словарь считается существующим body',
+                                  'точные ключи результата status, headers, body',
                                   'status и body без подмены'],
                         'names': ['status', 'body', 'request_id', 'headers'],
                         'nodes': ['FunctionDef', 'If']},
@@ -1359,6 +1373,11 @@ PLANNER_API_CODE_TASKS: dict[int, list[dict[str, Any]]] = {46: [{'title': 'Со�
                   'expected': {'status': 200,
                                'headers': {'X-Request-ID': 'req-101', 'Content-Type': 'application/json'},
                                'body': {'id': 1, 'title': 'HTTP'}}},
+                 {'name': 'созданный ресурс',
+                  'args': [201, {'id': 2, 'title': 'Planner'}, 'req-102'],
+                  'expected': {'status': 201,
+                               'headers': {'X-Request-ID': 'req-102', 'Content-Type': 'application/json'},
+                               'body': {'id': 2, 'title': 'Planner'}}},
                  {'name': 'ошибка not found',
                   'args': [404, {'detail': 'Task not found'}, 'req-202'],
                   'expected': {'status': 404,
@@ -1366,22 +1385,30 @@ PLANNER_API_CODE_TASKS: dict[int, list[dict[str, Any]]] = {46: [{'title': 'Со�
                                'body': {'detail': 'Task not found'}}},
                  {'name': 'успех без body',
                   'args': [204, None, 'req-303'],
-                  'expected': {'status': 204, 'headers': {'X-Request-ID': 'req-303'}, 'body': None}}],
+                  'expected': {'status': 204, 'headers': {'X-Request-ID': 'req-303'}, 'body': None}},
+                 {'name': 'пустой JSON-объект',
+                  'args': [200, {}, 'req-404'],
+                  'expected': {'status': 200,
+                               'headers': {'X-Request-ID': 'req-404', 'Content-Type': 'application/json'},
+                               'body': {}}}],
        'reference_code': 'def solve(status, body, request_id):\n'
                          '    headers = {"X-Request-ID": request_id}\n'
                          '    if body is not None:\n'
                          '        headers["Content-Type"] = "application/json"\n'
                          '    return {"status": status, "headers": headers, "body": body}\n'}],
-  48: [{'title': 'Выберите HTTP method по действию',
+  48: [{'title': 'Выберите HTTP-метод по действию',
        'level': 'easy',
        'mode': 'solve',
-       'prompt': 'Создайте словарь methods со следующими парами: list → GET, get → GET, create → POST, replace → '
-                 'PUT, update → PATCH, delete → DELETE. Верните method по ключу action. Не используйте print().',
-       'contract': {'given': 'Автопроверка вызывает solve(action). action: одна из строк: list, get, create, '
-                            'replace, update, delete. Каждому действию соответствует один HTTP method.',
-                    'todo': 'Создайте словарь methods со следующими парами: list → GET, get → GET, create → POST, '
-                            'replace → PUT, update → PATCH, delete → DELETE. Верните method по ключу action. Не '
-                            'используйте print().',
+       'prompt': 'Реализуйте solve(action), которая переводит одно из шести действий Planner в HTTP-метод. Создайте '
+                 'словарь methods и верните выбранное значение по ключу action. Ориентируйтесь на смысл действия, '
+                 'разобранный в теории. Не используйте print().',
+       'contract': {'given': 'Автопроверка вызывает solve(action). action — одна из строк: list, get, create, '
+                            'replace, update, delete. Здесь list и get означают чтение списка и одной задачи; '
+                            'create — создание; replace — полную замену; update — частичное изменение; delete — '
+                            'удаление.',
+                    'todo': 'Составьте словарь methods для шести действий и выберите для каждого HTTP-метод по его '
+                            'смыслу. В этой задаче update означает изменение только переданных полей. Верните значение '
+                            'по ключу action. Не используйте print().',
                     'check': 'Проверяются все шесть действий. Сравнивается возвращённая строка в верхнем регистре. '
                              'Названия действий и методов должны совпасть с условием точно.'},
        'hints': ['Сначала определите смысл каждого действия: чтение, создание, полная замена, частичное изменение '
@@ -1392,12 +1419,12 @@ PLANNER_API_CODE_TASKS: dict[int, list[dict[str, Any]]] = {46: [{'title': 'Со�
                         'names': ['action', 'methods'],
                         'nodes': ['FunctionDef']},
        'starter_code': 'def solve(action):\n    # Создайте таблицу соответствий action → HTTP method\n    # Верните method для переданного action\n    pass\n',
-       'tests': [{'name': 'collection read', 'args': ['list'], 'expected': 'GET'},
-                 {'name': 'item read', 'args': ['get'], 'expected': 'GET'},
-                 {'name': 'create', 'args': ['create'], 'expected': 'POST'},
-                 {'name': 'full replace', 'args': ['replace'], 'expected': 'PUT'},
-                 {'name': 'partial update', 'args': ['update'], 'expected': 'PATCH'},
-                 {'name': 'delete', 'args': ['delete'], 'expected': 'DELETE'}],
+       'tests': [{'name': 'чтение списка', 'args': ['list'], 'expected': 'GET'},
+                 {'name': 'чтение одной задачи', 'args': ['get'], 'expected': 'GET'},
+                 {'name': 'создание задачи', 'args': ['create'], 'expected': 'POST'},
+                 {'name': 'полная замена', 'args': ['replace'], 'expected': 'PUT'},
+                 {'name': 'частичное изменение', 'args': ['update'], 'expected': 'PATCH'},
+                 {'name': 'удаление задачи', 'args': ['delete'], 'expected': 'DELETE'}],
        'reference_code': 'def solve(action):\n'
                          '    methods = {\n'
                          '        "list": "GET",\n'
@@ -1408,93 +1435,224 @@ PLANNER_API_CODE_TASKS: dict[int, list[dict[str, Any]]] = {46: [{'title': 'Со�
                          '        "delete": "DELETE",\n'
                          '    }\n'
                          '    return methods[action]\n'}],
- 54: [{'title': 'Найдите объект по path-параметру',
+  54: [{'title': 'Найдите задачу по id и верните копию',
        'level': 'easy',
        'mode': 'solve',
-       'prompt': 'Циклом найдите первую задачу, у которой task["id"] равен task_id. Верните поверхностную копию '
-                 'найденного словаря через copy(). Когда задача отсутствует, верните None. Не изменяйте исходный '
-                 'список.',
-       'contract': {'given': 'Автопроверка вызывает solve(tasks, task_id). tasks — список словарей, каждый словарь '
-                             'содержит ключ id. task_id — целое число из path. Список может быть пустым, а нужного '
-                             'id может не существовать.',
-                    'todo': 'Циклом найдите первую задачу, у которой task["id"] равен task_id. Верните поверхностную '
-                            'копию найденного словаря через copy(). Когда задача отсутствует, верните None. Не '
-                            'изменяйте исходный список.',
-                    'check': 'Проверяются первый элемент, элемент в середине, отсутствующий id и пустой список. '
-                             'Сравнивается return, а не печать.'},
-       'requirements': {'items': ['цикл по tasks', 'сравнение id', 'copy() найденной задачи', 'None при отсутствии'],
+       'prompt': 'Реализуйте чистую Python-функцию solve(tasks, task_id), которая возвращает отдельную копию '
+                 'задачи с совпавшим id или None, если совпадения нет. Это правило поиска позже сможет '
+                 'использовать HTTP-маршрут; сейчас проверяется только функция, без FastAPI и статусов ответа.',
+       'contract': {'given': 'Автопроверка вызывает solve(tasks, task_id). Значение task_id уже прошло проверку '
+                             'типа на границе запроса и передаётся функции как целое число.',
+                    'given_items': ['tasks: список словарей с полями id, title, priority и is_done.',
+                                    'Каждый id: уникальное целое число; task_id имеет тот же тип.',
+                                    'Список может быть пустым, а переданного id может в нём не оказаться.',
+                                    'В этой задаче не нужно разбирать URL или запускать FastAPI.'],
+                    'todo': 'Найдите в списке запись по значению поля id и верните результат, не меняя входные данные.',
+                    'todo_items': ['Сопоставьте id записей с task_id, не принимая id за позицию в списке.',
+                                   'Для найденной задачи верните отдельный словарь с теми же полями.',
+                                   'Если совпадения нет, в том числе в пустом списке, верните None.',
+                                   'Верните значение функции, не печатайте его и не добавляйте HTTP-логику.'],
+                    'check': 'Платформа проверит поиск, отсутствие результата и сохранность исходных данных.',
+                    'check_items': ['Найдена первая запись и запись не с той позицией, что её id.',
+                                    'Для неизвестного id и пустого списка возвращён правильный результат.',
+                                    'Копия равна найденной записи по полям, но является отдельным словарём.',
+                                    'Исходные список и записи не изменены, в консоль ничего не напечатано.']},
+       'hints': ['Перед кодом определите два исхода функции: задача найдена или после проверки списка совпадения нет.',
+                 'Просматривайте записи по одной. Сравнивайте поле id текущей записи с task_id, а не используйте это число как индекс списка.',
+                 'В теории показано, как dict.copy() отделяет внешний словарь. Если цикл закончился без совпадения, обработайте этот исход отдельно.'],
+       'requirements': {'items': ['цикл по tasks', 'сравнение поля id с task_id', 'copy() найденной записи',
+                                 'не менять входные данные', 'вернуть результат, а не печатать его',
+                                 'None, если совпадения нет'],
                         'names': ['tasks', 'task_id'],
                         'nodes': ['FunctionDef', 'For', 'If'],
                         'attributes': ['copy']},
        'starter_code': 'def solve(tasks, task_id):\n    # Найдите задачу по id\n    pass\n',
        'tests': [{'name': 'первый элемент',
-                  'args': [[{'id': 1, 'title': 'HTTP'}, {'id': 2, 'title': 'FastAPI'}], 1],
-                  'expected': {'id': 1, 'title': 'HTTP'}},
+                  'args': [[{'id': 1, 'title': 'HTTP', 'priority': 4, 'is_done': False},
+                            {'id': 2, 'title': 'FastAPI', 'priority': 5, 'is_done': True}], 1],
+                  'expected': {'id': 1, 'title': 'HTTP', 'priority': 4, 'is_done': False},
+                  'preserve_inputs': True,
+                  'no_stdout': True,
+                  'copy_result_from': {'arg_index': 0, 'item_index': 0}},
                  {'name': 'элемент в середине',
-                  'args': [[{'id': 1, 'title': 'HTTP'}, {'id': 4, 'title': 'Swagger'}, {'id': 8, 'title': 'Tests'}],
-                           4],
-                  'expected': {'id': 4, 'title': 'Swagger'}},
-                 {'name': 'id отсутствует', 'args': [[{'id': 1, 'title': 'HTTP'}], 99], 'expected': None},
-                 {'name': 'пустой список', 'args': [[], 1], 'expected': None}],
+                  'args': [[{'id': 1, 'title': 'HTTP', 'priority': 4, 'is_done': False},
+                            {'id': 4, 'title': 'Swagger', 'priority': 3, 'is_done': True},
+                            {'id': 8, 'title': 'Tests', 'priority': 2, 'is_done': False}], 4],
+                  'expected': {'id': 4, 'title': 'Swagger', 'priority': 3, 'is_done': True},
+                  'preserve_inputs': True,
+                  'no_stdout': True,
+                  'copy_result_from': {'arg_index': 0, 'item_index': 1}},
+                 {'name': 'id отсутствует',
+                  'args': [[{'id': 1, 'title': 'HTTP', 'priority': 4, 'is_done': False}], 99],
+                  'expected': None,
+                  'preserve_inputs': True,
+                  'no_stdout': True},
+                 {'name': 'пустой список',
+                  'args': [[], 1],
+                  'expected': None,
+                  'preserve_inputs': True,
+                  'no_stdout': True}],
        'reference_code': 'def solve(tasks, task_id):\n'
                          '    for task in tasks:\n'
                          '        if task["id"] == task_id:\n'
                          '            return task.copy()\n'
                          '    return None\n'}],
- 55: [{'title': 'Примените query-фильтр, сортировку и limit',
+ 55: [{'title': 'Соберите безопасное представление списка задач',
        'level': 'medium',
        'mode': 'solve',
-       'prompt': 'Скопируйте подходящие задачи в новый список. Ограничьте limit диапазоном от 1 до 50 через min() и '
-                 'max(). Отсортируйте результат по id: по возрастанию при sort_desc=False и по убыванию при True. '
-                 'Верните первые safe_limit элементов. Исходный список менять нельзя.',
-       'contract': {'given': 'Автопроверка вызывает solve(tasks, is_done, sort_desc, limit). Каждая задача содержит '
-                             'id и is_done. is_done может быть True, False или None. Если фильтр равен None, нужно '
-                             'оставить задачи обоих статусов.',
-                    'todo': 'Скопируйте подходящие задачи в новый список. Ограничьте limit диапазоном от 1 до 50 '
-                            'через min() и max(). Отсортируйте результат по id: по возрастанию при sort_desc=False и '
-                            'по убыванию при True. Верните первые safe_limit элементов. Исходный список менять '
-                            'нельзя.',
-                    'check': 'Проверяются отсутствие фильтра, фильтр выполненных задач, оба направления сортировки и '
-                             'значения limit вне допустимых границ. Сравнивается итоговый список словарей.'},
-       'requirements': {'items': ['фильтр is_done', 'копии задач', 'limit от 1 до 50', 'сортировка по id'],
-                        'names': ['tasks', 'is_done', 'sort_desc', 'limit', 'filtered', 'safe_limit', 'ordered'],
-                        'nodes': ['FunctionDef', 'For', 'If'],
-                        'calls': ['min', 'max', 'sorted'],
-                        'attributes': ['copy', 'append']},
+       'prompt': 'Реализуйте solve(tasks, is_done, sort_desc, limit). Сначала отберите задачи: при is_done=None '
+                 'оставьте оба статуса, иначе только точные совпадения. Для каждой подходящей задачи верните '
+                 'отдельную копию. Отсортируйте копии по уникальному id: sort_desc=False задаёт возрастание, '
+                 'sort_desc=True задаёт убывание. limit уже проверен и находится в диапазоне 1-50; верните начало '
+                 'отсортированного результата. Не меняйте входной список и словари.',
+       'contract': {'given': 'В функцию передаются tasks, is_done, sort_desc и limit. Каждая задача имеет поля '
+                             'id (уникальное целое число), title (строка), priority (целое число) и is_done '
+                             '(bool). is_done может быть True, False или None. title и priority нужно сохранить, '
+                             'но они не влияют на фильтр и сортировку. sort_desc всегда bool. limit — целое '
+                             'число в диапазоне 1-50: публичный HTTP-маршрут проверит границы до вызова этой '
+                             'функции.',
+                    'todo': 'Соберите ответ по этапам: выберите задачи по is_done; скопируйте подходящие словари; '
+                            'отсортируйте копии по id с направлением из sort_desc; возьмите начало результата '
+                            'длиной limit. Считайте, что limit уже проверен и лежит в диапазоне 1-50. '
+                            'Верните список, не печатая его.',
+                    'check': 'Проверяются отсутствие фильтра, фильтры True и False, оба направления сортировки, '
+                             'пустой вход и фильтр без совпадений, допустимые граничные значения limit 1 и 50, неизменность '
+                             'входа и отдельная идентичность каждого возвращённого словаря. Отдельный смешанный '
+                             'набор выявляет ошибку, если limit применить к исходному списку до подготовки '
+                             'подходящего отсортированного результата. Верхняя граница проверяется на наборе '
+                             'больше 50 задач.',
+                    'given_items': ['solve(tasks, is_done, sort_desc, limit) получает список задач с полями id, title, priority и is_done.',
+                                    'id уникален. Входные значения уже имеют типы int, bool и None; преобразование URL в типы здесь не выполняется.',
+                                    'title и priority сохраняются без изменений, но не участвуют в фильтрации или сортировке.',
+                                    'Эта функция готовит представление списка и не является FastAPI-маршрутом.'],
+                    'todo_items': ['Определите, какие задачи подходят: None оставляет оба статуса, а True и False выбирают точные совпадения.',
+                                   'Для каждой подходящей задачи подготовьте отдельный словарь, сохранив все поля.',
+                                   'Упорядочьте подготовленные задачи по id. sort_desc=False означает возрастание, sort_desc=True означает убывание.',
+                                    'После отбора и сортировки возьмите начало списка длиной limit. Значение уже находится в диапазоне 1-50.',
+                                   'Верните список. Не печатайте результат и не меняйте входные данные.'],
+                    'check_items': ['Сравниваются отсутствие фильтра, оба значения фильтра, направления сортировки и случаи без результата.',
+                                    'Отдельный пример выявляет применение limit к исходному списку до отбора подходящих задач.',
+                                    'Проверяются допустимые значения limit=1 и limit=50; для верхней границы вход содержит больше 50 задач. HTTP-валидация значений вне диапазона относится к маршруту, не к этой функции.',
+                                    'Автопроверка сравнивает входы до и после вызова и проверяет отдельность каждого возвращённого словаря.']},
+       'hints': ['Для одной задачи проследите путь до ответа: сначала решите, подходит ли её статус, затем подумайте, где она окажется после подготовки списка. Какие этапы ещё нужны клиенту?',
+                 'Вернитесь к примерам sorted() и границ limit в теории. Сопоставьте направление сортировки с параметром функции, а нижнюю и верхнюю границы с тем, что должен получить клиент.',
+                 'Проверьте рассуждение на трёх задачах с перемешанными id и статусами и значением limit=1. Выпишите ожидаемый список после каждого этапа и сравните с результатом функции.'],
+       'requirements': {'items': ['точный необязательный фильтр is_done',
+                                  'отдельные копии подходящих задач',
+                                  'сортировка по уникальному id: sort_desc=False по возрастанию, True по убыванию',
+                                  'limit от 1 до 50 уже проверен HTTP-слоем',
+                                  'неизменность входных данных'],
+                        'names': ['tasks', 'is_done', 'sort_desc', 'limit'],
+                        'nodes': ['FunctionDef']},
        'starter_code': 'def solve(tasks, is_done, sort_desc, limit):\n'
-                       '    # Отфильтруйте копии задач\n'
-                       '    # Ограничьте limit, отсортируйте и верните страницу\n'
+                       '    # Отбор задач -> копии -> сортировка -> limit с границами\n'
                        '    pass\n',
-       'tests': [{'name': 'без фильтра, первые две',
-                  'args': [[{'id': 3, 'is_done': True}, {'id': 1, 'is_done': False}, {'id': 2, 'is_done': True}],
+       'tests': [{'name': 'без фильтра: копии в порядке id по возрастанию',
+                  'args': [[{'id': 3, 'title': 'Тесты', 'priority': 2, 'is_done': True},
+                            {'id': 1, 'title': 'HTTP', 'priority': 4, 'is_done': False},
+                            {'id': 2, 'title': 'FastAPI', 'priority': 5, 'is_done': True}],
                            None,
                            False,
-                           2],
-                  'expected': [{'id': 1, 'is_done': False}, {'id': 2, 'is_done': True}]},
-                 {'name': 'только выполненные по убыванию',
-                  'args': [[{'id': 3, 'is_done': True}, {'id': 1, 'is_done': False}, {'id': 2, 'is_done': True}],
+                           3],
+                  'expected': [{'id': 1, 'title': 'HTTP', 'priority': 4, 'is_done': False},
+                               {'id': 2, 'title': 'FastAPI', 'priority': 5, 'is_done': True},
+                               {'id': 3, 'title': 'Тесты', 'priority': 2, 'is_done': True}],
+                  'preserve_inputs': True,
+                  'no_stdout': True,
+                  'copy_results_from': [{'arg_index': 0, 'item_index': 1, 'result_index': 0},
+                                        {'arg_index': 0, 'item_index': 2, 'result_index': 1},
+                                        {'arg_index': 0, 'item_index': 0, 'result_index': 2}]},
+                 {'name': 'только выполненные: по убыванию',
+                  'args': [[{'id': 3, 'title': 'Тесты', 'priority': 2, 'is_done': True},
+                            {'id': 1, 'title': 'HTTP', 'priority': 4, 'is_done': False},
+                            {'id': 2, 'title': 'FastAPI', 'priority': 5, 'is_done': True}],
                            True,
                            True,
                            10],
-                  'expected': [{'id': 3, 'is_done': True}, {'id': 2, 'is_done': True}]},
-                 {'name': 'limit меньше единицы',
-                  'args': [[{'id': 2, 'is_done': False}, {'id': 1, 'is_done': False}], False, False, 0],
-                  'expected': [{'id': 1, 'is_done': False}]},
-                 {'name': 'limit больше пятидесяти',
-                  'args': [[{'id': 2, 'is_done': False}, {'id': 1, 'is_done': False}], None, False, 100],
-                  'expected': [{'id': 1, 'is_done': False}, {'id': 2, 'is_done': False}]}],
+                  'expected': [{'id': 3, 'title': 'Тесты', 'priority': 2, 'is_done': True},
+                               {'id': 2, 'title': 'FastAPI', 'priority': 5, 'is_done': True}],
+                  'preserve_inputs': True,
+                  'no_stdout': True,
+                  'copy_results_from': [{'arg_index': 0, 'item_index': 0, 'result_index': 0},
+                                        {'arg_index': 0, 'item_index': 2, 'result_index': 1}]},
+                 {'name': 'фильтр False не теряет незавершённые задачи',
+                  'args': [[{'id': 4, 'title': 'Docs', 'priority': 1, 'is_done': False},
+                            {'id': 2, 'title': 'API', 'priority': 3, 'is_done': True},
+                            {'id': 1, 'title': 'HTTP', 'priority': 4, 'is_done': False}],
+                           False,
+                           True,
+                           10],
+                  'expected': [{'id': 4, 'title': 'Docs', 'priority': 1, 'is_done': False},
+                               {'id': 1, 'title': 'HTTP', 'priority': 4, 'is_done': False}],
+                  'preserve_inputs': True,
+                  'no_stdout': True,
+                  'copy_results_from': [{'arg_index': 0, 'item_index': 0, 'result_index': 0},
+                                        {'arg_index': 0, 'item_index': 2, 'result_index': 1}]},
+                 {'name': 'limit применяется после отбора подходящих задач',
+                  'args': [[{'id': 2, 'title': 'API', 'priority': 3, 'is_done': True},
+                            {'id': 1, 'title': 'HTTP', 'priority': 4, 'is_done': False},
+                            {'id': 4, 'title': 'Docs', 'priority': 1, 'is_done': False}],
+                           False,
+                           True,
+                           1],
+                  'expected': [{'id': 4, 'title': 'Docs', 'priority': 1, 'is_done': False}],
+                  'preserve_inputs': True,
+                  'no_stdout': True,
+                  'copy_results_from': [{'arg_index': 0, 'item_index': 2, 'result_index': 0}]},
+                 {'name': 'пустой входной список',
+                  'args': [[], None, False, 10],
+                  'expected': [],
+                  'preserve_inputs': True,
+                  'no_stdout': True},
+                 {'name': 'фильтр без совпадений возвращает пустой список',
+                  'args': [[{'id': 3, 'title': 'Тесты', 'priority': 2, 'is_done': True}],
+                           False,
+                           False,
+                           10],
+                  'expected': [],
+                  'preserve_inputs': True,
+                  'no_stdout': True},
+                 {'name': 'нижняя граница limit',
+                  'args': [[{'id': 2, 'title': 'FastAPI', 'priority': 5, 'is_done': False},
+                            {'id': 1, 'title': 'HTTP', 'priority': 4, 'is_done': False}],
+                           None,
+                           False,
+                           1],
+                  'expected': [{'id': 1, 'title': 'HTTP', 'priority': 4, 'is_done': False}],
+                  'preserve_inputs': True,
+                  'no_stdout': True,
+                  'copy_results_from': [{'arg_index': 0, 'item_index': 1, 'result_index': 0}]},
+                 {'name': 'верхняя граница limit на наборе больше 50 задач',
+                  'args': [[{'id': task_id,
+                             'title': f'Задача {task_id}',
+                            'priority': (task_id - 1) % 5 + 1,
+                             'is_done': False}
+                            for task_id in range(60, 0, -1)],
+                           None,
+                           False,
+                           50],
+                  'expected': [{'id': task_id,
+                                'title': f'Задача {task_id}',
+                                'priority': (task_id - 1) % 5 + 1,
+                                'is_done': False}
+                               for task_id in range(1, 51)],
+                  'preserve_inputs': True,
+                  'no_stdout': True,
+                  'copy_results_from': [{'arg_index': 0,
+                                         'item_index': 60 - task_id,
+                                         'result_index': task_id - 1}
+                                        for task_id in range(1, 51)]}],
        'reference_code': 'def solve(tasks, is_done, sort_desc, limit):\n'
-                         '    filtered = []\n'
+                         '    matching = []\n'
                          '    for task in tasks:\n'
                          '        if is_done is None or task["is_done"] == is_done:\n'
-                         '            filtered.append(task.copy())\n'
-                         '    safe_limit = min(max(limit, 1), 50)\n'
+                         '            matching.append(task.copy())\n'
                          '    ordered = sorted(\n'
-                         '        filtered,\n'
-                         '        key=lambda item: item["id"],\n'
+                         '        matching,\n'
+                         '        key=lambda task: task["id"],\n'
                          '        reverse=sort_desc,\n'
                          '    )\n'
-                         '    return ordered[:safe_limit]\n'}],
+                         '    return ordered[:limit]\n'}],
  59: [{'title': 'Добавьте запись в in-memory storage',
        'level': 'medium',
        'mode': 'solve',

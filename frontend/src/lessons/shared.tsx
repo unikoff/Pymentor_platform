@@ -86,6 +86,27 @@ export function Lead({ children }: { children: React.ReactNode }) {
   return <p className="rich-lead">{children}</p>;
 }
 
+export function LinkedNotes({
+  items,
+  variant = "cards",
+}: {
+  items: { title: string; description: string }[];
+  variant?: "cards" | "connected";
+}) {
+  const connected = variant === "connected";
+
+  return (
+    <ul className={`linked-notes${connected ? " linked-notes--connected" : ""}`}>
+      {items.map(({ title, description }) => (
+        <li className={`linked-note${connected ? " linked-note--connected" : ""}`} key={title}>
+          <h3>{title}</h3>
+          <p>{description}</p>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 export function Callout({ children, tone }: { children: React.ReactNode; tone?: "warn" | "info" }) {
   return (
     <aside className={`lesson-callout ${tone === "info" ? "lesson-callout--info" : ""}`}>

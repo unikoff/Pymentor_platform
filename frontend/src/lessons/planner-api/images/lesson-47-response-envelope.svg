@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1672" height="836" viewBox="0 0 1672 836" fill="none" role="img" aria-labelledby="title description">
+  <title id="title">HTTP response model</title>
+  <desc id="description">A server prepares a response status and headers, encodes a Python value as a JSON body, and sends the response to a client.</desc>
+  <defs>
+    <linearGradient id="response-flow" x1="246" y1="418" x2="1426" y2="418" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#57DDA2"/>
+      <stop offset="1" stop-color="#8BE9B8"/>
+    </linearGradient>
+    <marker id="response-arrow" markerWidth="18" markerHeight="18" viewBox="0 0 12 12" refX="10" refY="6" orient="auto">
+      <path d="M2 2L10 6L2 10" stroke="#8BE9B8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <style>
+      .sans { font-family: Inter, "Segoe UI", sans-serif; }
+      .mono { font-family: "JetBrains Mono", Consolas, monospace; }
+      .actor { font-size: 23px; font-weight: 700; letter-spacing: 1.5px; fill: #DCE6E0; }
+      .label { font-size: 17px; font-weight: 700; letter-spacing: 1.2px; fill: #91A198; }
+      .value { font-size: 22px; font-weight: 600; fill: #F2F5F3; }
+      .accent { fill: #8BE9B8; }
+    </style>
+  </defs>
+
+  <rect width="1672" height="836" rx="28" fill="#0E1512"/>
+  <rect x="1" y="1" width="1670" height="834" rx="27" stroke="#2A3931" stroke-width="2"/>
+
+  <rect x="56" y="362" width="196" height="112" rx="22" fill="#17211B" stroke="#385345" stroke-width="2"/>
+  <text x="154" y="429" text-anchor="middle" class="sans actor">SERVER</text>
+  <rect x="1420" y="362" width="196" height="112" rx="22" fill="#17211B" stroke="#385345" stroke-width="2"/>
+  <text x="1518" y="429" text-anchor="middle" class="sans actor">CLIENT</text>
+  <path d="M252 418H306" stroke="url(#response-flow)" stroke-width="4" marker-end="url(#response-arrow)"/>
+  <path d="M1366 418H1420" stroke="url(#response-flow)" stroke-width="4" marker-end="url(#response-arrow)"/>
+
+  <rect x="306" y="112" width="1060" height="612" rx="26" fill="#141D18" stroke="#4BC89B" stroke-width="2.5"/>
+  <text x="362" y="170" class="sans label accent">RESPONSE</text>
+
+  <rect x="346" y="202" width="452" height="136" rx="16" fill="#17211B" stroke="#385345" stroke-width="1.5"/>
+  <text x="376" y="242" class="sans label">STATUS</text>
+  <text x="376" y="298" class="mono value accent">201 Created</text>
+
+  <rect x="820" y="202" width="506" height="136" rx="16" fill="#17211B" stroke="#385345" stroke-width="1.5"/>
+  <text x="850" y="242" class="sans label">HEADERS</text>
+  <text x="850" y="298" class="mono value">Content-Type: application/json</text>
+
+  <rect x="346" y="364" width="980" height="116" rx="16" fill="#17211B" stroke="#385345" stroke-width="1.5"/>
+  <text x="376" y="404" class="sans label">PYTHON VALUE</text>
+  <text x="376" y="450" class="mono value">{"available": True}</text>
+
+  <path d="M836 480V526" stroke="#8BE9B8" stroke-width="3" marker-end="url(#response-arrow)"/>
+  <text x="878" y="510" class="sans label">JSON ENCODING</text>
+
+  <rect x="346" y="546" width="980" height="132" rx="16" fill="#17211B" stroke="#385345" stroke-width="1.5"/>
+  <text x="376" y="586" class="sans label">BODY</text>
+  <text x="376" y="638" class="mono value accent">{"available": true}</text>
+</svg>

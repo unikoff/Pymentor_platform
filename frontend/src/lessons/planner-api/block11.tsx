@@ -302,20 +302,20 @@ export function Lesson57({ module }: { module?: string }) {
         </Callout>
       </Section>
 
-      <Section number="05" title={"Defaults и необязательные поля"}>
+      <Section number="05" title={"Обязательность и значение по умолчанию"}>
         <Lead>
-          {"Значение по умолчанию позволяет клиенту не отправлять поле. Тип с None разрешает отсутствие содержимого."}
+          {"Поле без значения по умолчанию обязательно. Это важно для нашего контракта: клиент должен каждый раз передавать priority."}
         </Lead>
 
         <div className="lesson-practice-steps">
           <h3>Шаг 1. Что приходит на вход</h3>
           <p>
-            {"priority может получить default=3."}
+            {"priority остаётся обязательным."}
           </p>
 
           <h3>Шаг 2. Что делает текущая часть</h3>
           <p>
-            {"description может быть строкой или None."}
+            {"Не добавляем поля, которых нет в согласованном контракте."}
           </p>
 
           <h3>Шаг 3. Где проходит граница</h3>
@@ -326,10 +326,10 @@ export function Lesson57({ module }: { module?: string }) {
 
         <TypeCards>
           <TypeCard badge="вход" title="Исходные данные">
-            {"priority может получить default=3."}
+            {"priority остаётся обязательным."}
           </TypeCard>
           <TypeCard badge="действие" badgeTone="float" title="Операция">
-            {"description может быть строкой или None."}
+            {"Не добавляем поля, которых нет в согласованном контракте."}
           </TypeCard>
           <TypeCard badge="граница" badgeTone="str" title="Контракт">
             {"id не входит в TaskCreate, потому что его создаёт сервер."}
@@ -337,22 +337,22 @@ export function Lesson57({ module }: { module?: string }) {
         </TypeCards>
 
         <CodeBlock
-          caption={"необязательные данные"}
-          code={"class TaskCreate(BaseModel):\n    title: str = Field(min_length=1, max_length=120)\n    priority: int = Field(default=3, ge=1, le=5)\n    description: str | None = None"}
+          caption={"оба поля TaskCreate обязательны"}
+          code={"class TaskCreate(BaseModel):\n    title: str = Field(min_length=1, max_length=120)\n    priority: int = Field(ge=1, le=5)"}
         />
 
         <RecallCard
-          question={"Сформулируйте основную идею раздела «Defaults и необязательные поля» без подсказки."}
+          question={"Сформулируйте основную идею раздела «Обязательность и значение по умолчанию» без подсказки."}
           hint={"Назовите вход, действие и границу ответственности."}
           answer={
             <p>
-              {"Значение по умолчанию позволяет клиенту не отправлять поле. Тип с None разрешает отсутствие содержимого."}
+              {"Если приоритет должен приходить от клиента, не задаём ему значение по умолчанию. Иначе запрос без priority станет допустимым и изменит договор."}
             </p>
           }
         />
 
         <Callout tone="info">
-          {"Необязательное поле и поле, которым клиент не должен управлять, — разные понятия."}
+          {"Default меняет обязательность поля. Для TaskCreate priority обязателен; id и is_done сервер создаёт сам."}
         </Callout>
       </Section>
 
@@ -500,7 +500,7 @@ export function Lesson57({ module }: { module?: string }) {
 
         <CodeBlock
           caption={"итоговая схема"}
-          code={"class TaskCreate(BaseModel):\n    title: str = Field(min_length=1, max_length=120)\n    priority: int = Field(default=3, ge=1, le=5)\n    description: str | None = None"}
+          code={"class TaskCreate(BaseModel):\n    title: str = Field(min_length=1, max_length=120)\n    priority: int = Field(ge=1, le=5)"}
         />
 
         <RecallCard
@@ -586,7 +586,7 @@ export function Lesson58({ module }: { module?: string }) {
         variant="project"
         chip={module ?? BLOCK_TITLE}
         title={"Разные схемы: TaskCreate, TaskUpdate, TaskRead"}
-        intro={"Разделим данные по назначению: клиент создаёт задачу без id, полностью обновляет разрешённые поля, а в ответ получает серверный ресурс с идентификатором и статусом."}
+        intro={"Разделим данные по назначению: клиент создаёт задачу без id, полный PUT заменяет все редактируемые поля, а ответ чтения описывает полный ресурс. TaskRead подключим к POST только после реального создания записи."}
         tags={[
           { icon: <Layers size={14} />, label: "разные контракты" },
           { icon: <FileText size={14} />, label: "вход и ответ" },
@@ -661,7 +661,7 @@ export function Lesson58({ module }: { module?: string }) {
 
           <h3>Шаг 2. Что делает текущая часть</h3>
           <p>
-            {"description может отсутствовать."}
+            {"priority остаётся обязательным."}
           </p>
 
           <h3>Шаг 3. Где проходит граница</h3>
@@ -675,7 +675,7 @@ export function Lesson58({ module }: { module?: string }) {
             {"title и priority приходят из body."}
           </TypeCard>
           <TypeCard badge="действие" badgeTone="float" title="Операция">
-            {"description может отсутствовать."}
+            {"priority остаётся обязательным."}
           </TypeCard>
           <TypeCard badge="граница" badgeTone="str" title="Контракт">
             {"id и is_done задаёт сервер."}
@@ -684,7 +684,7 @@ export function Lesson58({ module }: { module?: string }) {
 
         <CodeBlock
           caption={"схема создания"}
-          code={"class TaskCreate(BaseModel):\n    title: str = Field(min_length=1, max_length=120)\n    priority: int = Field(default=3, ge=1, le=5)\n    description: str | None = None"}
+          code={"class TaskCreate(BaseModel):\n    title: str = Field(min_length=1, max_length=120)\n    priority: int = Field(ge=1, le=5)"}
         />
 
         <RecallCard
@@ -720,7 +720,7 @@ export function Lesson58({ module }: { module?: string }) {
 
           <h3>Шаг 3. Где проходит граница</h3>
           <p>
-            {"Все поля публичного ресурса перечислены явно."}
+            {"Каждая запись уже содержит все четыре поля TaskRead."}
           </p>
         </div>
 
@@ -732,13 +732,13 @@ export function Lesson58({ module }: { module?: string }) {
             {"is_done имеет конкретное значение."}
           </TypeCard>
           <TypeCard badge="граница" badgeTone="str" title="Контракт">
-            {"Все поля публичного ресурса перечислены явно."}
+            {"GET /tasks возвращает согласованные поля ресурса."}
           </TypeCard>
         </TypeCards>
 
         <CodeBlock
           caption={"схема чтения"}
-          code={"class TaskRead(BaseModel):\n    id: int\n    title: str\n    priority: int\n    description: str | None\n    is_done: bool"}
+          code={"class TaskRead(BaseModel):\n    id: int\n    title: str\n    priority: int\n    is_done: bool"}
         />
 
         <RecallCard
@@ -774,7 +774,7 @@ export function Lesson58({ module }: { module?: string }) {
 
           <h3>Шаг 3. Где проходит граница</h3>
           <p>
-            {"Внутреннее поле не обязано попадать клиенту."}
+            {"Список GET /tasks уже содержит все четыре публичных поля."}
           </p>
         </div>
 
@@ -786,13 +786,22 @@ export function Lesson58({ module }: { module?: string }) {
             {"Выход проверяется сервером."}
           </TypeCard>
           <TypeCard badge="граница" badgeTone="str" title="Контракт">
-            {"Внутреннее поле не обязано попадать клиенту."}
+            {"GET /tasks уже возвращает согласованные поля."}
           </TypeCard>
         </TypeCards>
 
         <CodeBlock
-          caption={"POST с моделью ответа"}
-          code={"@app.post(\n    \"/tasks\",\n    response_model=TaskRead,\n    status_code=201,\n)\ndef create_task(payload: TaskCreate):\n    stored = payload.model_dump()\n    stored[\"id\"] = 1\n    stored[\"is_done\"] = False\n    return stored"}
+          caption={"TaskRead проверяет существующий GET"}
+          code={"@app.get(\"/tasks\", response_model=list[TaskRead])\ndef list_tasks():\n    return tasks"}
+        />
+
+        <p>
+          {"GET /tasks уже возвращает записи со всеми четырьмя полями, поэтому TaskRead подходит этому ответу. Временный POST пока только возвращает проверенный TaskCreate со статусом 200. Если подключить к нему TaskRead сейчас, обязательные id и is_done будут отсутствовать, и FastAPI сообщит об ошибке ответа сервера, а не об ошибке запроса 422. Подключим TaskRead к POST после реального создания задачи."}
+        </p>
+
+        <CodeBlock
+          caption={"временный POST отвечает входной схемой"}
+          code={"@app.post(\"/tasks\", response_model=TaskCreate)\ndef create_task(payload: TaskCreate):\n    return payload.model_dump()"}
         />
 
         <RecallCard
@@ -823,7 +832,7 @@ export function Lesson58({ module }: { module?: string }) {
 
           <h3>Шаг 2. Что делает текущая часть</h3>
           <p>
-            {"priority и description входят в новый снимок."}
+            {"priority и is_done входят в новый снимок."}
           </p>
 
           <h3>Шаг 3. Где проходит граница</h3>
@@ -837,7 +846,7 @@ export function Lesson58({ module }: { module?: string }) {
             {"title приходит заново."}
           </TypeCard>
           <TypeCard badge="действие" badgeTone="float" title="Операция">
-            {"priority и description входят в новый снимок."}
+            {"priority и is_done входят в новый снимок."}
           </TypeCard>
           <TypeCard badge="граница" badgeTone="str" title="Контракт">
             {"is_done передаётся явно, а id остаётся прежним."}
@@ -846,7 +855,7 @@ export function Lesson58({ module }: { module?: string }) {
 
         <CodeBlock
           caption={"схема полного обновления"}
-          code={"class TaskUpdate(BaseModel):\n    title: str = Field(min_length=1, max_length=120)\n    priority: int = Field(ge=1, le=5)\n    description: str | None\n    is_done: bool"}
+          code={"class TaskUpdate(BaseModel):\n    title: str = Field(min_length=1, max_length=120)\n    priority: int = Field(ge=1, le=5)\n    is_done: bool"}
         />
 
         <RecallCard
@@ -900,7 +909,7 @@ export function Lesson58({ module }: { module?: string }) {
 
         <CodeBlock
           caption={"карта использования"}
-          code={"POST /tasks body        -> TaskCreate\nPUT /tasks/7 body       -> TaskUpdate\nsuccessful API response -> TaskRead"}
+          code={"POST request body          -> TaskCreate\ntemporary POST response    -> TaskCreate, 200\nGET /tasks response         -> list[TaskRead]\nfuture full PUT body        -> TaskUpdate\nPOST after real creation   -> TaskRead, 201"}
         />
 
         <RecallCard
@@ -974,7 +983,7 @@ export function Lesson58({ module }: { module?: string }) {
 
       <Section number="08" title={"Практика: контракт Planner API"}>
         <Lead>
-          {"Соберите schemas.py и проверьте Swagger: POST без id, полный PUT и ответ TaskRead."}
+          {"Соберите app/schemas.py. В Swagger POST пока принимает и возвращает TaskCreate с кодом 200, а GET /tasks отвечает списком TaskRead. TaskUpdate определяет будущий полный PUT, который будет подключён после сборки CRUD."}
         </Lead>
 
         <div className="lesson-practice-steps">
@@ -990,7 +999,7 @@ export function Lesson58({ module }: { module?: string }) {
 
           <h3>Шаг 3. Где проходит граница</h3>
           <p>
-            {"Удалите поле из TaskUpdate и получите 422."}
+            {"Проверьте обязательность полей TaskUpdate по схеме полного PUT."}
           </p>
         </div>
 
@@ -1002,13 +1011,13 @@ export function Lesson58({ module }: { module?: string }) {
             {"Сверьте response schema."}
           </TypeCard>
           <TypeCard badge="граница" badgeTone="str" title="Контракт">
-            {"Удалите поле из TaskUpdate и получите 422."}
+            {"Проверьте обязательность полей TaskUpdate по схеме полного PUT."}
           </TypeCard>
         </TypeCards>
 
         <CodeBlock
           caption={"итоговый набор"}
-          code={"from pydantic import BaseModel, Field\n\nclass TaskCreate(BaseModel):\n    title: str = Field(min_length=1, max_length=120)\n    priority: int = Field(default=3, ge=1, le=5)\n    description: str | None = None\n\nclass TaskUpdate(BaseModel):\n    title: str\n    priority: int\n    description: str | None\n    is_done: bool\n\nclass TaskRead(BaseModel):\n    id: int\n    title: str\n    priority: int\n    description: str | None\n    is_done: bool"}
+          code={"from pydantic import BaseModel, Field\n\nclass TaskCreate(BaseModel):\n    title: str = Field(min_length=1, max_length=120)\n    priority: int = Field(ge=1, le=5)\n\nclass TaskUpdate(BaseModel):\n    title: str = Field(min_length=1, max_length=120)\n    priority: int = Field(ge=1, le=5)\n    is_done: bool\n\nclass TaskRead(BaseModel):\n    id: int\n    title: str\n    priority: int\n    is_done: bool"}
         />
 
         <RecallCard
@@ -1016,13 +1025,13 @@ export function Lesson58({ module }: { module?: string }) {
           hint={"Назовите вход, действие и границу ответственности."}
           answer={
             <p>
-              {"Соберите schemas.py и проверьте Swagger: POST без id, полный PUT и ответ TaskRead."}
+              {"Соберите три согласованные схемы. Подключите TaskCreate к временному POST, а TaskRead к GET /tasks. Оставьте TaskUpdate для будущего PUT."}
             </p>
           }
         />
 
         <Callout tone="info">
-          {"Ученик должен объяснить, почему id отсутствует во входных схемах."}
+          {"TaskUpdate определена в app/schemas.py, но пока не появится в OpenAPI: на этом этапе ещё нет PUT-маршрута с таким параметром. Это ожидаемо. TaskCreate видна у временного POST, TaskRead — у GET /tasks."}
         </Callout>
 
         <div className="lesson-check-group">
@@ -1079,7 +1088,7 @@ export function Lesson58({ module }: { module?: string }) {
           ]}
         />
 
-        <PracticeCta text={"Создайте schemas.py, подключите TaskCreate и TaskRead к POST /tasks и проверьте схемы запроса и ответа в Swagger."} />
+        <PracticeCta text={"Создайте app/schemas.py, подключите TaskCreate к временному POST с ответом 200 и TaskRead к существующему GET /tasks. Оставьте TaskUpdate для полного PUT и проверьте модели и активные схемы в Swagger."} />
       </Section>
 
     </RichLesson>
@@ -1192,7 +1201,7 @@ export function Lesson59({ module }: { module?: string }) {
 
         <CodeBlock
           caption={"одна сохранённая задача"}
-          code={"task = {\n    \"id\": 1,\n    \"title\": \"FastAPI\",\n    \"priority\": 4,\n    \"description\": None,\n    \"is_done\": False,\n}\ntasks.append(task)"}
+          code={"task = {\n    \"id\": 1,\n    \"title\": \"FastAPI\",\n    \"priority\": 4,\n    \"is_done\": False,\n}\ntasks.append(task)"}
         />
 
         <RecallCard
@@ -1916,7 +1925,7 @@ export function Lesson60({ module }: { module?: string }) {
 
         <CodeBlock
           caption={"внутреннее поле"}
-          code={"stored = {\n    \"id\": 1,\n    \"title\": \"FastAPI\",\n    \"priority\": 4,\n    \"description\": None,\n    \"is_done\": False,\n    \"internal_note\": \"do not expose\",\n}"}
+          code={"stored = {\n    \"id\": 1,\n    \"title\": \"FastAPI\",\n    \"priority\": 4,\n    \"is_done\": False,\n    \"internal_note\": \"do not expose\",\n}"}
         />
 
         <RecallCard
@@ -2154,7 +2163,7 @@ export function Lesson61({ module }: { module?: string }) {
 
         <CodeBlock
           caption={"два тела"}
-          code={"PUT /tasks/7\n{\"title\":\"SQL\",\"priority\":5,\"description\":null,\"is_done\":false}\n\nPATCH /tasks/7\n{\"is_done\":true}"}
+          code={"PUT /tasks/7\n{\"title\":\"SQL\",\"priority\":5,\"is_done\":false}\n\nPATCH /tasks/7\n{\"is_done\":true}"}
         />
 
         <RecallCard
@@ -2185,7 +2194,7 @@ export function Lesson61({ module }: { module?: string }) {
 
           <h3>Шаг 2. Что делает текущая часть</h3>
           <p>
-            {"description передаётся явно."}
+            {"priority тоже передаётся явно."}
           </p>
 
           <h3>Шаг 3. Где проходит граница</h3>
@@ -2199,7 +2208,7 @@ export function Lesson61({ module }: { module?: string }) {
             {"title приходит заново."}
           </TypeCard>
           <TypeCard badge="действие" badgeTone="float" title="Операция">
-            {"description передаётся явно."}
+            {"priority тоже передаётся явно."}
           </TypeCard>
           <TypeCard badge="граница" badgeTone="str" title="Контракт">
             {"is_done входит в полный снимок."}
@@ -2208,7 +2217,7 @@ export function Lesson61({ module }: { module?: string }) {
 
         <CodeBlock
           caption={"полная схема"}
-          code={"class TaskUpdate(BaseModel):\n    title: str = Field(min_length=1, max_length=120)\n    priority: int = Field(ge=1, le=5)\n    description: str | None\n    is_done: bool"}
+          code={"class TaskUpdate(BaseModel):\n    title: str = Field(min_length=1, max_length=120)\n    priority: int = Field(ge=1, le=5)\n    is_done: bool"}
         />
 
         <RecallCard
@@ -2316,7 +2325,7 @@ export function Lesson61({ module }: { module?: string }) {
 
         <CodeBlock
           caption={"частичная схема"}
-          code={"class TaskPatch(BaseModel):\n    title: str | None = Field(default=None, min_length=1, max_length=120)\n    priority: int | None = Field(default=None, ge=1, le=5)\n    description: str | None = None\n    is_done: bool | None = None"}
+          code={"class TaskPatch(BaseModel):\n    title: str | None = Field(default=None, min_length=1, max_length=120)\n    priority: int | None = Field(default=None, ge=1, le=5)\n    is_done: bool | None = None"}
         />
 
         <RecallCard

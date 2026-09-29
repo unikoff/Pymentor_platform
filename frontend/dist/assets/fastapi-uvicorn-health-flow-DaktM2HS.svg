@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1672" height="836" viewBox="0 0 1672 836" fill="none" role="img" aria-labelledby="title description">
+  <title id="title">Uvicorn and FastAPI request flow</title>
+  <desc id="description">A client sends GET /health to Uvicorn. Uvicorn passes the request through ASGI to the FastAPI route. FastAPI returns a JSON body, and Uvicorn sends the HTTP response back to the client.</desc>
+  <defs>
+    <marker id="arrow-request" markerWidth="28" markerHeight="28" viewBox="0 0 12 12" refX="9" refY="6" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M1 1L10 6L1 11" stroke="#82E0AA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="arrow-response" markerWidth="28" markerHeight="28" viewBox="0 0 12 12" refX="9" refY="6" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M1 1L10 6L1 11" stroke="#55C7E8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <style>
+      .heading { font: 650 31px Inter, Segoe UI, sans-serif; fill: #F1F5F2; letter-spacing: 0.8px; }
+      .role { font: 650 15px Inter, Segoe UI, sans-serif; fill: #91A198; letter-spacing: 1.8px; }
+      .code { font: 500 21px Consolas, SFMono-Regular, monospace; fill: #E2ECE5; }
+      .flow-label { font: 650 15px Inter, Segoe UI, sans-serif; letter-spacing: 1.3px; }
+      .green { fill: #82E0AA; }
+      .cyan { fill: #55C7E8; }
+    </style>
+  </defs>
+
+  <rect width="1672" height="836" rx="28" fill="#0E1512"/>
+
+  <!-- Client -->
+  <rect x="55" y="220" width="350" height="400" rx="26" fill="#111A16" stroke="#4BC89B" stroke-width="2.5"/>
+  <text x="230" y="300" text-anchor="middle" class="heading">CLIENT</text>
+  <text x="230" y="334" text-anchor="middle" class="role">BROWSER OR SWAGGER UI</text>
+  <path d="M95 355H365" stroke="#293B32" stroke-width="2"/>
+  <rect x="95" y="380" width="270" height="72" rx="16" fill="#14231C" stroke="#51B98E" stroke-width="2"/>
+  <text x="230" y="425" text-anchor="middle" class="code green">GET /health</text>
+  <rect x="95" y="486" width="270" height="72" rx="16" fill="#132027" stroke="#347184" stroke-width="2"/>
+  <text x="230" y="531" text-anchor="middle" class="code cyan">200 OK</text>
+
+  <!-- Local server boundary -->
+  <rect x="470" y="145" width="1150" height="530" rx="28" fill="#101713" stroke="#53645A" stroke-width="2" stroke-dasharray="10 9"/>
+  <text x="520" y="190" class="role">LOCAL SERVER</text>
+
+  <!-- Uvicorn -->
+  <rect x="520" y="230" width="355" height="380" rx="24" fill="#111A16" stroke="#4BC89B" stroke-width="2.5"/>
+  <text x="697" y="300" text-anchor="middle" class="heading">Uvicorn</text>
+  <text x="697" y="335" text-anchor="middle" class="role">HTTP SERVER</text>
+  <path d="M570 365H825" stroke="#293B32" stroke-width="2"/>
+  <rect x="575" y="413" width="245" height="86" rx="18" fill="#142019" stroke="#345143" stroke-width="2"/>
+  <text x="697" y="466" text-anchor="middle" class="code">HTTP ↔ ASGI</text>
+
+  <!-- FastAPI application -->
+  <rect x="1100" y="220" width="470" height="400" rx="24" fill="#111A16" stroke="#4BC89B" stroke-width="2.5"/>
+  <text x="1335" y="286" text-anchor="middle" class="heading">FastAPI</text>
+  <text x="1335" y="320" text-anchor="middle" class="role">APPLICATION</text>
+  <rect x="1175" y="356" width="320" height="72" rx="16" fill="#14231C" stroke="#51B98E" stroke-width="2"/>
+  <text x="1335" y="401" text-anchor="middle" class="code green">GET /health</text>
+  <path d="M1335 432V466" stroke="#82E0AA" stroke-width="3" marker-end="url(#arrow-request)"/>
+  <rect x="1175" y="478" width="320" height="72" rx="16" fill="#132027" stroke="#347184" stroke-width="2"/>
+  <text x="1335" y="523" text-anchor="middle" class="code cyan">{"status":"ok"}</text>
+
+  <!-- Request travels client -> Uvicorn -> FastAPI -->
+  <path d="M365 416H508" stroke="#82E0AA" stroke-width="5.25" marker-end="url(#arrow-request)"/>
+  <path d="M875 416H1163" stroke="#82E0AA" stroke-width="5.25" marker-end="url(#arrow-request)"/>
+  <rect x="964" y="356" width="132" height="42" rx="13" fill="#14231C" stroke="#345143" stroke-width="1.5"/>
+  <text x="1030" y="383" text-anchor="middle" class="flow-label green">REQUEST</text>
+
+  <!-- Response travels FastAPI -> Uvicorn -> client -->
+  <path d="M1175 514H890" stroke="#55C7E8" stroke-width="5.25" stroke-dasharray="12 10" marker-end="url(#arrow-response)"/>
+  <path d="M520 522H377" stroke="#55C7E8" stroke-width="5.25" stroke-dasharray="12 10" marker-end="url(#arrow-response)"/>
+  <rect x="964" y="558" width="132" height="42" rx="13" fill="#132027" stroke="#347184" stroke-width="1.5"/>
+  <text x="1030" y="585" text-anchor="middle" class="flow-label cyan">RESPONSE</text>
+</svg>

@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1672" height="836" viewBox="0 0 1672 836" fill="none" role="img" aria-labelledby="title description">
+  <title id="title">POST retry after a lost response</title>
+  <desc id="description">A client sends POST tasks to a server. The server creates a task, but the response is lost. The client retries because it cannot know what happened. Without duplicate detection, the server may create another task.</desc>
+  <defs>
+    <radialGradient id="background" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(836 418) rotate(90) scale(620 1240)">
+      <stop offset="0" stop-color="#17241F"/>
+      <stop offset="1" stop-color="#0D1210"/>
+    </radialGradient>
+    <linearGradient id="request" x1="300" y1="0" x2="1190" y2="0" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#57DDA2"/>
+      <stop offset="1" stop-color="#A2F2C9"/>
+    </linearGradient>
+    <marker id="arrow-request" markerWidth="18" markerHeight="18" viewBox="0 0 12 12" refX="10" refY="6" orient="auto">
+      <path d="M2 2L10 6L2 10" stroke="#8BE9B8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="arrow-response" markerWidth="18" markerHeight="18" viewBox="0 0 12 12" refX="2" refY="6" orient="auto">
+      <path d="M10 2L2 6L10 10" stroke="#59CDE2" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <style>
+      .sans { font-family: Inter, "Segoe UI", sans-serif; }
+      .mono { font-family: "JetBrains Mono", Consolas, monospace; }
+      .title { font-size: 38px; font-weight: 750; letter-spacing: 1.2px; fill: #F3F5F4; }
+      .actor { font-size: 24px; font-weight: 700; letter-spacing: 1.5px; fill: #DCE6E0; }
+      .label { font-size: 23px; font-weight: 650; fill: #F2F5F3; }
+      .small { font-size: 19px; font-weight: 600; fill: #AAB7B0; }
+      .mint { fill: #8BE9B8; }
+      .cyan { fill: #73D8E8; }
+      .amber { fill: #F2C879; }
+    </style>
+  </defs>
+
+  <rect width="1672" height="836" rx="28" fill="url(#background)"/>
+  <rect x="1" y="1" width="1670" height="834" rx="27" stroke="#2A3931" stroke-width="2"/>
+
+  <text x="88" y="94" class="sans title">LOST RESPONSE</text>
+
+  <rect x="142" y="142" width="270" height="74" rx="18" fill="#1B2721" stroke="#385345" stroke-width="2"/>
+  <text x="277" y="188" text-anchor="middle" class="sans actor">CLIENT</text>
+  <rect x="1080" y="142" width="270" height="74" rx="18" fill="#1B2721" stroke="#385345" stroke-width="2"/>
+  <text x="1215" y="188" text-anchor="middle" class="sans actor">SERVER</text>
+
+  <path d="M277 216V742" stroke="#51635A" stroke-width="2" stroke-dasharray="8 12"/>
+  <path d="M1215 216V742" stroke="#51635A" stroke-width="2" stroke-dasharray="8 12"/>
+
+  <path d="M292 300H1194" stroke="url(#request)" stroke-width="5" marker-end="url(#arrow-request)"/>
+  <rect x="590" y="256" width="300" height="54" rx="14" fill="#17251E" stroke="#365342" stroke-width="2"/>
+  <text x="740" y="291" text-anchor="middle" class="mono label mint">POST /tasks</text>
+  <rect x="1244" y="266" width="330" height="68" rx="16" fill="#1A2821" stroke="#3A5D49" stroke-width="2"/>
+  <text x="1409" y="308" text-anchor="middle" class="sans label">Create Task A</text>
+
+  <path d="M1200 422H292" stroke="#59CDE2" stroke-width="4" stroke-dasharray="12 10" marker-end="url(#arrow-response)"/>
+  <path d="M718 402L750 434M750 402L718 434" stroke="#F2C879" stroke-width="6" stroke-linecap="round"/>
+  <rect x="766" y="390" width="250" height="58" rx="15" fill="#292419" stroke="#665538" stroke-width="2"/>
+  <text x="891" y="427" text-anchor="middle" class="sans label amber">Response lost</text>
+
+  <rect x="138" y="492" width="278" height="64" rx="16" fill="#292419" stroke="#665538" stroke-width="2"/>
+  <text x="277" y="533" text-anchor="middle" class="sans label amber">Outcome unknown</text>
+  <path d="M292 626H1194" stroke="url(#request)" stroke-width="5" marker-end="url(#arrow-request)"/>
+  <rect x="516" y="582" width="448" height="54" rx="14" fill="#17251E" stroke="#365342" stroke-width="2"/>
+  <text x="740" y="617" text-anchor="middle" class="mono label mint">Retry: POST /tasks</text>
+  <rect x="1244" y="584" width="330" height="78" rx="16" fill="#292419" stroke="#80653A" stroke-width="2"/>
+  <text x="1409" y="617" text-anchor="middle" class="sans label amber">May create Task B</text>
+  <text x="1409" y="644" text-anchor="middle" class="sans small">Without duplicate check</text>
+
+</svg>

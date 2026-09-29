@@ -369,6 +369,7 @@ except Exception as exc:
 def _build_runner_source(code: str, tests: list[dict[str, Any]], mode: str = "solve") -> str:
     return f"""
 import contextlib
+import copy
 import io
 import json
 import math
@@ -522,14 +523,43 @@ try:
                 "stdout": stdout.getvalue()[-1200:],
             }}, ensure_ascii=False))
         else:
+            setup_output = stdout.getvalue()
             results = []
             for index, test in enumerate(TESTS, start=1):
                 try:
+                    args = test.get("args", [])
+                    kwargs = test.get("kwargs", {{}})
+                    preserve_inputs = test.get("preserve_inputs", False)
+                    original_args = copy.deepcopy(args) if preserve_inputs else None
+                    original_kwargs = copy.deepcopy(kwargs) if preserve_inputs else None
                     with contextlib.redirect_stdout(stdout):
                         stdout.seek(0)
                         stdout.truncate(0)
-                        actual = solve(*test.get("args", []), **test.get("kwargs", {{}}))
+                        actual = solve(*args, **kwargs)
                         printed = stdout.getvalue()
+
+                    if preserve_inputs and (
+                        not values_equal(original_args, args)
+                        or not values_equal(original_kwargs, kwargs)
+                    ):
+                        raise AssertionError("Функция изменила входные данные.")
+
+                    if test.get("no_stdout") and (setup_output or printed):
+                        raise AssertionError("Функция не должна выводить результат через print().")
+
+                    copy_source = test.get("copy_result_from")
+                    if copy_source is not None:
+                        source = args[copy_source["arg_index"]][copy_source["item_index"]]
+                        if actual is source:
+                            raise AssertionError("Нужно вернуть отдельную копию найденного словаря.")
+
+                    copy_sources = test.get("copy_results_from", [])
+                    for copy_source in copy_sources:
+                        source = args[copy_source["arg_index"]][copy_source["item_index"]]
+                        result_item = actual[copy_source["result_index"]]
+                        if result_item is source:
+                            raise AssertionError("Нужно вернуть отдельные копии задач, а не исходные словари.")
+
                     expected = test["expected"]
                     actual_value = printed if test.get("assert") == "stdout" else actual
                     results.append(

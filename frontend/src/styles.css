@@ -26,10 +26,23 @@
   --radius-md: 16px;
   --radius-lg: 24px;
   --radius-pill: 999px;
-  --lesson-stack-tight: 10px;
-  --lesson-stack: 16px;
-  --lesson-stack-relaxed: 24px;
-  --lesson-section-gap: 40px;
+  /* 4px scale. Optical offsets, borders and icon sizes are separate. */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --content-width: 61.25rem;
+  --workspace-gutter: var(--space-10);
+  --component-gap: var(--space-6);
+  --lesson-stack-tight: var(--space-3);
+  --lesson-stack: var(--space-4);
+  --lesson-stack-relaxed: var(--space-5);
+  --lesson-section-gap: var(--space-8);
   --activity: 54px;
   --explorer: 320px;
   --calendar: 290px;
@@ -83,6 +96,11 @@ button {
   color: inherit;
 }
 
+:where(button, a, input, select, textarea, [role="button"]):focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 2px;
+}
+
 pre,
 code,
 .lesson-meta,
@@ -114,7 +132,7 @@ code,
 .auth-layout {
   display: grid;
   place-items: center;
-  padding: 48px;
+  padding: var(--space-12);
   background:
     radial-gradient(circle at 20% 15%, var(--green-soft), transparent 28%),
     radial-gradient(circle at 80% 85%, rgba(231, 183, 95, 0.13), transparent 32%),
@@ -130,7 +148,7 @@ code,
 
 .auth-panel {
   width: min(clamp(430px, 28vw, 540px), 100%);
-  padding: clamp(28px, 2.4vw, 38px);
+  padding: var(--space-8);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
   background: var(--card);
@@ -143,25 +161,25 @@ code,
   display: flex;
   align-items: start;
   justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 24px;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
 }
 
 .auth-actions {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
-  gap: 10px;
+  gap: var(--space-2);
 }
 
 .auth-brand {
   display: grid;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .auth-brand span {
   width: fit-content;
-  padding: 7px 10px;
+  padding: var(--space-2) var(--space-3);
   border: 1px solid rgba(99, 210, 151, 0.36);
   border-radius: var(--radius-pill);
   color: var(--green);
@@ -176,9 +194,9 @@ code,
   position: relative;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 6px;
-  margin-bottom: 18px;
-  padding: 4px;
+  gap: var(--space-1);
+  margin-bottom: var(--space-5);
+  padding: var(--space-1);
   border: 1px solid var(--line-soft);
   border-radius: var(--radius-md);
   background: var(--surface-2);
@@ -217,19 +235,19 @@ code,
 
 .auth-form {
   display: grid;
-  gap: 14px;
+  gap: var(--space-4);
 }
 
 .auth-form label {
   display: grid;
-  gap: 8px;
+  gap: var(--space-2);
   color: var(--muted);
   font-size: 0.88rem;
 }
 
 .auth-form input {
   height: 44px;
-  padding: 0 12px;
+  padding: 0 var(--space-3);
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
   outline: 0;
@@ -248,7 +266,7 @@ code,
 }
 
 .form-error {
-  padding: 10px 12px;
+  padding: var(--space-3) var(--space-3);
   border: 1px solid rgba(255, 122, 122, 0.34);
   border-radius: var(--radius-sm);
   color: var(--red);
@@ -261,8 +279,8 @@ code,
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 0 14px;
+  gap: var(--space-2);
+  padding: 0 var(--space-4);
 }
 
 .primary-action {
@@ -304,7 +322,7 @@ code,
 .secondary-action--compact {
   width: auto;
   min-height: 36px;
-  padding: 0 12px;
+  padding: 0 var(--space-3);
   white-space: nowrap;
 }
 
@@ -313,8 +331,8 @@ code,
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 0 12px;
+  gap: var(--space-2);
+  padding: 0 var(--space-3);
   background: var(--surface-2);
   border-color: var(--line);
   color: var(--muted);
@@ -328,6 +346,7 @@ code,
 .workspace {
   display: grid;
   grid-template-columns: var(--activity) var(--explorer) minmax(0, 1fr);
+  position: relative;
   background:
     radial-gradient(circle at 8% 10%, var(--green-soft), transparent 25%),
     var(--bg);
@@ -376,8 +395,8 @@ code,
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  padding: 12px 8px;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-2);
 }
 
 .activity-button,
@@ -426,8 +445,9 @@ code,
 .explorer-panel {
   position: relative;
   min-width: 0;
-  overflow-x: hidden;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  overflow: visible;
   opacity: 1;
   transition: opacity 160ms ease;
 }
@@ -479,8 +499,8 @@ code,
 .panel-title,
 .top-bar {
   min-height: 50px;
-  gap: 12px;
-  padding: 0 14px;
+  gap: var(--space-3);
+  padding: 0 var(--space-4);
 }
 
 .panel-title {
@@ -491,9 +511,9 @@ code,
 .track-status {
   position: relative;
   display: grid;
-  gap: 9px;
-  margin: 14px;
-  padding: 14px;
+  gap: var(--space-2);
+  margin: var(--space-4);
+  padding: var(--space-4);
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
   background: var(--card);
@@ -528,7 +548,7 @@ code,
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: var(--space-2);
   padding: 0;
   border: 0;
   background: transparent;
@@ -553,13 +573,15 @@ code,
 
 .track-menu {
   position: absolute;
-  top: calc(100% + 6px);
+  top: calc(100% + var(--space-2));
   left: 0;
-  right: 0;
+  width: min(22rem, calc(100vw - var(--activity) - var(--space-6)));
+  max-height: min(38rem, 70vh);
+  overflow-y: auto;
   z-index: 15;
   display: grid;
-  gap: 4px;
-  padding: 6px;
+  gap: var(--space-1);
+  padding: var(--space-2);
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
   background: var(--surface);
@@ -570,8 +592,8 @@ code,
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  padding: 10px 12px;
+  gap: var(--space-3);
+  padding: var(--space-3);
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
   background: transparent;
@@ -632,7 +654,10 @@ code,
 }
 
 .lesson-tree {
-  padding: 0 8px 18px;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0 var(--space-2) var(--space-5);
 }
 
 .module-toggle,
@@ -648,7 +673,7 @@ code,
   min-height: 34px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   color: var(--muted);
   font-weight: 800;
 }
@@ -672,8 +697,8 @@ code,
   display: grid;
   grid-template-columns: 20px minmax(0, 1fr) auto;
   align-items: start;
-  gap: 9px;
-  padding: 8px 9px 8px 22px;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-5);
   border-radius: var(--radius-md);
   color: var(--muted);
   transition: background 150ms ease, color 150ms ease, box-shadow 150ms ease;
@@ -739,7 +764,7 @@ code,
   min-width: 0;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   color: var(--muted);
 }
 
@@ -755,8 +780,8 @@ code,
   height: 36px;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 0 12px;
+  gap: var(--space-2);
+  padding: 0 var(--space-3);
   background: var(--surface-2);
   border-color: var(--line);
 }
@@ -764,13 +789,13 @@ code,
 .top-actions {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-2);
 }
 
 .tab-strip {
   min-height: 54px;
-  gap: 8px;
-  padding: 8px 12px 0;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3) 0;
   overflow-x: auto;
 }
 
@@ -820,15 +845,15 @@ code,
 .tab-main {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 0 10px 0 14px;
+  gap: var(--space-2);
+  padding: 0 var(--space-3) 0 var(--space-4);
 }
 
 .tab-close {
   width: 30px;
   display: inline-grid;
   place-items: center;
-  margin-right: 4px;
+  margin-right: var(--space-1);
   border-radius: var(--radius-pill);
   opacity: 0.65;
   transition: opacity 150ms ease, background 150ms ease, color 150ms ease;
@@ -846,26 +871,15 @@ code,
   min-width: 0;
   overflow: auto;
   overscroll-behavior: contain;
-  padding: 34px 42px;
+  padding: var(--space-8) var(--workspace-gutter);
   scroll-behavior: smooth;
   animation: view-in 180ms ease both;
 }
 
-.workspace--explorer-closed .lesson-stage {
-  display: block;
-  padding-inline: clamp(28px, 5vw, 88px);
-}
-
-.workspace--explorer-closed .lesson-stage > .document-view,
-.workspace--explorer-closed .lesson-stage > .practice-stack {
-  inline-size: min(100%, 1040px);
-  margin-inline: auto;
-}
-
 .markdown-body {
   display: grid;
-  gap: 14px;
-  max-width: 860px;
+  gap: var(--space-4);
+  max-width: var(--content-width);
   line-height: 1.62;
 }
 
@@ -873,7 +887,7 @@ code,
 .markdown-body h2,
 .markdown-body h3,
 .markdown-body h4 {
-  margin: 10px 0 0;
+  margin: var(--space-2) 0 0;
   line-height: 1.3;
 }
 
@@ -903,15 +917,15 @@ code,
 .markdown-body ul,
 .markdown-body ol {
   margin: 0;
-  padding-left: 22px;
+  padding-left: var(--space-6);
   display: grid;
-  gap: 6px;
+  gap: var(--space-2);
 }
 
 .markdown-body hr {
   border: 0;
   border-top: 1px solid var(--line-soft);
-  margin: 6px 0;
+  margin: var(--space-2) 0;
 }
 
 .markdown-body code {
@@ -925,7 +939,7 @@ code,
 .markdown-code {
   position: relative;
   margin: 0;
-  padding: 16px 18px;
+  padding: var(--space-4) var(--space-5);
   border: 1px solid var(--line-soft);
   border-radius: var(--radius-md);
   background: var(--surface-2);
@@ -976,7 +990,7 @@ code,
 .task-actions {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .run-button--ghost {
@@ -998,8 +1012,8 @@ code,
   display: grid;
   place-content: center;
   justify-items: center;
-  gap: 14px;
-  padding: 28px;
+  gap: var(--space-4);
+  padding: var(--space-8);
   text-align: center;
 }
 
@@ -1008,7 +1022,7 @@ code,
 }
 
 .locked-lesson-view span {
-  padding: 7px 11px;
+  padding: var(--space-2) var(--space-3);
   border: 1px solid rgba(99, 210, 151, 0.34);
   border-radius: var(--radius-pill);
   color: var(--green);
@@ -1027,7 +1041,7 @@ code,
 
 .locked-lesson-view p {
   max-width: 560px;
-  margin: 0 0 8px;
+  margin: 0 0 var(--space-2);
   color: var(--muted);
   line-height: 1.65;
 }
@@ -1036,14 +1050,14 @@ code,
   display: flex;
   align-items: start;
   padding: 0;
-  margin: 14px 0;
+  margin: var(--space-4) 0;
 }
 
 .calendar-card {
   width: 100%;
   display: grid;
-  gap: 14px;
-  padding: 16px;
+  gap: var(--space-4);
+  padding: var(--space-4);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
   background: var(--card);
@@ -1054,12 +1068,12 @@ code,
   display: flex;
   align-items: start;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .calendar-head div:first-child {
   display: grid;
-  gap: 5px;
+  gap: var(--space-1);
 }
 
 .calendar-head span {
@@ -1093,7 +1107,7 @@ code,
 .calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 7px;
+  gap: var(--space-2);
 }
 
 .calendar-weekdays span {
@@ -1141,37 +1155,39 @@ code,
 
 .calendar-guest {
   display: grid;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .document-view {
-  max-width: 920px;
+  width: 100%;
+  max-width: var(--content-width);
+  margin-inline: auto;
 }
 
 .lesson-meta {
   display: flex;
-  gap: 14px;
+  gap: var(--space-4);
   color: var(--green);
   font-size: 0.78rem;
   font-weight: 800;
 }
 
 .document-view h1 {
-  margin: 14px 0 12px;
+  margin: var(--space-4) 0 var(--space-3);
   font-size: 2rem;
   line-height: 1.18;
 }
 
 .document-view p,
 .note-panel p {
-  max-width: 760px;
+  max-width: none;
   color: var(--muted);
   line-height: 1.72;
 }
 
 .note-panel {
-  margin-top: 28px;
-  padding: 20px;
+  margin-top: var(--space-8);
+  padding: var(--space-5);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
   background: var(--card);
@@ -1179,15 +1195,15 @@ code,
 }
 
 .note-panel h2 {
-  margin: 0 0 10px;
+  margin: 0 0 var(--space-2);
   font-size: 1rem;
 }
 
 .lesson-video-card {
   display: grid;
-  gap: 16px;
-  margin-top: 28px;
-  padding: 20px;
+  gap: var(--space-4);
+  margin-top: var(--space-8);
+  padding: var(--space-5);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
   background: var(--card);
@@ -1223,9 +1239,9 @@ code,
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 18px;
-  margin-top: 28px;
-  padding: 20px;
+  gap: var(--space-5);
+  margin-top: var(--space-8);
+  padding: var(--space-5);
   border: 1px solid rgba(99, 210, 151, 0.5);
   border-radius: var(--radius-lg);
   background: rgba(99, 210, 151, 0.08);
@@ -1270,7 +1286,7 @@ code,
 }
 
 .video-frame {
-  width: min(920px, 100%);
+  width: min(var(--content-width), 100%);
   aspect-ratio: 16 / 9;
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
@@ -1286,7 +1302,9 @@ code,
 }
 
 .practice-view {
-  max-width: 980px;
+  width: 100%;
+  max-width: var(--content-width);
+  margin-inline: auto;
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
   overflow: hidden;
@@ -1299,15 +1317,18 @@ code,
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 0 14px;
+  gap: var(--space-3);
+  padding: 0 var(--space-4);
   border-bottom: 1px solid var(--line-soft);
 }
 
 .practice-stack {
   display: grid;
-  gap: 18px;
-  max-width: 1040px;
+  gap: var(--component-gap);
+  width: 100%;
+  max-width: var(--content-width);
+  margin-inline: auto;
+  container-type: inline-size;
 }
 
 .practice-intro,
@@ -1319,9 +1340,15 @@ code,
   box-shadow: var(--shadow);
 }
 
+@media (min-width: 901px) {
+  .workspace:not(.workspace--explorer-closed) .lesson-stage > :is(.document-view, .practice-stack) {
+    margin-inline: 0;
+  }
+}
+
 .practice-intro,
 .empty-task-card {
-  padding: 24px;
+  padding: var(--space-6);
 }
 
 .practice-intro p,
@@ -1333,7 +1360,7 @@ code,
 
 .task-list {
   display: grid;
-  gap: 16px;
+  gap: var(--space-4);
 }
 
 .task-card {
@@ -1341,18 +1368,18 @@ code,
 }
 
 .task-card--editor .task-head {
-  padding: 22px 24px;
+  padding: var(--space-5) var(--space-6);
 }
 
 .task-head__meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 7px;
-  margin-bottom: 8px;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
 }
 
 .task-head__meta span {
-  padding: 4px 8px;
+  padding: var(--space-1) var(--space-2);
   border: 1px solid color-mix(in srgb, var(--green) 32%, var(--line));
   border-radius: var(--radius-pill);
   color: var(--green);
@@ -1371,22 +1398,23 @@ code,
 
 .task-workspace {
   display: grid;
-  grid-template-columns: minmax(0, 0.9fr) minmax(420px, 1.1fr);
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
   align-items: stretch;
 }
 
 .task-brief {
   display: grid;
   align-content: start;
-  gap: 14px;
-  padding: 22px 20px 24px;
+  gap: var(--space-4);
+  min-width: 0;
+  padding: var(--space-5);
   background: var(--card);
 }
 
 .task-brief__head,
 .task-code-panel__head {
   display: grid;
-  gap: 5px;
+  gap: var(--space-1);
 }
 
 .task-brief__head > span,
@@ -1433,9 +1461,9 @@ code,
   display: grid;
   grid-template-columns: 26px minmax(0, 1fr);
   align-items: center;
-  gap: 10px;
+  gap: var(--space-3);
   min-width: 0;
-  padding: 9px 0;
+  padding: var(--space-2) 0;
   border-top: 1px solid color-mix(in srgb, var(--line) 78%, transparent);
   color: var(--text);
   font-size: 0.87rem;
@@ -1468,8 +1496,9 @@ code,
 .task-code-panel {
   display: grid;
   align-content: start;
-  gap: 14px;
-  padding: 22px 20px 24px;
+  gap: var(--space-4);
+  min-width: 0;
+  padding: var(--space-5);
   border-left: 1px solid var(--line-soft);
   background: linear-gradient(145deg, color-mix(in srgb, var(--green-soft) 42%, transparent), transparent 42%), var(--surface);
 }
@@ -1480,7 +1509,7 @@ code,
 }
 
 .task-code-panel__head code {
-  padding: 5px 8px;
+  padding: var(--space-1) var(--space-2);
   border: 1px solid var(--line-soft);
   border-radius: var(--radius-pill);
   color: var(--faint);
@@ -1497,7 +1526,7 @@ code,
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 14px;
+  gap: var(--space-4);
   padding-top: 2px;
 }
 
@@ -1505,12 +1534,12 @@ code,
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .task-actions .run-button {
   height: 38px;
-  padding: 0 13px;
+  padding: 0 var(--space-3);
   font-weight: 750;
 }
 
@@ -1532,8 +1561,8 @@ code,
 
 .task-hints {
   display: grid;
-  gap: 10px;
-  padding: 14px;
+  gap: var(--space-3);
+  padding: var(--space-4);
   border: 1px solid rgba(79, 179, 191, 0.4);
   border-radius: var(--radius-sm);
   background: rgba(79, 179, 191, 0.08);
@@ -1543,7 +1572,7 @@ code,
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .task-hints__head strong {
@@ -1561,9 +1590,9 @@ code,
 
 .task-hints ol {
   display: grid;
-  gap: 8px;
+  gap: var(--space-2);
   margin: 0;
-  padding-left: 20px;
+  padding-left: var(--space-5);
   color: var(--text);
   line-height: 1.55;
 }
@@ -1582,19 +1611,19 @@ code,
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  padding: 18px 20px;
+  gap: var(--space-4);
+  padding: var(--space-5);
   border-bottom: 1px solid var(--line-soft);
 }
 
 .task-card > p {
   margin: 0;
-  padding: 18px 20px 0;
+  padding: var(--space-5) var(--space-5) 0;
   white-space: pre-line;
 }
 
 .task-editor-hint {
-  margin-top: 8px !important;
+  margin-top: var(--space-2) !important;
   font-size: 0.9rem;
   color: var(--text) !important;
 }
@@ -1602,13 +1631,13 @@ code,
 .task-spec {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-  margin: 20px 20px 0;
+  gap: var(--space-3);
+  margin: var(--space-5) var(--space-5) 0;
 }
 
 .task-spec__item {
   min-width: 0;
-  padding: 14px;
+  padding: var(--space-4);
   border: 1px solid var(--line-soft);
   border-radius: var(--radius-md);
   background: var(--surface);
@@ -1622,7 +1651,7 @@ code,
 .task-spec__item > span,
 .task-requirements > span {
   display: block;
-  margin-bottom: 7px;
+  margin-bottom: var(--space-2);
   color: var(--green);
   font-size: 0.73rem;
   font-weight: 900;
@@ -1639,9 +1668,9 @@ code,
 
 .task-spec__list {
   display: grid;
-  gap: 7px;
-  margin: 12px 0 0;
-  padding-left: 19px;
+  gap: var(--space-2);
+  margin: var(--space-3) 0 0;
+  padding-left: var(--space-5);
   color: var(--muted);
   font-size: 0.88rem;
   line-height: 1.5;
@@ -1653,18 +1682,18 @@ code,
 }
 
 .task-requirements {
-  margin: 12px 20px 2px;
-  padding: 14px 16px;
+  margin: var(--space-3) var(--space-5) 0;
+  padding: var(--space-4);
   border: 1px solid color-mix(in srgb, var(--green) 28%, var(--line));
   border-radius: var(--radius-sm);
   background: linear-gradient(135deg, color-mix(in srgb, var(--green-soft) 72%, transparent), transparent 72%), var(--surface);
 }
 
 .task-requirements > span {
-  margin-bottom: 8px;
+  margin-bottom: var(--space-2);
 }
 
-@media (max-width: 900px) {
+@container (max-width: 850px) {
   .task-spec {
     grid-template-columns: 1fr;
   }
@@ -1681,9 +1710,9 @@ code,
 
 .task-examples {
   display: grid;
-  gap: 10px;
-  margin: 16px 20px 2px;
-  padding: 14px;
+  gap: var(--space-3);
+  margin: var(--space-4) var(--space-5) 0;
+  padding: var(--space-4);
   border: 1px solid color-mix(in srgb, var(--green) 34%, var(--line));
   border-radius: var(--radius-md);
   background: linear-gradient(135deg, var(--green-soft), transparent 72%), var(--surface);
@@ -1700,15 +1729,15 @@ code,
 .task-example {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-  gap: 10px;
+  gap: var(--space-3);
   align-items: stretch;
 }
 
 .task-example-cell {
   display: grid;
-  gap: 7px;
+  gap: var(--space-2);
   min-width: 0;
-  padding: 10px 12px;
+  padding: var(--space-3) var(--space-3);
   border: 1px solid var(--line-soft);
   border-radius: var(--radius-sm);
   background: var(--code-bg);
@@ -1757,8 +1786,8 @@ code,
   height: 32px;
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  padding: 0 11px;
+  gap: var(--space-2);
+  padding: 0 var(--space-3);
   background: var(--green-soft);
   border-color: rgba(99, 210, 151, 0.28);
   color: var(--green);
@@ -1778,8 +1807,8 @@ code,
 .code-editor {
   width: calc(100% - 40px);
   min-height: 220px;
-  margin: 18px 20px 20px;
-  padding: 18px;
+  margin: var(--space-5) var(--space-5) var(--space-5);
+  padding: var(--space-5);
   border: 1px solid var(--line);
   border-radius: 18px;
   outline: 0;
@@ -1797,7 +1826,7 @@ code,
 
 pre {
   margin: 0;
-  padding: 22px;
+  padding: var(--space-6);
   overflow: auto;
   color: var(--code-text);
   background: var(--code-bg);
@@ -1805,8 +1834,10 @@ pre {
 }
 
 .task-result {
-  margin: 0 20px 20px;
-  padding: 16px;
+  min-width: 0;
+  max-width: 100%;
+  margin: 0 var(--space-5) var(--space-5);
+  padding: var(--space-4);
   border: 1px solid var(--line);
   border-radius: 18px;
   background: var(--surface);
@@ -1824,7 +1855,7 @@ pre {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .task-result-summary span {
@@ -1833,29 +1864,35 @@ pre {
 }
 
 .task-result__error {
-  margin: 12px 0 0;
+  margin: var(--space-3) 0 0;
   color: var(--red);
   line-height: 1.5;
 }
 
 .task-output {
-  margin-top: 12px;
-  padding: 12px;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  margin-top: var(--space-3);
+  padding: var(--space-3);
   border-radius: 14px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
 .test-list {
   display: grid;
-  gap: 8px;
-  margin: 14px 0 0;
+  gap: var(--space-2);
+  margin: var(--space-4) 0 0;
   padding: 0;
   list-style: none;
 }
 
 .test-list li {
   display: grid;
-  gap: 4px;
-  padding: 10px 12px;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-3);
   border: 1px solid var(--line-soft);
   border-radius: 14px;
   background: var(--surface-2);
@@ -1863,7 +1900,7 @@ pre {
 
 .test-list li > span {
   width: fit-content;
-  padding: 3px 8px;
+  padding: 3px var(--space-2);
   border-radius: var(--radius-pill);
   color: var(--brand-contrast);
   background: var(--green);
@@ -1884,8 +1921,8 @@ pre {
 .test-diff {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-  margin-top: 4px;
+  gap: var(--space-3);
+  margin-top: var(--space-1);
 }
 
 .test-diff > div {
@@ -1894,7 +1931,7 @@ pre {
 
 .test-diff span {
   display: block;
-  margin: 0 0 4px;
+  margin: 0 0 var(--space-1);
   color: var(--muted);
   font-size: 0.72rem;
   font-weight: 800;
@@ -1904,7 +1941,7 @@ pre {
 
 .test-diff pre {
   margin: 0;
-  padding: 8px 10px;
+  padding: var(--space-2) var(--space-3);
   overflow: auto;
   border-radius: 10px;
   color: var(--code-text);
@@ -1929,14 +1966,14 @@ pre {
   flex: 1;
   display: grid;
   place-items: center;
-  padding: 34px 42px;
+  padding: var(--space-8) var(--space-10);
   color: var(--muted);
   animation: view-in 180ms ease both;
 }
 
 .empty-workbench > div {
   width: min(620px, 100%);
-  padding: 34px;
+  padding: var(--space-8);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
   background: var(--card);
@@ -1949,7 +1986,7 @@ pre {
 }
 
 .empty-workbench h2 {
-  margin: 10px 0 8px;
+  margin: var(--space-3) 0 var(--space-2);
   color: var(--text);
 }
 
@@ -1961,13 +1998,13 @@ pre {
 .empty-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 22px;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
 }
 
 .empty-actions .secondary-action {
   width: auto;
-  padding: 0 16px;
+  padding: 0 var(--space-4);
 }
 
 .drawer-layer {
@@ -2000,7 +2037,7 @@ pre {
   right: 0;
   width: 380px;
   height: 100%;
-  padding: 18px;
+  padding: var(--space-5);
   border-left: 1px solid var(--line);
   background: var(--surface);
   transform: translateX(104%);
@@ -2008,7 +2045,7 @@ pre {
   box-shadow: var(--shadow);
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-4);
   overflow-y: auto;
 }
 
@@ -2020,15 +2057,15 @@ pre {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 18px;
+  margin-bottom: var(--space-2);
 }
 
 .account-card {
   display: grid;
   grid-template-columns: 46px 1fr;
   align-items: center;
-  gap: 12px;
-  padding: 14px;
+  gap: var(--space-3);
+  padding: var(--space-4);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
   background: var(--card);
@@ -2047,15 +2084,15 @@ pre {
 
 .account-card small {
   display: block;
-  margin-top: 4px;
+  margin-top: var(--space-1);
   color: var(--muted);
 }
 
 .account-metric {
   display: flex;
   justify-content: space-between;
-  margin: 14px 0;
-  padding: 14px;
+  margin: 0;
+  padding: var(--space-4);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
   background: var(--card);
@@ -2108,10 +2145,6 @@ pre {
     --explorer: 348px;
     --calendar: 306px;
   }
-
-  .lesson-stage {
-    padding: 42px 58px;
-  }
 }
 
 @media (min-width: 1800px) {
@@ -2129,18 +2162,15 @@ pre {
   :root {
     --explorer: 286px;
     --calendar: 238px;
-  }
-
-  .lesson-stage {
-    padding: 24px;
+    --workspace-gutter: var(--space-6);
   }
 
   .calendar-panel {
-    padding: 10px;
+    padding: var(--space-3);
   }
 
   .calendar-card {
-    padding: 12px;
+    padding: var(--space-3);
   }
 
   .breadcrumbs {
@@ -2152,12 +2182,55 @@ pre {
   }
 }
 
+@media (min-width: 1025px) and (max-width: 1439px) {
+  :root {
+    --workspace-gutter: var(--space-8);
+  }
+}
+
+/* The lesson keeps its reading width while the explorer floats over it. */
+@media (min-width: 768px) and (max-width: 900px) {
+  .workspace,
+  .workspace--explorer-closed {
+    grid-template-columns: var(--activity) 0 minmax(0, 1fr);
+  }
+
+  .activity-bar {
+    position: relative;
+    z-index: 19;
+  }
+
+  .explorer-panel {
+    position: absolute;
+    z-index: 20;
+    top: 0;
+    bottom: 0;
+    left: var(--activity);
+    width: max(var(--explorer), 280px);
+    max-width: calc(100vw - var(--activity) - var(--space-6));
+    box-shadow: var(--shadow);
+  }
+
+  .explorer-resizer {
+    display: none;
+  }
+
+  .workbench {
+    grid-column: 3;
+  }
+
+  .workspace--explorer-closed .explorer-panel {
+    transform: translateX(calc(-100% - var(--activity)));
+    visibility: hidden;
+  }
+}
+
 /* ==================== Редактор кода ==================== */
 
 .code-editor-shell {
   display: grid;
   grid-template-columns: auto 1fr;
-  margin: 18px 20px 20px;
+  margin: var(--space-5);
   border: 1px solid var(--line);
   border-radius: 18px;
   background: var(--code-bg);
@@ -2173,7 +2246,7 @@ pre {
 .code-gutter {
   display: flex;
   flex-direction: column;
-  padding: 18px 10px 18px 16px;
+  padding: var(--space-4) var(--space-2) var(--space-4) var(--space-4);
   border-right: 1px solid var(--line-soft);
   color: var(--faint);
   text-align: right;
@@ -2189,7 +2262,7 @@ pre {
 .code-highlight,
 .code-input {
   font: 0.95rem/1.65 "JetBrains Mono", "Cascadia Code", Consolas, monospace;
-  padding: 18px;
+  padding: var(--space-4);
   white-space: pre;
   tab-size: 4;
 }
@@ -2267,7 +2340,7 @@ pre {
 /* ==================== Дизайн-страницы уроков ==================== */
 
 .document-view--rich {
-  max-width: 980px;
+  max-width: var(--content-width);
 }
 
 .rich-lesson {
@@ -2285,9 +2358,36 @@ pre {
   min-width: 0;
 }
 
+.rich-section > p {
+  margin: 0;
+}
+
+.lesson-infographic {
+  min-width: 0;
+  margin: 0;
+}
+
+.lesson-infographic img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 2 / 1;
+  object-fit: cover;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: #101714;
+}
+
+.lesson-infographic figcaption {
+  margin-top: var(--space-2);
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
 .rich-hero {
   position: relative;
-  padding: 34px 36px;
+  padding: var(--space-8);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
   background:
@@ -2313,13 +2413,13 @@ pre {
 }
 
 .rich-hero h1 {
-  margin: 14px 0 10px;
+  margin: var(--space-4) 0 var(--space-2);
   font-size: 2.3rem;
   line-height: 1.14;
 }
 
 .rich-hero p {
-  max-width: 640px;
+  max-width: none;
   margin: 0;
   color: var(--muted);
   line-height: 1.7;
@@ -2338,7 +2438,7 @@ pre {
 
 .rich-hero-chip {
   display: inline-block;
-  padding: 5px 12px;
+  padding: var(--space-1) var(--space-3);
   border-radius: var(--radius-pill);
   border: 1px solid var(--line);
   background: var(--surface-2);
@@ -2352,15 +2452,15 @@ pre {
 .rich-hero-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 20px;
+  gap: var(--space-2);
+  margin-top: var(--space-5);
 }
 
 .rich-hero-tags span {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 12px;
+  padding: 6px var(--space-3);
   border-radius: var(--radius-pill);
   border: 1px solid var(--line-soft);
   background: var(--surface);
@@ -2376,7 +2476,7 @@ pre {
 .rich-section-title {
   display: flex;
   align-items: baseline;
-  gap: 14px;
+  gap: var(--space-3);
   margin: 0;
 }
 
@@ -2393,21 +2493,103 @@ pre {
 }
 
 .rich-lead {
-  max-width: 720px;
+  max-width: none;
   margin: 0;
   color: var(--muted);
   line-height: 1.7;
 }
 
+.linked-notes {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  container-type: inline-size;
+}
+
+.linked-note {
+  display: grid;
+  grid-template-columns: minmax(0, 13rem) minmax(0, 1fr);
+  gap: var(--space-5);
+  align-items: center;
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--surface-2) 62%, transparent);
+}
+
+.linked-note h3,
+.linked-note p {
+  margin: 0;
+}
+
+.linked-note h3 {
+  color: var(--green);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.linked-note p {
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.linked-notes--connected {
+  position: relative;
+  gap: 0;
+  padding-inline-start: 1.15rem;
+}
+
+.linked-notes--connected::before {
+  position: absolute;
+  inset-block: 1.25rem;
+  inset-inline-start: 0.34rem;
+  width: 1px;
+  background: var(--line-soft);
+  content: "";
+}
+
+.linked-note--connected {
+  position: relative;
+  border: 0;
+  border-bottom: 1px solid var(--line-soft);
+  border-radius: 0;
+  background: transparent;
+  padding: var(--space-4) var(--space-5) var(--space-4) 0;
+}
+
+.linked-note--connected:last-child {
+  border-bottom: 0;
+}
+
+.linked-note--connected::before {
+  position: absolute;
+  inset-inline-start: -1.05rem;
+  top: 50%;
+  width: 0.45rem;
+  height: 0.45rem;
+  transform: translateY(-50%);
+  border: 1px solid var(--green);
+  border-radius: 50%;
+  background: var(--green);
+  content: "";
+}
+
+@container (max-width: 640px) {
+  .linked-note {
+    grid-template-columns: 1fr;
+    gap: var(--space-1);
+  }
+}
+
 /* ---- 39. Редакционный ритм для длинного теоретического урока ---- */
 
 .lesson39 {
-  --lesson-section-gap: clamp(42px, 5vw, 58px);
-  --lesson-stack-relaxed: 20px;
+  --lesson-section-gap: var(--space-10);
 }
 
 .lesson39 .rich-section {
-  gap: 20px;
   inline-size: 100%;
 }
 
@@ -2420,7 +2602,7 @@ pre {
 }
 
 .lesson39 .rich-section-title {
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .lesson39 .rich-section-title span {
@@ -2437,7 +2619,7 @@ pre {
 
 .lesson39 .rich-lead {
   max-width: none;
-  padding-left: 18px;
+  padding-left: var(--space-5);
   border-left: 2px solid color-mix(in srgb, var(--green) 50%, var(--line));
   color: color-mix(in srgb, var(--text) 76%, var(--muted));
 }
@@ -2446,7 +2628,7 @@ pre {
   display: grid;
   gap: 0;
   inline-size: 100%;
-  padding: 4px 24px;
+  padding: var(--space-1) var(--space-6);
   border: 1px solid color-mix(in srgb, var(--line) 84%, var(--green));
   border-radius: var(--radius-md);
   background:
@@ -2456,12 +2638,12 @@ pre {
 }
 
 .lesson39-concept {
-  padding: 19px 0 21px;
+  padding: var(--space-5) 0;
 }
 
 .lesson39-concept + .lesson39-concept {
   border-top: 1px solid var(--line-soft);
-  padding-top: 22px;
+  padding-top: var(--space-5);
 }
 
 .lesson39-concept h3 {
@@ -2473,7 +2655,7 @@ pre {
 
 .lesson39-concept p {
   max-width: none;
-  margin: 7px 0 0;
+  margin: var(--space-2) 0 0;
   color: var(--muted);
   font-size: 0.96rem;
   line-height: 1.68;
@@ -2481,7 +2663,7 @@ pre {
 
 .lesson39-narrative {
   display: grid;
-  gap: 11px;
+  gap: var(--space-3);
   inline-size: 100%;
 }
 
@@ -2491,7 +2673,7 @@ pre {
 }
 
 .lesson39-narrative h3 {
-  margin-top: 4px;
+  margin-top: var(--space-1);
   color: var(--text);
   font-size: 1.04rem;
   line-height: 1.4;
@@ -2508,14 +2690,14 @@ pre {
 
 .lesson39-explainer {
   display: grid;
-  gap: 13px;
+  gap: var(--space-3);
   inline-size: 100%;
-  padding: 4px 0 2px;
+  padding: var(--space-1) 0 0;
 }
 
 .lesson39-explainer header {
   display: grid;
-  gap: 4px;
+  gap: var(--space-1);
 }
 
 .lesson39-explainer header span {
@@ -2535,7 +2717,7 @@ pre {
 
 .lesson39-explainer-body {
   display: grid;
-  gap: 16px;
+  gap: var(--space-4);
 }
 
 .lesson39-explainer-body > p {
@@ -2548,27 +2730,18 @@ pre {
   margin: 0;
 }
 
-@media (max-width: 760px) {
+@media (min-width: 768px) and (max-width: 900px) {
   .lesson39 {
-    --lesson-section-gap: 40px;
-  }
-
-  .lesson39-concept {
-    padding-block: 16px 18px;
-  }
-
-  .lesson39-concept + .lesson39-concept {
-    padding-top: 19px;
+    --lesson-section-gap: var(--space-8);
   }
 
   .lesson39-concept-grid {
-    padding-inline: 17px;
+    padding-inline: var(--space-5);
   }
 
   .lesson39 .rich-lead {
-    padding-left: 14px;
+    padding-left: var(--space-4);
   }
-
 }
 
 .type-cards {
@@ -2579,9 +2752,9 @@ pre {
 
 .type-card {
   display: grid;
-  gap: 10px;
+  gap: var(--space-3);
   align-content: start;
-  padding: 18px;
+  padding: var(--space-5);
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
   background: var(--card);
@@ -2608,7 +2781,7 @@ pre {
 
 .type-card-badge {
   justify-self: start;
-  padding: 4px 12px;
+  padding: var(--space-1) var(--space-3);
   border-radius: var(--radius-pill);
   background: var(--green-soft);
   color: var(--green);
@@ -2638,7 +2811,7 @@ pre {
 
 .code-block figcaption {
   margin: 0;
-  padding: 11px 18px 10px;
+  padding: var(--space-3) var(--space-5);
   border-bottom: 1px solid var(--line-soft);
   background: color-mix(in srgb, var(--surface-2) 38%, transparent);
   color: var(--faint);
@@ -2650,7 +2823,7 @@ pre {
 
 .code-block pre {
   margin: 0;
-  padding: 16px 18px;
+  padding: var(--space-4) var(--space-5);
   border: 0;
   border-radius: 0;
   background: transparent;
@@ -2661,7 +2834,7 @@ pre {
 
 .type-card .code-block pre {
   font-size: 0.82rem;
-  padding: 12px 14px;
+  padding: var(--space-3) var(--space-4);
 }
 
 .lesson-callout {
@@ -2669,7 +2842,7 @@ pre {
   gap: var(--lesson-stack-tight);
   align-items: flex-start;
   margin: 0;
-  padding: 16px 18px;
+  padding: var(--space-4) var(--space-5);
   border: 1px solid rgba(231, 183, 95, 0.4);
   border-radius: var(--radius-md);
   background: rgba(231, 183, 95, 0.09);
@@ -2697,9 +2870,9 @@ pre {
 .method-row {
   display: grid;
   grid-template-columns: minmax(180px, 240px) 1fr;
-  gap: 14px;
+  gap: var(--space-4);
   align-items: center;
-  padding: 10px 14px;
+  padding: var(--space-3) var(--space-4);
   border: 1px solid var(--line-soft);
   border-radius: var(--radius-sm);
   background: var(--surface);
@@ -2722,11 +2895,16 @@ pre {
 
 /* ==================== Квиз ==================== */
 
+.lesson-check-group {
+  display: grid;
+  gap: var(--space-4);
+}
+
 .quiz-card {
   display: grid;
   gap: var(--lesson-stack);
-  margin: 1em 0 0;
-  padding: 18px;
+  margin: 0;
+  padding: var(--space-5);
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
   background: var(--card);
@@ -2735,7 +2913,7 @@ pre {
 .quiz-question {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-3);
 }
 
 .quiz-question svg {
@@ -2746,11 +2924,12 @@ pre {
 .quiz-options {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .quiz-option {
-  padding: 10px 14px;
+  min-height: 40px;
+  padding: var(--space-2) var(--space-4);
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
   background: var(--surface);
@@ -2798,15 +2977,15 @@ pre {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
-  padding: 24px;
+  gap: var(--space-5);
+  padding: var(--space-6);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
   background: var(--card);
 }
 
 .self-check-card h2 {
-  margin: 0 0 8px;
+  margin: 0 0 var(--space-2);
   font-size: 1.15rem;
 }
 
@@ -2821,7 +3000,7 @@ pre {
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .self-check-card.is-done {
@@ -2840,18 +3019,18 @@ pre {
 }
 
 .self-check-card--complete {
-  margin-top: 4px;
+  margin-top: var(--space-1);
 }
 
 .manual-practice-list {
   display: grid;
-  gap: 16px;
+  gap: var(--component-gap);
 }
 
 .manual-practice-card {
   display: grid;
-  gap: 14px;
-  padding: 22px;
+  gap: var(--space-4);
+  padding: var(--space-6);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
   background: var(--card);
@@ -2859,7 +3038,7 @@ pre {
 
 .manual-practice-card__head {
   display: grid;
-  gap: 5px;
+  gap: var(--space-2);
 }
 
 .manual-practice-card__head > span {
@@ -2883,7 +3062,7 @@ pre {
 }
 
 .manual-practice-card__result {
-  padding: 12px 14px;
+  padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-sm);
   background: var(--green-soft);
   color: var(--text);
@@ -2891,13 +3070,13 @@ pre {
 
 .manual-practice-task-list {
   display: grid;
-  gap: 14px;
+  gap: var(--space-4);
 }
 
 .manual-practice-task {
   display: grid;
-  gap: 16px;
-  padding: 20px;
+  gap: var(--space-4);
+  padding: var(--space-5);
   border: 1px solid var(--line-soft);
   border-radius: var(--radius-md);
   background: var(--surface);
@@ -2913,7 +3092,7 @@ pre {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .manual-practice-task__toolbar > span {
@@ -2926,13 +3105,13 @@ pre {
 
 .manual-practice-task__navigation {
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
   margin-left: auto;
 }
 
 .manual-practice-task__navigation-button {
   min-height: 36px;
-  padding: 7px 11px;
+  padding: var(--space-2) var(--space-3);
   border: 1px solid var(--line);
   border-radius: var(--radius-pill);
   background: var(--surface-2);
@@ -2968,7 +3147,7 @@ pre {
 
 .manual-practice-task__head {
   display: grid;
-  gap: 5px;
+  gap: var(--space-2);
 }
 
 .manual-practice-task__head h3 {
@@ -2986,8 +3165,8 @@ pre {
 .manual-practice-task__requirements,
 .manual-practice-task__panel {
   display: grid;
-  gap: 10px;
-  padding: 15px 16px;
+  gap: var(--space-3);
+  padding: var(--space-4);
   border: 1px solid var(--line-soft);
   border-radius: var(--radius-sm);
   background: var(--surface-2);
@@ -3008,9 +3187,9 @@ pre {
 .manual-practice-task__panel ol,
 .manual-practice-task__checks ul {
   display: grid;
-  gap: 8px;
+  gap: var(--space-2);
   margin: 0;
-  padding-left: 21px;
+  padding-left: var(--space-5);
   color: var(--muted);
   line-height: 1.55;
 }
@@ -3024,12 +3203,12 @@ pre {
 .manual-practice-task__actions {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
+  gap: var(--space-2);
 }
 
 .manual-practice-task__action {
-  min-height: 46px;
-  padding: 10px 13px;
+  min-height: 44px;
+  padding: var(--space-2) var(--space-3);
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
   background: var(--surface-2);
@@ -3090,8 +3269,8 @@ pre {
 }
 
 .manual-practice-task__code {
-  margin: 2px 0 0;
-  padding: 14px;
+  margin: 0;
+  padding: var(--space-4);
   overflow-x: auto;
   border: 1px solid var(--line-soft);
   border-radius: var(--radius-sm);
@@ -3105,20 +3284,20 @@ pre {
 
 .manual-practice-task__checks {
   display: grid;
-  gap: 9px;
+  gap: var(--space-2);
   padding-top: 2px;
 }
 
 .manual-practice-steps {
   display: grid;
-  gap: 9px;
+  gap: var(--space-2);
 }
 
 .manual-practice-step {
   display: flex;
   align-items: flex-start;
-  gap: 10px;
-  padding: 11px 12px;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-3);
   border: 1px solid var(--line-soft);
   border-radius: var(--radius-sm);
   color: var(--text);
@@ -3156,7 +3335,7 @@ pre {
 .predict-card {
   display: grid;
   gap: var(--lesson-stack);
-  padding: 16px;
+  padding: var(--space-4);
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
   background: var(--card);
@@ -3179,7 +3358,7 @@ pre {
 
 .predict-btn {
   justify-self: start;
-  padding: 8px 16px;
+  padding: var(--space-2) var(--space-4);
   border: 1px solid var(--green);
   border-radius: var(--radius-pill);
   background: var(--green-soft);
@@ -3194,7 +3373,7 @@ pre {
 
 .predict-output {
   margin: 0;
-  padding: 12px 14px;
+  padding: var(--space-3) var(--space-4);
   border: 1px solid var(--line-soft);
   border-radius: var(--radius-sm);
   background: var(--code-bg);
@@ -3208,14 +3387,14 @@ pre {
   display: grid;
   grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
   gap: var(--lesson-stack);
-  padding: 14px;
+  padding: var(--space-4);
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
   background: var(--card);
 }
 
 .tracer-code {
-  padding: 12px;
+  padding: var(--space-3);
   border-radius: var(--radius-sm);
   background: var(--code-bg);
   overflow-x: auto;
@@ -3225,7 +3404,7 @@ pre {
 
 .tracer-line {
   display: flex;
-  gap: 10px;
+  gap: var(--space-3);
   padding: 2px 6px;
   border-radius: 6px;
   color: var(--code-text);
@@ -3258,7 +3437,7 @@ pre {
 .tracer-vars {
   display: grid;
   gap: 6px;
-  padding: 10px 12px;
+  padding: var(--space-3) var(--space-3);
   border: 1px solid var(--line-soft);
   border-radius: var(--radius-sm);
   background: var(--surface);
@@ -3275,7 +3454,7 @@ pre {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: var(--space-2);
   font-size: 0.82rem;
   color: var(--muted);
 }
@@ -3283,8 +3462,8 @@ pre {
 .tracer-nav button {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 6px 12px;
+  gap: var(--space-1);
+  padding: 6px var(--space-3);
   border: 1px solid var(--line);
   border-radius: var(--radius-pill);
   background: var(--surface-2);
@@ -3301,7 +3480,7 @@ pre {
 .fill-card {
   display: grid;
   gap: var(--lesson-stack);
-  padding: 16px;
+  padding: var(--space-4);
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
   background: var(--card);
@@ -3318,7 +3497,7 @@ pre {
 
 .fill-code {
   margin: 0;
-  padding: 12px 14px;
+  padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-sm);
   background: var(--code-bg);
   color: var(--code-text);
@@ -3328,7 +3507,7 @@ pre {
 }
 
 .fill-gap {
-  padding: 1px 8px;
+  padding: 1px var(--space-2);
   border-radius: 6px;
   background: var(--surface-3);
   color: var(--muted);
@@ -3347,11 +3526,11 @@ pre {
 .fill-options {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .fill-option {
-  padding: 7px 14px;
+  padding: var(--space-2) var(--space-4);
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
   background: var(--surface);
@@ -3404,8 +3583,8 @@ pre {
 .terminal-bar {
   display: flex;
   align-items: center;
-  gap: 7px;
-  padding: 8px 12px;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
   border-bottom: 1px solid var(--line-soft);
   background: var(--surface-2);
   color: var(--muted);
@@ -3413,7 +3592,7 @@ pre {
 }
 
 .terminal-body {
-  padding: 12px 14px;
+  padding: var(--space-3) var(--space-4);
   font-family: "JetBrains Mono", Consolas, monospace;
   font-size: 0.86rem;
   line-height: 1.7;
@@ -3439,8 +3618,8 @@ pre {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  padding: 20px 24px;
+  gap: var(--space-4);
+  padding: var(--space-5) var(--space-6);
   border: 1px solid var(--green);
   border-radius: var(--radius-lg);
   background: var(--green-soft);
@@ -3451,7 +3630,7 @@ pre {
 }
 
 .practice-cta p {
-  margin: 4px 0 0;
+  margin: var(--space-1) 0 0;
   color: var(--muted);
   font-size: 0.92rem;
 }
@@ -3469,7 +3648,7 @@ pre {
   z-index: 30;
   display: grid;
   place-items: center;
-  padding: 40px;
+  padding: var(--space-10);
   background: var(--overlay);
 }
 
@@ -3478,8 +3657,8 @@ pre {
   max-height: calc(100vh - 80px);
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  padding: 22px;
+  gap: var(--space-4);
+  padding: var(--space-6);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
   background: var(--surface);
@@ -3495,7 +3674,7 @@ pre {
 .admin-title {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .admin-title svg {
@@ -3514,8 +3693,9 @@ pre {
 .admin-search {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
+  gap: var(--space-2);
+  min-height: 44px;
+  padding: 0 var(--space-4);
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
   background: var(--surface-2);
@@ -3532,22 +3712,22 @@ pre {
 
 .admin-list {
   display: grid;
-  gap: 10px;
+  gap: var(--space-3);
   overflow-y: auto;
-  padding-right: 4px;
+  padding-right: var(--space-1);
 }
 
 .admin-note {
-  margin: 8px 4px;
+  margin: var(--space-2) var(--space-1);
   color: var(--muted);
 }
 
 .admin-row {
   display: grid;
   grid-template-columns: minmax(180px, 1.2fr) minmax(170px, 1fr) auto;
-  gap: 14px;
+  gap: var(--space-4);
   align-items: center;
-  padding: 12px 16px;
+  padding: var(--space-3) var(--space-4);
   border: 1px solid var(--line-soft);
   border-radius: var(--radius-md);
   background: var(--card);
@@ -3556,7 +3736,7 @@ pre {
 .admin-row-user strong {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .admin-row-user small,
@@ -3565,7 +3745,7 @@ pre {
 }
 
 .admin-badge {
-  padding: 2px 8px;
+  padding: 2px var(--space-2);
   border-radius: var(--radius-pill);
   background: var(--green-soft);
   color: var(--green);
@@ -3595,8 +3775,8 @@ pre {
 .admin-row-actions button {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 7px 11px;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
   background: var(--surface-2);
@@ -3624,8 +3804,8 @@ pre {
 
 .admin-tabs {
   display: flex;
-  gap: 6px;
-  padding: 4px;
+  gap: var(--space-1);
+  padding: var(--space-1);
   border: 1px solid var(--line-soft);
   border-radius: var(--radius-md);
   background: var(--surface-2);
@@ -3656,27 +3836,27 @@ pre {
 .admin-slots {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: var(--space-4);
   min-height: 0;
 }
 
 .slot-form {
   display: flex;
   align-items: flex-end;
-  gap: 10px;
+  gap: var(--space-3);
   flex-wrap: wrap;
 }
 
 .slot-form label {
   display: grid;
-  gap: 5px;
+  gap: var(--space-2);
   color: var(--muted);
   font-size: 0.8rem;
 }
 
 .slot-form input {
   height: 40px;
-  padding: 0 10px;
+  padding: 0 var(--space-3);
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
   background: var(--input);
@@ -3686,7 +3866,7 @@ pre {
 
 .slot-form select {
   height: 40px;
-  padding: 0 10px;
+  padding: 0 var(--space-3);
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
   background: var(--input);
@@ -3717,7 +3897,7 @@ pre {
 .admin-profile {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-4);
   width: 100%;
   min-width: 0;
   min-height: 0;
@@ -3726,7 +3906,7 @@ pre {
 
 .admin-back {
   align-self: flex-start;
-  padding: 6px 12px;
+  padding: 6px var(--space-3);
   border: 1px solid var(--line);
   border-radius: var(--radius-pill);
   background: var(--surface-2);
@@ -3741,7 +3921,7 @@ pre {
 .profile-head {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .profile-head .avatar {
@@ -3758,7 +3938,7 @@ pre {
 .profile-head strong {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .profile-head small {
@@ -3769,9 +3949,9 @@ pre {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 14px;
+  gap: var(--space-4);
   flex-wrap: wrap;
-  padding: 14px 16px;
+  padding: var(--space-4) var(--space-4);
   border: 1px solid var(--line-soft);
   border-radius: var(--radius-md);
   background: var(--card);
@@ -3795,7 +3975,7 @@ pre {
 .profile-overview-grid {
   display: grid;
   grid-template-columns: minmax(0, 306px) minmax(0, 1fr);
-  gap: 12px;
+  gap: var(--space-3);
   align-items: stretch;
   width: 100%;
   min-width: 0;
@@ -3810,9 +3990,9 @@ pre {
 .profile-activity-calendar {
   display: grid;
   width: 100%;
-  gap: 10px;
+  gap: var(--space-3);
   justify-self: start;
-  padding: 12px;
+  padding: var(--space-3);
   border: 1px solid var(--line-soft);
   border-radius: var(--radius-md);
   background: var(--card);
@@ -3820,7 +4000,7 @@ pre {
 
 .profile-activity-calendar .calendar-weekdays,
 .profile-activity-calendar .calendar-grid {
-  gap: 5px;
+  gap: var(--space-1);
 }
 
 .profile-activity-calendar .calendar-weekdays span {
@@ -3839,7 +4019,7 @@ pre {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .profile-activity-calendar-head > div {
@@ -3875,11 +4055,11 @@ pre {
 .profile-learning-progress {
   display: grid;
   grid-template-rows: auto auto minmax(0, 1fr);
-  gap: 10px;
+  gap: var(--space-3);
   min-width: 0;
   max-height: 350px;
   overflow: hidden;
-  padding: 12px;
+  padding: var(--space-3);
   border: 1px solid var(--line-soft);
   border-radius: var(--radius-md);
   background: var(--card);
@@ -3889,7 +4069,7 @@ pre {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .profile-learning-progress-head > div {
@@ -3915,15 +4095,15 @@ pre {
 .admin-progress-levels {
   display: flex;
   flex-wrap: wrap;
-  gap: 5px;
+  gap: var(--space-1);
 }
 
 .admin-progress-level {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: var(--space-1);
   min-width: 0;
-  padding: 4px 7px;
+  padding: var(--space-1) var(--space-2);
   border: 1px solid var(--line-soft);
   border-radius: var(--radius-pill);
   color: var(--muted);
@@ -3981,8 +4161,8 @@ pre {
   align-items: center;
   width: 100%;
   min-width: 0;
-  gap: 7px;
-  padding: 7px 8px;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-2);
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
   background: transparent;
@@ -4018,8 +4198,8 @@ pre {
 }
 
 .admin-progress-lesson-toggle {
-  padding-block: 5px;
-  padding-left: 4px;
+  padding-block: var(--space-1);
+  padding-left: var(--space-1);
 }
 
 .admin-progress-toggle-copy {
@@ -4058,14 +4238,14 @@ pre {
 .admin-progress-lessons {
   display: grid;
   gap: 2px;
-  margin: 4px 0 0 8px;
-  padding-left: 9px;
+  margin: var(--space-1) 0 0 var(--space-2);
+  padding-left: var(--space-2);
   border-left: 1px solid var(--line-soft);
 }
 
 .admin-progress-lessons {
   margin-top: 2px;
-  padding-left: 7px;
+  padding-left: var(--space-2);
 }
 
 .admin-progress-status {
@@ -4093,9 +4273,9 @@ pre {
 
 .admin-progress-tasks {
   display: grid;
-  gap: 4px;
-  margin: 1px 0 4px 25px;
-  padding: 5px 8px;
+  gap: var(--space-1);
+  margin: 1px 0 var(--space-1) var(--space-6);
+  padding: var(--space-1) var(--space-2);
   border-left: 1px solid var(--line-soft);
 }
 
@@ -4103,7 +4283,7 @@ pre {
   display: flex;
   align-items: flex-start;
   min-width: 0;
-  gap: 7px;
+  gap: var(--space-2);
   color: var(--muted);
   font-size: 0.7rem;
   line-height: 1.35;
@@ -4128,7 +4308,7 @@ pre {
 
 .admin-progress-task-level {
   flex: 0 0 auto;
-  padding: 2px 5px;
+  padding: 2px var(--space-1);
   border: 1px solid currentColor;
   border-radius: var(--radius-pill);
   font-size: 0.62rem;
@@ -4156,7 +4336,7 @@ pre {
   flex: 0 0 auto;
   width: 7px;
   height: 7px;
-  margin-top: 4px;
+  margin-top: var(--space-1);
   border: 1px solid var(--faint);
   border-radius: 50%;
 }
@@ -4167,7 +4347,7 @@ pre {
 }
 
 .profile-actions button {
-  padding: 7px 12px;
+  padding: var(--space-2) var(--space-3);
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
   background: var(--surface-2);
@@ -4193,7 +4373,7 @@ pre {
 
 .profile-bookings {
   display: grid;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .profile-bookings-title {
@@ -4207,8 +4387,8 @@ pre {
 .profile-booking-row {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
   border: 1px solid var(--line-soft);
   border-radius: var(--radius-sm);
   background: var(--surface);
@@ -4233,9 +4413,9 @@ pre {
 /* Удаление аккаунта: отделено от остальных действий и требует ввода слова */
 .profile-danger {
   display: grid;
-  gap: 8px;
-  margin-top: 18px;
-  padding-top: 16px;
+  gap: var(--space-2);
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
   border-top: 1px solid var(--line-soft);
 }
 
@@ -4244,7 +4424,7 @@ pre {
 }
 
 .profile-danger-input {
-  padding: 9px 12px;
+  padding: var(--space-2) var(--space-3);
   border: 1px solid var(--line-soft);
   border-radius: var(--radius-sm);
   background: var(--surface);
@@ -4277,8 +4457,8 @@ pre {
 .quota-badge {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 9px 12px;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
   border: 1px solid var(--green);
   border-radius: var(--radius-sm);
   background: var(--green-soft);
@@ -4306,16 +4486,16 @@ pre {
 }
 
 .slots-month-head {
-  padding-bottom: 4px;
+  padding-bottom: var(--space-1);
   border-bottom: 1px solid var(--line-soft);
 }
 
 .slot-row {
   display: grid;
   grid-template-columns: minmax(150px, 1fr) minmax(120px, 1fr) auto;
-  gap: 12px;
+  gap: var(--space-3);
   align-items: center;
-  padding: 10px 14px;
+  padding: var(--space-3) var(--space-4);
   border: 1px solid var(--line-soft);
   border-radius: var(--radius-md);
   background: var(--card);
@@ -4328,7 +4508,7 @@ pre {
 .slot-row-when {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-3);
 }
 
 .slot-row-when svg {
@@ -4401,8 +4581,8 @@ pre {
 .calendar-legend {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 4px;
+  gap: var(--space-3);
+  margin-top: var(--space-1);
   color: var(--muted);
   font-size: 0.76rem;
 }
@@ -4410,7 +4590,7 @@ pre {
 .calendar-legend span {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: var(--space-1);
 }
 
 .calendar-legend .dot {
@@ -4434,8 +4614,8 @@ pre {
 
 .slot-picker {
   display: grid;
-  gap: 8px;
-  padding-top: 10px;
+  gap: var(--space-2);
+  padding-top: var(--space-3);
   border-top: 1px solid var(--line-soft);
 }
 
@@ -4447,7 +4627,7 @@ pre {
 .slot-picker-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .slot-chip {
@@ -4455,7 +4635,7 @@ pre {
   grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
   gap: 6px;
-  padding: 7px 12px;
+  padding: var(--space-2) var(--space-3);
   border: 1px solid var(--green);
   border-radius: var(--radius-pill);
   background: var(--green-soft);
@@ -4505,7 +4685,7 @@ pre {
 
 @media (max-width: 900px) {
   .admin-layer {
-    padding: 24px;
+    padding: var(--space-6);
   }
 
   .admin-panel {
@@ -4522,12 +4702,17 @@ pre {
     grid-column: 1 / -1;
   }
 
+  .admin-row-chevron {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
   .profile-booking-row {
     flex-wrap: wrap;
   }
 
   .profile-booking-row span {
-    margin-left: 24px;
+    margin-left: var(--space-6);
   }
 }
 
@@ -4543,8 +4728,8 @@ pre {
 .flip-section,
 .truefalse-card {
   display: grid;
-  gap: 14px;
-  padding: 18px;
+  gap: var(--space-4);
+  padding: var(--space-5);
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
   background: var(--card);
@@ -4553,7 +4738,7 @@ pre {
 .interactive-heading {
   display: flex;
   align-items: center;
-  gap: 11px;
+  gap: var(--space-3);
 }
 
 .interactive-heading svg {
@@ -4583,15 +4768,16 @@ pre {
 .interactive-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: var(--space-2);
 }
 
 .interactive-primary,
 .interactive-secondary {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  padding: 9px 16px;
+  gap: var(--space-2);
+  min-height: 40px;
+  padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-pill);
   cursor: pointer;
   font-weight: 600;
@@ -4624,9 +4810,9 @@ pre {
 .interactive-feedback {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   margin: 0;
-  padding: 12px 14px;
+  padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-sm);
   border: 1px solid var(--line-soft);
   background: var(--surface);
@@ -4660,14 +4846,14 @@ pre {
 .sequence-workspace {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .sequence-panel {
   display: grid;
-  gap: 8px;
+  gap: var(--space-2);
   align-content: start;
-  padding: 12px;
+  padding: var(--space-3);
   border: 1px solid var(--line-soft);
   border-radius: var(--radius-sm);
   background: var(--surface);
@@ -4697,8 +4883,8 @@ pre {
   display: flex;
   align-items: flex-start;
   min-width: 0;
-  gap: 10px;
-  padding: 9px 12px;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
   background: var(--surface-2);
@@ -4765,14 +4951,14 @@ pre {
 .bug-options,
 .comparison-options {
   display: grid;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .bug-option {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 11px 14px;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
   background: var(--surface);
@@ -4809,8 +4995,8 @@ pre {
 
 .bug-feedback {
   display: grid;
-  gap: 10px;
-  padding: 12px 14px;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-sm);
   border: 1px solid var(--line-soft);
 }
@@ -4818,7 +5004,7 @@ pre {
 .bug-feedback p {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   margin: 0;
   line-height: 1.55;
 }
@@ -4844,9 +5030,9 @@ pre {
 
 .comparison-option {
   display: grid;
-  gap: 10px;
+  gap: var(--space-3);
   align-content: start;
-  padding: 16px;
+  padding: var(--space-4);
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
   background: var(--surface);
@@ -4872,7 +5058,7 @@ pre {
 }
 
 .comparison-option button {
-  padding: 8px 14px;
+  padding: var(--space-2) var(--space-4);
   border: 1px solid var(--line);
   border-radius: var(--radius-pill);
   background: var(--surface-2);
@@ -4900,8 +5086,8 @@ pre {
 
 /* ---- Активное воспроизведение (RecallCard) ---- */
 .recall-card {
-  gap: 16px;
-  padding: 20px 22px;
+  gap: var(--space-4);
+  padding: var(--space-5) var(--space-6);
   border-color: color-mix(in srgb, var(--line) 82%, var(--green));
   background:
     linear-gradient(135deg, color-mix(in srgb, var(--green-soft) 74%, transparent), transparent 58%),
@@ -4935,7 +5121,7 @@ pre {
 }
 
 .recall-answer {
-  padding: 14px 16px;
+  padding: var(--space-4) var(--space-4);
   border: 1px solid color-mix(in srgb, var(--green) 62%, var(--line));
   border-radius: var(--radius-sm);
   background: color-mix(in srgb, var(--green-soft) 82%, transparent);
@@ -4946,14 +5132,14 @@ pre {
 .recall-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .recall-actions button {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 14px;
+  padding: var(--space-2) var(--space-4);
   border: 1px solid var(--line);
   border-radius: var(--radius-pill);
   background: var(--surface-2);
@@ -4980,12 +5166,12 @@ pre {
 .match-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .match-col {
   display: grid;
-  gap: 8px;
+  gap: var(--space-2);
   align-content: start;
 }
 
@@ -4998,7 +5184,7 @@ pre {
 }
 
 .match-item {
-  padding: 11px 14px;
+  padding: var(--space-3) var(--space-4);
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
   background: var(--surface);
@@ -5041,7 +5227,7 @@ pre {
 .slice-strip {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: var(--space-1);
 }
 
 .slice-char {
@@ -5049,7 +5235,7 @@ pre {
   gap: 2px;
   justify-items: center;
   min-width: 34px;
-  padding: 8px 4px 5px;
+  padding: var(--space-2) var(--space-1) var(--space-1);
   border: 1px solid var(--line-soft);
   border-radius: var(--radius-sm);
   background: var(--surface);
@@ -5080,14 +5266,14 @@ pre {
 .slice-controls {
   display: flex;
   flex-wrap: wrap;
-  gap: 14px;
+  gap: var(--space-4);
 }
 
 .slice-stepper {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 12px;
+  gap: var(--space-2);
+  padding: 6px var(--space-3);
   border: 1px solid var(--line);
   border-radius: var(--radius-pill);
   background: var(--surface-2);
@@ -5125,9 +5311,9 @@ pre {
 .slice-result {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
   flex-wrap: wrap;
-  padding: 12px 14px;
+  padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-sm);
   background: var(--code-bg);
   font-family: "JetBrains Mono", Consolas, monospace;
@@ -5156,11 +5342,11 @@ pre {
 .branch-scenarios {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .branch-chip {
-  padding: 8px 14px;
+  padding: var(--space-2) var(--space-4);
   border: 1px solid var(--line);
   border-radius: var(--radius-pill);
   background: var(--surface-2);
@@ -5177,7 +5363,7 @@ pre {
 }
 
 .branch-code {
-  padding: 14px 16px;
+  padding: var(--space-4) var(--space-4);
   border-radius: var(--radius-sm);
   background: var(--code-bg);
   overflow-x: auto;
@@ -5186,7 +5372,7 @@ pre {
 }
 
 .branch-line {
-  padding: 2px 8px;
+  padding: 2px var(--space-2);
   border-radius: 6px;
   color: var(--code-text);
   white-space: pre;
@@ -5201,7 +5387,7 @@ pre {
 .branch-output {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-3);
 }
 
 .branch-output span {
@@ -5213,7 +5399,7 @@ pre {
 }
 
 .branch-output code {
-  padding: 4px 10px;
+  padding: var(--space-1) var(--space-3);
   border-radius: var(--radius-sm);
   background: var(--green-soft);
   color: var(--green);
@@ -5224,7 +5410,7 @@ pre {
 .flip-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .flip-card {
@@ -5256,7 +5442,7 @@ pre {
   display: grid;
   place-items: center;
   gap: 6px;
-  padding: 16px;
+  padding: var(--space-4);
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
   backface-visibility: hidden;
@@ -5282,7 +5468,7 @@ pre {
 .truefalse-head {
   display: flex;
   align-items: flex-start;
-  gap: 10px;
+  gap: var(--space-3);
 }
 
 .truefalse-head svg {
@@ -5300,12 +5486,12 @@ pre {
 
 .truefalse-buttons {
   display: flex;
-  gap: 10px;
+  gap: var(--space-3);
 }
 
 .truefalse-buttons button {
   flex: 1;
-  padding: 11px;
+  padding: var(--space-3);
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
   background: var(--surface-2);
@@ -5336,7 +5522,7 @@ pre {
 
 /* ---- Итоги урока (KeyTakeaways) ---- */
 .takeaways {
-  padding: 18px 20px;
+  padding: var(--space-5) var(--space-5);
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
   background:
@@ -5347,8 +5533,8 @@ pre {
 .takeaways-head {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 12px;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
 }
 
 .takeaways-head svg {
@@ -5361,7 +5547,7 @@ pre {
 
 .takeaways ul {
   display: grid;
-  gap: 9px;
+  gap: var(--space-2);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -5370,7 +5556,7 @@ pre {
 .takeaways li {
   display: flex;
   align-items: flex-start;
-  gap: 9px;
+  gap: var(--space-2);
   line-height: 1.55;
 }
 
@@ -5405,8 +5591,8 @@ pre {
 
 .lesson-route {
   display: grid;
-  gap: 18px;
-  padding: 20px 22px;
+  gap: var(--space-5);
+  padding: var(--space-5) var(--space-6);
   border: 1px solid color-mix(in srgb, var(--green) 16%, var(--line));
   border-radius: var(--radius-lg);
   background:
@@ -5434,14 +5620,14 @@ pre {
   display: block;
 
   min-height: 50px;
-  padding: 6px 0 18px 48px;
+  padding: 6px 0 var(--space-5) var(--space-12);
   color: var(--muted);
   line-height: 1.65;
   counter-increment: lesson-route;
 }
 
 .lesson-route li:last-child {
-  padding-bottom: 8px;
+  padding-bottom: var(--space-2);
 }
 
 .lesson-route li:not(:last-child)::after {
@@ -5480,7 +5666,7 @@ pre {
 
 .lesson-route > p {
   margin: 0;
-  padding-top: 16px;
+  padding-top: var(--space-4);
   border-top: 1px solid color-mix(in srgb, var(--line-soft) 86%, transparent);
   color: var(--muted);
   line-height: 1.7;
@@ -5581,7 +5767,7 @@ pre {
   .task-card--editor .task-head,
   .task-brief,
   .task-code-panel {
-    padding: 18px;
+    padding: var(--space-5);
   }
 
   .task-editor-actions {
@@ -5599,11 +5785,11 @@ pre {
   }
 
   .lesson-route {
-    padding: 18px;
+    padding: var(--space-5);
   }
 
   .lesson-route li {
-    padding-left: 43px;
+    padding-left: var(--space-10);
   }
 
   .lesson-route li::before {
@@ -5628,11 +5814,11 @@ pre {
   }
 
   .manual-practice-card {
-    padding: 18px;
+    padding: var(--space-5);
   }
 
   .manual-practice-task {
-    padding: 16px;
+    padding: var(--space-4);
   }
 
   .manual-practice-task__toolbar {

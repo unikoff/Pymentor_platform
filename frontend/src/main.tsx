@@ -664,7 +664,7 @@ function Workspace({
   const [activeLessonId, setActiveLessonId] = useState(`${PYTHON_TRACK_NAME}-lesson-01`);
   const [activeView, setActiveView] = useState<WorkspaceView>("theory");
   const [openViews, setOpenViews] = useState<WorkspaceView[]>(defaultOpenViews);
-  const [isExplorerOpen, setIsExplorerOpen] = useState(true);
+  const [isExplorerOpen, setIsExplorerOpen] = useState(() => window.innerWidth > 900);
   const [isAccountOpen, setIsAccountOpen] = useState(false);
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [isResizingExplorer, setIsResizingExplorer] = useState(false);
@@ -900,6 +900,9 @@ function Workspace({
   function openView(view: WorkspaceView) {
     setOpenViews((current) => (current.includes(view) ? current : [...current, view]));
     setActiveView(view);
+    if (window.innerWidth <= 900) {
+      setIsExplorerOpen(false);
+    }
   }
 
   function closeView(view: WorkspaceView) {
@@ -1012,6 +1015,9 @@ function Workspace({
                     onClick={() => {
                       setActiveTrackId(track.id);
                       setIsTrackMenuOpen(false);
+                      if (window.innerWidth <= 900) {
+                        setIsExplorerOpen(false);
+                      }
                     }}
                   >
                     <div>
@@ -2380,7 +2386,7 @@ function SelfCheckPanel({
                             disabled={lesson.completed}
                             onClick={() => toggleStep(taskId)}
                           >
-                            {isDone ? "Готово" : "Отметить готовым"}
+                            {lesson.completed ? "Задача выполнена" : isDone ? "Снять отметку" : "Отметить готовым"}
                           </button>
                         </div>
 

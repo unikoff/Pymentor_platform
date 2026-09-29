@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1672" height="836" viewBox="0 0 1672 836" fill="none" role="img" aria-labelledby="title description">
+  <title id="title">HTTP request model</title>
+  <desc id="description">A client sends one request to a server. The request is shown as four parts: method, path, headers, and an optional body.</desc>
+  <defs>
+    <linearGradient id="request-flow" x1="340" y1="420" x2="1332" y2="420" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#57DDA2"/>
+      <stop offset="1" stop-color="#8BE9B8"/>
+    </linearGradient>
+    <marker id="arrow" markerWidth="18" markerHeight="18" viewBox="0 0 12 12" refX="10" refY="6" orient="auto">
+      <path d="M2 2L10 6L2 10" stroke="#8BE9B8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <style>
+      .sans { font-family: Inter, "Segoe UI", sans-serif; }
+      .mono { font-family: "JetBrains Mono", Consolas, monospace; }
+      .actor { font-size: 25px; font-weight: 700; letter-spacing: 1.8px; fill: #DCE6E0; }
+      .title { font-size: 28px; font-weight: 750; letter-spacing: 1.5px; fill: #F3F5F4; }
+      .key { font-size: 19px; font-weight: 700; letter-spacing: 1.3px; fill: #91A198; }
+      .value { font-size: 24px; font-weight: 600; fill: #F2F5F3; }
+      .accent { fill: #8BE9B8; }
+    </style>
+  </defs>
+
+  <rect width="1672" height="836" rx="28" fill="#0E1512"/>
+  <rect x="1" y="1" width="1670" height="834" rx="27" stroke="#2A3931" stroke-width="2"/>
+
+  <rect x="64" y="350" width="276" height="140" rx="24" fill="#17211B" stroke="#385345" stroke-width="2"/>
+  <text x="202" y="434" text-anchor="middle" class="sans actor">CLIENT</text>
+  <rect x="1332" y="350" width="276" height="140" rx="24" fill="#17211B" stroke="#385345" stroke-width="2"/>
+  <text x="1470" y="434" text-anchor="middle" class="sans actor">SERVER</text>
+
+  <path d="M340 420H410" stroke="url(#request-flow)" stroke-width="4" marker-end="url(#arrow)"/>
+  <path d="M1262 420H1332" stroke="url(#request-flow)" stroke-width="4" marker-end="url(#arrow)"/>
+
+  <rect x="410" y="128" width="852" height="580" rx="28" fill="#141D18" stroke="#4BC89B" stroke-width="2.5"/>
+  <text x="470" y="194" class="sans title">REQUEST MODEL</text>
+  <path d="M470 222H1202" stroke="#2A3931" stroke-width="2"/>
+
+  <text x="470" y="282" class="sans key">METHOD</text>
+  <text x="710" y="282" class="mono value accent">GET</text>
+  <path d="M470 310H1202" stroke="#26332C" stroke-width="2"/>
+
+  <text x="470" y="374" class="sans key">PATH</text>
+  <text x="710" y="374" class="mono value">/tasks</text>
+  <path d="M470 402H1202" stroke="#26332C" stroke-width="2"/>
+
+  <text x="470" y="466" class="sans key">HEADERS</text>
+  <text x="710" y="466" class="mono value">Accept: application/json</text>
+  <path d="M470 494H1202" stroke="#26332C" stroke-width="2"/>
+
+  <text x="470" y="558" class="sans key">BODY</text>
+  <text x="710" y="558" class="sans value">OPTIONAL</text>
+
+  <text x="836" y="654" text-anchor="middle" class="sans key">ONE OUTGOING MESSAGE</text>
+</svg>

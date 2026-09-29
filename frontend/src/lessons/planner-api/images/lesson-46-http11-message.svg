@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1672" height="836" viewBox="0 0 1672 836" fill="none" role="img" aria-labelledby="title description">
+  <title id="title">HTTP/1.1 request layout</title>
+  <desc id="description">A client sends an HTTP/1.1 request to a server. The message contains a start line, headers, an empty separator line, and an optional body.</desc>
+  <defs>
+    <linearGradient id="message-flow" x1="248" y1="418" x2="1424" y2="418" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#57DDA2"/>
+      <stop offset="1" stop-color="#8BE9B8"/>
+    </linearGradient>
+    <marker id="message-arrow" markerWidth="18" markerHeight="18" viewBox="0 0 12 12" refX="10" refY="6" orient="auto">
+      <path d="M2 2L10 6L2 10" stroke="#8BE9B8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <style>
+      .sans { font-family: Inter, "Segoe UI", sans-serif; }
+      .mono { font-family: "JetBrains Mono", Consolas, monospace; }
+      .actor { font-size: 23px; font-weight: 700; letter-spacing: 1.5px; fill: #DCE6E0; }
+      .label { font-size: 17px; font-weight: 700; letter-spacing: 1.2px; fill: #91A198; }
+      .value { font-size: 22px; font-weight: 600; fill: #F2F5F3; }
+      .accent { fill: #8BE9B8; }
+    </style>
+  </defs>
+
+  <rect width="1672" height="836" rx="28" fill="#0E1512"/>
+  <rect x="1" y="1" width="1670" height="834" rx="27" stroke="#2A3931" stroke-width="2"/>
+
+  <rect x="56" y="362" width="196" height="112" rx="22" fill="#17211B" stroke="#385345" stroke-width="2"/>
+  <text x="154" y="429" text-anchor="middle" class="sans actor">CLIENT</text>
+  <rect x="1420" y="362" width="196" height="112" rx="22" fill="#17211B" stroke="#385345" stroke-width="2"/>
+  <text x="1518" y="429" text-anchor="middle" class="sans actor">SERVER</text>
+  <path d="M252 418H306" stroke="url(#message-flow)" stroke-width="4" marker-end="url(#message-arrow)"/>
+  <path d="M1366 418H1420" stroke="url(#message-flow)" stroke-width="4" marker-end="url(#message-arrow)"/>
+
+  <rect x="306" y="112" width="1060" height="612" rx="26" fill="#141D18" stroke="#4BC89B" stroke-width="2.5"/>
+  <text x="362" y="170" class="sans label accent">HTTP/1.1 MESSAGE</text>
+
+  <rect x="346" y="202" width="980" height="112" rx="16" fill="#17211B" stroke="#385345" stroke-width="1.5"/>
+  <text x="376" y="238" class="sans label">START LINE</text>
+  <text x="376" y="282" class="mono value"><tspan class="accent">POST</tspan><tspan>  /tasks  HTTP/1.1</tspan></text>
+
+  <rect x="346" y="328" width="980" height="142" rx="16" fill="#17211B" stroke="#385345" stroke-width="1.5"/>
+  <text x="376" y="364" class="sans label">HEADERS</text>
+  <text x="376" y="410" class="mono value">Host: api.example.test</text>
+  <text x="376" y="446" class="mono value">Content-Type: application/json</text>
+
+  <path d="M376 502H1296" stroke="#4BC89B" stroke-width="2" stroke-dasharray="8 10"/>
+  <text x="836" y="532" text-anchor="middle" class="sans label">EMPTY LINE</text>
+
+  <rect x="346" y="556" width="980" height="132" rx="16" fill="#17211B" stroke="#385345" stroke-width="1.5" stroke-dasharray="8 8"/>
+  <text x="376" y="594" class="sans label">OPTIONAL BODY</text>
+  <text x="376" y="642" class="mono value">{"title": "Study HTTP"}</text>
+</svg>

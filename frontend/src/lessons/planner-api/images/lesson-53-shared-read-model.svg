@@ -1,0 +1,122 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1672" height="941" viewBox="0 0 1672 941" fill="none">
+  <defs>
+    <radialGradient id="bg" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse"
+      gradientTransform="translate(836 470) rotate(90) scale(690 1180)">
+      <stop offset="0" stop-color="#10211F"/>
+      <stop offset="0.56" stop-color="#0A1716"/>
+      <stop offset="1" stop-color="#061110"/>
+    </radialGradient>
+
+    <linearGradient id="mint" x1="390" y1="0" x2="610" y2="0" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#72F5B3"/>
+      <stop offset="1" stop-color="#4DEFA8"/>
+    </linearGradient>
+
+    <linearGradient id="cyan" x1="1030" y1="0" x2="1160" y2="0" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#31D6FA"/>
+      <stop offset="1" stop-color="#44E7FF"/>
+    </linearGradient>
+
+    <style>
+      .mono { font-family: "JetBrains Mono", "SFMono-Regular", Consolas, "Liberation Mono", monospace; }
+      .title { font-family: "JetBrains Mono", Consolas, monospace; font-size: 44px; font-weight: 800; letter-spacing: 1px; fill: #F6F7F7; }
+      .label { font-family: "JetBrains Mono", Consolas, monospace; font-size: 30px; font-weight: 800; fill: #F6F7F7; }
+      .endpoint { font-family: "JetBrains Mono", Consolas, monospace; font-size: 48px; font-weight: 700; }
+      .code { font-family: "JetBrains Mono", Consolas, monospace; font-size: 34px; fill: #F4F6F6; }
+      .smallcode { font-family: "JetBrains Mono", Consolas, monospace; font-size: 34px; }
+      .white { fill: #F4F6F6; }
+      .green { fill: #5AF0B1; font-weight: 700; }
+      .panel { fill: #0B1515; stroke: #243332; stroke-width: 2; }
+      .card { fill: #0E1919; stroke: #2B3A3A; stroke-width: 2; }
+    </style>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1672" height="941" fill="url(#bg)"/>
+
+  <!-- ================= CONNECTORS BEHIND PANELS ================= -->
+
+  <!-- Top left: GET /tasks -> TASKS -->
+  <!-- subtle outer stroke -->
+  <path d="M398 282 H491 C502 282 509 289 509 300 V348 C509 358 516 365 526 365 H579"
+        stroke="#56F0AE" stroke-opacity="0.18" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M398 282 H491 C502 282 509 289 509 300 V348 C509 358 516 365 526 365 H579"
+        stroke="url(#mint)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- arrow head -->
+  <path d="M575 347 L609 365 L575 383 Z" fill="#55F0AE"/>
+
+  <!-- Bottom left: GET /stats -> TASKS -->
+  <path d="M398 622 H491 C502 622 509 615 509 604 V548 C509 538 516 531 526 531 H579"
+        stroke="#56F0AE" stroke-opacity="0.18" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M398 622 H491 C502 622 509 615 509 604 V548 C509 538 516 531 526 531 H579"
+        stroke="url(#mint)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M575 513 L609 531 L575 549 Z" fill="#55F0AE"/>
+
+  <!-- Top right: TASKS -> JSON ARRAY -->
+  <path d="M1028 365 H1063 C1075 365 1083 357 1083 345 V300 C1083 288 1091 280 1103 280 H1129"
+        stroke="#35DDFC" stroke-opacity="0.18" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M1028 365 H1063 C1075 365 1083 357 1083 345 V300 C1083 288 1091 280 1103 280 H1129"
+        stroke="url(#cyan)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M1125 262 L1159 280 L1125 298 Z" fill="#38DFFF"/>
+
+  <!-- Bottom right: TASKS -> STATS -->
+  <path d="M1028 531 H1063 C1075 531 1083 539 1083 551 V601 C1083 613 1091 621 1103 621 H1129"
+        stroke="#35DDFC" stroke-opacity="0.18" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M1028 531 H1063 C1075 531 1083 539 1083 551 V601 C1083 613 1091 621 1103 621 H1129"
+        stroke="url(#cyan)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M1125 603 L1159 621 L1125 639 Z" fill="#38DFFF"/>
+
+  <!-- ================= PANELS ON TOP: mask connector joints ================= -->
+
+  <!-- Left endpoint cards -->
+  <rect x="48" y="220" width="360" height="126" rx="24" class="panel"/>
+  <text x="88" y="301" class="endpoint mono">
+    <tspan fill="#5AF0B1">GET</tspan><tspan fill="#F7F7F7"> /tasks</tspan>
+  </text>
+
+  <rect x="48" y="562" width="360" height="126" rx="24" class="panel"/>
+  <text x="88" y="643" class="endpoint mono">
+    <tspan fill="#5AF0B1">GET</tspan><tspan fill="#F7F7F7"> /stats</tspan>
+  </text>
+
+  <!-- Center panel -->
+  <rect x="610" y="191" width="427" height="479" rx="24" class="panel"/>
+  <text x="823.5" y="258" text-anchor="middle" class="title">TASKS</text>
+  <rect x="644" y="295" width="361" height="334" rx="18" fill="none" stroke="#263635" stroke-width="2"/>
+
+  <!-- OPEN card -->
+  <rect x="670" y="324" width="309" height="126" rx="18" class="card"/>
+  <circle cx="709" cy="364" r="18" fill="#5AF0B1"/>
+  <text x="754" y="375" class="label">OPEN</text>
+  <rect x="754" y="393" width="173" height="11" rx="5.5" fill="#667478"/>
+  <rect x="754" y="418" width="115" height="11" rx="5.5" fill="#536064"/>
+
+  <!-- DONE card -->
+  <rect x="670" y="475" width="309" height="128" rx="18" class="card"/>
+  <circle cx="709" cy="516" r="18" fill="#38CFF6"/>
+  <text x="754" y="527" class="label">DONE</text>
+  <rect x="754" y="545" width="173" height="11" rx="5.5" fill="#667478"/>
+  <rect x="754" y="570" width="115" height="11" rx="5.5" fill="#536064"/>
+
+  <!-- Right response panels -->
+  <rect x="1160" y="128" width="442" height="296" rx="24" fill="#0B1515" stroke="#3EE1FA" stroke-width="4"/>
+  <text x="1200" y="194" class="title" style="font-size:40px">JSON ARRAY</text>
+  <text x="1200" y="259" class="code">[</text>
+  <text x="1235" y="301" class="code">{..},</text>
+  <text x="1235" y="343" class="code">{..}</text>
+  <text x="1200" y="385" class="code">]</text>
+
+  <rect x="1160" y="477" width="442" height="323" rx="24" fill="#0B1515" stroke="#3EE1FA" stroke-width="4"/>
+  <text x="1200" y="544" class="title" style="font-size:40px">STATS</text>
+  <text x="1200" y="608" class="code">{</text>
+  <text x="1250" y="652" class="smallcode">
+    <tspan class="white">"total": </tspan><tspan class="green">2</tspan><tspan class="white">,</tspan>
+  </text>
+  <text x="1250" y="695" class="smallcode">
+    <tspan class="white">"open": </tspan><tspan class="green">1</tspan><tspan class="white">,</tspan>
+  </text>
+  <text x="1250" y="738" class="smallcode">
+    <tspan class="white">"done": </tspan><tspan class="green">1</tspan>
+  </text>
+  <text x="1200" y="781" class="code">}</text>
+</svg>

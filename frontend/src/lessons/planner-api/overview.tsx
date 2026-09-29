@@ -111,7 +111,7 @@ export function LearningRoadmap() {
             ],
             [
               <>{"Блок 11 · Схемы и полный CRUD"}</>,
-              <>{"Занятия 57–62: validation, TaskCreate/TaskUpdate/TaskRead, storage в памяти, PUT, PATCH и DELETE."}</>,
+              <>{"Занятия 57–62: validation, TaskCreate/TaskUpdate/TaskPatch/TaskRead, storage в памяти, PUT, PATCH и DELETE."}</>,
             ],
             [
               <>{"Блок 12 · Структура и финальный проект"}</>,
@@ -217,15 +217,15 @@ export function LearningRoadmap() {
             ],
             [
               <>{"54. Path-параметр"}</>,
-              <>{"Получить task_id, найти объект и вернуть 404."}</>,
+              <>{"Выбрать item по task_id и проверить копию найденного объекта либо None."}</>,
             ],
             [
               <>{"55. Query-параметры"}</>,
-              <>{"Добавить filter, search, sort, limit и offset."}</>,
+              <>{"Подготовить filter, sort и limit для будущего GET /tasks, не меняя исходный список."}</>,
             ],
             [
               <>{"56. BaseModel и body"}</>,
-              <>{"Получить TaskCreate из JSON body и вернуть 201 Created."}</>,
+              <>{"Проверить TaskCreate из JSON body и вернуть временный 200 без создания ресурса."}</>,
             ],
           ]}
         />
@@ -792,7 +792,7 @@ export function MonthTheory() {
             {"Task id является обязательной частью адреса item."}
           </TypeCard>
           <TypeCard badge={"query"} badgeTone="float" title={"Как показать collection"} code={"/tasks?limit=10"}>
-            {"Фильтр, поиск, сортировка и пагинация настраивают список."}
+            {"Query-параметры настраивают выборку. В разных API они могут задавать поиск или пагинацию; в нашем Planner API будут фильтр по is_done, сортировка по id и limit. Текстового поиска и offset в этой версии нет."}
           </TypeCard>
           <TypeCard badge={"body"} badgeTone="str" title={"Какие данные передать"} code={"{\"title\": \"FastAPI\"}"}>
             {"JSON body описывает создаваемый или обновляемый объект."}
@@ -805,7 +805,7 @@ export function MonthTheory() {
           rightTitle={"Место"}
           pairs={[
             { left: "task_id", right: "path" },
-            { left: "limit и offset", right: "query" },
+            { left: "is_done и limit", right: "query" },
             { left: "title и priority", right: "body" },
             { left: "Content-Type", right: "header" },
           ]}

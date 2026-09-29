@@ -40,7 +40,7 @@ studyhub-api/
 - открыть GET /health и автоматическую документацию;
 - получить временный список задач и статистику через GET;
 - объяснить выбор item и collection, правила query и границы limit;
-- принять первый JSON body через TaskCreate и увидеть 201 или 422.
+- принять первый JSON body через TaskCreate и увидеть временный 200 или 422.
 
 После блока ещё нет:
 
@@ -82,7 +82,7 @@ is_done: bool
 | 53. GET endpoints | Как сервер возвращает collection без изменения состояния? | Возвращать JSON из in-memory данных и считать stats | Ручная, расширение проекта | GET /tasks и GET /stats создают первую поверхность чтения |
 | 54. Path-параметры и item | Как выбрать один объект и различить неверный id и отсутствующий item? | Понимать path type, 404 и 422, писать чистый поиск | Интерпретатор | Контракт find_task готовит будущую CRUD-логику |
 | 55. Query-параметры | Как один endpoint создаёт разные выборки без дублирования URL? | Фильтровать, сортировать и ограничивать collection предсказуемо | Интерпретатор | Pipeline выборки готовит правила GET /tasks |
-| 56. BaseModel и request body | Как JSON становится проверенными данными Python до тела endpoint? | Принимать TaskCreate, видеть 201 и 422 | Ручная, расширение проекта | Первый POST-boundary готовит валидацию и CRUD следующего блока |
+| 56. BaseModel и request body | Как JSON становится проверенными данными Python до тела endpoint? | Принимать TaskCreate, видеть временный 200 и 422 | Ручная, расширение проекта | Временный POST проверяет вход, не создавая ресурс |
 
 ~~~text
 реальный HTTP-клиент
@@ -108,7 +108,7 @@ is_done: bool
 - разницу между collection и отдельным несохранённым request;
 - почему export collection не должен содержать токены и личные данные.
 
-**Практика.** Ручная, на Echo-сервисе. Сначала ученик подготавливает `studyhub-api/postman/`, затем создаёт collection и environment. Он сохраняет GET с двумя query-параметрами и POST с JSON body, проверяет status и отражённые значения, добавляет post-response checks, повторно запускает оба запроса и экспортирует collection и environment в эту папку. В следующем занятии он продолжает тот же каталог проекта.
+**Практика.** Ручная, на Echo-сервисе. Сначала ученик подготавливает `studyhub-api/postman/`, затем создаёт collection и environment. Он сохраняет GET с двумя query-параметрами и POST с JSON body, проверяет status и отражённые значения, добавляет post-response checks, повторно запускает оба запроса и экспортирует collection и environment в эту папку. `base_url` меняет только начало URL: Echo-пути `/get` и `/post`, тело и проверки не превращаются в сценарии Planner при смене адреса. Перед проверкой Planner их нужно адаптировать к его method, path, body и response. В следующем занятии ученик продолжает тот же каталог проекта.
 
 **Не вводить.** Собственный FastAPI, auth headers, реальные production API, чужие credentials и сложные pre-request scripts.
 
@@ -184,9 +184,9 @@ is_done: bool
 - разницу между сортировкой данных и изменением storage;
 - production context: pagination, allowed sort fields and predictable tie breakers.
 
-**Практика.** Интерпретатор работает с одной явной подзадачей: копиями задач, фильтром is_done, сортировкой по id и limit в диапазоне 1-50. Автопроверка проверяет отсутствие фильтра, оба направления сортировки и границы limit. Исходный list не меняется.
+**Практика.** Интерпретатор работает с одной явной подзадачей: копиями задач, фильтром is_done, сортировкой по id и уже проверенным limit в диапазоне 1-50. Автопроверка проверяет отсутствие фильтра, оба направления сортировки и допустимые границы 1 и 50. Исходный list не меняется. При будущей интеграции FastAPI отклоняет limit за пределами диапазона с 422, а не нормализует его.
 
-**Граница формата.** Если теория говорит о search text, offset или arbitrary sort fields, она не должна требовать их в текущем editor task без отдельного договора и тестов. Эта практика закрепляет только filter, sort and limit.
+**Граница формата.** Если теория говорит о search text, offset или arbitrary sort fields, она не должна требовать их в текущем editor task без отдельного договора и тестов. Эта практика закрепляет только filter, sort and limit. Она не проверяет HTTP 422: в чистой функции URL и HTTP-валидации нет.
 
 **Не вводить.** SQL pagination, database indexes, dynamic ORM columns и сложные query models. Они принадлежат последующим этапам.
 
@@ -200,11 +200,11 @@ is_done: bool
 - BaseModel как описание входных данных;
 - binding body parameter to endpoint;
 - required fields, primitive type conversion and built-in validation;
-- разницу между принятым body, 201 и 422 до логики endpoint.
+- разницу между временным успешным ответом 200, настоящим созданием с 201 и ошибкой входа 422.
 - model_dump как controlled conversion for later storage logic;
 - why client does not set id and is_done on create.
 
-**Практика.** Ручная. Ученик добавляет TaskCreate with title and priority, POST /tasks with 201, a valid Swagger request and two invalid requests. Он проверяет, что при невалидном body тело endpoint не запускается. Временный response допустим, потому что storage and stable id belong to block 11.
+**Практика.** Ручная. Ученик добавляет TaskCreate с обязательными title и priority, подключает её к POST /tasks и возвращает проверенные поля как временный ответ 200. Затем отправляет корректное тело и два некорректных запроса. Он проверяет, что при невалидном body тело endpoint не запускается. Записи и id ещё нет, поэтому 201 пока не используется.
 
 **Не вводить.** Field constraints such as min_length or ge/le, custom validators, separate TaskRead or TaskUpdate, real CRUD storage and a final POST implementation. Урок 57 расширит validation, а урок 58 разделит contracts.
 
@@ -226,12 +226,12 @@ Postman or Swagger
   -> POST /tasks with JSON body
   -> FastAPI matches endpoint
   -> Pydantic builds TaskCreate or returns 422
-  -> endpoint returns a temporary 201 response
+  -> temporary endpoint echoes validated fields with 200; no resource is created
 
 Следующий блок
-  -> validation rules
+  -> validation rules and separate schemas
   -> server-owned storage and id
-  -> real create, read, update and delete
+  -> real create, read, update and delete; only then POST returns 201
 ~~~
 
 Ученик должен уметь назвать место, где остановится невалидный request, и объяснить, почему эта остановка происходит раньше прикладной CRUD-логики.
@@ -258,5 +258,5 @@ Postman or Swagger
 4. предсказать JSON response GET /tasks и GET /stats;
 5. объяснить разницу между path id неверного типа и отсутствующим item;
 6. выполнить лабораторные правила поиска и query без изменения исходного list;
-7. отправить валидный и невалидный POST body и объяснить 201 и 422;
+7. отправить валидный и невалидный POST body, объяснить временный 200 и 422;
 8. назвать следующие способности блока 11, не пытаясь добавить их в текущий API заранее.
