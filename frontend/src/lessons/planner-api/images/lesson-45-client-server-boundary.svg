@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1672" height="836" viewBox="0 0 1672 836" fill="none" role="img" aria-labelledby="boundary-title boundary-desc">
+  <title id="boundary-title">Clients and API server</title>
+  <desc id="boundary-desc">The browser and the bot each send a request to one API server. Every response returns to the client that sent its request. The server applies shared rules and manages shared state.</desc>
+  <defs>
+    <marker id="request-arrow" markerUnits="userSpaceOnUse" markerWidth="36" markerHeight="36" viewBox="0 0 36 36" refX="31" refY="18" orient="auto">
+      <path d="M5 5L31 18L5 31" stroke="#8FE4AD" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="response-arrow" markerUnits="userSpaceOnUse" markerWidth="36" markerHeight="36" viewBox="0 0 36 36" refX="31" refY="18" orient="auto">
+      <path d="M5 5L31 18L5 31" stroke="#8FE4AD" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <style>
+      .title { font-family: Manrope, "Segoe UI", sans-serif; font-size: 76px; font-weight: 500; fill: #F5F2EB; }
+      .actor { font-family: Manrope, "Segoe UI", sans-serif; font-size: 80px; font-weight: 500; fill: #F5F2EB; }
+      .role { font-family: Manrope, "Segoe UI", sans-serif; font-size: 80px; font-weight: 400; fill: #B8B4AA; }
+      .message { font-family: Manrope, "Segoe UI", sans-serif; font-size: 76px; font-weight: 500; fill: #8FE4AD; }
+    </style>
+  </defs>
+
+  <rect width="1672" height="836" rx="28" fill="#111412"/>
+
+  <rect id="browser" x="88" y="208" width="460" height="200" rx="24" fill="#191D1A" stroke="#354039" stroke-width="2"/>
+  <text x="318" y="330" text-anchor="middle" class="actor">BROWSER</text>
+  <rect id="bot" x="88" y="460" width="460" height="200" rx="24" fill="#191D1A" stroke="#354039" stroke-width="2"/>
+  <text x="318" y="582" text-anchor="middle" class="actor">BOT</text>
+
+  <rect id="api-server" x="1124" y="208" width="460" height="452" rx="24" fill="#191D1A" stroke="#354039" stroke-width="2"/>
+  <text x="1354" y="290" text-anchor="middle" class="title">API SERVER</text>
+  <text x="1354" y="418" text-anchor="middle" class="role">RULES</text>
+  <path d="M1188 466H1520" stroke="#354039" stroke-width="2"/>
+  <text x="1354" y="556" text-anchor="middle" class="role">STATE</text>
+
+  <path id="browser-request" d="M548 248H1124" stroke="#8FE4AD" stroke-width="6" stroke-linecap="round" marker-end="url(#request-arrow)"/>
+  <text x="836" y="222" text-anchor="middle" class="message">REQUEST</text>
+  <path id="browser-response" d="M1124 336H548" stroke="#8FE4AD" stroke-width="6" stroke-dasharray="18 14" stroke-linecap="round" marker-end="url(#response-arrow)"/>
+  <text x="836" y="408" text-anchor="middle" class="message">RESPONSE</text>
+  <path id="bot-request" d="M548 544H1124" stroke="#8FE4AD" stroke-width="6" stroke-linecap="round" marker-end="url(#request-arrow)"/>
+  <text x="836" y="518" text-anchor="middle" class="message">REQUEST</text>
+  <path id="bot-response" d="M1124 632H548" stroke="#8FE4AD" stroke-width="6" stroke-dasharray="18 14" stroke-linecap="round" marker-end="url(#response-arrow)"/>
+  <text x="836" y="708" text-anchor="middle" class="message">RESPONSE</text>
+</svg>

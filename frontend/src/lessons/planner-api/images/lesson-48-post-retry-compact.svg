@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="730" viewBox="0 0 600 730" role="img" aria-labelledby="title desc">
+  <title id="title">POST retry after a lost response</title>
+  <desc id="desc">A client sends POST, the server creates Task A, but the response is lost. A retry may create Task B.</desc>
+  <defs>
+    <marker id="arrow" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" viewBox="0 0 12 12" refX="10" refY="6" orient="auto">
+      <path d="M2 2L10 6L2 10" fill="none" stroke="#8FE4AD" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <style>
+      .label { font: 500 19px "Segoe UI", sans-serif; fill: #B8B4AA; }
+      .value { font: 600 27px Consolas, monospace; fill: #F5F2EB; }
+      .accent { fill: #8FE4AD; }
+      .error { fill: #FF7A7A; }
+      .card { fill: #191D1A; stroke: #354039; stroke-width: 2; }
+      .line { fill: none; stroke: #8FE4AD; stroke-width: 4; marker-end: url(#arrow); }
+    </style>
+  </defs>
+  <rect width="600" height="730" rx="24" fill="#111412"/>
+  <text x="40" y="52" class="value accent">POST RETRY</text>
+
+  <rect x="40" y="80" width="520" height="94" rx="22" class="card"/>
+  <text x="64" y="112" class="label">CLIENT</text>
+  <text x="64" y="151" class="value">POST /tasks</text>
+  <path d="M300 178V207" class="line"/>
+
+  <rect x="40" y="216" width="520" height="94" rx="22" class="card"/>
+  <text x="64" y="248" class="label">SERVER</text>
+  <text x="64" y="287" class="value">Task A created</text>
+  <path d="M300 314V343" class="line"/>
+
+  <rect x="40" y="352" width="520" height="94" rx="22" class="card"/>
+  <text x="64" y="384" class="label">NETWORK</text>
+  <text x="64" y="423" class="value error">Response lost</text>
+  <path d="M300 450V479" class="line"/>
+
+  <rect x="40" y="488" width="520" height="94" rx="22" class="card"/>
+  <text x="64" y="520" class="label">CLIENT</text>
+  <text x="64" y="559" class="value">Retry POST /tasks</text>
+  <path d="M300 586V615" class="line"/>
+
+  <rect x="40" y="624" width="520" height="82" rx="22" class="card"/>
+  <text x="64" y="655" class="label">SERVER</text>
+  <text x="64" y="688" class="value error">Task B possible</text>
+</svg>

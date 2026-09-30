@@ -1,0 +1,6 @@
+{
+  "title": "FastAPI, SQLite и SQLAlchemy",
+  "tagline": "Синхронный FastAPI, SQLite, SQLAlchemy, CRUD, связи и миграции",
+  "order": 4,
+  "id": "FastAPI, SQLite и SQLAlchemy - StudyHub Database API"
+}

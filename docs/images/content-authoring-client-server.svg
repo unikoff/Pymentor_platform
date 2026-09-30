@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1672" height="836" viewBox="0 0 1672 836" fill="none" role="img" aria-labelledby="client-server-title client-server-desc">
+  <title id="client-server-title">Client and server exchange</title>
+  <desc id="client-server-desc">A client sends GET /tasks/7 to a server along the upper solid arrow. The server returns 200 OK to the client along the lower dashed arrow. This schematic shows the method, path and status, not a complete HTTP message.</desc>
+  <defs>
+    <marker id="message-arrow" markerUnits="userSpaceOnUse" markerWidth="36" markerHeight="36" viewBox="0 0 36 36" refX="31" refY="18" orient="auto">
+      <path d="M5 5L31 18L5 31" stroke="#8FE4AD" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <style>
+      .actor { font-family: Manrope, "Segoe UI", sans-serif; font-size: 64px; font-weight: 500; fill: #F5F2EB; }
+      .message { font-family: Manrope, "Segoe UI", sans-serif; font-size: 60px; font-weight: 500; fill: #8FE4AD; }
+      .value { font-family: Consolas, "Courier New", monospace; font-size: 64px; font-weight: 400; fill: #F5F2EB; }
+    </style>
+  </defs>
+
+  <rect width="1672" height="836" rx="28" fill="#111412"/>
+  <rect x="96" y="292" width="360" height="252" rx="24" fill="#191D1A" stroke="#354039" stroke-width="2"/>
+  <rect x="1216" y="292" width="360" height="252" rx="24" fill="#191D1A" stroke="#354039" stroke-width="2"/>
+
+  <text x="276" y="441" text-anchor="middle" class="actor">CLIENT</text>
+  <text x="1396" y="441" text-anchor="middle" class="actor">SERVER</text>
+
+  <text x="836" y="188" text-anchor="middle" class="message">REQUEST</text>
+  <text x="836" y="264" text-anchor="middle" class="value">GET /tasks/7</text>
+  <path d="M456 328H1216" stroke="#8FE4AD" stroke-width="6" stroke-linecap="round" marker-end="url(#message-arrow)"/>
+
+  <path d="M1216 508H456" stroke="#8FE4AD" stroke-width="6" stroke-dasharray="18 14" stroke-linecap="round" marker-end="url(#message-arrow)"/>
+  <text x="836" y="638" text-anchor="middle" class="message">RESPONSE</text>
+  <text x="836" y="714" text-anchor="middle" class="value">200 OK</text>
+</svg>

@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="930" viewBox="0 0 600 930" role="img" aria-labelledby="title desc">
+  <title id="title">PUT and PATCH change different parts of a task</title>
+  <desc id="desc">PUT supplies title, priority and done, replacing the full editable state. PATCH supplies only priority and keeps the other fields.</desc>
+  <defs>
+    <marker id="arrow" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" viewBox="0 0 12 12" refX="10" refY="6" orient="auto">
+      <path d="M2 2L10 6L2 10" fill="none" stroke="#8FE4AD" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <style>
+      .heading { font: 600 29px "Segoe UI", sans-serif; fill: #8FE4AD; }
+      .label { font: 500 18px "Segoe UI", sans-serif; fill: #B8B4AA; }
+      .value { font: 600 23px Consolas, monospace; fill: #F5F2EB; }
+      .accent { fill: #8FE4AD; }
+      .card { fill: #191D1A; stroke: #354039; stroke-width: 2; }
+      .line { fill: none; stroke: #8FE4AD; stroke-width: 4; marker-end: url(#arrow); }
+    </style>
+  </defs>
+  <rect width="600" height="930" rx="24" fill="#111412"/>
+  <text x="40" y="53" class="heading">PUT: FULL FORM</text>
+
+  <rect x="40" y="78" width="520" height="92" rx="22" class="card"/>
+  <text x="63" y="109" class="label">CURRENT</text>
+  <text x="63" y="145" class="value">HTTP / 3 / NO</text>
+  <path d="M300 174V203" class="line"/>
+  <rect x="40" y="212" width="520" height="92" rx="22" class="card"/>
+  <text x="63" y="243" class="label">REQUEST: TITLE / PRIORITY / DONE</text>
+  <text x="63" y="279" class="value accent">API / 5 / YES</text>
+  <path d="M300 308V337" class="line"/>
+  <rect x="40" y="346" width="520" height="92" rx="22" class="card"/>
+  <text x="63" y="377" class="label">RESULT</text>
+  <text x="63" y="413" class="value">API / 5 / YES</text>
+
+  <path d="M40 466H560" stroke="#354039" stroke-width="2"/>
+  <text x="40" y="507" class="heading">PATCH: ONE FIELD</text>
+  <rect x="40" y="532" width="520" height="92" rx="22" class="card"/>
+  <text x="63" y="563" class="label">CURRENT</text>
+  <text x="63" y="599" class="value">HTTP / 3 / NO</text>
+  <path d="M300 628V657" class="line"/>
+  <rect x="40" y="666" width="520" height="92" rx="22" class="card"/>
+  <text x="63" y="697" class="label">REQUEST: PRIORITY</text>
+  <text x="63" y="733" class="value accent">5</text>
+  <path d="M300 762V791" class="line"/>
+  <rect x="40" y="800" width="520" height="92" rx="22" class="card"/>
+  <text x="63" y="831" class="label">RESULT</text>
+  <text x="63" y="867" class="value">HTTP / 5 / NO</text>
+</svg>

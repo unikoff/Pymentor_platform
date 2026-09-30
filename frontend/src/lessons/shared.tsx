@@ -175,12 +175,16 @@ export function CodeSequence({
   correctOrder,
   explanation,
   title = "Соберите программу",
+  label = "СОБЕРИТЕ КОД",
+  incorrectExplanation = "Проверьте последовательность: Python выполняет инструкции сверху вниз, а лишние фрагменты можно не добавлять.",
 }: {
   prompt: string;
   pieces: CodeSequencePiece[];
   correctOrder: string[];
   explanation: string;
   title?: string;
+  label?: string;
+  incorrectExplanation?: string;
 }) {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isChecked, setIsChecked] = useState(false);
@@ -209,7 +213,7 @@ export function CodeSequence({
       <div className="interactive-heading">
         <ListOrdered size={17} />
         <div>
-          <span>СОБЕРИТЕ КОД</span>
+          <span>{label}</span>
           <h3>{title}</h3>
         </div>
       </div>
@@ -265,7 +269,7 @@ export function CodeSequence({
       {isChecked && (
         <p className={`interactive-feedback ${isCorrect ? "is-correct" : "is-wrong"}`}>
           {isCorrect ? <Check size={16} /> : <X size={16} />}
-          {isCorrect ? explanation : "Проверьте последовательность: Python выполняет инструкции сверху вниз, а лишние фрагменты можно не добавлять."}
+          {isCorrect ? explanation : incorrectExplanation}
         </p>
       )}
     </section>

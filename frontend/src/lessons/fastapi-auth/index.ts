@@ -5,8 +5,14 @@ import { Lesson105, Lesson106, Lesson107, Lesson108, Lesson109, Lesson110 } from
 import { Lesson111, Lesson112, Lesson113, Lesson114, Lesson115, Lesson116 } from "./block20";
 import { LearningRoadmap, MonthTheory } from "./overview";
 
-const COURSE_FOLDER = "Аутентификация, сессии, токены и завершение FastAPI - Personal StudyHub API";
-const source = (file: string) => `${COURSE_FOLDER}/${file}`;
+const COURSE_FOLDER = "personal_api";
+const LESSON_BLOCKS = [[93, 98, "block_17"], [99, 104, "block_18"], [105, 110, "block_19"], [111, 116, "block_20"]] as const;
+const source = (file: string) => {
+  const filename = file.split("/").pop() ?? file;
+  const lessonNumber = Number(filename.match(/^\d+/)?.[0] ?? 0);
+  const block = LESSON_BLOCKS.find(([first, last]) => lessonNumber >= first && lessonNumber <= last)?.[2] ?? "block_00";
+  return `${COURSE_FOLDER}/${block}/${filename}`;
+};
 
 export const pages: Record<string, ComponentType<{ module?: string }>> = {
   [source("00 Обзор/План обучения.md")]: LearningRoadmap,

@@ -5,10 +5,14 @@ import { Lesson201, Lesson202, Lesson203, Lesson204, Lesson205, Lesson206 } from
 import { Lesson207, Lesson208, Lesson209, Lesson210, Lesson211, Lesson212 } from "./block36";
 import { LearningRoadmap, MonthTheory } from "./overview";
 
-const COURSE_FOLDER = 
-"StudyHub LMS, Redis, портфолио и собеседования - StudyHub LMS Release"
-;
-const source = (file: string) => `${COURSE_FOLDER}/${file}`;
+const COURSE_FOLDER = "lms";
+const LESSON_BLOCKS = [[189, 194, "block_33"], [195, 200, "block_34"], [201, 206, "block_35"], [207, 212, "block_36"]] as const;
+const source = (file: string) => {
+  const filename = file.split("/").pop() ?? file;
+  const lessonNumber = Number(filename.match(/^\d+/)?.[0] ?? 0);
+  const block = LESSON_BLOCKS.find(([first, last]) => lessonNumber >= first && lessonNumber <= last)?.[2] ?? "block_00";
+  return `${COURSE_FOLDER}/${block}/${filename}`;
+};
 
 export const pages: Record<string, ComponentType<{ module?: string }>> = {
   [source("00 Обзор/План обучения.md")]: LearningRoadmap,

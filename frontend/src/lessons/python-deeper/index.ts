@@ -5,8 +5,14 @@ import { Lesson33, Lesson34, Lesson35, Lesson36, Lesson37, Lesson38 } from "./bl
 import { Lesson39, Lesson40, Lesson41, Lesson42, Lesson43, Lesson44 } from "./block8";
 import { LearningRoadmap, MonthTheory } from "./overview";
 
-const COURSE_FOLDER = "Python глубже, файлы и структура небольшого проекта";
-const source = (file: string) => `${COURSE_FOLDER}/${file}`;
+const COURSE_FOLDER = "deeper";
+const LESSON_BLOCKS = [[21, 26, "block_05"], [27, 32, "block_06"], [33, 38, "block_07"], [39, 44, "block_08"]] as const;
+const source = (file: string) => {
+  const filename = file.split("/").pop() ?? file;
+  const lessonNumber = Number(filename.match(/^\d+/)?.[0] ?? 0);
+  const block = LESSON_BLOCKS.find(([first, last]) => lessonNumber >= first && lessonNumber <= last)?.[2] ?? "block_00";
+  return `${COURSE_FOLDER}/${block}/${filename}`;
+};
 
 export const pages: Record<string, ComponentType<{ module?: string }>> = {
   [source("План обучения.md")]: LearningRoadmap,

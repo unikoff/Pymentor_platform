@@ -5,10 +5,14 @@ import { Lesson153, Lesson154, Lesson155, Lesson156, Lesson157, Lesson158 } from
 import { Lesson159, Lesson160, Lesson161, Lesson162, Lesson163, Lesson164 } from "./block28";
 import { LearningRoadmap, MonthTheory } from "./overview";
 
-const COURSE_FOLDER = 
-"Асинхронность и производительность backend - Async StudyHub"
-;
-const source = (file: string) => `${COURSE_FOLDER}/${file}`;
+const COURSE_FOLDER = "async_api";
+const LESSON_BLOCKS = [[141, 146, "block_25"], [147, 152, "block_26"], [153, 158, "block_27"], [159, 164, "block_28"]] as const;
+const source = (file: string) => {
+  const filename = file.split("/").pop() ?? file;
+  const lessonNumber = Number(filename.match(/^\d+/)?.[0] ?? 0);
+  const block = LESSON_BLOCKS.find(([first, last]) => lessonNumber >= first && lessonNumber <= last)?.[2] ?? "block_00";
+  return `${COURSE_FOLDER}/${block}/${filename}`;
+};
 
 export const pages: Record<string, ComponentType<{ module?: string }>> = {
   [source("00 Обзор/План обучения.md")]: LearningRoadmap,

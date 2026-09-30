@@ -5,8 +5,18 @@ import { Lesson57, Lesson58, Lesson59, Lesson60, Lesson61, Lesson62 } from "./bl
 import { Lesson63, Lesson64, Lesson65, Lesson66, Lesson67, Lesson68 } from "./block12";
 import { LearningRoadmap, MonthTheory } from "./overview";
 
-const COURSE_FOLDER = "HTTP, API и FastAPI - Planner API";
-const source = (file: string) => `${COURSE_FOLDER}/${file}`;
+const COURSE_FOLDER = "planner_api";
+const BLOCK_FOLDERS = [
+  { first: 45, last: 50, folder: "block_09" },
+  { first: 51, last: 56, folder: "block_10" },
+  { first: 57, last: 62, folder: "block_11" },
+  { first: 63, last: 68, folder: "block_12" },
+];
+const source = (file: string) => {
+  const lessonNumber = Number.parseInt(file, 10);
+  const block = BLOCK_FOLDERS.find(({ first, last }) => lessonNumber >= first && lessonNumber <= last);
+  return `${COURSE_FOLDER}/${block?.folder ?? "block_00"}/${file}`;
+};
 
 export const pages: Record<string, ComponentType<{ module?: string }>> = {
   [source("План обучения.md")]: LearningRoadmap,

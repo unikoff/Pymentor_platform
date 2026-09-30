@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1672" height="836" viewBox="0 0 1672 836" fill="none" role="img" aria-labelledby="title description">
+  <title id="title">Client response reading flow</title>
+  <desc id="description">The client reads the response status first. If a body is present, it checks Content-Type and decodes the body. If no body is present, it handles the result from status without parsing content.</desc>
+  <defs>
+    <marker id="flow-arrow" markerWidth="18" markerHeight="18" viewBox="0 0 12 12" refX="10" refY="6" orient="auto">
+      <path d="M2 2L10 6L2 10" stroke="#8BE9B8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <style>
+      .sans { font-family: Inter, "Segoe UI", sans-serif; }
+      .mono { font-family: "JetBrains Mono", Consolas, monospace; }
+      .actor { font-size: 21px; font-weight: 700; letter-spacing: 1.2px; fill: #DCE6E0; }
+      .label { font-size: 16px; font-weight: 700; letter-spacing: 1.1px; fill: #91A198; }
+      .value { font-size: 21px; font-weight: 600; fill: #F2F5F3; }
+      .small { font-size: 17px; font-weight: 600; fill: #B6C3BC; }
+      .accent { fill: #8BE9B8; }
+      .line { stroke: #8BE9B8; stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#flow-arrow); }
+    </style>
+  </defs>
+
+  <rect width="1672" height="836" rx="28" fill="#0E1512"/>
+  <rect x="1" y="1" width="1670" height="834" rx="27" stroke="#2A3931" stroke-width="2"/>
+  <text x="64" y="82" class="sans label accent">CLIENT RESPONSE FLOW</text>
+
+  <rect x="54" y="365" width="170" height="106" rx="20" fill="#17211B" stroke="#385345" stroke-width="2"/>
+  <text x="139" y="427" text-anchor="middle" class="sans actor">SERVER</text>
+
+  <rect x="276" y="254" width="300" height="328" rx="22" fill="#141D18" stroke="#4BC89B" stroke-width="2.5"/>
+  <text x="310" y="300" class="sans label accent">RESPONSE</text>
+  <rect x="306" y="326" width="240" height="66" rx="12" fill="#17211B" stroke="#385345" stroke-width="1.5"/>
+  <text x="328" y="352" class="sans label">STATUS</text>
+  <text x="328" y="378" class="mono small">201 · 404 · 204</text>
+  <rect x="306" y="405" width="240" height="66" rx="12" fill="#17211B" stroke="#385345" stroke-width="1.5"/>
+  <text x="328" y="431" class="sans label">HEADERS</text>
+  <text x="328" y="457" class="mono small">Content-Type</text>
+  <rect x="306" y="484" width="240" height="66" rx="12" fill="#17211B" stroke="#385345" stroke-width="1.5"/>
+  <text x="328" y="510" class="sans label">BODY</text>
+  <text x="328" y="536" class="mono small">optional content</text>
+
+  <path d="M224 418H276" class="line"/>
+  <path d="M576 418H628" class="line"/>
+
+  <rect x="628" y="351" width="210" height="134" rx="18" fill="#17211B" stroke="#385345" stroke-width="2"/>
+  <text x="733" y="400" text-anchor="middle" class="sans label">FIRST</text>
+  <text x="733" y="440" text-anchor="middle" class="sans value accent">READ STATUS</text>
+
+  <path d="M838 418H884" class="line"/>
+
+  <rect x="884" y="351" width="198" height="134" rx="18" fill="#17211B" stroke="#385345" stroke-width="2"/>
+  <text x="983" y="400" text-anchor="middle" class="sans label">THEN</text>
+  <text x="983" y="440" text-anchor="middle" class="sans value accent">CHOOSE PATH</text>
+
+  <path d="M1082 418H1137" class="line"/>
+
+  <path d="M1240 315L1343 418L1240 521L1137 418L1240 315Z" fill="#17211B" stroke="#4BC89B" stroke-width="2.5"/>
+  <text x="1240" y="407" text-anchor="middle" class="sans label">BODY</text>
+  <text x="1240" y="437" text-anchor="middle" class="sans value accent">PRESENT?</text>
+
+  <text x="1366" y="394" text-anchor="middle" class="sans label accent">YES</text>
+  <path d="M1343 418H1390" class="line"/>
+
+  <rect x="1390" y="314" width="228" height="130" rx="18" fill="#17211B" stroke="#385345" stroke-width="2"/>
+  <text x="1504" y="361" text-anchor="middle" class="sans label">READ</text>
+  <text x="1504" y="402" text-anchor="middle" class="mono value accent">CONTENT-TYPE</text>
+
+  <path d="M1504 444V495" class="line"/>
+
+  <rect x="1390" y="495" width="228" height="144" rx="18" fill="#17211B" stroke="#385345" stroke-width="2"/>
+  <text x="1504" y="541" text-anchor="middle" class="sans label">DECODE</text>
+  <text x="1504" y="580" text-anchor="middle" class="sans value accent">BODY</text>
+  <text x="1504" y="611" text-anchor="middle" class="sans small">show result details</text>
+
+  <text x="1258" y="565" class="sans label">NO</text>
+  <path d="M1240 521V612" class="line"/>
+
+  <rect x="1090" y="612" width="300" height="126" rx="18" fill="#17211B" stroke="#385345" stroke-width="2"/>
+  <text x="1240" y="659" text-anchor="middle" class="sans label">NO BODY</text>
+  <text x="1240" y="698" text-anchor="middle" class="sans value accent">USE STATUS ONLY</text>
+  <text x="1240" y="722" text-anchor="middle" class="sans small">skip body parsing</text>
+</svg>

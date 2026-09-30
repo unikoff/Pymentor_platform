@@ -5,10 +5,14 @@ import { Lesson129, Lesson130, Lesson131, Lesson132, Lesson133, Lesson134 } from
 import { Lesson135, Lesson136, Lesson137, Lesson138, Lesson139, Lesson140 } from "./block24";
 import { LearningRoadmap, MonthTheory } from "./overview";
 
-const COURSE_FOLDER = 
-"SQL, PostgreSQL и выбор хранилища - PostgreSQL StudyHub"
-;
-const source = (file: string) => `${COURSE_FOLDER}/${file}`;
+const COURSE_FOLDER = "postgresql";
+const LESSON_BLOCKS = [[117, 122, "block_21"], [123, 128, "block_22"], [129, 134, "block_23"], [135, 140, "block_24"]] as const;
+const source = (file: string) => {
+  const filename = file.split("/").pop() ?? file;
+  const lessonNumber = Number(filename.match(/^\d+/)?.[0] ?? 0);
+  const block = LESSON_BLOCKS.find(([first, last]) => lessonNumber >= first && lessonNumber <= last)?.[2] ?? "block_00";
+  return `${COURSE_FOLDER}/${block}/${filename}`;
+};
 
 export const pages: Record<string, ComponentType<{ module?: string }>> = {
   [source("00 Обзор/План обучения.md")]: LearningRoadmap,

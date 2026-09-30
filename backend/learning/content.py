@@ -4,13 +4,15 @@
 
     course_content/
       README.md                <- инструкция для автора курса (не отдаётся студентам)
-      python-basics/           <- трек = папка
-        track.json             <- {"title", "tagline", "order"}
-        План обучения.md       <- файлы в корне трека попадают в модуль «00 Старт/Обзор»
-        Блок 1 - .../урок.md   <- подпапка = модуль, .md = занятие
-      sql-basics/
+      foundations/             <- Python-safe имя курса; публичный ID — в track.json
         track.json
-        01 Основы баз данных/Знакомство с SQL.md
+        block_00/              <- обзор и карта обучения
+          План обучения.md
+          Теория месяца.md
+        block_01/              <- занятия и их практика
+          01 - ...md
+          manual.py
+          code_tasks.py
 
 Все пути в конфигах ниже указываются относительно course_content
 (т.е. начинаются с папки трека).
@@ -162,6 +164,39 @@ RICH_TRACK_MODULE_LABELS = {
     PLANNER_API_TRACK_NAME: PLANNER_API_MODULE_LABELS,
 }
 
+# New package/block names are Python-safe. This table preserves the old source
+# paths and module labels used by saved progress, lesson pages, and the UI.
+LEGACY_COURSE_LAYOUTS = {
+    "foundations": {"track_id": NEW_PYTHON_TRACK_NAME, "source_dirs": {"block_00": None, "block_01": None, "block_02": None, "block_03": None, "block_04": None}},
+    "deeper": {"track_id": PYTHON_DEEPER_TRACK_NAME, "source_dirs": {"block_00": None, "block_05": None, "block_06": None, "block_07": None, "block_08": None}},
+    "planner_api": {"track_id": PLANNER_API_TRACK_NAME, "source_dirs": {"block_00": None, "block_09": None, "block_10": None, "block_11": None, "block_12": None}},
+    "database_api": {
+        "track_id": "FastAPI, SQLite и SQLAlchemy - StudyHub Database API",
+        "source_dirs": {"block_00": "00 Обзор", "block_13": "Блок 13 - FastAPI как цельное приложение (6 занятий)", "block_14": "Блок 14 - SQLite и основы SQLAlchemy (6 занятий)", "block_15": "Блок 15 - CRUD и запросы SQLAlchemy (6 занятий)", "block_16": "Блок 16 - Связи, Alembic и Database API (6 занятий)"},
+    },
+    "personal_api": {
+        "track_id": "Аутентификация, сессии, токены и завершение FastAPI - Personal StudyHub API",
+        "source_dirs": {"block_00": "00 Обзор", "block_17": "Блок 17 - Пользователь и основы безопасности (6 занятий)", "block_18": "Блок 18 - Cookie и server-side sessions (6 занятий)", "block_19": "Блок 19 - Bearer, JWT, refresh и права (6 занятий)", "block_20": "Блок 20 - Остальные возможности и Personal StudyHub (6 занятий)"},
+    },
+    "postgresql": {
+        "track_id": "SQL, PostgreSQL и выбор хранилища - PostgreSQL StudyHub",
+        "source_dirs": {"block_00": "00 Обзор", "block_21": "Блок 21 - SQL как язык работы с данными (6 занятий)", "block_22": "Блок 22 - PostgreSQL и перенос StudyHub (6 занятий)", "block_23": "Блок 23 - JOIN, агрегаты и транзакции (6 занятий)", "block_24": "Блок 24 - Индексы, планы запросов и модели хранения (6 занятий)"},
+    },
+    "async_api": {
+        "track_id": "Асинхронность и производительность backend - Async StudyHub",
+        "source_dirs": {"block_00": "00 Обзор", "block_25": "Блок 25 - Coroutine, event loop и async,await (6 занятий)", "block_26": "Блок 26 - Конкурентные задачи, timeout и cancellation (6 занятий)", "block_27": "Блок 27 - Асинхронный FastAPI и внешние HTTP-сервисы (6 занятий)", "block_28": "Блок 28 - Async SQLAlchemy, нагрузка и наблюдаемость (6 занятий)"},
+    },
+    "deployment": {
+        "track_id": "Docker, CI-CD и первый стабильный деплой - Deployable StudyHub",
+        "source_dirs": {"block_00": "00 Обзор", "block_29": "Блок 29 - Linux, процессы, окружения и логи (6 занятий)", "block_30": "Блок 30 - Dockerfile и контейнер приложения (6 занятий)", "block_31": "Блок 31 - Docker Compose, API, PostgreSQL и Redis (6 занятий)", "block_32": "Блок 32 - GitHub Actions, CI,CD и первый деплой (6 занятий)"},
+    },
+    "lms": {
+        "track_id": "StudyHub LMS, Redis, портфолио и собеседования - StudyHub LMS Release",
+        "source_dirs": {"block_00": "00 Обзор", "block_33": "Блок 33 - Проектирование StudyHub LMS Core (6 занятий)", "block_34": "Блок 34 - Курсы, зачисление и прогресс (6 занятий)", "block_35": "Блок 35 - Redis, кеш и фоновые операции (6 занятий)", "block_36": "Блок 36 - Финальное качество, портфолио и интервью (6 занятий)"},
+    },
+}
+MIGRATED_TRACKS_BY_ID = {layout["track_id"]: (package, layout) for package, layout in LEGACY_COURSE_LAYOUTS.items()}
+
 # Уроки без автопроверки: студент отмечает выполнение сам кнопкой «Выполнено».
 SELF_CHECK_LESSONS = {
     "python-basics/Блок 1 - Введение в Python (4 занятия)/Базовые типы данных 2.md",
@@ -271,21 +306,25 @@ def _strip_service_fences(text: str) -> str:
     return text.strip()
 
 
-def _module_label(path: Path, track_dir: Path) -> str:
+def _module_label(path: Path, track_dir: Path, track_id: str | None = None) -> str:
+    track_id = track_id or track_dir.name
+    rich_module_labels = RICH_TRACK_MODULE_LABELS.get(track_id)
+    if rich_module_labels is not None and path.name in rich_module_labels:
+        return rich_module_labels[path.name]
+    migrated = MIGRATED_TRACKS_BY_ID.get(track_id)
+    if migrated is not None:
+        return migrated[1]["source_dirs"].get(path.parent.name) or path.parent.name
     if path.parent == track_dir:
-        rich_module_labels = RICH_TRACK_MODULE_LABELS.get(track_dir.name)
-        if rich_module_labels is not None:
-            return rich_module_labels.get(path.name, "00 Обзор")
         return MODULE_LABELS.get(path.name, "00 Обзор")
     return MODULE_LABELS.get(path.parent.name, path.parent.name)
 
 
-def _sort_key(path: Path) -> tuple[int, str]:
+def _sort_key(path: Path, track_id: str | None = None) -> tuple[int, str]:
     relative = path.relative_to(COURSE_ROOT).as_posix()
     overview_order = {"План обучения.md": -2, "Теория месяца.md": -1}
     if path.name in overview_order:
         return (overview_order[path.name], relative)
-    if path.parent.name in RICH_TRACK_MODULE_LABELS:
+    if track_id in RICH_TRACK_MODULE_LABELS:
         lesson_number = re.match(r"^(\d+)", path.name)
         return (int(lesson_number.group(1)) if lesson_number else 999, relative)
     try:
@@ -297,16 +336,22 @@ def _sort_key(path: Path) -> tuple[int, str]:
         return (len(LESSON_SEQUENCE) + 999, relative)
 
 
-def _collect_markdown_files(track_dir: Path) -> list[Path]:
+def _collect_markdown_files(track_dir: Path, track_id: str | None = None) -> list[Path]:
     files = [
         path
         for path in track_dir.rglob("*.md")
         if path.name not in IGNORED_FILES and not path.name.startswith("Ответы")
     ]
-    rich_filenames = RICH_TRACK_MODULE_LABELS.get(track_dir.name)
+    resolved_track_id = track_id or track_dir.name
+    rich_filenames = RICH_TRACK_MODULE_LABELS.get(resolved_track_id)
     if rich_filenames is not None:
         files = [path for path in files if path.name in rich_filenames]
-    return sorted(files, key=_sort_key)
+    else:
+        migrated = MIGRATED_TRACKS_BY_ID.get(resolved_track_id)
+        if migrated is not None:
+            allowed_blocks = set(migrated[1]["source_dirs"])
+            files = [path for path in files if path.parent.name in allowed_blocks]
+    return sorted(files, key=lambda path: _sort_key(path, resolved_track_id))
 
 
 def _split_paragraphs(text: str) -> list[str]:
@@ -577,7 +622,7 @@ def _tasks_for_lesson(
     return tasks
 
 
-def _lesson_access(path: Path, track_dir: Path) -> str:
+def _lesson_access(path: Path, track_dir: Path, track_id: str | None = None) -> str:
     """Возвращает уровень доступа по новой воронке обучения.
 
     Карта обучения остаётся открытой в каждом курсе. Бесплатный старт есть
@@ -587,7 +632,7 @@ def _lesson_access(path: Path, track_dir: Path) -> str:
     if path.name == "План обучения.md":
         return "free"
 
-    if track_dir.name != NEW_PYTHON_TRACK_NAME:
+    if (track_id or track_dir.name) != NEW_PYTHON_TRACK_NAME:
         return "subscription"
 
     if path.name == "Теория месяца.md":
@@ -619,6 +664,37 @@ def _estimate_duration(text: str, task_count: int) -> str:
     return f"{minutes} мин"
 
 
+PLANNER_API_BLOCK_FOLDERS = {
+    "00 Обзор месяца": "block_00",
+    "Блок 9. От консольной команды к HTTP": "block_09",
+    "Блок 10. Postman, FastAPI и Pydantic": "block_10",
+    "Блок 11. Схемы, CRUD и организация приложения": "block_11",
+    "Блок 12. Роутеры, архитектура, тестирование и финальный проект": "block_12",
+}
+
+# Явные алиасы Planner API. Для других перенесённых курсов прежний путь
+# восстанавливается из LEGACY_COURSE_LAYOUTS. source_file остаётся физическим.
+LESSON_SOURCE_ALIASES = {
+    f"planner_api/{PLANNER_API_BLOCK_FOLDERS[module]}/{filename}":
+    f"{PLANNER_API_TRACK_NAME}/{filename}"
+    for filename, module in PLANNER_API_MODULE_LABELS.items()
+}
+
+
+def _lesson_identity_source(relative: str) -> str:
+    alias = LESSON_SOURCE_ALIASES.get(relative)
+    if alias is not None:
+        return alias
+    parts = relative.split("/")
+    if len(parts) == 3:
+        migrated = LEGACY_COURSE_LAYOUTS.get(parts[0])
+        if migrated is not None:
+            old_module = migrated["source_dirs"].get(parts[1])
+            suffix = f"{old_module}/{parts[2]}" if old_module else parts[2]
+            return f"{migrated['track_id']}/{suffix}"
+    return relative
+
+
 def _stable_lesson_id(relative: str) -> str:
     """Стабильный идентификатор урока, независимый от позиции файла в курсе.
 
@@ -627,6 +703,8 @@ def _stable_lesson_id(relative: str) -> str:
     lesson_id. Хеш пути не зависит от сортировки и вместе с суффиксом задачи
     помещается в исторический лимит колонки progress.lesson_id (40 символов).
     """
+    # Группировка Markdown по блокам не должна сбрасывать прогресс и task ID.
+    relative = _lesson_identity_source(relative)
     digest = hashlib.sha256(relative.encode("utf-8")).hexdigest()[:24]
     return f"lesson-{digest}"
 
@@ -639,25 +717,26 @@ def _legacy_lesson_id(track_id: str, index: int) -> str:
 def _build_lesson(path: Path, index: int, total: int, track_id: str, track_dir: Path) -> dict[str, Any]:
     text = _strip_generated_task_dump(_read_text(path))
     relative = path.relative_to(COURSE_ROOT).as_posix()
+    identity_source = _lesson_identity_source(relative)
     lesson_id = _stable_lesson_id(relative)
     legacy_lesson_id = _legacy_lesson_id(track_id, index)
     title = "Карта обучения" if path.name == "План обучения.md" else _extract_title(path, text)
-    access = _lesson_access(path, track_dir)
+    access = _lesson_access(path, track_dir, track_id)
     lesson_match = re.match(r"^(\d+)", path.name)
-    if track_dir.name == NEW_PYTHON_TRACK_NAME and lesson_match and not re.match(r"^\d+\.", title):
+    if track_id == NEW_PYTHON_TRACK_NAME and lesson_match and not re.match(r"^\d+\.", title):
         title = f"{int(lesson_match.group(1))}. {title}"
-    tasks = _tasks_for_lesson(relative, text, lesson_id, legacy_lesson_id, track_id, path.name)
+    tasks = _tasks_for_lesson(identity_source, text, lesson_id, legacy_lesson_id, track_id, path.name)
     for task in tasks:
         task["revision"] = build_task_revision(task)
     manual_practice = [] if tasks else get_manual_practice(track_id, path.name)
-    self_check = relative in SELF_CHECK_LESSONS or bool(manual_practice)
+    self_check = identity_source in SELF_CHECK_LESSONS or bool(manual_practice)
     video = _extract_youtube_video(text, title)
 
     return {
         "id": lesson_id,
         "legacy_id": legacy_lesson_id,
         "track": track_id,
-        "module": _module_label(path, track_dir),
+        "module": _module_label(path, track_dir, track_id),
         "title": title,
         "duration": _estimate_duration(text, len(tasks)),
         "status": _lesson_status(index, access),
@@ -681,7 +760,7 @@ def _load_track_meta(track_dir: Path) -> dict[str, Any]:
         except json.JSONDecodeError:
             meta = {}
     return {
-        "id": track_dir.name,
+        "id": meta.get("id", track_dir.name),
         "title": meta.get("title", track_dir.name),
         "tagline": meta.get("tagline", ""),
         "order": meta.get("order", 999),
@@ -694,13 +773,13 @@ def _load_tracks() -> list[dict[str, Any]]:
 
     tracks: list[dict[str, Any]] = []
     for track_dir in sorted(COURSE_ROOT.iterdir()):
-        if not track_dir.is_dir():
+        if not track_dir.is_dir() or track_dir.name == "__pycache__":
             continue
-        files = _collect_markdown_files(track_dir)
+        track = _load_track_meta(track_dir)
+        files = _collect_markdown_files(track_dir, track["id"])
         if not files:
             continue
 
-        track = _load_track_meta(track_dir)
         total = len(files)
         track["lessons"] = [
             _build_lesson(path, index=index, total=total, track_id=track["id"], track_dir=track_dir)

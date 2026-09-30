@@ -5,10 +5,14 @@ import { Lesson177, Lesson178, Lesson179, Lesson180, Lesson181, Lesson182 } from
 import { Lesson183, Lesson184, Lesson185, Lesson186, Lesson187, Lesson188 } from "./block32";
 import { LearningRoadmap, MonthTheory } from "./overview";
 
-const COURSE_FOLDER = 
-"Docker, CI-CD и первый стабильный деплой - Deployable StudyHub"
-;
-const source = (file: string) => `${COURSE_FOLDER}/${file}`;
+const COURSE_FOLDER = "deployment";
+const LESSON_BLOCKS = [[165, 170, "block_29"], [171, 176, "block_30"], [177, 182, "block_31"], [183, 188, "block_32"]] as const;
+const source = (file: string) => {
+  const filename = file.split("/").pop() ?? file;
+  const lessonNumber = Number(filename.match(/^\d+/)?.[0] ?? 0);
+  const block = LESSON_BLOCKS.find(([first, last]) => lessonNumber >= first && lessonNumber <= last)?.[2] ?? "block_00";
+  return `${COURSE_FOLDER}/${block}/${filename}`;
+};
 
 export const pages: Record<string, ComponentType<{ module?: string }>> = {
   [source("00 Обзор/План обучения.md")]: LearningRoadmap,

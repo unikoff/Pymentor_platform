@@ -2378,6 +2378,26 @@ pre {
   background: #101714;
 }
 
+.lesson-infographic--lesson53 img {
+  aspect-ratio: auto;
+  object-fit: contain;
+}
+
+.lesson-infographic--lesson54 img {
+  aspect-ratio: auto;
+  object-fit: contain;
+}
+
+.lesson-infographic--portrait {
+  max-width: 600px;
+  margin-inline: auto;
+}
+
+.lesson-infographic--portrait img {
+  aspect-ratio: auto;
+  object-fit: contain;
+}
+
 .lesson-infographic figcaption {
   margin-top: var(--space-2);
   color: var(--muted);
@@ -3425,6 +3445,10 @@ pre {
   display: flex;
   flex-direction: column;
   gap: var(--lesson-stack-tight);
+}
+
+.rich-lesson--client-server .tracer {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
 }
 
 .tracer-note {

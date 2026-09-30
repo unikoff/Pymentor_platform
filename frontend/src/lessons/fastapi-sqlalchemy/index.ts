@@ -5,8 +5,14 @@ import { Lesson81, Lesson82, Lesson83, Lesson84, Lesson85, Lesson86 } from "./bl
 import { Lesson87, Lesson88, Lesson89, Lesson90, Lesson91, Lesson92 } from "./block16";
 import { LearningRoadmap, MonthTheory } from "./overview";
 
-const COURSE_FOLDER = "FastAPI, SQLite и SQLAlchemy - StudyHub Database API";
-const source = (file: string) => `${COURSE_FOLDER}/${file}`;
+const COURSE_FOLDER = "database_api";
+const LESSON_BLOCKS = [[69, 74, "block_13"], [75, 80, "block_14"], [81, 86, "block_15"], [87, 92, "block_16"]] as const;
+const source = (file: string) => {
+  const filename = file.split("/").pop() ?? file;
+  const lessonNumber = Number(filename.match(/^\d+/)?.[0] ?? 0);
+  const block = LESSON_BLOCKS.find(([first, last]) => lessonNumber >= first && lessonNumber <= last)?.[2] ?? "block_00";
+  return `${COURSE_FOLDER}/${block}/${filename}`;
+};
 
 export const pages: Record<string, ComponentType<{ module?: string }>> = {
   [source("00 Обзор/План обучения.md")]: LearningRoadmap,
