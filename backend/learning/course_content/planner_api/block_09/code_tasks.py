@@ -173,11 +173,11 @@ CODE_TASKS: dict[int, list[dict[str, Any]]] = {
         'title': 'Соберите адрес операции Planner API',
         'level': 'easy',
         'mode': 'solve',
-        'prompt': 'Реализуйте solve(action, task_id), которая возвращает method и path для известного действия Planner API.',
+        'prompt': 'Функция solve(action, task_id) возвращает method и path для известного действия Planner API.',
         'contract': {
             'given': 'action принимает одно из значений: list, get, create, replace, update, delete, health, stats. task_id является целым id для get, replace, update и delete. Для остальных действий task_id равен None. Таблица methods уже дана в заготовке.',
             'todo': 'Выберите path по области операции и верните словарь с ключами method и path. Метод возьмите из methods[action], а для item используйте переданный task_id.',
-            'check': 'Проверяются все восемь действий и разные id. Не нужно проверять существование задачи, отправлять запрос или обрабатывать неизвестное action.'
+            'check': 'Проверяются все восемь действий и несколько id для каждого item-действия, чтобы подтвердить использование task_id. Не нужно проверять существование задачи, отправлять запрос или обрабатывать неизвестное action.'
         },
         'hints': [
             'Сначала разделите действия на три группы: collection, конкретный item и технические проверки.',
@@ -186,7 +186,7 @@ CODE_TASKS: dict[int, list[dict[str, Any]]] = {
         ],
         'requirements': {
             'names': ['action', 'task_id', 'methods', 'path'],
-            'nodes': ['FunctionDef', 'If', 'JoinedStr']
+            'nodes': ['FunctionDef', 'If']
         },
         'starter_code': 'methods = {\n'
                         '    "list": "GET",\n'
@@ -208,12 +208,20 @@ CODE_TASKS: dict[int, list[dict[str, Any]]] = {
              'expected': {'method': 'POST', 'path': '/tasks'}, 'no_stdout': True},
             {'name': 'чтение item', 'args': ['get', 7],
              'expected': {'method': 'GET', 'path': '/tasks/7'}, 'no_stdout': True},
+            {'name': 'чтение другого item', 'args': ['get', 34],
+             'expected': {'method': 'GET', 'path': '/tasks/34'}, 'no_stdout': True},
             {'name': 'полная замена item', 'args': ['replace', 12],
              'expected': {'method': 'PUT', 'path': '/tasks/12'}, 'no_stdout': True},
+            {'name': 'полная замена другого item', 'args': ['replace', 3],
+             'expected': {'method': 'PUT', 'path': '/tasks/3'}, 'no_stdout': True},
             {'name': 'частичное изменение item', 'args': ['update', 42],
              'expected': {'method': 'PATCH', 'path': '/tasks/42'}, 'no_stdout': True},
+            {'name': 'частичное изменение другого item', 'args': ['update', 88],
+             'expected': {'method': 'PATCH', 'path': '/tasks/88'}, 'no_stdout': True},
             {'name': 'удаление item', 'args': ['delete', 91],
              'expected': {'method': 'DELETE', 'path': '/tasks/91'}, 'no_stdout': True},
+            {'name': 'удаление другого item', 'args': ['delete', 5],
+             'expected': {'method': 'DELETE', 'path': '/tasks/5'}, 'no_stdout': True},
             {'name': 'техническая проверка', 'args': ['health', None],
              'expected': {'method': 'GET', 'path': '/health'}, 'no_stdout': True},
             {'name': 'агрегаты по задачам', 'args': ['stats', None],
@@ -238,14 +246,14 @@ CODE_TASKS: dict[int, list[dict[str, Any]]] = {
                           '    elif action == "list" or action == "create":\n'
                           '        path = "/tasks"\n'
                           '    else:\n'
-                          '        path = f"/tasks/{task_id}"\n'
+                          '        path = "/tasks/" + str(task_id)\n'
                           '    return {"method": methods[action], "path": path}\n'
     }],
     50: [{
         'title': 'Распределите значения по частям запроса',
         'level': 'easy',
         'mode': 'solve',
-        'prompt': 'Реализуйте solve(action, task_id, values), которая возвращает учебную модель запроса Planner API. Готовая route_for уже выбирает method и path.',
+        'prompt': 'solve(action, task_id, values) собирает учебную модель запроса Planner API. Готовая route_for уже выбирает method и path.',
         'contract': {
             'given': 'action принимает list, create, get, replace, update, delete, health или stats. task_id задан для get, replace, update и delete, в остальных случаях равен None. values содержит допустимые значения операции, без неизвестных полей и явного None.',
             'todo': 'Верните словарь с точными ключами method, path, query и body. Для list перенесите только переданные is_done, sort_desc и limit в query. Для create сформируйте body из title и priority. Для replace и update скопируйте переданные значения в body. Для остальных действий оставьте query пустым, а body равным None.',
@@ -254,7 +262,8 @@ CODE_TASKS: dict[int, list[dict[str, Any]]] = {
         'hints': [
             'Сначала определите действия, которым нужны query или body. Для остальных частей запроса оставьте значения по умолчанию.',
             'Для list переносите только ключи, которые уже есть в values. False тоже является переданным значением.',
-            'Для create создайте новый словарь только с title и priority. Для replace и update скопируйте values, чтобы не менять вход.'
+            'Для create создайте новый словарь только с title и priority. Для replace и update скопируйте values, чтобы не менять вход.',
+            'Для PATCH одного поля проверяется наличие ключа, а не истинность значения. Пример: if "is_done" in values: body["is_done"] = values["is_done"].'
         ],
         'requirements': {
             'items': [
@@ -266,7 +275,7 @@ CODE_TASKS: dict[int, list[dict[str, Any]]] = {
                 'values остаётся неизменным'
             ],
             'names': ['action', 'task_id', 'values', 'route_for', 'query', 'body'],
-            'nodes': ['FunctionDef', 'If', 'For', 'Dict']
+            'nodes': ['FunctionDef', 'If', 'Dict']
         },
         'starter_code': 'methods = {\n'
                         '    "list": "GET",\n'
@@ -296,9 +305,13 @@ CODE_TASKS: dict[int, list[dict[str, Any]]] = {
         'tests': [
             {'name': 'список без фильтров', 'args': ['list', None, {}], 'expected': {'method': 'GET', 'path': '/tasks', 'query': {}, 'body': None}, 'preserve_inputs': True},
             {'name': 'список с False и настройками', 'args': ['list', None, {'is_done': False, 'sort_desc': True, 'limit': 5}], 'expected': {'method': 'GET', 'path': '/tasks', 'query': {'is_done': False, 'sort_desc': True, 'limit': 5}, 'body': None}, 'preserve_inputs': True},
+            {'name': 'отдельный фильтр True', 'args': ['list', None, {'is_done': True}], 'expected': {'method': 'GET', 'path': '/tasks', 'query': {'is_done': True}, 'body': None}, 'preserve_inputs': True},
+            {'name': 'отдельный limit', 'args': ['list', None, {'limit': 8}], 'expected': {'method': 'GET', 'path': '/tasks', 'query': {'limit': 8}, 'body': None}, 'preserve_inputs': True},
+            {'name': 'явный sort_desc False', 'args': ['list', None, {'sort_desc': False}], 'expected': {'method': 'GET', 'path': '/tasks', 'query': {'sort_desc': False}, 'body': None}, 'preserve_inputs': True},
             {'name': 'создание без серверных полей', 'args': ['create', None, {'title': 'Изучить HTTP', 'priority': 4}], 'expected': {'method': 'POST', 'path': '/tasks', 'query': {}, 'body': {'title': 'Изучить HTTP', 'priority': 4}}, 'preserve_inputs': True},
             {'name': 'полная замена', 'args': ['replace', 12, {'title': 'Planner API', 'priority': 3, 'is_done': True}], 'expected': {'method': 'PUT', 'path': '/tasks/12', 'query': {}, 'body': {'title': 'Planner API', 'priority': 3, 'is_done': True}}, 'preserve_inputs': True},
             {'name': 'частичное изменение с False', 'args': ['update', 7, {'is_done': False}], 'expected': {'method': 'PATCH', 'path': '/tasks/7', 'query': {}, 'body': {'is_done': False}}, 'preserve_inputs': True},
+            {'name': 'PATCH одного title', 'args': ['update', 9, {'title': 'Новый заголовок'}], 'expected': {'method': 'PATCH', 'path': '/tasks/9', 'query': {}, 'body': {'title': 'Новый заголовок'}}, 'preserve_inputs': True},
             {'name': 'чтение item', 'args': ['get', 7, {}], 'expected': {'method': 'GET', 'path': '/tasks/7', 'query': {}, 'body': None}},
             {'name': 'удаление item', 'args': ['delete', 7, {}], 'expected': {'method': 'DELETE', 'path': '/tasks/7', 'query': {}, 'body': None}},
             {'name': 'health отдельно от tasks', 'args': ['health', None, {}], 'expected': {'method': 'GET', 'path': '/health', 'query': {}, 'body': None}},
