@@ -151,7 +151,7 @@ CODE_TASKS: dict[int, list[dict[str, Any]]] = {
        'hints': ['Чтение списка и одной задачи имеет один смысл, хотя объектов разное количество.',
                  'Для replace вспомните полную форму PUT; update меняет лишь поля, переданные клиентом.'],
        'requirements': {'names': ['action', 'methods'],
-                        'nodes': ['FunctionDef', 'Dict']},
+                        'nodes': ['FunctionDef']},
        'starter_code': 'def solve(action):\n    pass\n',
        'tests': [{'name': 'чтение списка', 'args': ['list'], 'expected': 'GET', 'no_stdout': True},
                  {'name': 'чтение одной задачи', 'args': ['get'], 'expected': 'GET', 'no_stdout': True},
@@ -275,7 +275,7 @@ CODE_TASKS: dict[int, list[dict[str, Any]]] = {
                 'values остаётся неизменным'
             ],
             'names': ['action', 'task_id', 'values', 'route_for', 'query', 'body'],
-            'nodes': ['FunctionDef', 'If', 'Dict']
+            'nodes': ['FunctionDef', 'If']
         },
         'starter_code': 'methods = {\n'
                         '    "list": "GET",\n'
