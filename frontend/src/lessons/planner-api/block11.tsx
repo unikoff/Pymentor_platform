@@ -14,11 +14,19 @@ import {
 } from "lucide-react";
 import {
   Callout,
+  CompareSolutions,
+  BranchExplorer,
+  BugHunt,
   CodeBlock,
   KeyTakeaways,
   Lead,
+  LinkedNotes,
+  MatchPairs,
   PracticeCta,
+  PredictOutput,
   QuizCard,
+  StepThrough,
+  TrueFalse,
   RecallCard,
   RichHero,
   RichLesson,
@@ -72,1028 +80,954 @@ function TheoryBridge({ lesson }: { lesson: number }) {
 
 // 57. Pydantic-валидация и ошибка 422
 export function Lesson57({ module }: { module?: string }) {
+  const fieldExample = `class SurveyInput(BaseModel):
+    comment: str = Field(min_length=2, max_length=80)
+    score: int = Field(ge=1, le=5)`;
+
+  const normalizeExample = `class RegionInput(BaseModel):
+    code: str
+
+    @field_validator("code", mode="before")
+    @classmethod
+    def normalize_code(cls, value: object) -> object:
+        if isinstance(value, str):
+            return value.strip().upper()
+        return value`;
+
   return (
     <RichLesson>
       <RichHero
         variant="project"
         chip={module ?? BLOCK_TITLE}
         title={"Pydantic-валидация и ошибка 422"}
-        intro={"Свяжем JSON-запрос с Python-моделью: объявим поля через Pydantic, проверим типы и ограничения, прочитаем ответ 422 и соберём надёжную входную схему задачи."}
+        intro={"В прошлом занятии POST начал сохранять настоящие задачи Planner. Теперь уточним, какие данные этот маршрут принимает, и проверим, что ошибка останавливает запрос до изменения проекта."}
         tags={[
-          { icon: <Braces size={14} />, label: "JSON → модель" },
-          { icon: <ShieldCheck size={14} />, label: "валидация до endpoint" },
+          { icon: <Braces size={14} />, label: "вход до endpoint" },
+          { icon: <ShieldCheck size={14} />, label: "проверка и сохранение" },
         ]}
       />
       <TheoryBridge lesson={57} />
 
-      <Section number="01" title={"Зачем проверять данные до бизнес-логики"}>
+      <Section number="01" title={"От принятого запроса к допустимым данным"}>
         <Lead>
-          {"Клиент может прислать корректный JSON с некорректными данными. Входная схема становится фильтром между внешним запросом и кодом приложения."}
+          {"JSON может быть синтаксически верным, но бесполезным для приложения: например, title содержит только пробелы или priority выходит за пределы правил Planner."}
         </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>Шаг 1. Что приходит на вход</h3>
-          <p>
-            {"JSON отвечает за синтаксис тела запроса."}
-          </p>
-
-          <h3>Шаг 2. Что делает текущая часть</h3>
-          <p>
-            {"Схема перечисляет поля, типы и ограничения."}
-          </p>
-
-          <h3>Шаг 3. Где проходит граница</h3>
-          <p>
-            {"Endpoint получает уже проверенный объект."}
-          </p>
-        </div>
-
-        <TypeCards>
-          <TypeCard badge="вход" title="Исходные данные">
-            {"JSON отвечает за синтаксис тела запроса."}
-          </TypeCard>
-          <TypeCard badge="действие" badgeTone="float" title="Операция">
-            {"Схема перечисляет поля, типы и ограничения."}
-          </TypeCard>
-          <TypeCard badge="граница" badgeTone="str" title="Контракт">
-            {"Endpoint получает уже проверенный объект."}
-          </TypeCard>
-        </TypeCards>
-
-        <CodeBlock
-          caption={"JSON и схема решают разные задачи"}
-          code={"{\n  \"title\": \"Изучить Pydantic\",\n  \"priority\": 4\n}"}
-        />
-
-        <RecallCard
-          question={"Сформулируйте основную идею раздела «Зачем проверять данные до бизнес-логики» без подсказки."}
-          hint={"Назовите вход, действие и границу ответственности."}
-          answer={
-            <p>
-              {"Клиент может прислать корректный JSON с некорректными данными. Входная схема становится фильтром между внешним запросом и кодом приложения."}
-            </p>
-          }
-        />
-
-        <Callout tone="info">
-          {"Сначала проверяем форму и значения, затем запускаем операцию создания."}
-        </Callout>
-      </Section>
-
-      <Section number="02" title={"Первая модель BaseModel"}>
-        <Lead>
-          {"Pydantic-модель похожа на чертёж объекта. Поля записываются как атрибуты класса с аннотациями типов."}
-        </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>Шаг 1. Что приходит на вход</h3>
-          <p>
-            {"BaseModel подключает создание и проверку модели."}
-          </p>
-
-          <h3>Шаг 2. Что делает текущая часть</h3>
-          <p>
-            {"Аннотации задают ожидаемые типы."}
-          </p>
-
-          <h3>Шаг 3. Где проходит граница</h3>
-          <p>
-            {"Значения доступны через task.title и task.priority."}
-          </p>
-        </div>
-
-        <TypeCards>
-          <TypeCard badge="вход" title="Исходные данные">
-            {"BaseModel подключает создание и проверку модели."}
-          </TypeCard>
-          <TypeCard badge="действие" badgeTone="float" title="Операция">
-            {"Аннотации задают ожидаемые типы."}
-          </TypeCard>
-          <TypeCard badge="граница" badgeTone="str" title="Контракт">
-            {"Значения доступны через task.title и task.priority."}
-          </TypeCard>
-        </TypeCards>
-
-        <CodeBlock
-          caption={"первая входная схема"}
-          code={"from pydantic import BaseModel\n\nclass TaskCreate(BaseModel):\n    title: str\n    priority: int\n\ntask = TaskCreate(title=\"SQL\", priority=3)\nprint(task.title)"}
-        />
-
-        <RecallCard
-          question={"Сформулируйте основную идею раздела «Первая модель BaseModel» без подсказки."}
-          hint={"Назовите вход, действие и границу ответственности."}
-          answer={
-            <p>
-              {"Pydantic-модель похожа на чертёж объекта. Поля записываются как атрибуты класса с аннотациями типов."}
-            </p>
-          }
-        />
-
-        <Callout tone="info">
-          {"Модель пока не сохраняет задачу и не создаёт id: она отвечает только за вход."}
-        </Callout>
-      </Section>
-
-      <Section number="03" title={"Обязательные поля и типы"}>
-        <Lead>
-          {"Поле без значения по умолчанию является обязательным. Пропущенный ключ или неподходящий тип не позволяют создать модель."}
-        </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>Шаг 1. Что приходит на вход</h3>
-          <p>
-            {"Отсутствующий title нарушает контракт."}
-          </p>
-
-          <h3>Шаг 2. Что делает текущая часть</h3>
-          <p>
-            {"priority должен соответствовать int."}
-          </p>
-
-          <h3>Шаг 3. Где проходит граница</h3>
-          <p>
-            {"Ошибка указывает конкретное поле."}
-          </p>
-        </div>
-
-        <TypeCards>
-          <TypeCard badge="вход" title="Исходные данные">
-            {"Отсутствующий title нарушает контракт."}
-          </TypeCard>
-          <TypeCard badge="действие" badgeTone="float" title="Операция">
-            {"priority должен соответствовать int."}
-          </TypeCard>
-          <TypeCard badge="граница" badgeTone="str" title="Контракт">
-            {"Ошибка указывает конкретное поле."}
-          </TypeCard>
-        </TypeCards>
-
-        <CodeBlock
-          caption={"два нарушения схемы"}
-          code={"class TaskCreate(BaseModel):\n    title: str\n    priority: int\n\npayload = TaskCreate(priority=\"high\")"}
-        />
-
-        <RecallCard
-          question={"Сформулируйте основную идею раздела «Обязательные поля и типы» без подсказки."}
-          hint={"Назовите вход, действие и границу ответственности."}
-          answer={
-            <p>
-              {"Поле без значения по умолчанию является обязательным. Пропущенный ключ или неподходящий тип не позволяют создать модель."}
-            </p>
-          }
-        />
-
-        <Callout tone="info">
-          {"Не исправляйте такой запрос случайным try/except внутри endpoint: стандартная валидация уже знает причину."}
-        </Callout>
-      </Section>
-
-      <Section number="04" title={"Ограничения через Field"}>
-        <Lead>
-          {"Одного типа недостаточно, когда число имеет диапазон, а строка — разумную длину. Field хранит простые границы рядом с полем."}
-        </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>Шаг 1. Что приходит на вход</h3>
-          <p>
-            {"min_length и max_length ограничивают строку."}
-          </p>
-
-          <h3>Шаг 2. Что делает текущая часть</h3>
-          <p>
-            {"ge и le задают диапазон числа включительно."}
-          </p>
-
-          <h3>Шаг 3. Где проходит граница</h3>
-          <p>
-            {"Ограничения попадают в OpenAPI-документацию."}
-          </p>
-        </div>
-
-        <TypeCards>
-          <TypeCard badge="вход" title="Исходные данные">
-            {"min_length и max_length ограничивают строку."}
-          </TypeCard>
-          <TypeCard badge="действие" badgeTone="float" title="Операция">
-            {"ge и le задают диапазон числа включительно."}
-          </TypeCard>
-          <TypeCard badge="граница" badgeTone="str" title="Контракт">
-            {"Ограничения попадают в OpenAPI-документацию."}
-          </TypeCard>
-        </TypeCards>
-
-        <CodeBlock
-          caption={"ограниченная схема"}
-          code={"from pydantic import BaseModel, Field\n\nclass TaskCreate(BaseModel):\n    title: str = Field(min_length=1, max_length=120)\n    priority: int = Field(ge=1, le=5)"}
-        />
-
-        <RecallCard
-          question={"Сформулируйте основную идею раздела «Ограничения через Field» без подсказки."}
-          hint={"Назовите вход, действие и границу ответственности."}
-          answer={
-            <p>
-              {"Одного типа недостаточно, когда число имеет диапазон, а строка — разумную длину. Field хранит простые границы рядом с полем."}
-            </p>
-          }
-        />
-
-        <Callout tone="info">
-          {"min_length=1 отклонит пустую строку, но строка из пробелов требует отдельного правила нормализации."}
-        </Callout>
-      </Section>
-
-      <Section number="05" title={"Обязательность и значение по умолчанию"}>
-        <Lead>
-          {"Поле без значения по умолчанию обязательно. Это важно для нашего контракта: клиент должен каждый раз передавать priority."}
-        </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>Шаг 1. Что приходит на вход</h3>
-          <p>
-            {"priority остаётся обязательным."}
-          </p>
-
-          <h3>Шаг 2. Что делает текущая часть</h3>
-          <p>
-            {"Не добавляем поля, которых нет в согласованном контракте."}
-          </p>
-
-          <h3>Шаг 3. Где проходит граница</h3>
-          <p>
-            {"id не входит в TaskCreate, потому что его создаёт сервер."}
-          </p>
-        </div>
-
-        <TypeCards>
-          <TypeCard badge="вход" title="Исходные данные">
-            {"priority остаётся обязательным."}
-          </TypeCard>
-          <TypeCard badge="действие" badgeTone="float" title="Операция">
-            {"Не добавляем поля, которых нет в согласованном контракте."}
-          </TypeCard>
-          <TypeCard badge="граница" badgeTone="str" title="Контракт">
-            {"id не входит в TaskCreate, потому что его создаёт сервер."}
-          </TypeCard>
-        </TypeCards>
-
-        <CodeBlock
-          caption={"оба поля TaskCreate обязательны"}
-          code={"class TaskCreate(BaseModel):\n    title: str = Field(min_length=1, max_length=120)\n    priority: int = Field(ge=1, le=5)"}
-        />
-
-        <RecallCard
-          question={"Сформулируйте основную идею раздела «Обязательность и значение по умолчанию» без подсказки."}
-          hint={"Назовите вход, действие и границу ответственности."}
-          answer={
-            <p>
-              {"Если приоритет должен приходить от клиента, не задаём ему значение по умолчанию. Иначе запрос без priority станет допустимым и изменит договор."}
-            </p>
-          }
-        />
-
-        <Callout tone="info">
-          {"Default меняет обязательность поля. Для TaskCreate priority обязателен; id и is_done сервер создаёт сам."}
-        </Callout>
-      </Section>
-
-      <Section number="06" title={"Модель в FastAPI endpoint"}>
-        <Lead>
-          {"Параметр типа TaskCreate превращает JSON-body в объект. Некорректный запрос не доходит до тела функции."}
-        </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>Шаг 1. Что приходит на вход</h3>
-          <p>
-            {"FastAPI распознаёт Pydantic-модель как body."}
-          </p>
-
-          <h3>Шаг 2. Что делает текущая часть</h3>
-          <p>
-            {"payload содержит проверенные атрибуты."}
-          </p>
-
-          <h3>Шаг 3. Где проходит граница</h3>
-          <p>
-            {"model_dump() создаёт обычный словарь."}
-          </p>
-        </div>
-
-        <TypeCards>
-          <TypeCard badge="вход" title="Исходные данные">
-            {"FastAPI распознаёт Pydantic-модель как body."}
-          </TypeCard>
-          <TypeCard badge="действие" badgeTone="float" title="Операция">
-            {"payload содержит проверенные атрибуты."}
-          </TypeCard>
-          <TypeCard badge="граница" badgeTone="str" title="Контракт">
-            {"model_dump() создаёт обычный словарь."}
-          </TypeCard>
-        </TypeCards>
-
-        <CodeBlock
-          caption={"endpoint с моделью"}
-          code={"@app.post(\"/tasks\")\ndef create_task(payload: TaskCreate):\n    data = payload.model_dump()\n    return data"}
-        />
-
-        <RecallCard
-          question={"Сформулируйте основную идею раздела «Модель в FastAPI endpoint» без подсказки."}
-          hint={"Назовите вход, действие и границу ответственности."}
-          answer={
-            <p>
-              {"Параметр типа TaskCreate превращает JSON-body в объект. Некорректный запрос не доходит до тела функции."}
-            </p>
-          }
-        />
-
-        <Callout tone="info">
-          {"В материалах блока используем актуальную форму Pydantic v2: model_dump()."}
-        </Callout>
-      </Section>
-
-      <Section number="07" title={"Как читать 422"}>
-        <Lead>
-          {"Ответ 422 означает, что запрос понятен, но данные не соответствуют объявленной схеме. Читайте поле detail, а внутри него loc и msg."}
-        </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>Шаг 1. Что приходит на вход</h3>
-          <p>
-            {"loc показывает путь до проблемного поля."}
-          </p>
-
-          <h3>Шаг 2. Что делает текущая часть</h3>
-          <p>
-            {"msg объясняет нарушенное ожидание."}
-          </p>
-
-          <h3>Шаг 3. Где проходит граница</h3>
-          <p>
-            {"type помогает классифицировать ошибку."}
-          </p>
-        </div>
-
-        <TypeCards>
-          <TypeCard badge="вход" title="Исходные данные">
-            {"loc показывает путь до проблемного поля."}
-          </TypeCard>
-          <TypeCard badge="действие" badgeTone="float" title="Операция">
-            {"msg объясняет нарушенное ожидание."}
-          </TypeCard>
-          <TypeCard badge="граница" badgeTone="str" title="Контракт">
-            {"type помогает классифицировать ошибку."}
-          </TypeCard>
-        </TypeCards>
-
-        <CodeBlock
-          caption={"представительный ответ"}
-          code={"{\n  \"detail\": [\n    {\n      \"loc\": [\"body\", \"priority\"],\n      \"msg\": \"Input should be less than or equal to 5\",\n      \"type\": \"less_than_equal\"\n    }\n  ]\n}"}
-        />
-
-        <RecallCard
-          question={"Сформулируйте основную идею раздела «Как читать 422» без подсказки."}
-          hint={"Назовите вход, действие и границу ответственности."}
-          answer={
-            <p>
-              {"Ответ 422 означает, что запрос понятен, но данные не соответствуют объявленной схеме. Читайте поле detail, а внутри него loc и msg."}
-            </p>
-          }
-        />
-
-        <Callout tone="info">
-          {"422 относится к входу клиента, а 500 — к неожиданной проблеме внутри сервера."}
-        </Callout>
-      </Section>
-
-      <Section number="08" title={"Практика: готовая TaskCreate"}>
-        <Lead>
-          {"Соберите входную схему и проверьте её через Swagger: успешное тело, отсутствующий title, priority=0 и priority=6."}
-        </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>Шаг 1. Что приходит на вход</h3>
-          <p>
-            {"Сначала зафиксируйте успешный запрос."}
-          </p>
-
-          <h3>Шаг 2. Что делает текущая часть</h3>
-          <p>
-            {"Затем меняйте только одно поле."}
-          </p>
-
-          <h3>Шаг 3. Где проходит граница</h3>
-          <p>
-            {"Записывайте статус и причину каждого ответа."}
-          </p>
-        </div>
-
-        <TypeCards>
-          <TypeCard badge="вход" title="Исходные данные">
-            {"Сначала зафиксируйте успешный запрос."}
-          </TypeCard>
-          <TypeCard badge="действие" badgeTone="float" title="Операция">
-            {"Затем меняйте только одно поле."}
-          </TypeCard>
-          <TypeCard badge="граница" badgeTone="str" title="Контракт">
-            {"Записывайте статус и причину каждого ответа."}
-          </TypeCard>
-        </TypeCards>
-
-        <CodeBlock
-          caption={"итоговая схема"}
-          code={"class TaskCreate(BaseModel):\n    title: str = Field(min_length=1, max_length=120)\n    priority: int = Field(ge=1, le=5)"}
-        />
-
-        <RecallCard
-          question={"Сформулируйте основную идею раздела «Практика: готовая TaskCreate» без подсказки."}
-          hint={"Назовите вход, действие и границу ответственности."}
-          answer={
-            <p>
-              {"Соберите входную схему и проверьте её через Swagger: успешное тело, отсутствующий title, priority=0 и priority=6."}
-            </p>
-          }
-        />
-
-        <Callout tone="info">
-          {"Практика считается завершённой, когда ученик может объяснить каждый элемент ответа 422."}
-        </Callout>
-
-        <div className="lesson-check-group">
-          <QuizCard
-            question={"Что подключает BaseModel?"}
-            options={[
-              "Проверку и создание модели",
-              "Запуск Uvicorn",
-              "Создание базы данных",
-            ]}
-            correctIndex={0}
-            explanation={"Верный вариант соответствует контракту текущего урока."}
-          />
-          <QuizCard
-            question={"Когда поле обязательно?"}
-            options={[
-              "Когда у него нет default",
-              "Когда это строка",
-              "Только в GET",
-            ]}
-            correctIndex={0}
-            explanation={"Верный вариант соответствует контракту текущего урока."}
-          />
-          <QuizCard
-            question={"Что означает ge=1?"}
-            options={[
-              "Значение не меньше 1",
-              "Длина равна 1",
-              "Поле необязательно",
-            ]}
-            correctIndex={0}
-            explanation={"Верный вариант соответствует контракту текущего урока."}
-          />
-          <QuizCard
-            question={"Когда появляется 422?"}
-            options={[
-              "Вход не прошёл схему",
-              "Удаление успешно",
-              "Сервер запущен",
-            ]}
-            correctIndex={0}
-            explanation={"Верный вариант соответствует контракту текущего урока."}
-          />
-        </div>
-
-        <KeyTakeaways
-          points={[
-            <>{"Схема задаёт форму входного JSON."}</>,
-            <>{"Поля без default обязательны."}</>,
-            <>{"Field добавляет ограничения."}</>,
-            <>{"FastAPI валидирует body до endpoint."}</>,
-            <>{"model_dump() создаёт dict."}</>,
-            <>{"422 читается по loc и msg."}</>,
+        <p>
+          {"В предыдущем занятии TaskCreate стала входом для настоящего POST. Успешный запрос проходит через PlannerService и сохраняется в общем JSON. Теперь мы усиливаем только входную границу. Маршрут и способ создания остаются прежними."}
+        </p>
+        <LinkedNotes
+          variant="connected"
+          items={[
+            { title: "Получить body", description: "FastAPI читает JSON и строит TaskCreate." },
+            { title: "Проверить значения", description: "Pydantic применяет типы и ограничения до вызова маршрута." },
+            { title: "Выполнить действие", description: "Только допустимый вход доходит до существующего PlannerService." },
           ]}
         />
-
-        <PracticeCta text={"Создайте TaskCreate и сохраните четыре запроса из Swagger вместе со статусами и кратким разбором ошибок."} />
+        <Callout tone="info">
+          {"Валидация не создаёт Task и не сохраняет JSON. Она решает, можно ли передать вход дальше."}
+        </Callout>
       </Section>
 
+      <Section number="02" title={"Field задаёт границы, но не исправляет данные"}>
+        <Lead>
+          {"Тип отвечает на вопрос «какие данные ожидаются?», а ограничения уточняют допустимые значения. Для строк и чисел Pydantic позволяет хранить простые границы рядом с полем."}
+        </Lead>
+        <p>
+          {"В этом независимом примере комментарий должен содержать от 2 до 80 символов, а оценка лежать между 1 и 5 включительно. Field проверяет значение, но не меняет его и не удаляет пробелы."}
+        </p>
+        <CodeBlock caption={"ограничения значения"} code={fieldExample} />
+        <QuizCard
+          question={"Что произойдёт со строкой из трёх пробелов, если задано только min_length=1?"}
+          options={["Она пройдёт проверку длины", "Field автоматически удалит пробелы", "Значение превратится в None"]}
+          correctIndex={0}
+          explanation={"Field измеряет длину строки как она есть. Чтобы проверять смысловое содержимое, значение сначала нужно нормализовать."}
+        />
+        <p>
+          {"В Planner priority ограничивается снизу и сверху. Для title нужна ещё одна операция: сначала убрать пробелы по краям, затем проверить длину уже получившейся строки."}
+        </p>
+      </Section>
+
+      <Section number="03" title={"Before-validator готовит исходное значение"}>
+        <Lead>
+          {"Валидатор режима before запускается до обычной проверки поля. Это место для предсказуемой нормализации, например удаления внешних пробелов или приведения к единому регистру."}
+        </Lead>
+        <p>
+          {"Рассмотрим код региона. Нажимайте шаги и проследите, что получает валидатор и какое значение попадёт к следующей проверке."}
+        </p>
+        <StepThrough
+          code={normalizeExample}
+          steps={[
+            { line: 0, note: "Pydantic начинает создавать RegionInput из исходных данных.", vars: { code: "«  nw  »" } },
+            { line: 3, note: "Before-validator получает исходное значение ещё до стандартной проверки строки." },
+            { line: 5, note: "Строка очищается по краям и переводится в верхний регистр.", vars: { value: "«  nw  »", result: "«NW»" } },
+            { line: 8, note: "Далее Pydantic проверяет тип результата и создаёт модель.", vars: { code: "«NW»" } },
+          ]}
+        />
+        <p>
+          {"Проверка типа остаётся за Pydantic. Поэтому валидатор сначала убеждается, что значение строковое, и лишь затем вызывает строковые методы. Число проходит дальше без изменений и получает обычную ошибку типа, а не внутренний сбой программы."}
+        </p>
+      </Section>
+
+      <Section number="04" title={"Порядок нормализации и ограничения"}>
+        <Lead>
+          {"Field должен проверять итоговое значение. Иначе краевые пробелы будут влиять на длину, хотя после очистки они не станут частью названия."}
+        </Lead>
+        <p>
+          {"Найдите причину ошибки: этот валидатор вызывает строковый метод для любого входа. Если клиент передаст число, приложение получит непредусмотренное исключение вместо ошибки валидации."}
+        </p>
+        <BugHunt
+          code={`class RegionInput(BaseModel):
+    code: str
+
+    @field_validator("code", mode="before")
+    @classmethod
+    def normalize_code(cls, value: object) -> object:
+        return value.strip().upper()`}
+          question={"Почему такая проверка опасна для входного поля?"}
+          options={[
+            "value может быть не строкой, тогда strip вызовет AttributeError",
+            "mode=before запрещает возвращать строку",
+            "Pydantic не поддерживает методы класса",
+          ]}
+          correctIndex={0}
+          explanation={"Before-validator видит сырое значение до проверки типа. Сначала нужно проверить isinstance(value, str), а неподходящее значение оставить Pydantic."}
+          fix={`if isinstance(value, str):
+            return value.strip().upper()
+        return value`}
+        />
+        <BranchExplorer
+          code={`if isinstance(value, str):
+      return value.strip()
+  return value`}
+          scenarios={[
+            { label: "value = « API »", activeLine: 1, output: "«API» передаётся проверке Field" },
+            { label: "value = 42", activeLine: 2, output: "42 остаётся без изменений; тип проверит Pydantic" },
+          ]}
+        />
+        <Callout tone="info">
+          {"Для Planner порядок такой: сначала очистить title, затем проверить длину от 1 до 120. Сама граница не должна менять вход."}
+        </Callout>
+      </Section>
+
+      <Section number="05" title={"Один статус 422, разные места отказа"}>
+        <Lead>
+          {"422 сообщает, что запрос нельзя обработать с переданными данными. Чтобы понять причину, важно увидеть, на каком этапе сервер остановился."}
+        </Lead>
+        <LinkedNotes
+          variant="connected"
+          items={[
+            { title: "Валидация body", description: "TaskCreate не строится; тело endpoint не запускается." },
+            { title: "Правило Planner", description: "Endpoint уже вызвал сервис, который проверяет предметный инвариант." },
+            { title: "Состояние", description: "Отказ входной схемы происходит до сохранения и не меняет список задач." },
+          ]}
+        />
+        <p>
+          {"FastAPI обычно возвращает список ошибок в detail. Поле loc помогает найти участок запроса, а msg кратко описывает нарушение. Точный текст зависит от версии библиотеки. Не путайте эти данные со строковым detail, который приложение может вернуть после собственного HTTPException."}
+        </p>
+        <QuizCard
+          question={"Как понять, что отсутствующее обязательное поле отклонено до тела endpoint?"}
+          options={[
+            "FastAPI вернул ошибку Pydantic с указанием body и поля",
+            "В ответе POST появился новый id",
+            "Stats увеличилась после запроса",
+          ]}
+          correctIndex={0}
+          explanation={"Ошибка построения входной модели возникает до вызова функции маршрута. Поэтому сервис и сохранение не запускаются."}
+        />
+      </Section>
+
+      <Section number="06" title={"Успешный путь Planner не меняется"}>
+        <Lead>
+          {"Допустимые данные должны пройти тот же сценарий, который мы уже построили: сервис создаёт предметную Task, назначает серверные значения и сохраняет результат."}
+        </Lead>
+        <CodeBlock
+          caption={"маршрут продолжает использовать готовый сервис"}
+          code={`@app.post("/tasks", status_code=201)
+def create_task(payload: TaskCreate):
+    task = app.state.planner.add_task(
+        payload.title,
+        priority=payload.priority,
+    )
+    return {
+        "id": task.id,
+        "title": task.title,
+        "priority": task.priority,
+        "is_done": task.is_done,
+    }`}
+        />
+        <p>
+          {"TaskCreate отвечает за клиентские title и priority. Она не назначает id и не записывает файл. Это делает существующий путь приложения. Если body не проходит проверку, функция не вызвана. Если проходит, endpoint по-прежнему возвращает созданную запись со статусом 201."}
+        </p>
+        <Callout tone="info">
+          {"Словарь, полученный из входной модели, не становится Task и сам по себе ничего не сохраняет."}
+        </Callout>
+      </Section>
+
+      <Section number="07" title={"Что мы сделаем в практике"}>
+        <Lead>
+          {"Мы не пишем новый POST и не создаём отдельное хранилище. Практика уточняет входную схему и проверяет её влияние на тот же Planner."}
+        </Lead>
+        <LinkedNotes
+          variant="connected"
+          items={[
+            { title: "Уточнить правила", description: "Добавить нормализацию title и границы title/priority в текущую TaskCreate." },
+            { title: "Проверить случаи", description: "Сравнить пустые и слишком длинные значения с допустимыми границами." },
+            { title: "Сверить результат", description: "Доказать отсутствие изменений при отказе и чтение созданной Task после успеха." },
+          ]}
+        />
+        <p>
+          {"Практика завершена, когда ошибки входа не меняют Planner, а допустимое название очищается и проходит через существующий POST. Мы не меняем форму публичного ответа, id, CLI или формат JSON. В следующем занятии разделим модель входа и публичную форму ответа."}
+        </p>
+        <KeyTakeaways
+          points={[
+            <>{"Field ограничивает значения, но не нормализует их."}</>,
+            <>{"Before-validator подготавливает сырое значение перед проверкой типа и ограничений."}</>,
+            <>{"Ошибочный body не запускает endpoint и не меняет сохранённые задачи."}</>,
+            <>{"Успешный POST продолжает пользоваться тем же PlannerService и JsonStorage."}</>,
+          ]}
+        />
+      </Section>
     </RichLesson>
   );
 }
 
-// 58. Разные схемы: TaskCreate, TaskUpdate, TaskRead
+
+// 58. Разные схемы: вход и публичный ответ
 export function Lesson58({ module }: { module?: string }) {
   return (
     <RichLesson>
       <RichHero
         variant="project"
         chip={module ?? BLOCK_TITLE}
-        title={"Разные схемы: TaskCreate, TaskUpdate, TaskRead"}
-        intro={"Разделим данные по назначению: клиент создаёт задачу без id, полный PUT заменяет все редактируемые поля, а ответ чтения описывает полный ресурс. TaskRead подключим к POST только после реального создания записи."}
+        title={"58. Разные схемы: вход и публичный ответ"}
+        intro={"TaskCreate уже защищает вход настоящего POST. Теперь отделим HTTP-вход от доменной Task, JSON-хранилища и публичного ответа, а затем сделаем форму response явной через TaskRead и response_model."}
         tags={[
-          { icon: <Layers size={14} />, label: "разные контракты" },
-          { icon: <FileText size={14} />, label: "вход и ответ" },
+          { icon: <Layers size={14} />, label: "направление данных" },
+          { icon: <FileText size={14} />, label: "request и response" },
         ]}
       />
-      <TheoryBridge lesson={58} />
-
-      <Section number="01" title={"Почему одной схемы становится мало"}>
-        <Lead>
-          {"На создании клиент не должен передавать id, а в ответе id уже обязателен. Полное обновление требует ещё одного контракта."}
-        </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>Шаг 1. Что приходит на вход</h3>
-          <p>
-            {"TaskCreate описывает намерение создать."}
-          </p>
-
-          <h3>Шаг 2. Что делает текущая часть</h3>
-          <p>
-            {"TaskUpdate описывает полную замену."}
-          </p>
-
-          <h3>Шаг 3. Где проходит граница</h3>
-          <p>
-            {"TaskRead описывает сохранённый ресурс."}
-          </p>
-        </div>
-
-        <TypeCards>
-          <TypeCard badge="вход" title="Исходные данные">
-            {"TaskCreate описывает намерение создать."}
-          </TypeCard>
-          <TypeCard badge="действие" badgeTone="float" title="Операция">
-            {"TaskUpdate описывает полную замену."}
-          </TypeCard>
-          <TypeCard badge="граница" badgeTone="str" title="Контракт">
-            {"TaskRead описывает сохранённый ресурс."}
-          </TypeCard>
-        </TypeCards>
-
-        <CodeBlock
-          caption={"слишком универсальная схема"}
-          code={"class Task(BaseModel):\n    id: int | None = None\n    title: str\n    priority: int"}
-        />
-
-        <RecallCard
-          question={"Сформулируйте основную идею раздела «Почему одной схемы становится мало» без подсказки."}
-          hint={"Назовите вход, действие и границу ответственности."}
-          answer={
-            <p>
-              {"На создании клиент не должен передавать id, а в ответе id уже обязателен. Полное обновление требует ещё одного контракта."}
-            </p>
-          }
-        />
-
-        <Callout tone="info">
-          {"Универсальная модель скрывает, какие поля принадлежат клиенту, а какие создаёт сервер."}
-        </Callout>
-      </Section>
-
-      <Section number="02" title={"TaskCreate принимает только вход"}>
-        <Lead>
-          {"Схема создания содержит только данные, которыми клиент действительно управляет."}
-        </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>Шаг 1. Что приходит на вход</h3>
-          <p>
-            {"title и priority приходят из body."}
-          </p>
-
-          <h3>Шаг 2. Что делает текущая часть</h3>
-          <p>
-            {"priority остаётся обязательным."}
-          </p>
-
-          <h3>Шаг 3. Где проходит граница</h3>
-          <p>
-            {"id и is_done задаёт сервер."}
-          </p>
-        </div>
-
-        <TypeCards>
-          <TypeCard badge="вход" title="Исходные данные">
-            {"title и priority приходят из body."}
-          </TypeCard>
-          <TypeCard badge="действие" badgeTone="float" title="Операция">
-            {"priority остаётся обязательным."}
-          </TypeCard>
-          <TypeCard badge="граница" badgeTone="str" title="Контракт">
-            {"id и is_done задаёт сервер."}
-          </TypeCard>
-        </TypeCards>
-
-        <CodeBlock
-          caption={"схема создания"}
-          code={"class TaskCreate(BaseModel):\n    title: str = Field(min_length=1, max_length=120)\n    priority: int = Field(ge=1, le=5)"}
-        />
-
-        <RecallCard
-          question={"Сформулируйте основную идею раздела «TaskCreate принимает только вход» без подсказки."}
-          hint={"Назовите вход, действие и границу ответственности."}
-          answer={
-            <p>
-              {"Схема создания содержит только данные, которыми клиент действительно управляет."}
-            </p>
-          }
-        />
-
-        <Callout tone="info">
-          {"TaskCreate описывает команду «создай», а не готовую сохранённую запись."}
-        </Callout>
-      </Section>
-
-      <Section number="03" title={"TaskRead описывает ответ"}>
-        <Lead>
-          {"После сохранения у задачи появляются серверные поля. TaskRead фиксирует форму, которую API обещает вернуть."}
-        </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>Шаг 1. Что приходит на вход</h3>
-          <p>
-            {"id обязателен."}
-          </p>
-
-          <h3>Шаг 2. Что делает текущая часть</h3>
-          <p>
-            {"is_done имеет конкретное значение."}
-          </p>
-
-          <h3>Шаг 3. Где проходит граница</h3>
-          <p>
-            {"Каждая запись уже содержит все четыре поля TaskRead."}
-          </p>
-        </div>
-
-        <TypeCards>
-          <TypeCard badge="вход" title="Исходные данные">
-            {"id обязателен."}
-          </TypeCard>
-          <TypeCard badge="действие" badgeTone="float" title="Операция">
-            {"is_done имеет конкретное значение."}
-          </TypeCard>
-          <TypeCard badge="граница" badgeTone="str" title="Контракт">
-            {"GET /tasks возвращает согласованные поля ресурса."}
-          </TypeCard>
-        </TypeCards>
-
-        <CodeBlock
-          caption={"схема чтения"}
-          code={"class TaskRead(BaseModel):\n    id: int\n    title: str\n    priority: int\n    is_done: bool"}
-        />
-
-        <RecallCard
-          question={"Сформулируйте основную идею раздела «TaskRead описывает ответ» без подсказки."}
-          hint={"Назовите вход, действие и границу ответственности."}
-          answer={
-            <p>
-              {"После сохранения у задачи появляются серверные поля. TaskRead фиксирует форму, которую API обещает вернуть."}
-            </p>
-          }
-        />
-
-        <Callout tone="info">
-          {"Read — это внешний контракт ответа, а не отдельная таблица или отдельное хранилище."}
-        </Callout>
-      </Section>
-
-      <Section number="04" title={"response_model на маршруте"}>
-        <Lead>
-          {"Параметр response_model сообщает FastAPI ожидаемую форму ответа, участвует в документации и фильтрует лишние поля."}
-        </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>Шаг 1. Что приходит на вход</h3>
-          <p>
-            {"Swagger показывает TaskRead."}
-          </p>
-
-          <h3>Шаг 2. Что делает текущая часть</h3>
-          <p>
-            {"Выход проверяется сервером."}
-          </p>
-
-          <h3>Шаг 3. Где проходит граница</h3>
-          <p>
-            {"Список GET /tasks уже содержит все четыре публичных поля."}
-          </p>
-        </div>
-
-        <TypeCards>
-          <TypeCard badge="вход" title="Исходные данные">
-            {"Swagger показывает TaskRead."}
-          </TypeCard>
-          <TypeCard badge="действие" badgeTone="float" title="Операция">
-            {"Выход проверяется сервером."}
-          </TypeCard>
-          <TypeCard badge="граница" badgeTone="str" title="Контракт">
-            {"GET /tasks уже возвращает согласованные поля."}
-          </TypeCard>
-        </TypeCards>
-
-        <CodeBlock
-          caption={"TaskRead проверяет существующий GET"}
-          code={"@app.get(\"/tasks\", response_model=list[TaskRead])\ndef list_tasks():\n    return tasks"}
-        />
-
-        <p>
-          {"GET /tasks уже возвращает записи со всеми четырьмя полями, поэтому TaskRead подходит этому ответу. Временный POST пока только возвращает проверенный TaskCreate со статусом 200. Если подключить к нему TaskRead сейчас, обязательные id и is_done будут отсутствовать, и FastAPI сообщит об ошибке ответа сервера, а не об ошибке запроса 422. Подключим TaskRead к POST после реального создания задачи."}
-        </p>
-
-        <CodeBlock
-          caption={"временный POST отвечает входной схемой"}
-          code={"@app.post(\"/tasks\", response_model=TaskCreate)\ndef create_task(payload: TaskCreate):\n    return payload.model_dump()"}
-        />
-
-        <RecallCard
-          question={"Сформулируйте основную идею раздела «response_model на маршруте» без подсказки."}
-          hint={"Назовите вход, действие и границу ответственности."}
-          answer={
-            <p>
-              {"Параметр response_model сообщает FastAPI ожидаемую форму ответа, участвует в документации и фильтрует лишние поля."}
-            </p>
-          }
-        />
-
-        <Callout tone="info">
-          {"Тип payload относится к запросу, response_model — к ответу."}
-        </Callout>
-      </Section>
-
-      <Section number="05" title={"TaskUpdate для полного PUT"}>
-        <Lead>
-          {"В этом курсе PUT означает полную замену редактируемых полей, поэтому все поля TaskUpdate обязательны."}
-        </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>Шаг 1. Что приходит на вход</h3>
-          <p>
-            {"title приходит заново."}
-          </p>
-
-          <h3>Шаг 2. Что делает текущая часть</h3>
-          <p>
-            {"priority и is_done входят в новый снимок."}
-          </p>
-
-          <h3>Шаг 3. Где проходит граница</h3>
-          <p>
-            {"is_done передаётся явно, а id остаётся прежним."}
-          </p>
-        </div>
-
-        <TypeCards>
-          <TypeCard badge="вход" title="Исходные данные">
-            {"title приходит заново."}
-          </TypeCard>
-          <TypeCard badge="действие" badgeTone="float" title="Операция">
-            {"priority и is_done входят в новый снимок."}
-          </TypeCard>
-          <TypeCard badge="граница" badgeTone="str" title="Контракт">
-            {"is_done передаётся явно, а id остаётся прежним."}
-          </TypeCard>
-        </TypeCards>
-
-        <CodeBlock
-          caption={"схема полного обновления"}
-          code={"class TaskUpdate(BaseModel):\n    title: str = Field(min_length=1, max_length=120)\n    priority: int = Field(ge=1, le=5)\n    is_done: bool"}
-        />
-
-        <RecallCard
-          question={"Сформулируйте основную идею раздела «TaskUpdate для полного PUT» без подсказки."}
-          hint={"Назовите вход, действие и границу ответственности."}
-          answer={
-            <p>
-              {"В этом курсе PUT означает полную замену редактируемых полей, поэтому все поля TaskUpdate обязательны."}
-            </p>
-          }
-        />
-
-        <Callout tone="info">
-          {"Не используйте TaskUpdate для PATCH до разбора частичного контракта."}
-        </Callout>
-      </Section>
-
-      <Section number="06" title={"Три схемы — три вопроса"}>
-        <Lead>
-          {"Схему выбирают по направлению и смыслу данных, а не по похожести полей."}
-        </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>Шаг 1. Что приходит на вход</h3>
-          <p>
-            {"Что клиент присылает на создание?"}
-          </p>
-
-          <h3>Шаг 2. Что делает текущая часть</h3>
-          <p>
-            {"Что клиент присылает на полную замену?"}
-          </p>
-
-          <h3>Шаг 3. Где проходит граница</h3>
-          <p>
-            {"Что сервер возвращает как ресурс?"}
-          </p>
-        </div>
-
-        <TypeCards>
-          <TypeCard badge="вход" title="Исходные данные">
-            {"Что клиент присылает на создание?"}
-          </TypeCard>
-          <TypeCard badge="действие" badgeTone="float" title="Операция">
-            {"Что клиент присылает на полную замену?"}
-          </TypeCard>
-          <TypeCard badge="граница" badgeTone="str" title="Контракт">
-            {"Что сервер возвращает как ресурс?"}
-          </TypeCard>
-        </TypeCards>
-
-        <CodeBlock
-          caption={"карта использования"}
-          code={"POST request body          -> TaskCreate\ntemporary POST response    -> TaskCreate, 200\nGET /tasks response         -> list[TaskRead]\nfuture full PUT body        -> TaskUpdate\nPOST after real creation   -> TaskRead, 201"}
-        />
-
-        <RecallCard
-          question={"Сформулируйте основную идею раздела «Три схемы — три вопроса» без подсказки."}
-          hint={"Назовите вход, действие и границу ответственности."}
-          answer={
-            <p>
-              {"Схему выбирают по направлению и смыслу данных, а не по похожести полей."}
-            </p>
-          }
-        />
-
-        <Callout tone="info">
-          {"Одинаковое поле title встречается в нескольких схемах, но выполняет разную роль."}
-        </Callout>
-      </Section>
-
-      <Section number="07" title={"Выносим схемы в schemas.py"}>
-        <Lead>
-          {"Когда Pydantic-классов стало несколько, один модуль schemas.py делает их легко находимыми."}
-        </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>Шаг 1. Что приходит на вход</h3>
-          <p>
-            {"main.py хранит приложение и endpoints."}
-          </p>
-
-          <h3>Шаг 2. Что делает текущая часть</h3>
-          <p>
-            {"schemas.py хранит внешние форматы API."}
-          </p>
-
-          <h3>Шаг 3. Где проходит граница</h3>
-          <p>
-            {"schemas.py не импортирует app и не запускает сервер."}
-          </p>
-        </div>
-
-        <TypeCards>
-          <TypeCard badge="вход" title="Исходные данные">
-            {"main.py хранит приложение и endpoints."}
-          </TypeCard>
-          <TypeCard badge="действие" badgeTone="float" title="Операция">
-            {"schemas.py хранит внешние форматы API."}
-          </TypeCard>
-          <TypeCard badge="граница" badgeTone="str" title="Контракт">
-            {"schemas.py не импортирует app и не запускает сервер."}
-          </TypeCard>
-        </TypeCards>
-
-        <CodeBlock
-          caption={"минимальная структура"}
-          code={"planner_api/\n├── main.py\n└── schemas.py"}
-        />
-
-        <RecallCard
-          question={"Сформулируйте основную идею раздела «Выносим схемы в schemas.py» без подсказки."}
-          hint={"Назовите вход, действие и границу ответственности."}
-          answer={
-            <p>
-              {"Когда Pydantic-классов стало несколько, один модуль schemas.py делает их легко находимыми."}
-            </p>
-          }
-        />
-
-        <Callout tone="info">
-          {"Пока не нужны routers, services и repositories: блок решает более простую задачу."}
-        </Callout>
-      </Section>
-
-      <Section number="08" title={"Практика: контракт Planner API"}>
-        <Lead>
-          {"Соберите app/schemas.py. В Swagger POST пока принимает и возвращает TaskCreate с кодом 200, а GET /tasks отвечает списком TaskRead. TaskUpdate определяет будущий полный PUT, который будет подключён после сборки CRUD."}
-        </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>Шаг 1. Что приходит на вход</h3>
-          <p>
-            {"Сверьте request body."}
-          </p>
-
-          <h3>Шаг 2. Что делает текущая часть</h3>
-          <p>
-            {"Сверьте response schema."}
-          </p>
-
-          <h3>Шаг 3. Где проходит граница</h3>
-          <p>
-            {"Проверьте обязательность полей TaskUpdate по схеме полного PUT."}
-          </p>
-        </div>
-
-        <TypeCards>
-          <TypeCard badge="вход" title="Исходные данные">
-            {"Сверьте request body."}
-          </TypeCard>
-          <TypeCard badge="действие" badgeTone="float" title="Операция">
-            {"Сверьте response schema."}
-          </TypeCard>
-          <TypeCard badge="граница" badgeTone="str" title="Контракт">
-            {"Проверьте обязательность полей TaskUpdate по схеме полного PUT."}
-          </TypeCard>
-        </TypeCards>
-
-        <CodeBlock
-          caption={"итоговый набор"}
-          code={"from pydantic import BaseModel, Field\n\nclass TaskCreate(BaseModel):\n    title: str = Field(min_length=1, max_length=120)\n    priority: int = Field(ge=1, le=5)\n\nclass TaskUpdate(BaseModel):\n    title: str = Field(min_length=1, max_length=120)\n    priority: int = Field(ge=1, le=5)\n    is_done: bool\n\nclass TaskRead(BaseModel):\n    id: int\n    title: str\n    priority: int\n    is_done: bool"}
-        />
-
-        <RecallCard
-          question={"Сформулируйте основную идею раздела «Практика: контракт Planner API» без подсказки."}
-          hint={"Назовите вход, действие и границу ответственности."}
-          answer={
-            <p>
-              {"Соберите три согласованные схемы. Подключите TaskCreate к временному POST, а TaskRead к GET /tasks. Оставьте TaskUpdate для будущего PUT."}
-            </p>
-          }
-        />
-
-        <Callout tone="info">
-          {"TaskUpdate определена в app/schemas.py, но пока не появится в OpenAPI: на этом этапе ещё нет PUT-маршрута с таким параметром. Это ожидаемо. TaskCreate видна у временного POST, TaskRead — у GET /tasks."}
-        </Callout>
-
-        <div className="lesson-check-group">
-          <QuizCard
-            question={"Какая схема принимает POST body?"}
-            options={[
-              "TaskCreate",
-              "TaskRead",
-              "TaskUpdate",
-            ]}
-            correctIndex={0}
-            explanation={"Верный вариант соответствует контракту текущего урока."}
-          />
-          <QuizCard
-            question={"Где обязателен id?"}
-            options={[
-              "В TaskRead",
-              "В TaskCreate",
-              "Во всех схемах",
-            ]}
-            correctIndex={0}
-            explanation={"Верный вариант соответствует контракту текущего урока."}
-          />
-          <QuizCard
-            question={"Зачем response_model?"}
-            options={[
-              "Описать и проверить ответ",
-              "Создать порт",
-              "Установить Pydantic",
-            ]}
-            correctIndex={0}
-            explanation={"Верный вариант соответствует контракту текущего урока."}
-          />
-          <QuizCard
-            question={"Почему TaskUpdate полный?"}
-            options={[
-              "PUT заменяет снимок",
-              "DELETE требует body",
-              "GET меняет данные",
-            ]}
-            correctIndex={0}
-            explanation={"Верный вариант соответствует контракту текущего урока."}
-          />
-        </div>
-
-        <KeyTakeaways
-          points={[
-            <>{"Одна схема не обязана обслуживать все операции."}</>,
-            <>{"TaskCreate не принимает id."}</>,
-            <>{"TaskRead описывает ресурс."}</>,
-            <>{"TaskUpdate задаёт полный PUT."}</>,
-            <>{"response_model фиксирует ответ."}</>,
-            <>{"schemas.py отделяет API-форматы."}</>,
+      <Section number="00" title={"Мы уже проверяем вход. Теперь нужно договориться об ответе"}>
+        <LinkedNotes
+          variant="connected"
+          items={[
+            {
+              title: "Прежняя опора",
+              description: "POST принимает проверенный TaskCreate. Существующий PlannerService создаёт Task и сохраняет её в общем JsonStorage.",
+            },
+            {
+              title: "Новый вопрос",
+              description: "Как описать ответ клиенту, не смешивая его с входным body и полным внутренним объектом?",
+            },
+            {
+              title: "Результат",
+              description: "Добавим TaskRead и подключим response_model к действующим GET и POST. Сервис, хранилище и CLI останутся прежними.",
+            },
           ]}
         />
 
-        <PracticeCta text={"Создайте app/schemas.py, подключите TaskCreate к временному POST с ответом 200 и TaskRead к существующему GET /tasks. Оставьте TaskUpdate для полного PUT и проверьте модели и активные схемы в Swagger."} />
+        <Lead>
+          {"Создание задачи не заканчивается проверкой входа. Сначала сервер принимает только разрешённые данные, затем создаёт ресурс и возвращает клиенту результат. Посмотрим, почему у этих двух направлений разные формы."}
+        </Lead>
+
+        <p>
+          {"В предыдущем занятии TaskCreate стала проверяемым входом настоящего POST. При успехе существующий PlannerService создаёт Task, назначает серверные поля и сохраняет её через JsonStorage. Клиенту возвращается не исходный body, а результат операции."}
+        </p>
+
+        <CodeBlock
+          caption={"request body"}
+          code={'{\n  "title": "Разобрать response_model",\n  "priority": 4\n}'}
+        />
+
+        <p>{"После создания сервер возвращает уже публичное представление существующего ресурса:"}</p>
+
+        <CodeBlock
+          caption={"успешный response"}
+          code={'{\n  "id": 7,\n  "title": "Разобрать response_model",\n  "priority": 4,\n  "is_done": false\n}'}
+        />
+
+        <p>
+          {"На входе было два поля. На выходе стало четыре. Внутренняя доменная Task при этом содержит поле tags, которого нет в публичном HTTP-ответе."}
+        </p>
+        <p>
+          {"Request и response связаны одной операцией, но описывают разные стороны обмена. Если поручить одной схеме обе роли, станет неясно, какими полями управляет клиент, а какие принадлежат уже созданной задаче."}
+        </p>
+
       </Section>
 
+      <Section number="01" title={"Одна задача существует в нескольких представлениях"}>
+        <Lead>
+          {"Слово «задача» скрывает несколько разных договоров. На каждой границе приложения нужен свой набор данных и своя ответственность."}
+        </Lead>
+
+        <p>
+          {"Клиент сообщает только то, чем управляет при создании. После проверки приложение работает с доменной Task. JsonStorage сохраняет полный формат проекта. Наружу API публикует только согласованную форму."}
+        </p>
+
+        <LinkedNotes
+          items={[
+            {
+              title: "TaskCreate",
+              description: "HTTP-вход создания: title и priority. Отвечает на вопрос, что клиент может прислать.",
+            },
+            {
+              title: "Task",
+              description: "Доменная модель Planner: id, title, priority, is_done и tags. С ней работает прикладная логика.",
+            },
+            {
+              title: "JsonStorage",
+              description: "Постоянное хранение полной доменной записи. Старый CLI продолжает читать тот же формат.",
+            },
+            {
+              title: "TaskRead",
+              description: "Публичный HTTP-ответ: id, title, priority и is_done. Отвечает на вопрос, что API обещает показать клиенту.",
+            },
+          ]}
+        />
+
+        <p>
+          {"Это не четыре случайные копии одной структуры. Каждая форма существует на своей границе. Если смешать роли, изменение HTTP-контракта начнёт неожиданно менять доменную модель или формат файла."}
+        </p>
+
+        <MatchPairs
+          prompt={"Соедините каждую часть Planner с её ответственностью."}
+          leftTitle={"Часть"}
+          rightTitle={"Ответственность"}
+          pairs={[
+            { left: "TaskCreate", right: "что клиент может передать" },
+            { left: "Task", right: "с чем работает прикладная логика" },
+            { left: "JsonStorage", right: "что переживает перезапуск" },
+            { left: "TaskRead", right: "что клиент получает наружу" },
+          ]}
+          explanation={"TaskCreate относится к request, Task к предметной модели, JsonStorage к сохранению, TaskRead к response."}
+        />
+
+        <Callout tone="info">
+          {"Поле tags сохраняется внутри Task и JSON. Добавление API не должно незаметно удалить его из существующего Planner."}
+        </Callout>
+      </Section>
+
+      <Section number="02" title={"TaskCreate остаётся схемой входа"}>
+        <Lead>
+          {"В этом занятии мы не проектируем TaskCreate заново. Мы сохраняем все правила прошлого занятия и уточняем её ответственность."}
+        </Lead>
+
+        <p>
+          {"TaskCreate описывает данные, которыми клиент управляет в операции создания. В текущем договоре это title и priority."}
+        </p>
+
+        <CodeBlock
+          caption={"направление TaskCreate"}
+          code={"HTTP request body\n  title\n  priority\n      ↓\nTaskCreate\n      ↓\nPlannerService"}
+        />
+
+        <p>
+          {"В TaskCreate нет id, is_done и tags. Отсутствие этих полей не означает, что Planner их потерял: они просто не принадлежат входному договору создания."}
+        </p>
+
+        <LinkedNotes
+          items={[
+            {
+              title: "Без id",
+              description: "До создания записи сервер ещё не назначил идентификатор. Постоянным id владеет сервер, а не внешний клиент.",
+            },
+            {
+              title: "Без is_done",
+              description: "Начальное состояние задаёт существующий сценарий создания. Изменение состояния относится к другим операциям.",
+            },
+            {
+              title: "Без tags",
+              description: "Tags остаётся внутренним полем Task и JSON, но текущий HTTP API его не публикует и не принимает при создании.",
+            },
+          ]}
+        />
+
+        <p>{"Даже если клиент передаст дополнительный id, это не делает его серверным идентификатором:"}</p>
+
+        <CodeBlock
+          caption={"лишнее серверное поле во входе"}
+          code={'{\n  "title": "Изучить схемы",\n  "priority": 4,\n  "id": 999\n}'}
+        />
+
+        <p>
+          {"Мы не вводим здесь отдельную политику запрета всех extra-полей. Без специальной настройки Pydantic дополнительный ключ не обязан давать 422. Главная гарантия другая: клиентский id не управляет настоящим id созданной Task."}
+        </p>
+
+        <QuizCard
+          question={"Какая обязанность действительно принадлежит TaskCreate?"}
+          options={[
+            "Проверить HTTP-вход title и priority",
+            "Выбрать следующий id",
+            "Записать data/tasks.json",
+          ]}
+          correctIndex={0}
+          explanation={"TaskCreate работает на входной HTTP-границе. Id назначает существующий сценарий создания, а сохранением занимается storage."}
+        />
+      </Section>
+
+      <Section number="03" title={"Зачем появляется TaskRead"}>
+        <Lead>
+          {"После успешного действия сервер уже располагает полноценной задачей. Теперь нужно явно описать стабильную форму, которую API обещает вернуть клиенту."}
+        </Lead>
+
+        <p>
+          {"До этого маршрут мог вручную собрать правильный словарь из четырёх полей. Но одной такой реализации недостаточно, чтобы FastAPI знал обещанную модель ответа."}
+        </p>
+
+        <CodeBlock
+          caption={"явная публичная проекция уже может быть правильной"}
+          code={'return {\n    "id": task.id,\n    "title": task.title,\n    "priority": task.priority,\n    "is_done": task.is_done,\n}'}
+        />
+
+        <p>
+          {"TaskRead отвечает на другой вопрос, чем TaskCreate: как выглядит одна задача, когда API отдаёт её клиенту. В публичной форме есть id, title, priority и is_done."}
+        </p>
+
+        <CodeBlock
+          caption={"два направления HTTP-схем"}
+          code={"TaskCreate\nrequest → server\n\nTaskRead\nserver → response"}
+        />
+
+        <p>
+          {"Id присутствует в TaskRead, потому что к моменту ответа ресурс уже существует и клиенту нужен идентификатор для следующих обращений. Is_done тоже входит в публичное состояние, даже если при создании клиент его не выбирал."}
+        </p>
+        <p>
+          {"Tags отсутствует, потому что публичный договор курса содержит четыре поля. Это внешний срез данных, а не новая версия доменной Task."}
+        </p>
+
+        <CodeBlock
+          caption={"внутренняя и публичная формы"}
+          code={"Task:\nid, title, priority, is_done, tags\n\nTaskRead:\nid, title, priority, is_done"}
+        />
+
+        <p>
+          {"Универсальная схема с optional id и default для is_done кажется короче, но скрывает направление данных: POST начинает выглядеть так, будто клиент может прислать серверные поля."}
+        </p>
+
+        <CodeBlock
+          caption={"слишком универсальная схема"}
+          code={"class TaskSchema(BaseModel):\n    id: int | None = None\n    title: str\n    priority: int\n    is_done: bool = False"}
+        />
+
+        <Callout tone="info">
+          {"Отдельная схема обновления появится тогда, когда в проекте появится реальная граница PUT/PATCH. В 58-м занятии TaskUpdate заранее не создаём."}
+        </Callout>
+      </Section>
+
+      <Section number="04" title={"TaskRead не заменяет доменную Task"}>
+        <Lead>
+          {"Pydantic-схема ответа относится к HTTP. Она не должна вытеснить модель, которой уже пользуются service, CLI и JsonStorage."}
+        </Lead>
+
+        <TypeCards>
+          <TypeCard badge="домен" title="Task">
+            {"Предметная сущность Planner. Существовала до FastAPI и остаётся частью ядра приложения."}
+          </TypeCard>
+          <TypeCard badge="HTTP" badgeTone="str" title="TaskRead">
+            {"Публичная форма response. Нужна FastAPI на внешней границе, а не сервису и storage."}
+          </TypeCard>
+        </TypeCards>
+
+        <p>
+          {"Если сделать PlannerService зависимым от TaskRead, прикладной слой начнёт зависеть от формы конкретного интерфейса. Тогда изменение API сможет заставить нас менять сервис даже при неизменных предметных правилах."}
+        </p>
+
+        <CodeBlock
+          caption={"нужное направление зависимостей"}
+          code={"HTTP request\n    ↓\nHTTP schema\n    ↓\nPlannerService\n    ↓\ndomain Task\n    ↓\nJsonStorage\n\nи обратно:\n\ndomain Task\n    ↓\npublic projection\n    ↓\nHTTP response schema\n    ↓\nHTTP response"}
+        />
+
+        <p>
+          {"Представим каталог: внутренний товар хранит supplier_code и purchase_price, но публичный API отдаёт только id, name и price. Отсутствие внутреннего поля в response не означает его удаление из доменной модели."}
+        </p>
+
+        <CompareSolutions
+          question={"Какой вариант сохраняет текущую архитектуру Planner и не смешивает HTTP-схему с доменной моделью?"}
+          left={{
+            title: "TaskRead становится моделью ядра",
+            code: "PlannerService → TaskRead → JsonStorage",
+            note: "HTTP-схема начинает определять внутреннюю модель и формат сохранения.",
+          }}
+          right={{
+            title: "Task остаётся в ядре",
+            code: "PlannerService → Task → JsonStorage\nTask → projection → TaskRead → HTTP",
+            note: "HTTP-схема используется только на внешней границе ответа.",
+          }}
+          preferred="right"
+          explanation={"TaskRead уточняет внешний договор. Доменная Task, PlannerService и JsonStorage продолжают выполнять прежние обязанности."}
+        />
+      </Section>
+
+      <Section number="05" title={"response_model: явный договор ответа"}>
+        <Lead>
+          {"FastAPI позволяет отдельно объявить ожидаемую форму успешного ответа. Это центральная новая механика занятия."}
+        </Lead>
+
+        <p>{"Сначала разберём её на независимом примере, чтобы не выдавать готовую реализацию Planner."}</p>
+
+        <CodeBlock
+          caption={"независимый пример response_model"}
+          code={'from fastapi import FastAPI\nfrom pydantic import BaseModel\n\napp = FastAPI()\n\n\nclass ArticleRead(BaseModel):\n    id: int\n    title: str\n\n\n@app.get("/article", response_model=ArticleRead)\ndef get_article():\n    return {\n        "id": 3,\n        "title": "HTTP response",\n        "internal_note": "draft",\n    }'}
+        />
+
+        <p>
+          {"Функция возвращает id, title и internal_note, но публичная модель ответа содержит только id и title. Клиент получает форму, объявленную как ArticleRead."}
+        </p>
+
+        <CodeBlock
+          caption={"публичный результат"}
+          code={'{\n  "id": 3,\n  "title": "HTTP response"\n}'}
+        />
+
+        <LinkedNotes
+          items={[
+            {
+              title: "Проверка",
+              description: "FastAPI ожидает, что успешный результат можно представить в форме объявленной модели ответа.",
+            },
+            {
+              title: "OpenAPI",
+              description: "Схема response появляется в документации и показывает клиенту ожидаемую форму JSON.",
+            },
+            {
+              title: "Публичная граница",
+              description: "Поля вне response model не должны случайно становиться частью внешнего ответа.",
+            },
+          ]}
+        />
+
+        <p>
+          {"Тип параметра функции описывает request, а response_model в декораторе описывает результат path operation. Это два независимых направления одного обмена."}
+        </p>
+
+        <CodeBlock
+          caption={"request и response находятся по разные стороны handler"}
+          code={"request body\n    ↓\nTaskCreate\n    ↓\nhandler\n    ↓\nTaskRead / response_model\n    ↓\nresponse body"}
+        />
+
+        <p>
+          {"Для списка применяется тот же принцип, только model описывает каждый элемент коллекции:"}
+        </p>
+
+        <CodeBlock
+          caption={"response model коллекции"}
+          code={'@app.get("/articles", response_model=list[ArticleRead])\ndef list_articles():\n    ...'}
+        />
+
+        <p>
+          {"Ниже показана упрощённая модель на чистом Pydantic. Это не внутренний исходный код FastAPI, а наблюдение за тем же смыслом: результат проверяется схемой, после чего наружу формируется публичное представление."}
+        </p>
+
+        <StepThrough
+          code={'result = {"id": 5, "title": "FastAPI", "internal_note": "do not publish"}\nvalidated = ArticleRead.model_validate(result)\npublic = validated.model_dump()'}
+          steps={[
+            {
+              line: 0,
+              note: "Handler подготовил Python-результат. В нём есть публичные поля и дополнительное внутреннее поле.",
+              vars: { result: "{id, title, internal_note}" },
+            },
+            {
+              line: 1,
+              note: "ArticleRead проверяет обязательные id и title. Internal_note не становится полем модели ответа.",
+              vars: { validated: "ArticleRead(id=5, title='FastAPI')" },
+            },
+            {
+              line: 2,
+              note: "Публичное представление содержит только поля объявленной модели.",
+              vars: { public: "{'id': 5, 'title': 'FastAPI'}" },
+            },
+          ]}
+        />
+
+        <Callout tone="info">
+          {"Response model работает на границе ответа. Он не изменяет storage и не является операцией сохранения."}
+        </Callout>
+      </Section>
+
+      <Section number="06" title={"Что происходит с tags"}>
+        <Lead>
+          {"Поле может оставаться внутри приложения и при этом не входить в публичный HTTP response. Для Planner хороший пример: существующее tags."}
+        </Lead>
+
+        <CodeBlock
+          caption={"доменная запись"}
+          code={'task_data = {\n    "id": 12,\n    "title": "FastAPI",\n    "priority": 4,\n    "is_done": False,\n    "tags": ["backend", "api"],\n}'}
+        />
+
+        <p>
+          {"Публичный договор TaskRead содержит id, title, priority и is_done. Tags в него не входит, поэтому клиент видит только согласованные четыре поля."}
+        </p>
+
+        <CodeBlock
+          caption={"публичный response"}
+          code={'{\n  "id": 12,\n  "title": "FastAPI",\n  "priority": 4,\n  "is_done": false\n}'}
+        />
+
+        <p>
+          <strong>{"Главное:"}</strong>{" "}
+          {"с Task и JSON ничего не произошло. Поле перестало быть видимым в конкретном HTTP response, но не исчезло из приложения."}
+        </p>
+
+        <CodeBlock
+          caption={"не путайте фильтрацию ответа с изменением данных"}
+          code={"не публиковать поле ≠ удалить поле из объекта\nне публиковать поле ≠ изменить JsonStorage\nне публиковать поле ≠ вызвать save()\nне публиковать поле ≠ изменить формат старого Planner"}
+        />
+
+        <p>
+          {"В текущем проекте HTTP-слой уже собирает явную четырёхпольную проекцию Task. TaskRead добавляет проверяемую границу поверх этой проекции. Не нужно возвращать все внутренние поля только ради демонстрации фильтрации."}
+        </p>
+
+        <p>
+          {"Перед следующим разбором смоделируем публичную проекцию обычным Python-кодом. Это не реализация FastAPI, а простой способ увидеть, какие поля остаются наружу."}
+        </p>
+
+        <PredictOutput
+          code={'task = {\n    "id": 4,\n    "title": "Schemas",\n    "priority": 2,\n    "is_done": True,\n    "tags": ["python"],\n}\npublic = {key: task[key] for key in ("id", "title", "priority", "is_done")}\nprint(public)'}
+          output={"{'id': 4, 'title': 'Schemas', 'priority': 2, 'is_done': True}"}
+          hint={"Посмотрите, какие ключи перечислены при сборке public."}
+        />
+
+        <Callout tone="info">
+          {"После HTTP-проверки нужно отдельно убедиться, что tags сохранился в доменной записи и JSON. Красивый response этого не доказывает."}
+        </Callout>
+      </Section>
+
+      <Section number="07" title={"Неправильный response: ошибка сервера, а не 422 клиента"}>
+        <Lead>
+          {"В прошлом занятии Pydantic останавливал неправильный request. Теперь та же библиотека помогает заметить противоположную проблему: сервер сам сформировал ответ не по договору."}
+        </Lead>
+
+        <CodeBlock
+          caption={"обещанная форма"}
+          code={"class ArticleRead(BaseModel):\n    id: int\n    title: str"}
+        />
+
+        <CodeBlock
+          caption={"handler нарушает собственный response contract"}
+          code={'@app.get("/article", response_model=ArticleRead)\ndef get_article():\n    return {\n        "title": "HTTP",\n    }'}
+        />
+
+        <p>
+          {"В response отсутствует обязательный id. Клиент ничего не сделал неправильно: он просто вызвал GET. Ошибка появилась в серверном коде, который обещал одну форму результата, а сформировал другую."}
+        </p>
+
+        <CodeBlock
+          caption={"два разных направления ошибки"}
+          code={"неверный request\n→ вход не прошёл TaskCreate\n→ проблема клиента\n\nневерный result handler\n→ не соответствует TaskRead\n→ проблема сервера"}
+        />
+
+        <BugHunt
+          code={'class ProfileRead(BaseModel):\n    id: int\n    username: str\n\n\n@app.get("/profile", response_model=ProfileRead)\ndef get_profile():\n    return {"username": "nikita"}'}
+          question={"Почему этот GET нарушает договор ответа?"}
+          options={[
+            "Клиент забыл передать id в GET body",
+            "Сервер вернул результат без обязательного id",
+            "Pydantic должен автоматически придумать id",
+          ]}
+          correctIndex={1}
+          explanation={"Request здесь не обязан содержать server-owned id. Его должен сформировать серверный код до проверки публичного ответа."}
+        />
+
+        <p>
+          {"Важно также не приписывать response validation роль транзакции. Если service уже сохранил данные, а потом handler сформировал неправильный response, сама проверка ответа не откатывает сделанное сохранение."}
+        </p>
+
+        <CodeBlock
+          caption={"response validation не является rollback"}
+          code={"service.add(...)\n    ↓\nJsonStorage.save(...)\n    ↓\nhandler формирует неправильный response\n    ↓\nresponse validation error"}
+        />
+
+        <Callout tone="warn">
+          {"422 из прошлого занятия не означает «любая Pydantic-ошибка всегда 422». Направление данных имеет значение: ошибка request относится к клиентской границе, а ошибка server response возникает в реализации сервера."}
+        </Callout>
+      </Section>
+
+      <Section number="08" title={"model_dump() не сохраняет задачу"}>
+        <Lead>
+          {"Pydantic умеет представить модель обычными Python-данными. Это преобразование легко перепутать с настоящим действием приложения."}
+        </Lead>
+
+        <CodeBlock
+          caption={"model_dump создаёт словарь"}
+          code={'from pydantic import BaseModel\n\n\nclass FeedbackInput(BaseModel):\n    text: str\n    rating: int\n\n\npayload = FeedbackInput(text="Полезно", rating=5)\ndata = payload.model_dump()'}
+        />
+
+        <CodeBlock
+          caption={"полученное Python-представление"}
+          code={'{\n    "text": "Полезно",\n    "rating": 5,\n}'}
+        />
+
+        <p>
+          {"Pydantic представил значения модели как словарь. Но доменная сущность не была создана, сервис не вызывался, id не назначался, JsonStorage.save() не запускался и файл не изменился."}
+        </p>
+
+        <CodeBlock
+          caption={"представление и создание: разные пути"}
+          code={"TaskCreate\n    ↓ model_dump()\ndict\n\nнастоящее создание:\nTaskCreate\n    ↓\nPlannerService.add_task(...)\n    ↓\nTask\n    ↓\nJsonStorage.save(...)"}
+        />
+
+        <TrueFalse
+          statement={<span>{"model_dump() записывает Pydantic-модель в data/tasks.json."}</span>}
+          isTrue={false}
+          explanation={"model_dump() только создаёт Python-представление. Постоянным хранением занимается JsonStorage через существующую операцию приложения."}
+        />
+
+        <p>
+          {"Если endpoint просто возвращает payload.model_dump(), клиент увидит JSON, но это может быть обычный echo. Красивый response сам по себе не доказывает, что задача появилась в Planner."}
+        </p>
+
+        <Callout tone="info">
+          {"TaskRead тоже ничего не сохраняет. Создание Pydantic-модели ответа не изменяет файл без явного пути service → storage."}
+        </Callout>
+      </Section>
+
+      <Section number="09" title={"schemas.py: отдельное место для HTTP-схем"}>
+        <Lead>
+          {"Когда HTTP-моделей становится несколько, их полезно вынести из точки сборки приложения. При этом мы продолжаем существующий Planner, а не создаём новый проект."}
+        </Lead>
+
+        <CodeBlock
+          caption={"структура существующего проекта"}
+          code={"app/\n├── main.py\n├── api.py\n├── cli.py\n├── models.py\n├── services.py\n├── storage.py\n└── schemas.py"}
+        />
+
+        <LinkedNotes
+          items={[
+            {
+              title: "models.py",
+              description: "Содержит доменную Task. Она существовала до API и продолжает описывать предметную сущность Planner.",
+            },
+            {
+              title: "schemas.py",
+              description: "Содержит HTTP-схемы текущего этапа: существующую TaskCreate со всеми её правилами и новую TaskRead.",
+            },
+            {
+              title: "services.py",
+              description: "Содержит операции PlannerService. Схемы не забирают на себя создание, поиск, id или сохранение.",
+            },
+            {
+              title: "storage.py",
+              description: "Отвечает за постоянный JSON. Pydantic-схемы не начинают напрямую открывать файл.",
+            },
+            {
+              title: "api.py",
+              description: "Остаётся HTTP-границей: импортирует схемы, принимает запросы и вызывает уже существующий сервис.",
+            },
+          ]}
+        />
+
+        <CodeBlock
+          caption={"направление остаётся простым"}
+          code={"api.py\n ├─ использует schemas.py\n └─ вызывает PlannerService\n\nPlannerService\n └─ работает с Task и storage"}
+        />
+
+        <p>
+          {"При переносе TaskCreate нельзя потерять нормализацию, ограничения или другой уже согласованный механизм предыдущего занятия. Мы переносим существующую схему целиком, а не создаём похожую упрощённую копию."}
+        </p>
+        <p>
+          {"TaskUpdate заранее не создаём. Схема появляется тогда, когда появляется реальная граница данных, которую она описывает. PUT и PATCH будут разобраны вместе с настоящими операциями обновления."}
+        </p>
+
+        <Callout tone="info">
+          {"Services не начинает импортировать FastAPI только потому, что API использует Pydantic-схемы. HTTP остаётся снаружи прикладного ядра."}
+        </Callout>
+      </Section>
+
+      <Section number="10" title={"Как TaskRead подключается к уже работающему API"}>
+        <Lead>
+          {"К началу занятия list, item и настоящий POST уже работают через PlannerService и общий JSON. Мы не меняем их смысл, а делаем форму успешного response явной."}
+        </Lead>
+
+        <p>
+          {"GET /tasks возвращает коллекцию публичных задач. Поэтому response model описывает список объектов одного типа. На независимом примере принцип выглядит так:"}
+        </p>
+
+        <CodeBlock
+          caption={"response model коллекции"}
+          code={'@app.get("/articles", response_model=list[ArticleRead])\ndef list_articles():\n    ...'}
+        />
+
+        <p>
+          {"GET /tasks/{task_id} возвращает одну публичную задачу. Невалидный path и отсутствующий id продолжают работать по прежнему договору: добавление response_model не меняет маршрут и не отменяет 404."}
+        </p>
+
+        <p>
+          {"Главный пример занятия: POST. Вход и выход одной операции описываются разными схемами:"}
+        </p>
+
+        <CodeBlock
+          caption={"одна операция, два направления"}
+          code={"POST request\nTaskCreate\n\nPOST successful response\nTaskRead"}
+        />
+
+        <CodeBlock
+          caption={"полный путь настоящего создания"}
+          code={"POST\n    ↓\nTaskCreate\n    ↓\nPlannerService.add_task\n    ↓\nTask\n    ↓\nJsonStorage\n    ↓\npublic projection\n    ↓\nTaskRead\n    ↓\n201 response"}
+        />
+
+        <p>
+          {"Успешный статус остаётся 201 Created. Добавление TaskRead не должно вернуть POST к 200 и не должно превращать настоящее создание обратно в отражение входного body."}
+        </p>
+
+        <Callout tone="info">
+          {"TaskRead находится ближе к внешней границе. Она не заменяет PlannerService, Task или JsonStorage в середине пути."}
+        </Callout>
+      </Section>
+
+      <Section number="11" title={"OpenAPI показывает направление моделей"}>
+        <Lead>
+          {"После разделения схем направление данных становится видно прямо в /docs: request и successful response одной операции больше не выглядят как одна неопределённая «задача»."}
+        </Lead>
+
+        <CodeBlock
+          caption={"POST в OpenAPI"}
+          code={"Request body\n└── TaskCreate\n\nSuccessful response: 201\n└── TaskRead"}
+        />
+
+        <p>{"Для чтения документация должна показывать публичную форму результата:"}</p>
+
+        <CodeBlock
+          caption={"GET в OpenAPI"}
+          code={"GET /tasks\n→ array of TaskRead\n\nGET /tasks/{task_id}\n→ TaskRead"}
+        />
+
+        <p>
+          {"Query-параметры списка при этом никуда не исчезают. Схема ответа не заменяет фильтр, сортировку или limit. Она описывает только форму возвращаемых элементов."}
+        </p>
+        <p>
+          {"TaskUpdate здесь не должно быть. OpenAPI описывает реальные зарегистрированные операции, а PUT на этом этапе ещё не является новой работой занятия."}
+        </p>
+
+        <CodeBlock
+          caption={"документация и поведение доказывают разное"}
+          code={"OpenAPI\n→ показывает обещанный контракт\n\nреальный POST / GET\n→ показывает фактическое поведение\n\nCLI / restart\n→ подтверждают сохранение в существующем проекте"}
+        />
+
+        <Callout tone="info">
+          {"Правильная схема в Swagger ещё не доказывает persistence. После /docs всё равно нужны реальные запросы и наблюдение состояния."}
+        </Callout>
+      </Section>
+
+      <Section number="12" title={"Проверим границы на конкретных сценариях"}>
+        <Lead>
+          {"Перед практикой разберём, какая часть системы отвечает за типичные ситуации. Это помогает не смешивать вход, доменную операцию, response и сохранение."}
+        </Lead>
+
+        <p>
+          <strong>{"1. Нет priority."}</strong>{" "}
+          {"Это проблема request. TaskCreate должна остановить вход согласно действующему договору, а основная операция создания не выполняется."}
+        </p>
+        <p>
+          <strong>{"2. Клиент передал лишний id."}</strong>{" "}
+          {"Мы не требуем 422 только за extra-ключ без отдельной настройки. Важно, что это значение не становится настоящим server-owned id."}
+        </p>
+        <p>
+          <strong>{"3. Внутренняя Task содержит tags."}</strong>{" "}
+          {"Клиент получает четыре публичных поля, а после HTTP-проверки мы отдельно убеждаемся, что tags не исчез из постоянной записи."}
+        </p>
+        <p>
+          <strong>{"4. Handler не сформировал обязательный id."}</strong>{" "}
+          {"Request может быть правильным, но результат не соответствует TaskRead. Это проблема реализации сервера."}
+        </p>
+        <p>
+          <strong>{"5. model_dump() вернул правильный словарь."}</strong>{" "}
+          {"Это ещё не говорит, что данные сохранены. Нужен реальный путь через service и storage."}
+        </p>
+        <p>
+          <strong>{"6. Swagger выглядит правильно."}</strong>{" "}
+          {"Это подтверждает OpenAPI-договор, но не доказывает, что после перезапуска запись остаётся в JSON."}
+        </p>
+
+        <RecallCard
+          question={"Объясните своими словами роли TaskCreate, TaskRead, доменной Task, JsonStorage, response_model и model_dump()."}
+          hint={"Разделите ответ на три направления: вход HTTP, внутренняя работа Planner и выход HTTP."}
+          answer={
+            <p>
+              {"TaskCreate проверяет вход создания. TaskRead описывает публичную форму задачи в ответе. Доменная Task представляет предметную сущность Planner. JsonStorage сохраняет её между запусками. response_model задаёт проверяемый HTTP-договор ответа. model_dump() только создаёт Python-представление Pydantic-модели и ничего не сохраняет сам."}
+            </p>
+          }
+        />
+      </Section>
+
+      <Section number="13" title={"Что мы будем делать в практике"}>
+        <Lead>
+          {"Практика не переписывает Planner, CRUD или JsonStorage. Мы отделяем HTTP-схемы и подключаем явный response contract к уже работающему приложению."}
+        </Lead>
+
+        <LinkedNotes
+          variant="connected"
+          items={[
+            {
+              title: "Схемы",
+              description: "Перенесём прежнюю TaskCreate без потери правил и добавим TaskRead в app/schemas.py.",
+            },
+            {
+              title: "Маршруты",
+              description: "Подключим response_model к списку, item и настоящему POST, сохранив его 201.",
+            },
+            {
+              title: "OpenAPI и ответы",
+              description: "Проверим объявленные схемы, прежние query-параметры и 404 для отсутствующего item.",
+            },
+            {
+              title: "Состояние Planner",
+              description: "Сверим созданную Task по фактическому id и убедимся, что tags остался в JSON и CLI.",
+            },
+          ]}
+        />
+
+        <p>{"К завершению практики должны быть одновременно верны две цепочки:"}</p>
+
+        <CodeBlock
+          caption={"request"}
+          code={"JSON → TaskCreate → PlannerService"}
+        />
+
+        <CodeBlock
+          caption={"response"}
+          code={"Task → public projection → TaskRead → HTTP JSON body"}
+        />
+
+        <p>
+          {"При этом CLI продолжает работать, JsonStorage хранит прежний формат, tags не потерян, POST остаётся настоящим созданием с 201, а OpenAPI показывает реальные направления данных."}
+        </p>
+
+      </Section>
+
+      <Section number="14" title={"Главное из занятия"}>
+        <Lead>
+          {"Мы не добавляли новую бизнес-логику. Мы сделали HTTP-границу Planner точнее и явно разделили данные по направлению."}
+        </Lead>
+
+        <CodeBlock
+          caption={"четыре разных вопроса"}
+          code={"TaskCreate:\nчто клиент может отправить?\n\nTaskRead:\nчто сервер обещает вернуть?\n\nTask:\nс каким объектом работает Planner?\n\nJsonStorage:\nчто сохраняется между запусками?"}
+        />
+
+        <KeyTakeaways
+          points={[
+            <>{"TaskCreate и TaskRead относятся к разным направлениям одного HTTP-обмена."}</>,
+            <>{"TaskRead не заменяет доменную Task и не меняет формат JsonStorage."}</>,
+            <>{"response_model проверяет, документирует и ограничивает внешний результат."}</>,
+            <>{"tags может оставаться внутри Task и JSON, не входя в публичный response."}</>,
+            <>{"model_dump() создаёт Python-представление, но сам ничего не сохраняет."}</>,
+            <>{"Ошибка request и ошибка server response находятся по разные стороны handler."}</>,
+          ]}
+        />
+
+        <CodeBlock
+          caption={"граница Planner после занятия"}
+          code={"HTTP request\n    ↓\nTaskCreate\n    ↓\nPlannerService\n    ↓\nTask\n    ↓\nJsonStorage\n    ↓\npublic projection\n    ↓\nTaskRead\n    ↓\nHTTP JSON response"}
+        />
+
+        <p>
+          {"Следующий шаг курса не будет заново проектировать эти схемы. Мы сможем сосредоточиться на том, как существующий сервис назначает серверные идентификаторы и как доказать, что изменения действительно сохраняются в общем JSON."}
+        </p>
+      </Section>
     </RichLesson>
   );
 }
+
+
 
 // 59. Хранилище в памяти и генерация идентификатора
 export function Lesson59({ module }: { module?: string }) {

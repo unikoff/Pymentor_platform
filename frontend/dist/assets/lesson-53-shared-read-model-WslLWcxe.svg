@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1680" height="840" viewBox="0 0 1680 840" fill="none">
+<svg xmlns="http://www.w3.org/2000/svg" width="1680" height="620" viewBox="0 0 1680 620" fill="none">
   <defs>
-    <linearGradient id="background" x1="0" y1="0" x2="1680" y2="940" gradientUnits="userSpaceOnUse">
+    <linearGradient id="background" x1="0" y1="0" x2="1680" y2="620" gradientUnits="userSpaceOnUse">
       <stop stop-color="#101A18"/>
       <stop offset="1" stop-color="#09110F"/>
     </linearGradient>
@@ -33,12 +33,10 @@
     </style>
   </defs>
 
-  <rect width="1680" height="940" rx="34" fill="url(#background)"/>
-  <text x="64" y="82" class="title">ДВА ИНТЕРФЕЙСА. ОДИН ФАЙЛ.</text>
-  <text x="64" y="122" class="subtitle">Процессы разные, экземпляры PlannerService разные, настроенный источник данных общий.</text>
-
-  <text x="64" y="177" class="lane" fill="#72DDF2">HTTP-ПРОЦЕСС · Uvicorn</text>
-  <text x="64" y="479" class="lane" fill="#63E7A8">CLI-ПРОЦЕСС</text>
+  <rect width="1680" height="620" rx="34" fill="url(#background)"/>
+  <g transform="translate(0 -125)">
+  <text x="64" y="177" class="lane" fill="#72DDF2">HTTP API</text>
+  <text x="64" y="479" class="lane" fill="#63E7A8">CLI</text>
 
   <g stroke="#6D8279" stroke-width="3" stroke-linecap="round" marker-end="url(#arrow-cyan)">
     <path d="M305 292H352"/>
@@ -55,60 +53,43 @@
   <path d="M1287 595H1310Q1330 595 1330 575V560H1344" stroke="#63E7A8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" marker-start="url(#arrow-mint)" marker-end="url(#arrow-mint)"/>
 
   <rect x="48" y="207" width="257" height="170" rx="22" class="card"/>
-  <text x="74" y="253" class="card-title">HTTP-клиент</text>
+  <text x="74" y="253" class="card-title">HTTP client</text>
   <text x="74" y="294" class="code" fill="#79E3F6">GET /tasks</text>
   <text x="74" y="329" class="code" fill="#79E3F6">GET /stats</text>
-  <text x="74" y="358" class="muted">запрос и JSON-ответ</text>
 
   <rect x="365" y="207" width="262" height="170" rx="22" class="card"/>
   <text x="391" y="253" class="card-title">FastAPI</text>
-  <text x="391" y="294" class="code">обработчики GET</text>
+  <text x="391" y="294" class="code">GET routes</text>
   <text x="391" y="329" class="code">app.state.planner</text>
-  <text x="391" y="358" class="muted">сервис приложения</text>
 
   <rect x="690" y="207" width="262" height="170" rx="22" class="card"/>
   <text x="716" y="253" class="card-title">PlannerService</text>
   <text x="716" y="294" class="code">list_tasks()</text>
   <text x="716" y="329" class="code">get_statistics()</text>
-  <text x="716" y="358" class="muted">готовые правила Planner</text>
 
   <rect x="1015" y="207" width="272" height="170" rx="22" class="card"/>
   <text x="1041" y="253" class="card-title">JsonStorage</text>
-  <text x="1041" y="294" class="card-body">экземпляр API</text>
-  <text x="1041" y="329" class="card-body">читает при GET</text>
-  <text x="1041" y="358" class="muted">без снимка при старте</text>
+  <text x="1041" y="329" class="card-body">API · reads JSON</text>
 
   <rect x="48" y="510" width="257" height="170" rx="22" class="card"/>
   <text x="74" y="556" class="card-title">CLI</text>
   <text x="74" y="597" class="code" fill="#76E9AA">add · done</text>
   <text x="74" y="632" class="code" fill="#76E9AA">list · stats</text>
-  <text x="74" y="661" class="muted">команды пользователя</text>
 
   <rect x="365" y="510" width="262" height="170" rx="22" class="card"/>
   <text x="391" y="556" class="card-title">build_service()</text>
-  <text x="391" y="597" class="card-body">создаёт сервис CLI</text>
-  <text x="391" y="632" class="card-body">с готовой настройкой</text>
-  <text x="391" y="661" class="muted">тот же код проекта</text>
+  <text x="391" y="597" class="card-body">creates CLI service</text>
 
   <rect x="690" y="510" width="262" height="170" rx="22" class="card"/>
   <text x="716" y="556" class="card-title">PlannerService</text>
-  <text x="716" y="597" class="card-body">экземпляр CLI</text>
-  <text x="716" y="632" class="card-body">правила и операции</text>
-  <text x="716" y="661" class="muted">не объект из Uvicorn</text>
+  <text x="716" y="597" class="card-body">separate instance</text>
 
   <rect x="1015" y="510" width="272" height="170" rx="22" class="card"/>
   <text x="1041" y="556" class="card-title">JsonStorage</text>
-  <text x="1041" y="597" class="card-body">экземпляр CLI</text>
-  <text x="1041" y="632" class="card-body">читает и сохраняет</text>
-  <text x="1041" y="661" class="muted">настроен на тот же файл</text>
+  <text x="1041" y="597" class="card-body">CLI · read/write</text>
 
   <rect x="1345" y="385" width="286" height="190" rx="24" class="file"/>
-  <text x="1488" y="432" text-anchor="middle" class="lane" fill="#79E8AA">ОБЩИЙ ИСТОЧНИК</text>
-  <text x="1488" y="482" text-anchor="middle" class="code">data/</text>
-  <text x="1488" y="515" text-anchor="middle" class="code">tasks.json</text>
-  <text x="1488" y="546" text-anchor="middle" class="muted">чтение ↔ сохранение</text>
-
-  <text x="64" y="745" class="subtitle">HTTP-ответ возвращает выбранные поля Task или готовую статистику.</text>
-  <text x="64" y="783" class="subtitle">GET не записывает задачи; после перезапуска их снова читает JsonStorage.</text>
-  <text x="64" y="823" class="muted">Связи показывают вызовы и чтение, не общую оперативную память процессов.</text>
+  <text x="1488" y="432" text-anchor="middle" class="lane" fill="#79E8AA">SHARED FILE</text>
+  <text x="1488" y="482" text-anchor="middle" class="code">data/tasks.json</text>
+  </g>
 </svg>

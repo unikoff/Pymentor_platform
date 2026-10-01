@@ -16,18 +16,20 @@ CODE_TASKS: dict[int, list[dict[str, Any]]] = {
        'contract': {'given': 'Автопроверка вызывает solve(method, path, client_version, body). method принимает get, '
                               'post или patch в нижнем регистре; path и client_version являются строками, body '
                               'является словарём или None. Сеть отправлять не нужно.',
-                    'todo': 'Верните словарь с ключами method, path, headers и body. Метод приведите к верхнему '
-                            'регистру. В headers всегда добавьте Accept: application/json и '
-                            'Planner-Client-Version со значением client_version. Добавляйте Content-Type: '
-                            'application/json, только когда body не равен None. Path и body сохраняются без изменений. Ничего не печатайте.',
-                     'check': 'Сравнивается весь результат для GET без тела, POST с пустым и заполненным словарём, '
-                              'а также короткой записи patch с другим path. Функция не должна ничего выводить.'},
-       'requirements': {'items': ['словарь headers',
+                    'todo': 'Собираем словарь с ключами method, path, headers и body. Метод приводим к верхнему '
+                            'регистру. В headers всегда добавляем Accept: application/json и '
+                            'Planner-Client-Version со значением client_version. Content-Type добавляем только '
+                            'когда body не равен None. Path и body возвращаем без изменения. Исходный body и '
+                            'другие входные аргументы не меняем. Ничего не выводим.',
+                     'check': 'Точное сравнение результата проверяет ключ headers и его содержимое для GET без тела, '
+                              'POST с пустым и заполненным словарём, а также короткой записи patch с другим path. '
+                              'Тесты сравнивают входные аргументы до и после вызова. Функция не должна ничего выводить.'},
+       'requirements': {'items': ["ключ 'headers' с нужными заголовками в результате",
                                   'условное добавление Content-Type',
                                   'method.upper()',
                                   'четыре точных ключа результата'],
-                        'names': ['method', 'path', 'client_version', 'body', 'headers'],
-                        'nodes': ['FunctionDef', 'If'],
+                        'names': ['method', 'path', 'client_version', 'body'],
+                        'nodes': ['FunctionDef'],
                         'attributes': ['upper']},
        'starter_code': 'def solve(method, path, client_version, body):\n'
                        '    # Здесь формируются headers\n'
@@ -35,6 +37,7 @@ CODE_TASKS: dict[int, list[dict[str, Any]]] = {
                        '    pass\n',
        'tests': [{'name': 'GET без body',
                   'args': ['get', '/tasks', '1.0', None],
+                  'preserve_inputs': True,
                   'no_stdout': True,
                   'expected': {'method': 'GET',
                                'path': '/tasks',
@@ -42,6 +45,7 @@ CODE_TASKS: dict[int, list[dict[str, Any]]] = {
                                'body': None}},
                  {'name': 'POST с пустым JSON-объектом',
                   'args': ['post', '/tasks', '1.0', {}],
+                  'preserve_inputs': True,
                   'no_stdout': True,
                   'expected': {'method': 'POST',
                                'path': '/tasks',
@@ -51,6 +55,7 @@ CODE_TASKS: dict[int, list[dict[str, Any]]] = {
                                'body': {}}},
                  {'name': 'POST с заполненным JSON',
                   'args': ['post', '/tasks', '1.1', {'title': 'HTTP', 'priority': 4}],
+                  'preserve_inputs': True,
                   'no_stdout': True,
                   'expected': {'method': 'POST',
                                'path': '/tasks',
@@ -60,6 +65,7 @@ CODE_TASKS: dict[int, list[dict[str, Any]]] = {
                                'body': {'title': 'HTTP', 'priority': 4}}},
                   {'name': 'Короткая запись метода и другой path',
                   'args': ['patch', '/tasks/7', '2.0', {'is_done': True}],
+                  'preserve_inputs': True,
                   'no_stdout': True,
                   'expected': {'method': 'PATCH',
                                'path': '/tasks/7',
@@ -92,44 +98,49 @@ CODE_TASKS: dict[int, list[dict[str, Any]]] = {
                               'HTTP-статуса, body: словарь Python, представляющий JSON-объект, или None, request_id: строка. Нужно представить готовый '
                               'response обычным словарём Python. Пары status и body уже согласованы, выбирать статус '
                               'или проверять смысл операции не нужно.',
-                    'todo': 'Функция формирует headers с X-Request-ID, значение берётся из request_id. При body, не равном '
-                            'None, в headers добавляется Content-Type: application/json. Результат содержит ровно ключи '
-                            'status, headers, body; входные status и body сохраняются. Вывода через print() нет.',
-                    'check': 'Проверяются ответы 200 и 201 с JSON body, ошибка 404 с JSON body, ответ 204 без body и пустой '
-                             'JSON-объект как существующее body. Для 204 Content-Type не добавляется; print() приводит к '
-                             'ошибке автопроверки.'},
-       'requirements': {'items': ['словарь headers с полем X-Request-ID со значением request_id',
+                    'todo': 'Формируем response из status, headers и body. В headers добавляем X-Request-ID со значением '
+                            'request_id. Если body не равен None, добавляем Content-Type: application/json. Результат '
+                            'содержит ровно ключи status, headers и body. Входные аргументы не изменяем и ничего не выводим.',
+                    'check': 'Сравнивается весь результат для 200 и 201 с JSON body, 404 с JSON body, 204 без body и пустого '
+                             'JSON-объекта. Это проверяет ключ headers и его значения. Тесты также сравнивают входные '
+                             'аргументы до и после вызова; print() приводит к ошибке автопроверки.'},
+       'requirements': {'items': ["ключ headers в результате содержит X-Request-ID и нужный Content-Type",
                                   'Content-Type только для body',
                                   'пустой словарь считается существующим body',
                                   'точные ключи результата status, headers, body',
                                   'status и body без подмены'],
-                        'names': ['status', 'body', 'request_id', 'headers'],
-                        'nodes': ['FunctionDef', 'If']},
+                        'names': ['status', 'body', 'request_id'],
+                        'nodes': ['FunctionDef']},
        'starter_code': 'def solve(status, body, request_id):\n    # Здесь формируются headers и response\n    pass\n',
        'tests': [{'name': 'успешный JSON',
                   'args': [200, {'id': 1, 'title': 'HTTP', 'priority': 4, 'is_done': False}, 'req-101'],
+                  'preserve_inputs': True,
                   'no_stdout': True,
                   'expected': {'status': 200,
                                'headers': {'X-Request-ID': 'req-101', 'Content-Type': 'application/json'},
                                'body': {'id': 1, 'title': 'HTTP', 'priority': 4, 'is_done': False}}},
                  {'name': 'созданный ресурс',
                   'args': [201, {'id': 2, 'title': 'Planner', 'priority': 2, 'is_done': False}, 'req-102'],
+                  'preserve_inputs': True,
                   'no_stdout': True,
                   'expected': {'status': 201,
                                'headers': {'X-Request-ID': 'req-102', 'Content-Type': 'application/json'},
                                'body': {'id': 2, 'title': 'Planner', 'priority': 2, 'is_done': False}}},
                  {'name': 'ошибка not found',
                  'args': [404, {'detail': 'Task not found'}, 'req-202'],
+                  'preserve_inputs': True,
                   'no_stdout': True,
                   'expected': {'status': 404,
                                'headers': {'X-Request-ID': 'req-202', 'Content-Type': 'application/json'},
                                'body': {'detail': 'Task not found'}}},
                  {'name': 'успех без body',
                  'args': [204, None, 'req-303'],
+                  'preserve_inputs': True,
                   'no_stdout': True,
                   'expected': {'status': 204, 'headers': {'X-Request-ID': 'req-303'}, 'body': None}},
                  {'name': 'пустой JSON-объект',
                  'args': [200, {}, 'req-404'],
+                  'preserve_inputs': True,
                   'no_stdout': True,
                   'expected': {'status': 200,
                                'headers': {'X-Request-ID': 'req-404', 'Content-Type': 'application/json'},
@@ -139,17 +150,17 @@ CODE_TASKS: dict[int, list[dict[str, Any]]] = {
                          '    if body is not None:\n'
                          '        headers["Content-Type"] = "application/json"\n'
                          '    return {"status": status, "headers": headers, "body": body}\n'}],
-    48: [{'title': 'Выберите HTTP-метод по действию',
+    48: [{'title': 'Подбираем HTTP-метод по действию',
        'level': 'easy',
        'mode': 'solve',
-       'prompt': 'Напишите solve(action), которая возвращает HTTP-метод для действия над задачами Planner.',
+       'prompt': 'Реализуем solve(action): функция возвращает HTTP-метод для действия над задачами Planner.',
        'contract': {'given': 'action принимает одно из значений: list, get, create, replace, update, delete. '
                              'list и get означают чтение. replace означает полную замену, update изменяет только переданные поля.',
-                    'todo': 'Создайте словарь methods для шести действий. Верните метод для action строкой '
-                            'в верхнем регистре, не печатая его.',
+                    'todo': 'Создаём словарь methods для шести действий. Функция возвращает метод для action строкой '
+                            'в верхнем регистре. Вывод не нужен.',
                     'check': 'Проверяются все шесть действий. Сеть, адреса и обработка неизвестного action не нужны.'},
        'hints': ['Чтение списка и одной задачи имеет один смысл, хотя объектов разное количество.',
-                 'Для replace вспомните полную форму PUT; update меняет лишь поля, переданные клиентом.'],
+                 'Для replace вспоминаем полную форму PUT; update меняет лишь поля, переданные клиентом.'],
        'requirements': {'names': ['action', 'methods'],
                         'nodes': ['FunctionDef']},
        'starter_code': 'def solve(action):\n    pass\n',
@@ -170,23 +181,23 @@ CODE_TASKS: dict[int, list[dict[str, Any]]] = {
                          '    }\n'
                          '    return methods[action]\n'}],
     49: [{
-        'title': 'Соберите адрес операции Planner API',
+        'title': 'Собираем адрес операции Planner API',
         'level': 'easy',
         'mode': 'solve',
         'prompt': 'Функция solve(action, task_id) возвращает method и path для известного действия Planner API.',
         'contract': {
             'given': 'action принимает одно из значений: list, get, create, replace, update, delete, health, stats. task_id является целым id для get, replace, update и delete. Для остальных действий task_id равен None. Таблица methods уже дана в заготовке.',
-            'todo': 'Выберите path по области операции и верните словарь с ключами method и path. Метод возьмите из methods[action], а для item используйте переданный task_id.',
+            'todo': 'Определяем path по области операции и возвращаем словарь с ключами method и path. Метод берём из methods[action], а для item используем переданный task_id.',
             'check': 'Проверяются все восемь действий и несколько id для каждого item-действия, чтобы подтвердить использование task_id. Не нужно проверять существование задачи, отправлять запрос или обрабатывать неизвестное action.'
         },
         'hints': [
-            'Сначала разделите действия на три группы: collection, конкретный item и технические проверки.',
+            'Сначала разделяем действия на три группы: collection, конкретный item и технические проверки.',
             'list и create обращаются к collection. get, replace, update и delete требуют адреса выбранного item.',
-            'Для item добавьте переданный id к общей основе /tasks/. Таблица methods уже связывает действие с HTTP-методом.'
+            'Для item добавляем переданный id к общей основе /tasks/. Таблица methods уже связывает действие с HTTP-методом.'
         ],
         'requirements': {
-            'names': ['action', 'task_id', 'methods', 'path'],
-            'nodes': ['FunctionDef', 'If']
+            'names': ['action', 'task_id', 'methods'],
+            'nodes': ['FunctionDef']
         },
         'starter_code': 'methods = {\n'
                         '    "list": "GET",\n'
@@ -256,14 +267,14 @@ CODE_TASKS: dict[int, list[dict[str, Any]]] = {
         'prompt': 'solve(action, task_id, values) собирает учебную модель запроса Planner API. Готовая route_for уже выбирает method и path.',
         'contract': {
             'given': 'action принимает list, create, get, replace, update, delete, health или stats. task_id задан для get, replace, update и delete, в остальных случаях равен None. values содержит допустимые значения операции, без неизвестных полей и явного None.',
-            'todo': 'Верните словарь с точными ключами method, path, query и body. Для list перенесите только переданные is_done, sort_desc и limit в query. Для create сформируйте body из title и priority. Для replace и update скопируйте переданные значения в body. Для остальных действий оставьте query пустым, а body равным None.',
-            'check': 'Проверяются отсутствие выдуманных query-defaults, сохранение явного False, состав body и готовые method/path. values не должен меняться. Не отправляйте запрос и не проверяйте задачу.'
+            'todo': 'Собираем словарь с точными ключами method, path, query и body. Для list переносим в query только переданные is_done, sort_desc и limit. Для create формируем body из title и priority. Для replace и update копируем переданные значения в body. Для остальных действий оставляем query пустым, а body равным None.',
+            'check': 'Проверяются отсутствие выдуманных query-defaults, сохранение явного False, состав body и готовые method/path. values остаётся неизменным. Запрос не отправляем, существование задачи не проверяем.'
         },
         'hints': [
-            'Сначала определите действия, которым нужны query или body. Для остальных частей запроса оставьте значения по умолчанию.',
-            'Для list переносите только ключи, которые уже есть в values. False тоже является переданным значением.',
-            'Для create создайте новый словарь только с title и priority. Для replace и update скопируйте values, чтобы не менять вход.',
-            'Для PATCH одного поля проверяется наличие ключа, а не истинность значения. Пример: if "is_done" in values: body["is_done"] = values["is_done"].'
+            'Сначала определяем действия, которым нужны query или body. Для остальных частей запроса оставляем значения по умолчанию.',
+            'Для list переносим только ключи, которые уже есть в values. False тоже является переданным значением.',
+            'Для create создаём новый словарь только с title и priority. Для replace и update копируем values, чтобы не менять вход.',
+            'Для PATCH переносим все переданные поля. Одно поле и несколько обрабатываются одинаково; False тоже сохраняем как переданное значение.'
         ],
         'requirements': {
             'items': [
@@ -274,8 +285,8 @@ CODE_TASKS: dict[int, list[dict[str, Any]]] = {
                 'replace и update сохраняют переданные поля',
                 'values остаётся неизменным'
             ],
-            'names': ['action', 'task_id', 'values', 'route_for', 'query', 'body'],
-            'nodes': ['FunctionDef', 'If']
+            'names': ['action', 'task_id', 'values', 'route_for'],
+            'nodes': ['FunctionDef']
         },
         'starter_code': 'methods = {\n'
                         '    "list": "GET",\n'
@@ -300,7 +311,7 @@ CODE_TASKS: dict[int, list[dict[str, Any]]] = {
                         '    return {"method": methods[action], "path": path}\n'
                         '\n'
                         'def solve(action, task_id, values):\n'
-                        '    # Разместите переданные значения в query или body\n'
+                        '    # Распределяем входные значения по query и body\n'
                         '    pass\n',
         'tests': [
             {'name': 'список без фильтров', 'args': ['list', None, {}], 'expected': {'method': 'GET', 'path': '/tasks', 'query': {}, 'body': None}, 'preserve_inputs': True},
@@ -312,6 +323,8 @@ CODE_TASKS: dict[int, list[dict[str, Any]]] = {
             {'name': 'полная замена', 'args': ['replace', 12, {'title': 'Planner API', 'priority': 3, 'is_done': True}], 'expected': {'method': 'PUT', 'path': '/tasks/12', 'query': {}, 'body': {'title': 'Planner API', 'priority': 3, 'is_done': True}}, 'preserve_inputs': True},
             {'name': 'частичное изменение с False', 'args': ['update', 7, {'is_done': False}], 'expected': {'method': 'PATCH', 'path': '/tasks/7', 'query': {}, 'body': {'is_done': False}}, 'preserve_inputs': True},
             {'name': 'PATCH одного title', 'args': ['update', 9, {'title': 'Новый заголовок'}], 'expected': {'method': 'PATCH', 'path': '/tasks/9', 'query': {}, 'body': {'title': 'Новый заголовок'}}, 'preserve_inputs': True},
+            {'name': 'PATCH только priority', 'args': ['update', 10, {'priority': 5}], 'expected': {'method': 'PATCH', 'path': '/tasks/10', 'query': {}, 'body': {'priority': 5}}, 'preserve_inputs': True},
+            {'name': 'PATCH нескольких полей', 'args': ['update', 11, {'priority': 5, 'is_done': False}], 'expected': {'method': 'PATCH', 'path': '/tasks/11', 'query': {}, 'body': {'priority': 5, 'is_done': False}}, 'preserve_inputs': True},
             {'name': 'чтение item', 'args': ['get', 7, {}], 'expected': {'method': 'GET', 'path': '/tasks/7', 'query': {}, 'body': None}},
             {'name': 'удаление item', 'args': ['delete', 7, {}], 'expected': {'method': 'DELETE', 'path': '/tasks/7', 'query': {}, 'body': None}},
             {'name': 'health отдельно от tasks', 'args': ['health', None, {}], 'expected': {'method': 'GET', 'path': '/health', 'query': {}, 'body': None}},

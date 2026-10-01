@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="700" height="1420" viewBox="0 0 700 1420" fill="none">
+<svg xmlns="http://www.w3.org/2000/svg" width="700" height="1200" viewBox="0 0 700 1200" fill="none">
   <defs>
     <marker id="arrow54m" markerWidth="14" markerHeight="14" refX="11" refY="7" orient="auto" markerUnits="userSpaceOnUse">
       <path d="M1 1L11 7L1 13" stroke="#83DDAA" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
@@ -20,35 +20,31 @@
       .warning{fill:#E7C39F;font:600 20px system-ui,sans-serif}
     </style>
   </defs>
-  <rect class="bg" width="700" height="1420" rx="28"/>
-  <text class="title" x="44" y="66">Как path становится ответом</text>
-  <text class="subtitle" x="46" y="104">Сначала проверка, затем поиск.</text>
+  <rect class="bg" width="700" height="1200" rx="28"/>
+  <g transform="translate(0 -90)">
 
   <rect class="panel" x="52" y="142" width="596" height="136" rx="22"/>
-  <text class="label" x="80" y="181">КЛИЕНТ</text>
+  <text class="label" x="80" y="181">CLIENT</text>
   <text class="mono" x="80" y="220">GET /tasks/17</text>
-  <text class="body" x="80" y="252">просит одну задачу</text>
 
   <path class="line" d="M350 278V320"/>
   <rect class="route" x="52" y="326" width="596" height="154" rx="22"/>
-  <text class="label" x="80" y="366">FASTAPI</text>
+  <text class="label" x="80" y="366">FastAPI</text>
   <text class="mono" x="80" y="407">task_id: int</text>
-  <text class="body" x="80" y="447">извлекает path и проверяет тип</text>
+  <text class="body" x="80" y="447">type check</text>
 
   <path class="branch" d="M350 480V518H520"/>
   <path class="line" d="M520 518V544"/>
   <text class="warning" x="382" y="509">abc</text>
   <rect class="error" x="392" y="550" width="256" height="142" rx="20"/>
-  <text class="label" x="414" y="588">НЕ int</text>
+  <text class="label" x="414" y="588">INVALID ID TYPE</text>
   <text class="status" x="414" y="626">422</text>
-  <text class="body" x="414" y="660">до обработчика</text>
 
   <path class="line" d="M350 480V730"/>
-  <text class="body" x="370" y="711">валидный id</text>
   <rect class="panel" x="52" y="738" width="596" height="148" rx="22"/>
-  <text class="label" x="80" y="779">PLANNERSERVICE</text>
+  <text class="label" x="80" y="779">PlannerService</text>
   <text class="mono" x="80" y="820">get_task(task_id)</text>
-  <text class="body" x="80" y="856">ищет в данных проекта</text>
+  <text class="body" x="80" y="856">lookup by id</text>
 
   <path class="branch" d="M350 886V944"/>
   <path class="branch" d="M350 944H196V1000"/>
@@ -56,18 +52,14 @@
   <path class="branch" d="M350 944H504V1000"/>
   <path class="line" d="M504 944V994"/>
   <rect class="success" x="42" y="1000" width="300" height="214" rx="20"/>
-  <text class="label" x="64" y="1040">ОТВЕТ</text>
-  <text class="status" x="64" y="1080">200 OK</text>
+  <text class="label" x="64" y="1040">TASK FOUND</text>
+  <text class="status" x="64" y="1080">200</text>
   <text class="body" x="64" y="1120">id, title, priority,</text>
   <text class="body" x="64" y="1152">is_done</text>
 
   <rect class="error" x="358" y="1000" width="300" height="214" rx="20"/>
-  <text class="label" x="380" y="1040">ОТСУТСТВИЕ</text>
+  <text class="label" x="380" y="1040">TASK NOT FOUND</text>
   <text class="status" x="380" y="1080">404</text>
-  <text class="body" x="380" y="1120">TaskNotFoundError</text>
-  <text class="body" x="380" y="1152">переводит маршрут</text>
-
-  <rect class="panel" x="52" y="1250" width="596" height="112" rx="20"/>
-  <text class="warning" x="78" y="1298">Сбой JSON не означает 404.</text>
-  <text class="body" x="78" y="1334">Ошибки хранилища не маскируем.</text>
+  <text class="warning" x="78" y="1250">JSON READ ERROR ≠ 404</text>
+  </g>
 </svg>
