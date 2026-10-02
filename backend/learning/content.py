@@ -81,22 +81,35 @@ NEW_PYTHON_MODULE_LABELS = {
     "01 - Как Python выполняет программу.md": "Блок 1. Старт и работа с данными",
     "02 - Терминал, файлы и запуск скрипта.md": "Блок 1. Старт и работа с данными",
     "03 - Git, GitHub и история изменений.md": "Блок 1. Старт и работа с данными",
+    "03.1 - Состояния файлов, staging и diff.md": "Блок 1. Старт и работа с данными",
+    "03.2 - GitHub, remote, авторизация и push.md": "Блок 1. Старт и работа с данными",
+    "03.3 - Clone и получение своего проекта заново.md": "Блок 1. Старт и работа с данными",
     "04 - Переменные и базовые типы.md": "Блок 1. Старт и работа с данными",
     "05 - Числа, операции и преобразование типов.md": "Блок 1. Старт и работа с данными",
     "06 - Строки и форматирование.md": "Блок 2. Текст, логика и повторение",
     "07 - Boolean, сравнения и логика.md": "Блок 2. Текст, логика и повторение",
     "08 - Ветвления if elif else.md": "Блок 2. Текст, логика и повторение",
     "09 - Цикл for и последовательности.md": "Блок 2. Текст, логика и повторение",
+    "09.1 - Накопление, счётчик и итог после цикла.md": "Блок 2. Текст, логика и повторение",
     "10 - Цикл while и проверка ввода.md": "Блок 2. Текст, логика и повторение",
+    "10.1 - Повторный ввод и безопасный выход.md": "Блок 2. Текст, логика и повторение",
     "11 - Списки, кортежи и множества.md": "Блок 3. Данные проекта и функции",
+    "11.1 - Другие коллекции, текст и распаковка.md": "Блок 3. Данные проекта и функции",
     "12 - Словари и модель задачи.md": "Блок 3. Данные проекта и функции",
+    "12.1 - Список словарей и границы копирования.md": "Блок 3. Данные проекта и функции",
     "13 - Функции, параметры и return.md": "Блок 3. Данные проекта и функции",
+    "13.1 - Результат функции, локальные имена и состояние.md": "Блок 3. Данные проекта и функции",
     "14 - Декомпозиция и чистые функции.md": "Блок 3. Данные проекта и функции",
     "15 - Ошибки, traceback и отладка.md": "Блок 3. Данные проекта и функции",
     "16 - Проектное меню и валидация.md": "Блок 4. Сборка и защита проекта",
+    "16.1 - Ввод данных и границы отказа.md": "Блок 4. Сборка и защита проекта",
     "17 - Проект добавление и вывод задач.md": "Блок 4. Сборка и защита проекта",
+    "17.1 - Полный вывод и пустое состояние.md": "Блок 4. Сборка и защита проекта",
     "18 - Проект поиск, статус и статистика.md": "Блок 4. Сборка и защита проекта",
+    "18.1 - Поиск по части названия.md": "Блок 4. Сборка и защита проекта",
+    "18.2 - Статистика и проверка согласованности.md": "Блок 4. Сборка и защита проекта",
     "19 - README, .gitignore и публикация.md": "Блок 4. Сборка и защита проекта",
+    "19.1 - Проверка передачи из чистой копии.md": "Блок 4. Сборка и защита проекта",
     "20 - Контрольная точка месяца.md": "Блок 4. Сборка и защита проекта",
 }
 
@@ -319,21 +332,29 @@ def _module_label(path: Path, track_dir: Path, track_id: str | None = None) -> s
     return MODULE_LABELS.get(path.parent.name, path.parent.name)
 
 
-def _sort_key(path: Path, track_id: str | None = None) -> tuple[int, str]:
+def _lesson_number_parts(filename: str) -> tuple[int, ...] | None:
+    match = re.match(r"^(\d+(?:\.\d+)*)", filename)
+    if match is None:
+        return None
+    return tuple(int(part) for part in match.group(1).split("."))
+
+
+def _sort_key(path: Path, track_id: str | None = None) -> tuple[int, bool, tuple[int, ...], str]:
     relative = path.relative_to(COURSE_ROOT).as_posix()
     overview_order = {"План обучения.md": -2, "Теория месяца.md": -1}
     if path.name in overview_order:
-        return (overview_order[path.name], relative)
+        return (overview_order[path.name], False, (), relative)
+    number_parts = _lesson_number_parts(path.name)
     if track_id in RICH_TRACK_MODULE_LABELS:
-        lesson_number = re.match(r"^(\d+)", path.name)
-        return (int(lesson_number.group(1)) if lesson_number else 999, relative)
+        if number_parts is None:
+            return (999, False, (), relative)
+        return (number_parts[0], len(number_parts) > 1, number_parts[1:], relative)
     try:
-        return (LESSON_SEQUENCE.index(relative), relative)
+        return (LESSON_SEQUENCE.index(relative), False, (), relative)
     except ValueError:
-        lesson_number = re.match(r"^(\d+)", path.name)
-        if lesson_number:
-            return (len(LESSON_SEQUENCE) + int(lesson_number.group(1)), relative)
-        return (len(LESSON_SEQUENCE) + 999, relative)
+        if number_parts is not None:
+            return (len(LESSON_SEQUENCE) + number_parts[0], len(number_parts) > 1, number_parts[1:], relative)
+        return (len(LESSON_SEQUENCE) + 999, False, (), relative)
 
 
 def _collect_markdown_files(track_dir: Path, track_id: str | None = None) -> list[Path]:
@@ -564,7 +585,11 @@ def _task_from_override(
 ) -> dict[str, Any]:
     return {
         "id": f"{lesson_id}-task-{task_index:02d}",
-        "legacy_ids": [f"{legacy_lesson_id}-task-{task_index:02d}"],
+        "legacy_ids": (
+            [f"{legacy_lesson_id}-task-{task_index:02d}"]
+            if legacy_lesson_id != lesson_id
+            else []
+        ),
         "title": task["title"],
         "level": task.get("level", "easy"),
         "mode": task.get("mode", "solve"),
@@ -610,7 +635,11 @@ def _tasks_for_lesson(
         tasks.append(
             {
                 "id": f"{lesson_id}-task-{task_index:02d}",
-                "legacy_ids": [f"{legacy_lesson_id}-task-{task_index:02d}"],
+                "legacy_ids": (
+                    [f"{legacy_lesson_id}-task-{task_index:02d}"]
+                    if legacy_lesson_id != lesson_id
+                    else []
+                ),
                 "title": title or f"Задание {task_index}",
                 "level": "easy" if task_index == 1 else "medium",
                 "mode": "solve",
@@ -714,17 +743,25 @@ def _legacy_lesson_id(track_id: str, index: int) -> str:
     return f"{track_id}-lesson-{index + 1:02d}"
 
 
-def _build_lesson(path: Path, index: int, total: int, track_id: str, track_dir: Path) -> dict[str, Any]:
+def _build_lesson(
+    path: Path,
+    index: int,
+    total: int,
+    track_id: str,
+    track_dir: Path,
+    legacy_index: int | None = None,
+) -> dict[str, Any]:
     text = _strip_generated_task_dump(_read_text(path))
     relative = path.relative_to(COURSE_ROOT).as_posix()
     identity_source = _lesson_identity_source(relative)
     lesson_id = _stable_lesson_id(relative)
-    legacy_lesson_id = _legacy_lesson_id(track_id, index)
+    legacy_lesson_id = _legacy_lesson_id(track_id, legacy_index) if legacy_index is not None else lesson_id
     title = "Карта обучения" if path.name == "План обучения.md" else _extract_title(path, text)
     access = _lesson_access(path, track_dir, track_id)
-    lesson_match = re.match(r"^(\d+)", path.name)
-    if track_id == NEW_PYTHON_TRACK_NAME and lesson_match and not re.match(r"^\d+\.", title):
-        title = f"{int(lesson_match.group(1))}. {title}"
+    number_parts = _lesson_number_parts(path.name)
+    if track_id == NEW_PYTHON_TRACK_NAME and number_parts and not re.match(r"^\d+(?:\.\d+)*\.", title):
+        display_number = ".".join(str(part) for part in number_parts)
+        title = f"{display_number}. {title}"
     tasks = _tasks_for_lesson(identity_source, text, lesson_id, legacy_lesson_id, track_id, path.name)
     for task in tasks:
         task["revision"] = build_task_revision(task)
@@ -781,10 +818,25 @@ def _load_tracks() -> list[dict[str, Any]]:
             continue
 
         total = len(files)
-        track["lessons"] = [
-            _build_lesson(path, index=index, total=total, track_id=track["id"], track_dir=track_dir)
-            for index, path in enumerate(files)
-        ]
+        lessons = []
+        legacy_index = 0
+        for index, path in enumerate(files):
+            number_parts = _lesson_number_parts(path.name)
+            is_supplemental = number_parts is not None and len(number_parts) > 1
+            current_legacy_index = None if is_supplemental else legacy_index
+            if not is_supplemental:
+                legacy_index += 1
+            lessons.append(
+                _build_lesson(
+                    path,
+                    index=index,
+                    total=total,
+                    track_id=track["id"],
+                    track_dir=track_dir,
+                    legacy_index=current_legacy_index,
+                )
+            )
+        track["lessons"] = lessons
         tracks.append(track)
 
     tracks.sort(key=lambda t: (t["order"], t["title"]))
@@ -906,4 +958,8 @@ def find_lesson_by_task(task_id: str) -> dict[str, Any] | None:
 
 def get_legacy_lesson_id_map() -> dict[str, str]:
     """Соответствие позиционных ID их постоянным заменам для миграции прогресса."""
-    return {lesson["legacy_id"]: lesson["id"] for lesson in LESSONS}
+    return {
+        lesson["legacy_id"]: lesson["id"]
+        for lesson in LESSONS
+        if lesson["legacy_id"] != lesson["id"]
+    }

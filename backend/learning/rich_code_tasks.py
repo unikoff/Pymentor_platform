@@ -14,7 +14,7 @@ from learning.course_content import postgresql as _postgresql
 from learning.course_content import async_api as _async_api
 from learning.course_content import deployment as _deployment
 from learning.course_content import lms as _lms
-from learning.practice_helpers import _contract, _dynamic_script, _script, _solve
+from learning.practice_helpers import _contract, _dynamic_script, _script, _solve, lesson_catalog_key
 
 
 FOUNDATIONS_TRACK = "Основы Python и мышление программиста"
@@ -68,11 +68,11 @@ LMS_CODE_TASKS = _lms.CODE_TASKS
 
 def get_code_tasks(track_id: str, filename: str) -> list[dict[str, Any]]:
     """Возвращает задачи редактора только для тем, проверяемых без доступа к ОС."""
-    match = re.match(r"^(\d+)\s+-\s+", filename)
+    match = re.match(r"^(\d+(?:\.\d+)*)\s+-\s+", filename)
     if match is None:
         return []
 
-    lesson_number = int(match.group(1))
+    lesson_number = lesson_catalog_key(match.group(1))
     tasks_by_track = {
         FOUNDATIONS_TRACK: FOUNDATIONS_CODE_TASKS,
         DEEPER_TRACK: DEEPER_CODE_TASKS,
