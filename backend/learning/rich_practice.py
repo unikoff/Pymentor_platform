@@ -14,7 +14,7 @@ from learning.course_content import postgresql as _postgresql
 from learning.course_content import async_api as _async_api
 from learning.course_content import deployment as _deployment
 from learning.course_content import lms as _lms
-from learning.practice_helpers import _exercise
+from learning.practice_helpers import _exercise, lesson_catalog_key
 
 
 FOUNDATIONS_TRACK = "Основы Python и мышление программиста"
@@ -117,9 +117,9 @@ def get_manual_practice(track_id: str, filename: str) -> list[dict[str, Any]]:
     if overview is not None:
         return overview
 
-    match = re.match(r"^(\d+)\s+-\s+", filename)
+    match = re.match(r"^(\d+(?:\.\d+)*)\s+-\s+", filename)
     if match is None:
         return []
 
-    lesson_number = int(match.group(1))
+    lesson_number = lesson_catalog_key(match.group(1))
     return practice_by_track.get(track_id, {}).get(lesson_number, [])
