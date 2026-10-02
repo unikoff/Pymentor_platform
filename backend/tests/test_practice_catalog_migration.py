@@ -60,7 +60,16 @@ class PracticeCatalogMigrationTests(unittest.TestCase):
                         ("manual", block.MANUAL_PRACTICE, package.MANUAL_PRACTICE, rich_practice.get_manual_practice),
                         ("code", block.CODE_TASKS, package.CODE_TASKS, rich_code_tasks.get_code_tasks),
                     ):
-                        self.assertEqual(set(local), {key for key in merged if first <= key <= last})
+                        self.assertEqual(
+                            set(local),
+                            {
+                                key
+                                for key in merged
+                                if first
+                                <= (int(key.split(".", 1)[0]) if isinstance(key, str) else key)
+                                <= last
+                            },
+                        )
                         for number, tasks in local.items():
                             self.assertIs(tasks, merged[number])
                             for alias in package.TRACK_ALIASES:

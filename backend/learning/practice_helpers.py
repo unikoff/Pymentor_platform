@@ -2,7 +2,18 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, TypeAlias
+
+
+LessonKey: TypeAlias = int | str
+
+
+def lesson_catalog_key(number: str) -> LessonKey:
+    """Converts a numeric filename prefix to its int or canonical dotted key."""
+    parts = [str(int(part)) for part in number.split(".")]
+    if len(parts) == 1:
+        return int(parts[0])
+    return ".".join(parts)
 
 
 def _exercise(
@@ -93,10 +104,10 @@ def _dynamic_script(
 
 
 def merge_lesson_maps(
-    *catalogs: dict[int, list[dict[str, Any]]],
-) -> dict[int, list[dict[str, Any]]]:
+    *catalogs: dict[LessonKey, list[dict[str, Any]]],
+) -> dict[LessonKey, list[dict[str, Any]]]:
     """Объединяет блоки без потери ключей и без копирования карточек."""
-    merged: dict[int, list[dict[str, Any]]] = {}
+    merged: dict[LessonKey, list[dict[str, Any]]] = {}
     for catalog in catalogs:
         for number, tasks in catalog.items():
             if number in merged:
@@ -108,12 +119,26 @@ def merge_lesson_maps(
 def validate_block(
     first_lesson: int,
     last_lesson: int,
-    *catalogs: dict[int, list[dict[str, Any]]],
+    *catalogs: dict[LessonKey, list[dict[str, Any]]],
 ) -> None:
     """Проверяет диапазон каждого вида практики независимо от другого."""
     for catalog in catalogs:
         for number in catalog:
-            if type(number) is not int or not first_lesson <= number <= last_lesson:
+            if type(number) is int:
+                base_number = number
+                valid_key = True
+            elif isinstance(number, str):
+                parts = number.split(".")
+                valid_key = (
+                    len(parts) >= 2
+                    and all(part.isdigit() and str(int(part)) == part for part in parts)
+                    and all(int(part) > 0 for part in parts)
+                )
+                base_number = int(parts[0]) if valid_key else -1
+            else:
+                valid_key = False
+                base_number = -1
+            if not valid_key or not first_lesson <= base_number <= last_lesson:
                 raise ValueError(
                     f"Номер занятия {number!r} вне диапазона блока {first_lesson}–{last_lesson}"
                 )
