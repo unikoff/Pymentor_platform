@@ -217,7 +217,8 @@ class CodeRunnerRegressionTests(unittest.TestCase):
                 task["title"]
                 for task in tasks
                 if set(task.get("requirements", {}).get("nodes", []))
-                & {"IfExp", "Lambda", "ListComp", "GeneratorExp", "Set", "Dict"}
+                # Dictionary literals are introduced explicitly in foundation lesson 12.
+                & {"IfExp", "Lambda", "ListComp", "GeneratorExp", "Set"}
             ]
         )
 
