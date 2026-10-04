@@ -20,6 +20,41 @@ from .schemas import CodeRunResponse, CodeSubmitRequest, CodeSubmitResponse, Les
 learning_router = APIRouter()
 
 
+def _uses_persisted_task_progress(lesson: dict) -> bool:
+    return str(lesson.get("source_file", "")).startswith("foundations/block_03/")
+
+
+def _lesson_tasks_are_complete(lesson: dict, user_id: int, db: Session) -> bool:
+    tasks = lesson.get("tasks", [])
+    if not tasks:
+        return True
+
+    completed_revisions = user_crud.get_completed_task_revisions(
+        user_id=user_id,
+        task_ids=[task["id"] for task in tasks],
+        db=db,
+    )
+    return all(completed_revisions.get(task["id"]) == task.get("revision") for task in tasks)
+
+
+def _lesson_completion_status(lesson: dict, completed_ids: set[str], task_revisions: dict[str, str]) -> bool:
+    if lesson["id"] not in completed_ids:
+        stored_lesson_completion = False
+    else:
+        stored_lesson_completion = True
+
+    if not _uses_persisted_task_progress(lesson) or not lesson.get("tasks"):
+        return stored_lesson_completion
+
+    all_tasks_complete = all(
+        task_revisions.get(task["id"]) == task.get("revision")
+        for task in lesson["tasks"]
+    )
+    if lesson.get("manual_practice"):
+        return stored_lesson_completion and all_tasks_complete
+    return all_tasks_complete
+
+
 def get_db():
     db = user_crud.get_db()
     try:
@@ -65,11 +100,31 @@ def get_lesson_access(lesson: dict, user: models.User | None) -> tuple[bool, str
 def build_lessons_payload(track_id: str, user: models.User | None, db: Session) -> list[dict]:
     lessons = get_public_lessons(track_id)
     completed_ids = user_crud.get_completed_lesson_ids(user.id, db) if user else set()
+    block_three_tasks = [
+        task
+        for lesson in lessons
+        if _uses_persisted_task_progress(lesson)
+        for task in lesson.get("tasks", [])
+    ]
+    completed_task_revisions = (
+        user_crud.get_completed_task_revisions(
+            user_id=user.id,
+            task_ids=[task["id"] for task in block_three_tasks],
+            db=db,
+        )
+        if user
+        else {}
+    )
     for lesson in lessons:
         is_available, locked_reason = get_lesson_access(lesson, user)
         lesson["is_available"] = is_available
         lesson["locked_reason"] = locked_reason
-        lesson["completed"] = lesson["id"] in completed_ids
+        lesson["completed"] = _lesson_completion_status(lesson, completed_ids, completed_task_revisions)
+        if _uses_persisted_task_progress(lesson):
+            for task in lesson.get("tasks", []):
+                task["completed"] = (
+                    completed_task_revisions.get(task["id"]) == task.get("revision")
+                )
         if not is_available:
             # В списке оставляем только навигационные данные и признак блокировки.
             # Полная теория и практические задания выдаются только после проверки доступа.
@@ -88,7 +143,29 @@ async def list_tracks(request: Request, db: Session = Depends(get_db)):
     tracks = []
     for track in get_tracks_summary():
         countable_ids = track.pop("countable_lesson_ids")
-        track["lessons_completed"] = sum(1 for lesson_id in countable_ids if lesson_id in completed_ids)
+        source_track = find_track(track["id"])
+        source_lessons = source_track["lessons"] if source_track else []
+        block_three_tasks = [
+            task
+            for lesson in source_lessons
+            if _uses_persisted_task_progress(lesson)
+            for task in lesson.get("tasks", [])
+        ]
+        task_revisions = (
+            user_crud.get_completed_task_revisions(
+                user_id=user.id,
+                task_ids=[task["id"] for task in block_three_tasks],
+                db=db,
+            )
+            if user
+            else {}
+        )
+        track["lessons_completed"] = sum(
+            1
+            for lesson in source_lessons
+            if lesson["id"] in countable_ids
+            and _lesson_completion_status(lesson, completed_ids, task_revisions)
+        )
         tracks.append(track)
 
     return {
@@ -136,6 +213,12 @@ async def complete_lesson(lesson_id: str, request: Request, db: Session = Depend
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Этот урок засчитывается автоматически после решения практики.",
+        )
+
+    if _uses_persisted_task_progress(lesson) and not _lesson_tasks_are_complete(lesson, user.id, db):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Сначала завершите все редакторские задания.",
         )
 
     # Старые вкладки с позиционным ID по-прежнему принимаются find_lesson(),
@@ -199,10 +282,21 @@ async def submit_task(task_id: str, payload: CodeSubmitRequest, request: Request
     _require_current_task_revision(task, payload.task_revision)
     result = run_python_task(code=payload.code, task=task)
 
-    # Успешная проверка засчитывает урок залогиненному студенту.
+    # Обычное редакторское задание засчитывает урок после успешной проверки.
+    # Для практики блока 3 сохраняем результат каждой карточки отдельно.
     if user is not None and result.get("ok"):
         lesson = find_lesson_by_task(task_id)
-        if lesson is not None:
+        has_mixed_practice = bool(lesson and lesson.get("tasks") and lesson.get("manual_practice"))
+        if lesson is not None and _uses_persisted_task_progress(lesson):
+            user_crud.mark_task_completed(
+                user_id=user.id,
+                task_id=task["id"],
+                task_revision=task["revision"],
+                db=db,
+            )
+            if not has_mixed_practice and _lesson_tasks_are_complete(lesson, user.id, db):
+                user_crud.mark_lesson_completed(user_id=user.id, lesson_id=lesson["id"], db=db)
+        elif lesson is not None and not has_mixed_practice:
             user_crud.mark_lesson_completed(user_id=user.id, lesson_id=lesson["id"], db=db)
 
     return result

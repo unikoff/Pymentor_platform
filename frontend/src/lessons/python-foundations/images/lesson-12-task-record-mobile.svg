@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="1360" viewBox="0 0 760 1360" role="img" aria-labelledby="title desc">
+  <title id="title">A task dictionary with four required fields</title>
+  <desc id="desc">Each key in one task record points to its stored value.</desc>
+  <rect width="760" height="1520" rx="28" fill="#111412"/>
+  <text x="64" y="92" fill="#F5F2EB" font-family="Manrope, Segoe UI, sans-serif" font-size="42" font-weight="700">Task record</text>
+  <text x="64" y="148" fill="#B8B4AA" font-family="Manrope, Segoe UI, sans-serif" font-size="28">Four required fields</text>
+  <rect x="40" y="205" width="680" height="1100" rx="24" fill="#191D1A" stroke="#354039" stroke-width="2"/>
+  <text x="78" y="272" fill="#F5F2EB" font-family="Consolas, monospace" font-size="36" font-weight="700">task</text>
+  <text x="82" y="342" fill="#B8B4AA" font-family="Manrope, Segoe UI, sans-serif" font-size="24" letter-spacing="2">KEY</text>
+  <text x="472" y="342" fill="#B8B4AA" font-family="Manrope, Segoe UI, sans-serif" font-size="24" letter-spacing="2">VALUE</text>
+  <g fill="#111412" stroke="#354039" stroke-width="2">
+    <rect x="70" y="370" width="270" height="150" rx="16"/>
+    <rect x="450" y="370" width="240" height="150" rx="16"/>
+    <rect x="70" y="610" width="270" height="150" rx="16"/>
+    <rect x="450" y="610" width="240" height="150" rx="16"/>
+    <rect x="70" y="850" width="270" height="150" rx="16"/>
+    <rect x="450" y="850" width="240" height="150" rx="16"/>
+    <rect x="70" y="1090" width="270" height="150" rx="16"/>
+    <rect x="450" y="1090" width="240" height="150" rx="16"/>
+  </g>
+  <g fill="#F5F2EB" font-family="Consolas, monospace" font-size="30">
+    <text x="102" y="458">"id"</text>
+    <text x="482" y="458">31</text>
+    <text x="102" y="698">"title"</text>
+    <text x="482" y="682" font-size="26">"Повторить</text>
+    <text x="482" y="718" font-size="26">пример"</text>
+    <text x="102" y="938">"priority"</text>
+    <text x="482" y="938">2</text>
+    <text x="102" y="1178">"is_done"</text>
+    <text x="482" y="1178">False</text>
+  </g>
+  <g fill="none" stroke="#8FE4AD" stroke-width="4" stroke-linecap="butt">
+    <path d="M 340 445 H 436"/>
+    <path d="M 340 685 H 436"/>
+    <path d="M 340 925 H 436"/>
+    <path d="M 340 1165 H 436"/>
+  </g>
+  <g fill="#8FE4AD">
+    <path d="M 436 439 L 450 445 L 436 451 Z"/>
+    <path d="M 436 679 L 450 685 L 436 691 Z"/>
+    <path d="M 436 919 L 450 925 L 436 931 Z"/>
+    <path d="M 436 1159 L 450 1165 L 436 1171 Z"/>
+  </g>
+</svg>

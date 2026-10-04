@@ -207,10 +207,10 @@ GET {{base_url}}/get
 
 Для сохранённых collections и environments войдём в аккаунт Postman и откроем workspace, рабочее пространство. Без входа lightweight API Client позволяет отправить запрос, но не сохранить его в collection или использовать environment.
 
-1. В боковой панели откроем `Collections`, нажмём `+` и выберем `Collection`.
-2. В редакторе request нажмём `Save`, затем `New Collection`, зададим имя и ещё раз нажмём `Save`. Так запрос окажется именно в созданной collection.
-3. Environment создадим через `+` в боковой панели и `Environments` либо через `+` в селекторе окружения справа вверху. Добавим `base_url` и выберем `Echo` в селекторе, чтобы сделать его активным.
-4. Для экспорта откроем меню collection и выберем `More → Export collection → Export JSON`. Для environment откроем меню `Echo` и выберем `Export`.
+1. В боковой панели откроем `Collections` → `+` → `Collection` и зададим имя `Planner HTTP Lab`.
+2. Создадим environment `Echo` через `+` в боковой панели → `Environments` либо через `+` в селекторе окружения справа вверху. Добавим `base_url` и выберем `Echo` активным.
+3. Когда GET и POST уже настроены по примерам выше, для каждого нажмём `Save` и выберем существующую `Planner HTTP Lab`. Не выбираем `New Collection`, потому что нужная collection уже создана.
+4. Для экспорта откроем меню `Planner HTTP Lab` и выберем `More → Export collection → Export JSON`. Для environment откроем меню `Echo` и выберем `Export`.
 5. Для проверки восстановления выберем `Use resources or import → Import` и загрузим оба JSON-файла. Импортированная collection должна содержать оба запроса; после выбора `Echo` проверим подстановку `base_url` и повторно отправим запросы.
 
 Названия пунктов могут немного отличаться в разных версиях Postman. Важно получить два файла: один с запросами, другой с `base_url`. В учебных файлах оставим только безопасные данные, без паролей, токенов и личной информации. Echo не требует учётных данных.
@@ -245,10 +245,10 @@ Postman собирает request
 Путь практики:
 
 1. Подготовим `postman/` в существующем Planner.
-2. Создадим collection `Planner HTTP Lab` и environment `Echo` с `base_url=https://postman-echo.com`.
-3. Отправим GET `/get` с query `is_done=false` и `limit=2`. Найдём в `args` обе строки.
-4. Отправим POST `/post` с JSON body, содержащим `title` и `priority`. Проверим status и отражённые поля в `json`.
-5. Сохраним оба request, отправим их повторно и экспортируем collection и environment в `postman/`.
+2. Создадим пустую collection `Planner HTTP Lab` и environment `Echo` с `base_url=https://postman-echo.com`.
+3. Настроим GET `/get` с query `is_done=false` и `limit=2`, сохраним его в существующую `Planner HTTP Lab` и найдём обе строки в `args`.
+4. Настроим POST `/post` с JSON body, содержащим `title` и `priority`, сохраним в ту же collection и проверим status и отражённые поля в `json`.
+5. Откроем оба запроса из collection, отправим повторно и экспортируем collection и environment в `postman/`.
 6. Импортируем экспортированные файлы, проверим оба запроса и активное окружение, затем повторим отправку.
 
 Итоговые файлы будут лежать рядом с прежним проектом:

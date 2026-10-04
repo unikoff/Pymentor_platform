@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1672" height="836" viewBox="0 0 1672 836" fill="none">
+<svg xmlns="http://www.w3.org/2000/svg" width="1672" height="620" viewBox="0 0 1672 620" fill="none">
   <defs>
     <marker id="arrow54" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="userSpaceOnUse">
       <path d="M1 1L10 6L1 11" stroke="#83DDAA" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -22,24 +22,22 @@
       .warning{fill:#E7C39F;font:600 18px system-ui,sans-serif}
     </style>
   </defs>
-  <rect class="bg" width="1672" height="836" rx="28"/>
-  <text class="title" x="68" y="76">Один адрес, разные причины ответа</text>
-  <text class="subtitle" x="70" y="112">Валидный id доходит до PlannerService. Неверный тип останавливается раньше.</text>
+  <rect class="bg" width="1672" height="620" rx="28"/>
+  <g transform="translate(0 -100)">
 
   <rect class="panel" x="58" y="190" width="330" height="146" rx="22"/>
-  <text class="label" x="84" y="226">КЛИЕНТ</text>
+  <text class="label" x="84" y="226">CLIENT</text>
   <text class="mono" x="84" y="267">GET /tasks/17</text>
-  <text class="body" x="84" y="302">просит одну задачу</text>
 
   <rect class="route" x="462" y="190" width="378" height="146" rx="22"/>
-  <text class="label" x="488" y="226">FASTAPI</text>
+  <text class="label" x="488" y="226">FastAPI</text>
   <text class="mono" x="488" y="267">task_id: int</text>
-  <text class="body" x="488" y="302">извлекает и проверяет path</text>
+  <text class="body" x="488" y="302">type check</text>
 
   <rect class="soft" x="914" y="190" width="388" height="146" rx="22"/>
-  <text class="label" x="940" y="226">PLANNERSERVICE</text>
+  <text class="label" x="940" y="226">PlannerService</text>
   <text class="mono" x="940" y="267">get_task(task_id)</text>
-  <text class="body" x="940" y="302">ищет в данных Planner</text>
+  <text class="body" x="940" y="302">lookup by id</text>
 
   <path class="line" d="M388 263H450"/>
   <path class="line" d="M840 263H902"/>
@@ -48,9 +46,9 @@
   <text class="code" x="670" y="385">abc</text>
   <path class="line" d="M651 410V464"/>
   <rect class="error" x="430" y="470" width="400" height="166" rx="22"/>
-  <text class="label" x="458" y="508">ПРОВЕРКА ТИПА НЕ ПРОЙДЕНА</text>
-  <text class="status" x="458" y="550">422 Unprocessable Entity</text>
-  <text class="body" x="458" y="586">обработчик и сервис не вызваны</text>
+  <text class="label" x="458" y="508">INVALID ID TYPE</text>
+  <text class="status" x="458" y="550">422</text>
+  <text class="body" x="458" y="586">before handler</text>
 
   <path class="branch" d="M1108 336V410"/>
   <path class="branch" d="M1108 410H1034V464"/>
@@ -58,16 +56,14 @@
   <path class="branch" d="M1108 410H1432V464"/>
   <path class="line" d="M1432 410V464"/>
   <rect class="success" x="874" y="470" width="320" height="166" rx="22"/>
-  <text class="label" x="900" y="508">ПУБЛИЧНЫЙ ОТВЕТ</text>
-  <text class="status" x="900" y="550">200 OK</text>
+  <text class="label" x="900" y="508">TASK FOUND</text>
+  <text class="status" x="900" y="550">200</text>
   <text class="mono" x="900" y="580">id · title · priority</text>
   <text class="mono" x="900" y="608">is_done</text>
 
   <rect class="error" x="1272" y="470" width="320" height="166" rx="22"/>
-  <text class="label" x="1298" y="508">РЕСУРС ОТСУТСТВУЕТ</text>
-  <text class="status" x="1298" y="550">404 Not Found</text>
-  <text class="body" x="1298" y="586">detail: Task not found</text>
-
-  <rect class="panel" x="430" y="700" width="1162" height="76" rx="18"/>
-  <text class="warning" x="462" y="746">Ошибка чтения JSON не означает отсутствие Task и не превращается в 404.</text>
+  <text class="label" x="1298" y="508">TASK NOT FOUND</text>
+  <text class="status" x="1298" y="550">404</text>
+  <text class="warning" x="462" y="680">JSON READ ERROR ≠ 404</text>
+  </g>
 </svg>

@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1672" height="836" viewBox="0 0 1672 836" role="img" aria-labelledby="title desc">
+  <title id="title">Command loop paths</title>
+  <desc id="desc">The outer command loop reads and normalizes each command. Calc runs a title loop and the existing calculation. Both the result and an unknown command go through one next-command node back to the prompt. Exit breaks out of the command loop.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="18" markerHeight="18" viewBox="0 0 18 18" refX="15" refY="9" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M2 2 L15 9 L2 16" fill="none" stroke="#8FE4AD" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+    </marker>
+  </defs>
+  <rect width="1672" height="836" fill="#111412" />
+  <rect x="64" y="250" width="1544" height="420" rx="24" fill="#151915" stroke="#354039" stroke-width="2" />
+
+  <g fill="none" stroke="#8FE4AD" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)">
+    <path d="M316 410 H360" />
+    <path d="M580 410 H630" />
+    <path d="M850 410 H930" />
+    <path d="M1180 400 H1270" />
+    <path d="M952 330 V288 H1158 V330" />
+    <path d="M740 350 V200" />
+    <path d="M850 155 H930" />
+    <path d="M740 470 V520" />
+    <path d="M630 567 H570" />
+    <path d="M460 535 V500 H206 V470" />
+    <path d="M1410 470 V655 H460 V630" />
+  </g>
+
+  <g fill="#191D1A" stroke="#354039" stroke-width="2">
+    <rect x="96" y="350" width="220" height="120" rx="22" />
+    <rect x="360" y="350" width="220" height="120" rx="22" />
+    <rect x="630" y="350" width="220" height="120" rx="22" />
+    <rect x="930" y="330" width="250" height="140" rx="22" />
+    <rect x="1270" y="330" width="280" height="140" rx="22" />
+    <rect x="630" y="520" width="220" height="95" rx="22" />
+    <rect x="350" y="535" width="220" height="95" rx="22" />
+    <rect x="630" y="110" width="220" height="90" rx="22" />
+    <rect x="930" y="110" width="280" height="90" rx="22" />
+  </g>
+
+  <g fill="#B8B4AA" font-family="Manrope, Segoe UI, sans-serif" font-size="28" font-weight="700">
+    <text x="96" y="292">Command loop</text>
+  </g>
+  <g fill="#F5F2EB" font-family="Manrope, Segoe UI, sans-serif" text-anchor="middle">
+    <text x="206" y="399" font-size="30" font-weight="700">Read command</text>
+    <text x="206" y="438" fill="#B8B4AA" font-family="Consolas, monospace" font-size="24">input()</text>
+    <text x="470" y="399" font-size="30" font-weight="700">Normalize</text>
+    <text x="470" y="438" fill="#B8B4AA" font-family="Consolas, monospace" font-size="22">strip().lower()</text>
+    <text x="740" y="399" font-size="30" font-weight="700">Choose</text>
+    <text x="740" y="438" fill="#B8B4AA" font-family="Consolas, monospace" font-size="24">calc / exit</text>
+    <text x="1055" y="386" font-size="29" font-weight="700">Title loop</text>
+    <text x="1055" y="425" fill="#B8B4AA" font-family="Consolas, monospace" font-size="22">repeat if empty</text>
+    <text x="1410" y="386" font-size="29" font-weight="700">Existing calc</text>
+    <text x="1410" y="425" fill="#B8B4AA" font-family="Consolas, monospace" font-size="23">for → result</text>
+    <text x="740" y="559" font-size="25" font-weight="700">Unknown</text>
+    <text x="740" y="590" fill="#B8B4AA" font-size="21">refuse</text>
+    <text x="460" y="574" font-size="25" font-weight="700">Next command</text>
+    <text x="740" y="166" font-size="28" font-weight="700">break</text>
+    <text x="1070" y="166" font-size="28" font-weight="700">After loop</text>
+  </g>
+  <g fill="#8FE4AD" font-family="Consolas, monospace" font-size="22" font-weight="700">
+    <text x="878" y="395">calc</text>
+    <text x="760" y="503">other</text>
+    <text x="760" y="237">exit</text>
+  </g>
+</svg>

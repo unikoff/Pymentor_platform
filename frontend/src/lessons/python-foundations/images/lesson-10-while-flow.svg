@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1672" height="836" viewBox="0 0 1672 836" fill="none" role="img" aria-labelledby="while-title while-desc">
+  <title id="while-title">While loop control flow</title>
+  <desc id="while-desc">A true condition enters the loop body, then updates state and checks again. A false condition or break exits after the loop. Continue skips the rest of the body and checks the condition again.</desc>
+  <defs>
+    <marker id="arrow" markerUnits="userSpaceOnUse" markerWidth="18" markerHeight="18" viewBox="0 0 18 18" refX="15" refY="9" orient="auto">
+      <path d="M3 3L15 9L3 15" stroke="#8FE4AD" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <style>
+      .node { fill: #191D1A; stroke: #354039; stroke-width: 2; }
+      .heading { font-family: Manrope, "Segoe UI", sans-serif; font-size: 48px; font-weight: 500; fill: #F5F2EB; }
+      .detail { font-family: Consolas, "Courier New", monospace; font-size: 40px; fill: #B8B4AA; }
+      .edge { font-family: Manrope, "Segoe UI", sans-serif; font-size: 40px; font-weight: 500; fill: #8FE4AD; }
+      .flow { stroke: #8FE4AD; stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#arrow); }
+    </style>
+  </defs>
+  <rect width="1672" height="836" rx="28" fill="#111412"/>
+
+  <rect class="node" x="572" y="150" width="528" height="160" rx="24"/>
+  <text class="heading" x="836" y="215" text-anchor="middle">CONDITION</text>
+  <text class="detail" x="836" y="266" text-anchor="middle">while state &gt; 0</text>
+
+  <rect class="node" x="572" y="390" width="528" height="140" rx="24"/>
+  <text class="heading" x="836" y="450" text-anchor="middle">BODY</text>
+  <text class="detail" x="836" y="495" text-anchor="middle">action</text>
+
+  <rect class="node" x="572" y="620" width="528" height="140" rx="24"/>
+  <text class="heading" x="836" y="680" text-anchor="middle">UPDATE STATE</text>
+  <text class="detail" x="836" y="725" text-anchor="middle">move toward stop</text>
+
+  <rect class="node" x="1265" y="366" width="390" height="184" rx="24"/>
+  <text class="heading" x="1460" y="440" text-anchor="middle">AFTER LOOP</text>
+  <text class="detail" x="1460" y="492" text-anchor="middle">next statement</text>
+
+  <path class="flow" d="M836 310V390"/>
+  <text class="edge" x="870" y="354">TRUE</text>
+
+  <path class="flow" d="M836 530V620"/>
+  <text class="edge" x="870" y="585">NEXT</text>
+
+  <path class="flow" d="M572 690H488V230H572"/>
+  <text class="edge" x="235" y="590">RECHECK</text>
+
+  <path class="flow" d="M1100 210H1460V366"/>
+  <text class="edge" x="1130" y="190">FALSE</text>
+
+  <path class="flow" d="M1100 460H1265"/>
+  <text class="edge" x="1125" y="438">BREAK</text>
+
+  <path class="flow" d="M572 430H430V180H572"/>
+  <text class="edge" x="190" y="382">CONTINUE</text>
+</svg>

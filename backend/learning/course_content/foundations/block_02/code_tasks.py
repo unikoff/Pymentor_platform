@@ -1,162 +1,470 @@
 from typing import Any
 
-CODE_TASKS: dict[int, list[dict[str, Any]]] = {
-    6: [{'title': 'Короткий код и карточка задачи',
-      'level': 'easy',
-      'mode': 'script',
-      'prompt': 'Получите clean_title = raw_title.strip(). Возьмите первые три символа, переведите их в верхний '
-                'регистр и сохраните в short_code. Через f-строку выведите [КОД] Заголовок | приоритет: число.',
-      'contract': {'given': 'Платформа создаёт raw_title с пробелами по краям и минимум тремя буквами после очистки, '
-                            'а также целое число priority.',
-                   'todo': 'Получите clean_title = raw_title.strip(). Возьмите первые три символа, переведите их в '
-                           'верхний регистр и сохраните в short_code. Через f-строку выведите [КОД] Заголовок | '
-                           'приоритет: число.',
-                   'check': 'Проверяются разные заголовки. Нужны strip(), срез [:3], upper() и f-строка. '
-                            'Сравнивается весь текст.'},
-      'requirements': {'items': ['strip()', 'срез первых трёх символов', 'upper()', 'f-строка'],
-                       'names': ['raw_title', 'priority', 'clean_title', 'short_code'],
-                       'attributes': ['strip', 'upper'],
-                       'nodes': ['JoinedStr'],
-                       'calls': ['print']},
-      'starter_code': '# raw_title и priority уже созданы\n# Получите clean_title, short_code и выведите карточку\n',
-      'tests': [{'name': 'Python',
-                 'namespace': {'raw_title': '  Python практика  ', 'priority': 2},
-                 'expected': '[PYT] Python практика | приоритет: 2',
-                 'assert': 'stdout'},
-                {'name': 'README',
-                 'namespace': {'raw_title': '  README проекта ', 'priority': 4},
-                 'expected': '[REA] README проекта | приоритет: 4',
-                 'assert': 'stdout'}],
-      'reference_code': 'clean_title = raw_title.strip()\n'
-                        'short_code = clean_title[:3].upper()\n'
-                        "print(f'[{short_code}] {clean_title} | приоритет: {priority}')\n"}],
-    7: [{'title': 'Попадает ли задача в срочные',
-      'level': 'easy',
-      'mode': 'script',
-      'prompt': 'Создайте is_urgent. Значение должно быть True только когда priority не меньше 4, задача не '
-                'выполнена и days_left больше 0. Используйте and и not. Выведите только is_urgent.',
-      'contract': {'given': 'Платформа создаёт priority от 1 до 5, is_done как bool и days_left как целое число.',
-                   'todo': 'Создайте is_urgent. Значение должно быть True только когда priority не меньше 4, задача '
-                           'не выполнена и days_left больше 0. Используйте and и not. Выведите только is_urgent.',
-                   'check': 'Проверяются срочная, выполненная, просроченная и низкоприоритетная задачи. Ожидается '
-                            'одна строка True или False.'},
-      'requirements': {'items': ['priority >= 4', 'not is_done', 'days_left > 0', 'единое выражение с and'],
-                       'names': ['priority', 'is_done', 'days_left', 'is_urgent'],
-                       'nodes': ['BoolOp'],
-                       'calls': ['print']},
-      'starter_code': '# priority, is_done и days_left уже созданы\n# Создайте и выведите is_urgent\n',
-      'tests': [{'name': 'срочная',
-                 'namespace': {'priority': 4, 'is_done': False, 'days_left': 2},
-                 'expected': 'True',
-                 'assert': 'stdout'},
-                {'name': 'выполненная',
-                 'namespace': {'priority': 5, 'is_done': True, 'days_left': 1},
-                 'expected': 'False',
-                 'assert': 'stdout'},
-                {'name': 'просроченная',
-                 'namespace': {'priority': 5, 'is_done': False, 'days_left': 0},
-                 'expected': 'False',
-                 'assert': 'stdout'},
-                {'name': 'низкий приоритет',
-                 'namespace': {'priority': 3, 'is_done': False, 'days_left': 2},
-                 'expected': 'False',
-                 'assert': 'stdout'}],
-      'reference_code': 'is_urgent = priority >= 4 and not is_done and days_left > 0\nprint(is_urgent)\n'}],
-    8: [{'title': 'Понятный статус задачи',
-      'level': 'easy',
-      'mode': 'script',
-      'prompt': 'Напишите одну цепочку if / elif / else. Если is_done истинно, выведите Выполнена. Иначе, если '
-                'priority не меньше 4, выведите Срочно. Иначе, если priority не меньше 2, выведите В работе. Во всех '
-                'остальных случаях выведите Низкий приоритет.',
-      'contract': {'given': 'Платформа создаёт priority от 1 до 5 и is_done со значением True или False.',
-                   'todo': 'Напишите одну цепочку if / elif / else. Если is_done истинно, выведите Выполнена. Иначе, '
-                           'если priority не меньше 4, выведите Срочно. Иначе, если priority не меньше 2, выведите В '
-                           'работе. Во всех остальных случаях выведите Низкий приоритет.',
-                   'check': 'Проверяются все четыре ветки. Для каждого набора данных должна появиться ровно одна '
-                            'строка.'},
-      'requirements': {'items': ['одна цепочка if / elif / else', 'четыре точных сообщения'],
-                       'names': ['priority', 'is_done'],
-                       'nodes': ['If'],
-                       'calls': ['print']},
-      'starter_code': '# priority и is_done уже созданы\n# Напишите одну цепочку if / elif / elif / else\n',
-      'tests': [{'name': 'выполненная',
-                 'namespace': {'priority': 5, 'is_done': True},
-                 'expected': 'Выполнена',
-                 'assert': 'stdout'},
-                {'name': 'срочная',
-                 'namespace': {'priority': 4, 'is_done': False},
-                 'expected': 'Срочно',
-                 'assert': 'stdout'},
-                {'name': 'обычная',
-                 'namespace': {'priority': 2, 'is_done': False},
-                 'expected': 'В работе',
-                 'assert': 'stdout'},
-                {'name': 'низкий приоритет',
-                 'namespace': {'priority': 1, 'is_done': False},
-                 'expected': 'Низкий приоритет',
-                 'assert': 'stdout'}],
-      'reference_code': 'if is_done:\n'
-                        "    print('Выполнена')\n"
-                        'elif priority >= 4:\n'
-                        "    print('Срочно')\n"
-                        'elif priority >= 2:\n'
-                        "    print('В работе')\n"
-                        'else:\n'
-                        "    print('Низкий приоритет')\n"}],
-    9: [{'title': 'Нумерованный список задач',
-      'level': 'easy',
-      'mode': 'script',
-      'prompt': 'Не создавайте tasks заново. Циклом for и range(len(tasks)) пройдите по индексам. Для каждой задачи '
-                "выведите <номер>. <заголовок>, начиная с номера 1. Например, ['Код', 'README'] даёт 1. Код и 2. "
-                'README.',
-      'contract': {'given': 'Платформа создаёт список строк tasks. Его длина меняется в проверках.',
-                   'todo': 'Не создавайте tasks заново. Циклом for и range(len(tasks)) пройдите по индексам. Для '
-                           "каждой задачи выведите <номер>. <заголовок>, начиная с номера 1. Например, ['Код', "
-                           "'README'] даёт 1. Код и 2. README.",
-                   'check': 'Количество строк должно совпадать с len(tasks), порядок сохраняется, нумерация '
-                            'начинается с 1.'},
-      'requirements': {'items': ['цикл for', 'range(len(tasks))', 'нумерация index + 1', 'f-строка'],
-                       'names': ['tasks'],
-                       'nodes': ['For', 'JoinedStr'],
-                       'calls': ['range', 'len', 'print']},
-      'starter_code': '# tasks уже создан\n# Используйте for и range(len(tasks))\n',
-      'tests': [{'name': 'две задачи',
-                 'namespace': {'tasks': ['Код', 'README']},
-                 'expected': '1. Код\n2. README',
-                 'assert': 'stdout'},
-                {'name': 'три задачи',
-                 'namespace': {'tasks': ['Python', 'Git', 'Тесты']},
-                 'expected': '1. Python\n2. Git\n3. Тесты',
-                 'assert': 'stdout'}],
-      'reference_code': "for index in range(len(tasks)):\n    print(f'{index + 1}. {tasks[index]}')\n"}],
-    10: [{'title': 'Повторная проверка команды',
-       'level': 'easy',
-       'mode': 'script',
-       'prompt': 'Пока command не равна expected_command, выведите Неизвестная команда: <command>, затем присвойте '
-                 'command значение expected_command. После while выведите Принято: <command>. Обе строки соберите '
-                 'через f-строки.',
-       'contract': {'given': 'Runner не использует input(), поэтому повторный ввод моделируется переменными. '
-                             'Платформа создаёт неверную command и правильную expected_command.',
-                    'todo': 'Пока command не равна expected_command, выведите Неизвестная команда: <command>, затем '
-                            'присвойте command значение expected_command. После while выведите Принято: <command>. '
-                            'Обе строки соберите через f-строки.',
-                    'check': 'Проверяются разные команды. Ожидаются ровно две строки. Цикл должен завершиться, '
-                             'потому что command изменяется внутри while.'},
-       'requirements': {'items': ['цикл while', 'изменение command внутри цикла', 'две f-строки'],
-                        'names': ['command', 'expected_command'],
-                        'nodes': ['While', 'JoinedStr'],
-                        'calls': ['print']},
-       'starter_code': '# command и expected_command уже созданы\n# Напишите завершаемый while и итоговый вывод\n',
-       'tests': [{'name': 'list',
-                  'namespace': {'command': 'show', 'expected_command': 'list'},
-                  'expected': 'Неизвестная команда: show\nПринято: list',
-                  'assert': 'stdout'},
-                 {'name': 'exit',
-                  'namespace': {'command': 'stop', 'expected_command': 'exit'},
-                  'expected': 'Неизвестная команда: stop\nПринято: exit',
-                  'assert': 'stdout'}],
-       'reference_code': 'while command != expected_command:\n'
-                         "    print(f'Неизвестная команда: {command}')\n"
-                         '    command = expected_command\n'
-                         "print(f'Принято: {command}')\n"}]
+
+CODE_TASKS: dict[int | str, list[dict[str, Any]]] = {
+    6: [
+        {
+            "title": "Различим длину, индекс и срез",
+            "level": "easy",
+            "mode": "script",
+            "prompt": (
+                "Платформа задаёт непустые text и пустую empty_text. Выведем длину, крайние символы и несколько срезов "
+                "text, затем длину и безопасный срез пустой строки. Отдельно объясним, почему длина строки не является "
+                "последним индексом."
+            ),
+            "contract": {
+                "given": "Платформа задаёт непустую строку text и пустую строку empty_text.",
+                "todo": "Мы покажем len(), индексы первого и последнего символа, безопасные срезы и пустой срез.",
+                "check": "Сверим обычную и односимвольную строки. Для empty_text не используем индексный доступ.",
+            },
+            "requirements": {
+                "items": ["Используем len()", "Показываем первый и последний символ text", "Проверяем срезы с разными границами", "Для пустой строки используем только длину и срез"],
+                "names": ["text", "empty_text"],
+                "calls": ["print", "len"],
+                "nodes": ["Subscript", "Slice"],
+            },
+            "starter_code": "# text и empty_text уже заданы платформой\n# Покажем длину, символы и срезы\n",
+            "hints": [
+                "Длина равна количеству символов, а крайний индекс на единицу меньше длины.",
+                "В срезе правая граница не входит в результат; длинная граница останавливается у конца строки.",
+                "Пустая строка безопасно возвращает длину 0 и пустой срез.",
+            ],
+            "tests": [
+                {"name": "Несколько символов", "namespace": {"text": "Git", "empty_text": ""}, "expected": "3\nG t\nG\nit\n\n0\n\n", "assert": "stdout"},
+                {"name": "Один символ", "namespace": {"text": "A", "empty_text": ""}, "expected": "1\nA A\nA\n\n\n0\n\n", "assert": "stdout"},
+            ],
+            "reference_code": "print(len(text))\nprint(text[0], text[-1])\nprint(text[:1])\nprint(text[1:20])\nprint(text[2:2])\nprint(len(empty_text))\nprint(empty_text[:3])\n",
+        },
+        {
+            "title": "Исправим ошибки доступа к строке",
+            "level": "easy",
+            "mode": "script",
+            "prompt": (
+                "Разберём, почему title[3] для строки Git выходит за границу и почему title[0] = \"g\" пытается "
+                "изменить неизменяемую строку. Затем напечатаем существующий символ и новую строку, собранную из "
+                "символа и среза."
+            ),
+            "contract": {
+                "given": "Строка title задана значением Git.",
+                "todo": "Мы выведем существующий символ и соберём новую строку без присваивания по индексу.",
+                "check": "Ошибочные выражения останутся объяснёнными в условии, а исполняемый ответ завершится без исключения.",
+            },
+            "requirements": {
+                "items": ["Используем существующий индекс", "Создаём новую строку конкатенацией символа и среза", "Не присваиваем значение по индексу"],
+                "names": ["title"],
+                "calls": ["print"],
+                "nodes": ["Subscript", "Slice", "BinOp"],
+            },
+            "starter_code": "title = \"Git\"\n# Выведем символ и соберём новую строку\n",
+            "hints": [
+                "В Git допустимы индексы 0, 1 и 2.",
+                "Строка не меняется на месте, но выражение среза создаёт часть для новой строки.",
+            ],
+            "tests": [
+                {"name": "Исправленные обращения", "namespace": {}, "expected": "t\ngit", "assert": "stdout"},
+            ],
+            "reference_code": "title = \"Git\"\nprint(title[-1])\nnew_title = \"g\" + title[1:]\nprint(new_title)\n",
+        },
+        {
+            "title": "Сохраним результат метода",
+            "level": "easy",
+            "mode": "script",
+            "prompt": (
+                "Сравним вызов upper() без присваивания и сохранённый результат. Затем очистим пробелы вокруг "
+                "названия без смены регистра, а команду подготовим к сравнению через strip() и lower()."
+            ),
+            "contract": {
+                "given": "Используем строки python, Изучить SQL и команду CaLc с пробелами по краям.",
+                "todo": "Мы выведем исходное значение, сохранённый результат метода, название и нормализованную команду.",
+                "check": "Исходная строка остаётся прежней; правило для названия отличается от правила для команды.",
+            },
+            "requirements": {
+                "items": ["Показываем, что upper() без присваивания не меняет переменную", "Сохраняем результат метода в новую переменную", "Очищаем название без смены регистра", "Нормализуем команду до сравнения"],
+                "calls": ["print"],
+                "names": ["sample", "upper_sample", "title", "command"],
+                "attributes": ["upper", "strip", "lower"],
+            },
+            "starter_code": "# Создадим исходные строки и сохраним результаты методов\n",
+            "hints": [
+                "Сначала вызовем upper() отдельно и выведем исходную переменную.",
+                "Для отображаемого названия используем только strip().",
+                "Для команды применим strip().lower() и сравним с calc.",
+            ],
+            "tests": [
+                {"name": "Исходные строки и новые значения", "namespace": {}, "expected": "python\nPYTHON\nИзучить SQL\nTrue", "assert": "stdout"},
+            ],
+            "reference_code": "sample = \"python\"\nsample.upper()\nprint(sample)\nupper_sample = sample.upper()\nprint(upper_sample)\nraw_title = \"  Изучить SQL  \"\ntitle = raw_title.strip()\nraw_command = \"  CaLc  \"\ncommand = raw_command.strip().lower()\nprint(title)\nprint(command == \"calc\")\n",
+        },
+        {
+            "title": "Соберём короткий код заголовка",
+            "level": "easy",
+            "mode": "script",
+            "prompt": (
+                "Для названия с пробелами по краям получим очищенный текст, короткий код из первых трёх символов "
+                "и сообщение с приоритетом. Короткий код здесь показывает работу со строками и не является постоянным номером записи."
+            ),
+            "contract": {
+                "given": "Название Python практика и приоритет 2 заданы в условии.",
+                "todo": "Мы очистим название, преобразуем только первые три символа и соберём карточку f-строкой.",
+                "check": "Полный заголовок сохраняет исходный регистр.",
+            },
+            "requirements": {
+                "items": ["Используем strip(), срез и upper()", "Сохраняем полный заголовок в исходном регистре", "Формируем сообщение f-строкой"],
+                "calls": ["print"],
+                "names": ["clean_title", "short_code", "priority"],
+                "attributes": ["strip", "upper"],
+                "nodes": ["Subscript", "Slice", "JoinedStr"],
+            },
+            "starter_code": "raw_title = \"  Python практика  \"\npriority = 2\n# Подготовим короткий код и сообщение\n",
+            "hints": [
+                "Сначала очистим заголовок по краям.",
+                "Получим срез первых трёх символов и изменим регистр только у него.",
+                "Соберём итоговую строку через f-строку.",
+            ],
+            "tests": [
+                {"name": "Карточка с коротким кодом", "namespace": {}, "expected": "[PYT] Python практика | приоритет: 2", "assert": "stdout"},
+            ],
+            "reference_code": "raw_title = \"  Python практика  \"\npriority = 2\nclean_title = raw_title.strip()\nshort_code = clean_title[:3].upper()\nprint(f\"[{short_code}] {clean_title} | приоритет: {priority}\")\n",
+        },
+    ],
+    7: [
+        {
+            "title": "Соберём скрипт срочности",
+            "level": "easy",
+            "mode": "script",
+            "prompt": (
+                "Платформа задаёт priority, is_done и days_left. Сначала сохраним ответы о высоком приоритете и "
+                "незавершённой задаче, соединим их, а затем добавим проверку положительного остатка дней. Выведем "
+                "промежуточные bool и итоговый is_urgent, чтобы увидеть причину каждого ответа. Дни до срока заданы "
+                "только для этого учебного примера и не являются полем Planner; проверим границу 4 и каждую отдельную причину False."
+            ),
+            "contract": {
+                "given": "Платформа задаёт целый priority, булево is_done и целое days_left.",
+                "todo": "Мы объединим сначала две проверки, затем третью, и выведем промежуточные bool вместе с итогом.",
+                "check": "Проверим границу priority = 4, значение ниже порога, завершённую задачу и нулевой остаток дней.",
+            },
+            "requirements": {
+                "items": ["Сохраняем три отдельных bool для исходных проверок", "Сначала соединяем приоритет и незавершённость", "Добавляем положительный остаток дней к промежуточному результату", "Выводим промежуточные ответы и is_urgent"],
+                "names": ["priority", "is_done", "days_left", "priority_is_high", "task_is_open", "has_time", "urgent_by_priority_and_state", "is_urgent"],
+                "calls": ["print"],
+                "nodes": ["BoolOp", "And", "UnaryOp", "Not", "Compare"],
+            },
+            "starter_code": "# priority, is_done и days_left уже заданы платформой\n# Вычислим и выведем is_urgent\n",
+            "hints": [
+                "Сначала запишем отдельно priority >= 4 и not is_done.",
+                "Через and объединим первые две проверки и выведем промежуточный bool.",
+                "Затем проверим days_left > 0 и соединим этот ответ с промежуточным результатом.",
+            ],
+            "tests": [
+                {"name": "Приоритет на границе", "namespace": {"priority": 4, "is_done": False, "days_left": 2}, "expected": "True True True True True", "assert": "stdout"},
+                {"name": "Ниже порога", "namespace": {"priority": 3, "is_done": False, "days_left": 2}, "expected": "False True True False False", "assert": "stdout"},
+                {"name": "Выше порога", "namespace": {"priority": 5, "is_done": False, "days_left": 2}, "expected": "True True True True True", "assert": "stdout"},
+                {"name": "Задача завершена", "namespace": {"priority": 5, "is_done": True, "days_left": 2}, "expected": "True False True False False", "assert": "stdout"},
+                {"name": "Срок наступил", "namespace": {"priority": 5, "is_done": False, "days_left": 0}, "expected": "True True False True False", "assert": "stdout"},
+            ],
+            "reference_code": "priority_is_high = priority >= 4\ntask_is_open = not is_done\nhas_time = days_left > 0\nurgent_by_priority_and_state = priority_is_high and task_is_open\nis_urgent = urgent_by_priority_and_state and has_time\nprint(priority_is_high, task_is_open, has_time, urgent_by_priority_and_state, is_urgent)\n",
+        },
+    ],
+    9: [
+        {
+            "title": "Обойдём строку",
+            "level": "easy",
+            "mode": "script",
+            "prompt": (
+                "Платформа задаёт строку text. Мы выведем каждый её символ на отдельной строке через прямой for. "
+                "Проверим обычную строку, один символ и пустую строку. Для пустого текста цикл не должен печатать ничего."
+            ),
+            "contract": {
+                "given": "Платформа задаёт строковое значение text. Оно может быть пустым, коротким или содержать несколько символов.",
+                "todo": "Мы обойдём text напрямую и выведем текущий символ на каждом проходе.",
+                "check": "Сверим вывод для трёх размеров строки. Индексация не нужна.",
+            },
+            "requirements": {"items": ["Используем прямой цикл for symbol in text", "Печатаем один текущий символ за проход"]},
+            "starter_code": "# text уже задан платформой\n# Выведем символы по порядку\n",
+            "hints": [
+                "Переменная после for получает очередной символ, а не его позицию.",
+                "Поместим print с отступом внутрь тела цикла.",
+                "Если строка пуста, тело не запустится и вывода не будет.",
+            ],
+            "tests": [
+                {"name": "Несколько символов", "namespace": {"text": "мир"}, "expected": "м\nи\nр", "assert": "stdout"},
+                {"name": "Один символ", "namespace": {"text": "Я"}, "expected": "Я", "assert": "stdout"},
+                {"name": "Пустая строка", "namespace": {"text": ""}, "expected": "", "assert": "stdout"},
+            ],
+            "reference_code": "for symbol in text:\n    print(symbol)\n",
+        },
+        {
+            "title": "Проследим границы range",
+            "level": "easy",
+            "mode": "script",
+            "prompt": (
+                "Платформа задаёт целые start и stop. Сначала выведем числа из range(stop), затем числа из "
+                "range(start, stop), каждое на отдельной строке. Правая граница не входит в обход. Проверим пустые "
+                "диапазоны, range(1), range(3) и диапазон от 2 до 5."
+            ),
+            "contract": {
+                "given": "Платформа задаёт целые start и stop. Значение stop может быть равно нулю или start.",
+                "todo": "Мы выполним два отдельных обхода: range(stop) и range(start, stop).",
+                "check": "Сверим нулевой, одиночный и многозначный диапазоны, включая исключённую правую границу.",
+            },
+            "requirements": {"items": ["Используем оба изучаемых вида range", "Печатаем каждое число внутри цикла", "Не добавляем правую границу вручную"]},
+            "starter_code": "# start и stop уже заданы платформой\n# Сначала обойдём range(stop), затем range(start, stop)\n",
+            "hints": [
+                "В range(stop) последовательность начинается с нуля.",
+                "В range(start, stop) первое значение включено, а stop задаёт границу остановки.",
+                "Запишем два цикла отдельно, чтобы сравнить их последовательности.",
+            ],
+            "tests": [
+                {"name": "Оба обхода пусты", "namespace": {"start": 2, "stop": 0}, "expected": "", "assert": "stdout"},
+                {"name": "Один элемент", "namespace": {"start": 0, "stop": 1}, "expected": "0\n0", "assert": "stdout"},
+                {"name": "Три значения от нуля", "namespace": {"start": 0, "stop": 3}, "expected": "0\n1\n2\n0\n1\n2", "assert": "stdout"},
+                {"name": "Правая граница не входит", "namespace": {"start": 2, "stop": 5}, "expected": "0\n1\n2\n3\n4\n2\n3\n4", "assert": "stdout"},
+            ],
+            "reference_code": "for number in range(stop):\n    print(number)\n\nfor number in range(start, stop):\n    print(number)\n",
+        },
+        {
+            "title": "Обойдём список напрямую",
+            "level": "easy",
+            "mode": "script",
+            "prompt": (
+                "Платформа задаёт список строк samples. Выведем каждый элемент напрямую через for, сохранив порядок "
+                "и повторы. Проверим непустой список, повторяющееся значение и пустой список."
+            ),
+            "contract": {
+                "given": "Платформа задаёт список строк samples. В нём могут быть повторы или не быть элементов.",
+                "todo": "Мы выведем каждый текущий элемент списка на отдельной строке.",
+                "check": "Порядок и число строк должны совпасть со списком; для пустого списка вывода нет.",
+            },
+            "requirements": {"items": ["Используем прямой обход for sample in samples", "Не обращаемся к элементам по индексу"]},
+            "starter_code": "# samples уже задан платформой\n# Выведем каждый элемент по порядку\n",
+            "hints": [
+                "После in укажем сам список.",
+                "Переменная цикла уже содержит строку, которую нужно вывести.",
+                "Повторяющиеся значения остаются отдельными элементами и отдельными проходами.",
+            ],
+            "tests": [
+                {"name": "Порядок и повтор", "namespace": {"samples": ["текст", "цикл", "текст"]}, "expected": "текст\nцикл\nтекст", "assert": "stdout"},
+                {"name": "Один элемент", "namespace": {"samples": ["один"]}, "expected": "один", "assert": "stdout"},
+                {"name": "Пустой список", "namespace": {"samples": []}, "expected": "", "assert": "stdout"},
+            ],
+            "reference_code": "for sample in samples:\n    print(sample)\n",
+        },
+        {
+            "title": "Исправим ошибки прямого обхода",
+            "level": "medium",
+            "mode": "script",
+            "prompt": (
+                "Платформа задаёт список languages и строку text. Исправим два фрагмента. В первом текущую строку "
+                "ошибочно используют как индекс: for language in languages: print(languages[language]). Во втором "
+                "сообщение помещено внутрь цикла символов, хотя должно появиться один раз после обхода:\n\n"
+                "for symbol in text:\n    print(symbol)\n    print(\"Готово\")\n\n"
+                "Выведем названия языков, символы текста, затем один раз напечатаем Готово. Пустой список и пустой "
+                "текст тоже должны завершаться сообщением Готово."
+            ),
+            "contract": {
+                "given": "Платформа задаёт список languages и строку text. Любой из входов может быть пустым.",
+                "todo": "Мы выведем элементы обоих входов прямым обходом, а итоговую строку напечатаем после циклов.",
+                "check": "Текущие элементы не используются как индексы. Готово появляется ровно один раз даже при пустых входах.",
+            },
+            "requirements": {"items": ["Исправляем обращение languages[language] на вывод текущей строки", "Ставим print(\"Готово\") после циклов без отступа", "Не используем индексный доступ"]},
+            "starter_code": "# languages и text уже заданы платформой\n# Выведем их элементы и один раз завершим обход\n",
+            "hints": [
+                "Переменная language уже содержит строку, поэтому передадим её в print напрямую.",
+                "Итоговое сообщение поставим после обоих циклов, на одном уровне с их заголовками.",
+                "Проверка с пустыми входами покажет, что сообщение не зависит от количества проходов.",
+            ],
+            "tests": [
+                {"name": "Оба входа непустые", "namespace": {"languages": ["Python", "Git"], "text": "код"}, "expected": "Python\nGit\nк\nо\nд\nГотово", "assert": "stdout"},
+                {"name": "Пустой список", "namespace": {"languages": [], "text": "код"}, "expected": "к\nо\nд\nГотово", "assert": "stdout"},
+                {"name": "Пустой текст", "namespace": {"languages": ["Python"], "text": ""}, "expected": "Python\nГотово", "assert": "stdout"},
+                {"name": "Оба входа пусты", "namespace": {"languages": [], "text": ""}, "expected": "Готово", "assert": "stdout"},
+            ],
+            "reference_code": "for language in languages:\n    print(language)\n\nfor symbol in text:\n    print(symbol)\n\nprint(\"Готово\")\n",
+        },
+    ],
+    "9.1": [
+        {
+            "title": "Проследим накопитель",
+            "level": "easy",
+            "mode": "script",
+            "prompt": (
+                "Платформа задаёт список целых values, возможно пустой. Цикл выводит сумму после каждого элемента, "
+                "а после обхода один раз выводит общий итог. Входы из нескольких значений, одного значения и пустого "
+                "списка показывают промежуточные и конечные результаты."
+            ),
+            "contract": {
+                "given": "Платформа задаёт список целых values, который может быть пустым.",
+                "todo": "Код создаёт total до цикла, прибавляет каждый элемент и выводит общий итог после цикла.",
+                "check": "Промежуточные суммы сохраняют предыдущие значения; пустой список оставляет начальный итог 0.",
+            },
+            "requirements": {"items": ["total создаётся до цикла со значением 0", "Прежний total участвует в каждом сложении", "Промежуточная сумма выводится внутри цикла, общий итог после цикла"]},
+            "starter_code": "# values уже задан платформой\n# Покажем промежуточные суммы и общий итог\n",
+            "hints": [
+                "Начнём с total = 0 до заголовка for.",
+                "На каждом шаге используем total = total + value.",
+                "Промежуточный print оставим внутри цикла, а общий print поставим после него.",
+            ],
+            "tests": [
+                {"name": "Несколько значений", "namespace": {"values": [2, 4, 1]}, "expected": "2\n6\n7\n7", "assert": "stdout"},
+                {"name": "Одно значение", "namespace": {"values": [4]}, "expected": "4\n4", "assert": "stdout"},
+                {"name": "Пустой список", "namespace": {"values": []}, "expected": "0", "assert": "stdout"},
+            ],
+            "reference_code": "total = 0\nfor value in values:\n    total = total + value\n    print(total)\nprint(total)\n",
+        },
+        {
+            "title": "Различим сумму и количество",
+            "level": "easy",
+            "mode": "script",
+            "prompt": (
+                "Платформа задаёт список целых scores, возможно пустой. Код отдельно выводит сумму значений и "
+                "количество обработанных элементов после обхода. Пустой, одноэлементный и многозначный списки "
+                "показывают, что сумма и счётчик меняются по разным правилам."
+            ),
+            "contract": {
+                "given": "Платформа задаёт список целых scores. Он может быть пустым или содержать несколько значений.",
+                "todo": "Код хранит total и count в отдельных переменных, обновляет их разными действиями и выводит после обхода.",
+                "check": "total хранит сумму элементов, count увеличивается на единицу за каждый проход.",
+            },
+            "requirements": {"items": ["total и count созданы до цикла со значением 0", "К total прибавляется значение score", "count увеличивается на 1 за каждый проход", "Оба итога выводятся после цикла"]},
+            "starter_code": "# scores уже задан платформой\n# Выведем сумму, затем количество элементов\n",
+            "hints": [
+                "Сумма и количество отвечают на разные вопросы.",
+                "Текущий score прибавляется к total, а к count каждый раз прибавляется 1.",
+                "Оба значения создаются до цикла и печатаются после него.",
+            ],
+            "tests": [
+                {"name": "Несколько элементов", "namespace": {"scores": [3, 5, 8]}, "expected": "16\n3", "assert": "stdout"},
+                {"name": "Один элемент", "namespace": {"scores": [4]}, "expected": "4\n1", "assert": "stdout"},
+                {"name": "Пустой список", "namespace": {"scores": []}, "expected": "0\n0", "assert": "stdout"},
+            ],
+            "reference_code": "total = 0\ncount = 0\nfor score in scores:\n    total = total + score\n    count = count + 1\nprint(total)\nprint(count)\n",
+        },
+    ],
+    10: [
+        {
+            "title": "Конечный цикл по состоянию",
+            "level": "easy",
+            "mode": "script",
+            "prompt": (
+                "Платформа создаёт целое limit. Мы используем счётчик attempt, чтобы вывести номера попыток от 1 "
+                "до limit включительно, по одному в строке, а затем строку Готово. При limit = 0 тело цикла не "
+                "выполняется, но итоговая строка остаётся."
+            ),
+            "hints": [
+                "Сначала задаём начальное значение счётчика и проверяем, что при limit = 0 тело не запускается.",
+                "После обычного прохода обновляем счётчик так, чтобы следующее сравнение приближалось к завершению.",
+                "Итоговое сообщение выводим один раз после цикла, даже если первая проверка ложна.",
+            ],
+            "contract": {
+                "given": "Платформа создаёт целое число limit. В проверках встречаются значения 0, 1 и 3.",
+                "todo": "Мы организуем конечный цикл со счётчиком. Он выводит все номера от 1 до limit включительно, а после цикла выводит Готово.",
+                "check": "Проверяются ноль, один и несколько проходов. Цикл должен завершиться, счётчик должен меняться внутри тела, а итоговая строка должна появиться после цикла.",
+            },
+            "requirements": {"items": ["цикл while", "счётчик изменяется в теле цикла", "итоговый print после цикла"], "names": ["limit", "attempt"], "nodes": ["While"], "calls": ["print"]},
+            "starter_code": "# limit уже создан платформой\n# Номера попыток и итоговое сообщение выводятся через конечный цикл\n",
+            "tests": [
+                {"name": "Ноль проходов", "namespace": {"limit": 0}, "expected": "Готово", "assert": "stdout"},
+                {"name": "Один проход", "namespace": {"limit": 1}, "expected": "1\nГотово", "assert": "stdout"},
+                {"name": "Несколько проходов", "namespace": {"limit": 3}, "expected": "1\n2\n3\nГотово", "assert": "stdout"},
+            ],
+            "reference_code": "attempt = 1\nwhile attempt <= limit:\n    print(attempt)\n    attempt = attempt + 1\nprint('Готово')\n",
+        },
+        {
+            "title": "Сравним for и while на одном диапазоне",
+            "level": "medium",
+            "mode": "script",
+            "prompt": (
+                "Платформа задаёт целое limit. Выведем номера от 1 до limit двумя способами: сначала через for и range(limit), "
+                "затем через while со счётчиком. Перед каждым циклом напечатаем его название, а строку Готово выведем "
+                "один раз после обоих циклов. До запуска сверим, что оба цикла обходят одинаковые номера."
+            ),
+            "contract": {
+                "given": "Платформа задаёт limit, который может быть равен 0 или положительному числу.",
+                "todo": "Мы покажем последовательность от 1 до limit через for, затем повторим её через while.",
+                "check": "Для нуля оба тела пропускаются. Для положительного limit последовательности совпадают; Готово появляется один раз после них.",
+            },
+            "requirements": {
+                "items": ["Используем for с range для первого обхода", "Используем while и изменяем счётчик для второго обхода", "Оба цикла показывают номера от 1 до limit включительно", "Печатаем Готово после обоих циклов"],
+                "names": ["limit", "number"],
+                "nodes": ["For", "While"],
+                "calls": ["print"],
+            },
+            "starter_code": "# limit уже задан платформой\n# Сравним одинаковый диапазон через for и while\n",
+            "hints": [
+                "В for переменная начинается с 0, поэтому для отображения прибавим к ней 1.",
+                "Для while зададим number = 1 и после каждого вывода увеличим number на 1.",
+                "Строку Готово поставим без отступа после обоих циклов.",
+            ],
+            "tests": [
+                {"name": "Ноль проходов", "namespace": {"limit": 0}, "expected": "for:\nwhile:\nГотово", "assert": "stdout"},
+                {"name": "Несколько проходов", "namespace": {"limit": 3}, "expected": "for:\n1\n2\n3\nwhile:\n1\n2\n3\nГотово", "assert": "stdout"},
+            ],
+            "reference_code": "print('for:')\nfor number in range(limit):\n    print(number + 1)\nprint('while:')\nnumber = 1\nwhile number <= limit:\n    print(number)\n    number = number + 1\nprint('Готово')\n",
+        },
+        {
+            "title": "Найдём обновление, которое ведёт к завершению",
+            "level": "medium",
+            "mode": "script",
+            "prompt": (
+                "До запуска изучим два дефектных цикла: в первом attempt не меняется, во втором remaining увеличивается, "
+                "хотя должно уменьшаться до нуля. На limit = 3 запишем несколько значений состояния и объясним, "
+                "почему каждый дефект мешает завершению. Затем в редакторе создадим два исправленных конечных цикла: "
+                "первый выводит числа от 1 до limit, второй от limit до 1. Для limit = 0 оба цикла должны пропустить тело."
+            ),
+            "contract": {
+                "given": "Платформа задаёт limit, равный 0 или положительному числу. В условии показаны два неработающих направления изменения состояния.",
+                "todo": "Мы заранее объясним дефекты, затем напишем конечный возрастающий и конечный убывающий цикл.",
+                "check": "Не запускаем дефектные варианты. Исправленный код завершается при limit 0, 1 и 3 и выводит обе последовательности.",
+            },
+            "requirements": {
+                "items": ["Пишем возрастающий цикл от 1 до limit", "Пишем убывающий цикл от limit до 1", "Обновляем состояние в направлении к ложной проверке", "Выводим Готово после обоих циклов"],
+                "names": ["limit", "attempt", "remaining"],
+                "nodes": ["While"],
+                "calls": ["print"],
+            },
+            "starter_code": "# limit уже задан платформой\n# Не будем копировать дефектные варианты из условия.\n# Запишем исправленные циклы после трассы.\n",
+            "hints": [
+                "Для возрастающего счётчика начнём с 1 и после вывода будем прибавлять 1.",
+                "Для remaining начнём с limit и после вывода будем вычитать 1.",
+                "Проверим, что при limit = 0 обе первые проверки ложны.",
+            ],
+            "tests": [
+                {"name": "Ноль проходов", "namespace": {"limit": 0}, "expected": "Готово", "assert": "stdout"},
+                {"name": "Один проход", "namespace": {"limit": 1}, "expected": "1\n1\nГотово", "assert": "stdout"},
+                {"name": "Несколько проходов", "namespace": {"limit": 3}, "expected": "1\n2\n3\n3\n2\n1\nГотово", "assert": "stdout"},
+            ],
+            "reference_code": "attempt = 1\nwhile attempt <= limit:\n    print(attempt)\n    attempt = attempt + 1\nremaining = limit\nwhile remaining > 0:\n    print(remaining)\n    remaining = remaining - 1\nprint('Готово')\n",
+        },
+        {
+            "title": "Проследим break и continue",
+            "level": "medium",
+            "mode": "script",
+            "prompt": (
+                "Напишем конечный while для чисел от 1 до 5. Число 2 пропустим через continue, а при числе 4 завершим "
+                "цикл через break. Перед запуском проследим, что обновление счётчика происходит до continue; "
+                "после цикла один раз напечатаем Готово. Ожидаемый вывод: 1, 3 и Готово, каждое с новой строки."
+            ),
+            "contract": {
+                "given": "Диапазон ограничен числами от 1 до 5, поэтому правильный цикл конечен.",
+                "todo": "Мы пропустим вывод для 2, остановим цикл перед выводом 4 и оставим завершающую строку после цикла.",
+                "check": "continue возвращает к проверке после обновления состояния; break прекращает цикл, а Готово печатается один раз.",
+            },
+            "requirements": {
+                "items": ["Используем while с меняющимся number", "Применяем continue для числа 2", "Применяем break для числа 4", "Печатаем Готово после цикла"],
+                "names": ["number"],
+                "nodes": ["While", "Break", "Continue"],
+                "calls": ["print"],
+            },
+            "starter_code": "number = 0\n# Добавим конечный цикл и обработку значений 2 и 4\n",
+            "hints": [
+                "Сначала увеличим number, чтобы continue не пропустил обновление.",
+                "Проверим число 2 до печати и продолжим цикл.",
+                "Проверим число 4 и выйдем до его печати; Готово поставим после while.",
+            ],
+            "tests": [
+                {"name": "Пропуск и выход", "namespace": {}, "expected": "1\n3\nГотово", "assert": "stdout"},
+            ],
+            "reference_code": "number = 0\nwhile number < 5:\n    number = number + 1\n    if number == 2:\n        continue\n    if number == 4:\n        break\n    print(number)\nprint('Готово')\n",
+        }
+    ],
 }

@@ -97,6 +97,17 @@ class UserLessonProgress(Base):
     completed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
 
+class UserTaskProgress(Base):
+    __tablename__ = "user_task_progress"
+    __table_args__ = (UniqueConstraint("user_id", "task_id", name="uq_user_task_progress"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True, nullable=False)
+    task_id: Mapped[str] = mapped_column(String(160), index=True, nullable=False)
+    task_revision: Mapped[str] = mapped_column(String(64), nullable=False)
+    completed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+
 class BookingSlot(Base):
     """Свободное окно для занятия. Создаёт админ, бронирует студент (1 слот = 1 студент)."""
 

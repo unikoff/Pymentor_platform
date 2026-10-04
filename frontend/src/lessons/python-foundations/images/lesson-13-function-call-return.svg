@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1672" height="836" viewBox="0 0 1672 836" role="img" aria-labelledby="title desc">
+  <title id="title">Function call and return</title>
+  <desc id="desc">The caller passes a task to format_task. The function returns a string to the caller, where print displays it.</desc>
+  <defs>
+    <marker id="arrow-solid" markerWidth="20" markerHeight="20" refX="0" refY="10" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M 0 0 L 18 10 L 0 20 Z" fill="#8FE4AD" />
+    </marker>
+    <marker id="arrow-dashed" markerWidth="20" markerHeight="20" refX="0" refY="10" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M 0 0 L 18 10 L 0 20 Z" fill="#B8B4AA" />
+    </marker>
+  </defs>
+  <rect width="1672" height="836" rx="32" fill="#111412" />
+  <g font-family="Manrope, 'Segoe UI', sans-serif" fill="#F5F2EB">
+    <rect x="96" y="250" width="550" height="350" rx="24" fill="#191D1A" stroke="#354039" stroke-width="2" />
+    <text x="144" y="326" font-size="48" font-weight="700">CALLER</text>
+    <line x1="144" y1="352" x2="598" y2="352" stroke="#354039" stroke-width="2" />
+    <g font-family="Consolas, monospace" font-size="34" fill="#B8B4AA">
+      <text x="144" y="420">message = format_task(</text>
+      <text x="144" y="470">    task)</text>
+      <text x="144" y="550">print(message)</text>
+    </g>
+
+    <rect x="1026" y="250" width="550" height="350" rx="24" fill="#191D1A" stroke="#354039" stroke-width="2" />
+    <text x="1074" y="326" font-size="48" font-weight="700">FUNCTION</text>
+    <line x1="1074" y1="352" x2="1528" y2="352" stroke="#354039" stroke-width="2" />
+    <g font-family="Consolas, monospace" font-size="34" fill="#B8B4AA">
+      <text x="1074" y="420">def format_task(task):</text>
+      <text x="1074" y="470">read four fields</text>
+      <text x="1074" y="550">return string</text>
+    </g>
+
+    <text x="836" y="384" text-anchor="middle" font-size="42" font-weight="700">CALL · task</text>
+    <path d="M 646 408 H 1008" fill="none" stroke="#8FE4AD" stroke-width="6" marker-end="url(#arrow-solid)" />
+    <text x="836" y="506" text-anchor="middle" font-size="42" font-weight="700">RETURN · string</text>
+    <path d="M 1026 530 H 664" fill="none" stroke="#B8B4AA" stroke-width="6" stroke-dasharray="16 14" marker-end="url(#arrow-dashed)" />
+  </g>
+</svg>

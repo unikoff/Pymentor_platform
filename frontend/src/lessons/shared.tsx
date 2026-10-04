@@ -174,8 +174,8 @@ export function CodeSequence({
   pieces,
   correctOrder,
   explanation,
-  title = "Соберите программу",
-  label = "СОБЕРИТЕ КОД",
+  title = "Собираем программу",
+  label = "СОБИРАЕМ КОД",
   incorrectExplanation = "Проверьте последовательность: Python выполняет инструкции сверху вниз, а лишние фрагменты можно не добавлять.",
 }: {
   prompt: string;
@@ -234,7 +234,7 @@ export function CodeSequence({
         </div>
 
         <div className="sequence-panel sequence-panel--target">
-          <span className="sequence-label">Ваш порядок</span>
+          <span className="sequence-label">Наш порядок</span>
           <div className="sequence-target" aria-live="polite">
             {selectedPieces.length > 0 ? (
               selectedPieces.map((piece, index) => (
@@ -251,7 +251,7 @@ export function CodeSequence({
                 </button>
               ))
             ) : (
-              <p className="sequence-empty">Нажимайте на фрагменты слева в порядке выполнения.</p>
+              <p className="sequence-empty">Выбираем фрагменты слева в порядке выполнения.</p>
             )}
           </div>
         </div>
@@ -303,7 +303,7 @@ export function BugHunt({
         <Bug size={17} />
         <div>
           <span>ОТЛАДКА</span>
-          <h3>Найдите причину ошибки</h3>
+          <h3>Ищем причину ошибки</h3>
         </div>
       </div>
       <CodeBlock code={code} />
@@ -413,7 +413,7 @@ export function RecallCard({ question, answer, hint }: { question: string; answe
         <Brain size={17} />
         <div>
           <span>ВОСПРОИЗВЕДЕНИЕ</span>
-          <h3>Сформулируйте ответ без подсказки</h3>
+          <h3>Формулируем ответ без подсказки</h3>
         </div>
       </div>
       <p className="recall-question">{question}</p>
@@ -435,8 +435,8 @@ export function RecallCard({ question, answer, hint }: { question: string; answe
               <RotateCcw size={15} /> Повторю позже
             </button>
           </div>
-          {reflection === "remembered" && <p className="recall-status is-correct">Отлично. Сверните ответ и попробуйте объяснить его своими словами.</p>}
-          {reflection === "repeat" && <p className="recall-status">Нормально: вернитесь к этой карточке после следующего раздела.</p>}
+          {reflection === "remembered" && <p className="recall-status is-correct">Отлично. Сворачиваем ответ и объясняем его своими словами.</p>}
+          {reflection === "repeat" && <p className="recall-status">Нормально: возвращаемся к этой карточке после следующего раздела.</p>}
         </>
       )}
     </section>
@@ -612,7 +612,7 @@ export function FillBlank({
       </div>
       {picked && (
         <p className={`fill-explanation ${isCorrect ? "is-correct" : "is-wrong"}`}>
-          {isCorrect ? <Check size={14} /> : <X size={14} />} {isCorrect ? explanation : "Попробуйте другой вариант."}
+          {isCorrect ? <Check size={14} /> : <X size={14} />} {isCorrect ? explanation : "Пробуем другой вариант."}
         </p>
       )}
     </div>
@@ -693,7 +693,7 @@ export function MatchPairs({
         <Link2 size={17} />
         <div>
           <span>СОПОСТАВЛЕНИЕ</span>
-          <h3>Соедините пары</h3>
+          <h3>Сопоставляем пары</h3>
         </div>
       </div>
       <p className="interactive-prompt">{prompt}</p>

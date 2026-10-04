@@ -239,7 +239,7 @@ export function Lesson51({ module }: { module?: string }) {
           {"В Postman зададим POST, затем откроем Body, выберем raw и формат JSON. Raw означает, что тело вводится как текст. Для JSON Postman выставляет Content-Type: application/json. Этот заголовок сообщает серверу, как разбирать body; второй такой же заголовок вручную не добавляем."}
         </p>
         <p>
-          {"Кавычки вокруг title обязательны, потому что это имя поля и текстовое значение. У priority кавычек нет: в JSON это число. Такое различие важно, когда Planner позже проверит входную модель."}
+          {"Имя поля \"priority\" записываем в кавычках, а числовое значение 4 указываем без них. Имя поля \"title\" и его текстовое значение тоже записываем в кавычках. Такое различие важно, когда Planner позже проверит входную модель."}
         </p>
         <CodeBlock
           caption={"где Echo отражает JSON"}
@@ -319,9 +319,9 @@ export function Lesson51({ module }: { module?: string }) {
           {"Войти в аккаунт нужно для работы с collection и environment в workspace, то есть рабочем пространстве Postman. Lightweight API Client позволяет отправлять запросы без входа, но не даёт сохранить их в collection и работать с environment."}
         </p>
         <ol>
-          <li>{"В боковой панели откроем Collections, нажмём + и выберем Collection. Чтобы сохранить запрос, нажмём Save, выберем New Collection, зададим имя и снова нажмём Save."}</li>
-          <li>{"Environment создадим через + в боковой панели и Environments либо через + рядом с селектором окружения в правом верхнем углу. Добавим переменную base_url со значением https://postman-echo.com."}</li>
-          <li>{"В том же селекторе выберем Echo активным. Postman использует его переменные при отправке запросов."}</li>
+          <li>{"Сначала в боковой панели откроем Collections → + → Collection и зададим имя Planner HTTP Lab."}</li>
+          <li>{"Создадим environment Echo через + в боковой панели → Environments либо через + рядом с селектором окружения. Добавим base_url=https://postman-echo.com и выберем Echo активным."}</li>
+          <li>{"Когда GET и POST уже настроены по примерам выше, для каждого нажмём Save и выберем существующую Planner HTTP Lab. New Collection не выбираем: нужная collection уже создана."}</li>
         </ol>
         <LinkedNotes items={[
           { title: "Collection", description: "Сохраняет GET и POST как отдельные сценарии." },
@@ -375,13 +375,13 @@ export function Lesson51({ module }: { module?: string }) {
           code={"Planner/\n├── прежние файлы проекта\n└── postman/\n    ├── planner-http-lab.postman_collection.json\n    └── echo.postman_environment.json"}
         />
         <p>
-          {"Сначала подготовим collection и environment, затем добавим и проверим два сообщения. Эта последовательность оставит файлы воспроизводимыми, а не только открытыми в рабочей вкладке."}
+          {"Сначала создадим Planner HTTP Lab и Echo environment. Затем настроим GET и POST и сохраним каждый запрос в уже существующую Planner HTTP Lab. Так сценарии останутся воспроизводимыми, а не только открытыми в рабочей вкладке."}
         </p>
         <LinkedNotes variant="connected" items={[
           { title: "Подготовим место", description: "Добавим postman/ в корень существующего Planner." },
           { title: "Настроим цель", description: "Создадим collection и Echo environment с base_url." },
           { title: "Проверим GET и POST", description: "Передадим query и JSON, затем найдём их в ответе Echo." },
-          { title: "Сохраним результат", description: "Повторим запросы, экспортируем оба JSON-файла и импортируем их обратно в Postman." },
+          { title: "Экспортируем и восстановим", description: "Повторим запросы, экспортируем оба JSON-файла и импортируем их обратно в Postman." },
         ]} />
         <p>
           {"Проверим наблюдаемый результат: query и JSON отражены в response, запросы отправляются повторно, а два export лежат рядом с исходным проектом. После импорта оба запроса снова открываются, а Echo environment подставляет base_url. Успешный ответ Echo не означает создание задачи в Planner."}
@@ -815,7 +815,7 @@ export function Lesson53({ module }: { module?: string }) {
               src={lesson53ReadModelInfographic}
               alt="CLI и FastAPI используют отдельные экземпляры PlannerService и JsonStorage, настроенные на один файл data/tasks.json. GET-маршруты читают сохранённое состояние."
               width={1680}
-              height={840}
+              height={620}
               loading="lazy"
               decoding="async"
             />
@@ -1240,14 +1240,15 @@ export function Lesson54({ module }: { module?: string }) {
           {"Если задача не найдена, готовый сервис сообщает TaskNotFoundError. Маршрут переводит именно эту ожидаемую доменную ошибку в HTTPException со статусом 404. Сервис при этом не обязан знать, что такое HTTP."}
         </p>
         <p>
-          {"HTTPException это исключение FastAPI со статусом и описанием ошибки. Когда маршрут поднимает его через raise, FastAPI прекращает обычный путь обработчика и формирует HTTP-ответ для клиента."}
+          {"HTTPException предоставляет FastAPI. Импортируем его из пакета fastapi. Когда маршрут поднимает это исключение через raise, FastAPI прекращает обычный путь обработчика и формирует HTTP-ответ со статусом и описанием ошибки."}
         </p>
         <p>
           {"На независимом примере книг предположим, что catalog.get_book(book_id) сообщает BookNotFoundError, если книги нет. На HTTP-границе мы ловим именно это ожидаемое исключение и поднимаем HTTPException со статусом 404. FastAPI формирует ответ, а каталог не получает зависимость от HTTP."}
         </p>
         <CodeBlock
           caption={"Независимый пример: отсутствие книги"}
-          code={"try:\n" +
+          code={"from fastapi import HTTPException\n\n" +
+            "try:\n" +
             "    book = catalog.get_book(book_id)\n" +
             "except BookNotFoundError as error:\n" +
             "    raise HTTPException(\n" +
@@ -1319,7 +1320,7 @@ export function Lesson54({ module }: { module?: string }) {
               src={lesson54PathSearchInfographic}
               alt="FastAPI проверяет task_id как int. Неверное значение получает 422 до обработчика. Валидный id передаётся PlannerService. Найденная Task становится публичным ответом 200, отсутствие даёт 404, а сбой хранилища не маскируется как 404."
               width={1672}
-              height={836}
+              height={620}
               loading="lazy"
               decoding="async"
             />
@@ -1786,6 +1787,7 @@ export function Lesson56({ module }: { module?: string }) {
         />
         <LinkedNotes
           items={[
+            { title: 'priority: "4"', description: "Pydantic преобразует числовую строку в int; запрос проходит дальше." },
             { title: "Нет priority или текст не число", description: "Pydantic возвращает 422 до запуска маршрута." },
             { title: "Пробельный title или priority вне 1–5", description: "Task поднимает ValueError; маршрут отвечает 422 без сохранения." },
             { title: "Ошибка файла или кода", description: "Не превращаем в ошибку клиента; её должен увидеть сервер." },
@@ -1798,11 +1800,11 @@ export function Lesson56({ module }: { module?: string }) {
           {"Успешный JSON показывает ответ одного запроса. Чтобы доказать, что создание прошло через проект, найдём ту же запись другими уже работающими путями."}
         </Lead>
         <p>
-          {"Отправим валидный POST через Swagger UI или Planner collection. Выданный сервером id используем для точного GET /tasks/{task_id}. Отдельно найдём запись запросом GET /tasks?sort_desc=true&limit=1: новая задача с наибольшим id попадёт в начало выборки, даже если обычный GET показывает только первые десять id по возрастанию. Статистику, CLI и повторный запуск API сверим с тем же созданием."}
+          {"Отправим валидный POST через Swagger UI или Planner collection. Сравним priority как число 4 и как строку \"4\": Pydantic преобразует строку в целое число, поэтому оба запроса создадут Task. Выданный сервером id используем для точного GET /tasks/{task_id}. Отдельно найдём запись запросом GET /tasks?sort_desc=true&limit=1: новая задача с наибольшим id попадёт в начало выборки, даже если обычный GET показывает только первые десять id по возрастанию. Статистику, CLI и повторный запуск API сверим с тем же созданием."}
         </p>
         <CodeBlock
           caption={"Матрица проверки"}
-          code={"POST корректный body                 → 201 и новая Task\nGET /tasks/{task_id} с id из ответа    → точная созданная запись\nGET /tasks?sort_desc=true&limit=1      → верх списка по id\nPOST без priority                      → 422 до маршрута\nPOST priority=\"высокий\"               → 422 до маршрута\nPOST title из пробелов или priority 0/6 → 422 от правила Task\nCLI, stats, перезапуск                 → та же сохранённая Task"}
+          code={"POST priority=4                      → 201 и новая Task\nPOST priority=\"4\"                    → 201, в ответе число 4\nGET /tasks/{task_id} с id из ответа    → точная созданная запись\nGET /tasks?sort_desc=true&limit=1      → верх списка по id\nPOST без priority                      → 422 до маршрута\nPOST priority=\"высокий\"               → 422 до маршрута\nPOST title из пробелов или priority 0/6 → 422 от правила Task\nCLI, stats, перезапуск                 → та же сохранённая Task"}
         />
         <p>
           {"Отказы проверки body происходят до вызова маршрута, а ожидаемые ValueError от правил Task возникают до сохранения. Эти проверки не создают новую запись. Сбой во время записи остаётся серверной ошибкой: текущий JsonStorage использует обычный write_text и не гарантирует откат или атомарность. Механизм хранения в этом занятии не меняем."}
@@ -1822,14 +1824,14 @@ export function Lesson56({ module }: { module?: string }) {
           items={[
             { title: "Описать вход", description: "TaskCreate принимает два обязательных поля клиента: title и priority." },
             { title: "Создать через Planner", description: "POST вызывает app.state.planner.add_task и возвращает серверную Task с кодом 201." },
-            { title: "Развести отказы", description: "Ошибку формы обрабатывает FastAPI, ValueError от правил Task превращается в 422." },
+            { title: "Развести типы и отказы", description: 'Строка "4" становится числом; ошибку формы и нарушение правил Task различаем.' },
             { title: "Проверить общий результат", description: "Сверить POST с GET, статистикой, CLI и данными после перезапуска." },
           ]}
         />
         <p>
-          {"Начнём с входной схемы и проследим одну задачу до JSON-файла. Затем проверим обе границы отказа: неверную форму body и значение, запрещённое правилами Planner. В следующем блоке мы уточним HTTP-ограничения и форму ответа, а затем подключим обновления к тому же сервису."}
+          {"Начнём с входной схемы и проследим одну задачу до JSON-файла. Проверим преобразование строки \"4\" и обе границы отказа: неверную форму body и значение, запрещённое правилами Planner. В следующем блоке мы уточним HTTP-ограничения и форму ответа, а затем подключим обновления к тому же сервису."}
         </p>
-        <PracticeCta text={"Создадим TaskCreate и настоящий POST /tasks через PlannerService. Проверим ответ 201, оба вида отказа 422 и сохранность созданной записи после чтения и перезапуска."} />
+        <PracticeCta text={'Создадим TaskCreate и настоящий POST /tasks через PlannerService. Проверим число и строку "4", ответ 201, оба вида отказа 422 и сохранность записи после чтения и перезапуска.'} />
       </Section>
     </RichLesson>
   );

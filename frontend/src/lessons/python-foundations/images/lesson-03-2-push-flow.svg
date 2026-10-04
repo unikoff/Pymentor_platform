@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1672" height="836" viewBox="0 0 1672 836" role="img" aria-labelledby="title desc">
+  <title id="title">Push flow</title>
+  <desc id="desc">Commits go to GitHub; result returns.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
+      <path d="M1 1 L11 6 L1 11 Z" fill="#8FE4AD" />
+    </marker>
+  </defs>
+  <rect width="1672" height="836" fill="#111412" />
+
+  <rect x="96" y="238" width="512" height="360" rx="24" fill="#191D1A" stroke="#354039" stroke-width="2" />
+  <text x="144" y="310" fill="#B8B4AA" font-family="Manrope, Segoe UI, sans-serif" font-size="24" font-weight="600" letter-spacing="2">LOCAL</text>
+  <text x="144" y="402" fill="#F5F2EB" font-family="Consolas, monospace" font-size="44" font-weight="700">main</text>
+
+  <rect x="1064" y="238" width="512" height="360" rx="24" fill="#191D1A" stroke="#354039" stroke-width="2" />
+  <text x="1112" y="310" fill="#B8B4AA" font-family="Manrope, Segoe UI, sans-serif" font-size="24" font-weight="600" letter-spacing="2">GITHUB</text>
+  <text x="1112" y="402" fill="#F5F2EB" font-family="Consolas, monospace" font-size="44" font-weight="700">main</text>
+
+  <text x="836" y="326" text-anchor="middle" fill="#F5F2EB" font-family="Manrope, Segoe UI, sans-serif" font-size="25" font-weight="700" letter-spacing="1">PUSH</text>
+  <line x1="630" y1="382" x2="1040" y2="382" stroke="#8FE4AD" stroke-width="5" marker-end="url(#arrow)" />
+
+  <line x1="1040" y1="488" x2="630" y2="488" stroke="#8FE4AD" stroke-width="5" stroke-dasharray="14 12" marker-end="url(#arrow)" />
+  <text x="836" y="548" text-anchor="middle" fill="#F5F2EB" font-family="Manrope, Segoe UI, sans-serif" font-size="25" font-weight="700" letter-spacing="1">RESULT</text>
+</svg>

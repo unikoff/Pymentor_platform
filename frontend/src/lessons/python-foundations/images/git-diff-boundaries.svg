@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1672" height="836" viewBox="0 0 1672 836" role="img" aria-labelledby="title desc">
+  <title id="title">Git comparison boundaries</title>
+  <desc id="desc">HEAD ↔ Index: git diff --staged. Index ↔ Working tree: git diff.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
+      <path d="M 1 1 L 9 5 L 1 9 z" fill="#8FE4AD" />
+    </marker>
+  </defs>
+  <rect width="1672" height="836" fill="#111412" />
+
+  <rect x="64" y="320" width="416" height="224" rx="24" fill="#191D1A" stroke="#354039" stroke-width="2" />
+  <rect x="628" y="320" width="416" height="224" rx="24" fill="#191D1A" stroke="#354039" stroke-width="2" />
+  <rect x="1192" y="320" width="416" height="224" rx="24" fill="#191D1A" stroke="#354039" stroke-width="2" />
+
+  <rect x="392" y="192" width="320" height="64" rx="16" fill="#191D1A" stroke="#354039" stroke-width="2" />
+  <rect x="998" y="192" width="240" height="64" rx="16" fill="#191D1A" stroke="#354039" stroke-width="2" />
+  <text x="552" y="233" text-anchor="middle" fill="#F5F2EB" font-family="Consolas, monospace" font-size="21">git diff --staged</text>
+  <text x="1118" y="233" text-anchor="middle" fill="#F5F2EB" font-family="Consolas, monospace" font-size="22">git diff</text>
+
+  <line x1="514" y1="432" x2="594" y2="432" stroke="#8FE4AD" stroke-width="4" marker-start="url(#arrow)" marker-end="url(#arrow)" />
+  <line x1="1078" y1="432" x2="1158" y2="432" stroke="#8FE4AD" stroke-width="4" marker-start="url(#arrow)" marker-end="url(#arrow)" />
+
+  <text x="272" y="444" text-anchor="middle" fill="#F5F2EB" font-family="Manrope, Segoe UI, sans-serif" font-size="34" font-weight="650">HEAD</text>
+
+  <text x="836" y="444" text-anchor="middle" fill="#F5F2EB" font-family="Manrope, Segoe UI, sans-serif" font-size="34" font-weight="650">Index</text>
+
+  <text x="1400" y="444" text-anchor="middle" fill="#F5F2EB" font-family="Manrope, Segoe UI, sans-serif" font-size="32" font-weight="650">Working tree</text>
+</svg>

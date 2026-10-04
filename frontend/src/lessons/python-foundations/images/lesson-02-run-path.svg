@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1672" height="836" viewBox="0 0 1672 836" role="img" aria-labelledby="title desc">
+  <title id="title">Run path</title>
+  <desc id="desc">PowerShell runs main.py. Python reads it and returns output.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M 0 0 L 8 4 L 0 8 z" fill="#8FE4AD" />
+    </marker>
+  </defs>
+  <rect width="1672" height="836" fill="#111412" />
+
+  <g font-family="Manrope, Segoe UI, sans-serif">
+    <rect x="96" y="148" width="480" height="196" rx="22" fill="#191D1A" stroke="#354039" stroke-width="2" />
+    <text x="136" y="214" fill="#F5F2EB" font-size="34" font-weight="700">Editor</text>
+    <text x="136" y="272" fill="#B8B4AA" font-family="Consolas, monospace" font-size="26">main.py</text>
+
+    <rect x="1096" y="148" width="480" height="196" rx="22" fill="#191D1A" stroke="#354039" stroke-width="2" />
+    <text x="1136" y="214" fill="#F5F2EB" font-family="Consolas, monospace" font-size="30" font-weight="700">main.py</text>
+    <text x="1136" y="272" fill="#B8B4AA" font-family="Consolas, monospace" font-size="22">studyhub-console</text>
+
+    <rect x="96" y="490" width="600" height="196" rx="22" fill="#191D1A" stroke="#354039" stroke-width="2" />
+    <text x="136" y="556" fill="#F5F2EB" font-size="34" font-weight="700">PowerShell</text>
+    <text x="136" y="614" fill="#B8B4AA" font-family="Consolas, monospace" font-size="22">studyhub-console</text>
+
+    <rect x="976" y="490" width="600" height="196" rx="22" fill="#191D1A" stroke="#354039" stroke-width="2" />
+    <text x="1016" y="556" fill="#F5F2EB" font-size="34" font-weight="700">Python</text>
+  </g>
+
+  <g fill="none" stroke="#8FE4AD" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M 588 246 H 1084" marker-end="url(#arrow)" />
+    <path d="M 708 558 H 964" marker-end="url(#arrow)" />
+    <path d="M 1336 356 V 478" marker-end="url(#arrow)" />
+    <path d="M 964 632 H 708" stroke-dasharray="10 9" marker-end="url(#arrow)" />
+  </g>
+
+  <g fill="#B8B4AA" font-family="Manrope, Segoe UI, sans-serif" font-size="20" font-weight="600" text-anchor="middle">
+    <text x="836" y="224">save</text>
+    <text x="836" y="534" fill="#F5F2EB" font-family="Consolas, monospace" font-size="20">python main.py</text>
+    <text x="1400" y="422">read</text>
+    <text x="836" y="664">output</text>
+  </g>
+</svg>
