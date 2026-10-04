@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="1320" viewBox="0 0 720 1320" role="img" aria-labelledby="title desc">
+  <title id="title">List names and objects on a narrow screen</title>
+  <desc id="desc">Two names share one list before append. Afterwards the shared list has a new item, alias points to a new list, and separate still points to its copy.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="14" markerHeight="18" refX="0" refY="9" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M0 2 L14 9 L0 16 Z" fill="#8FE4AD" />
+    </marker>
+    <style>
+      .heading { font-family: Manrope, "Segoe UI", sans-serif; fill: #F5F2EB; font-size: 30px; font-weight: 700; }
+      .label { font-family: Manrope, "Segoe UI", sans-serif; fill: #B8B4AA; font-size: 20px; }
+      .name { font-family: Consolas, monospace; fill: #F5F2EB; font-size: 26px; }
+      .object { font-family: Manrope, "Segoe UI", sans-serif; fill: #B8B4AA; font-size: 18px; font-weight: 700; letter-spacing: 1px; }
+      .value { font-family: Consolas, monospace; fill: #F5F2EB; font-size: 20px; }
+      .new-value { font-family: Consolas, monospace; fill: #8FE4AD; font-size: 20px; }
+    </style>
+  </defs>
+  <rect width="720" height="1320" fill="#111412" />
+
+  <g fill="#191D1A" stroke="#354039" stroke-width="2">
+    <rect x="32" y="88" width="656" height="484" rx="24" />
+    <rect x="32" y="598" width="656" height="690" rx="24" />
+  </g>
+
+  <g>
+    <text class="heading" x="64" y="145">Before append</text>
+    <text class="label" x="64" y="180">Two names, one list</text>
+    <text class="heading" x="64" y="655">After changes</text>
+    <text class="label" x="64" y="690">Append, then reassign alias</text>
+  </g>
+
+  <g fill="#202622" stroke="#354039" stroke-width="2">
+    <rect x="56" y="242" width="208" height="56" rx="14" />
+    <rect x="56" y="324" width="208" height="56" rx="14" />
+    <rect x="56" y="442" width="208" height="56" rx="14" />
+    <rect x="56" y="772" width="208" height="56" rx="14" />
+    <rect x="56" y="927" width="208" height="56" rx="14" />
+    <rect x="56" y="1082" width="208" height="56" rx="14" />
+  </g>
+  <g text-anchor="middle">
+    <text class="name" x="160" y="278">folders</text>
+    <text class="name" x="160" y="360">alias</text>
+    <text class="name" x="160" y="478">separate</text>
+    <text class="name" x="160" y="808">folders</text>
+    <text class="name" x="160" y="963">alias</text>
+    <text class="name" x="160" y="1118">separate</text>
+  </g>
+
+  <g fill="#111412" stroke="#354039" stroke-width="2">
+    <rect x="360" y="224" width="296" height="144" rx="20" />
+    <rect x="360" y="420" width="296" height="104" rx="20" />
+    <rect x="360" y="730" width="296" height="144" rx="20" />
+    <rect x="360" y="900" width="296" height="112" rx="20" />
+    <rect x="360" y="1055" width="296" height="112" rx="20" />
+  </g>
+
+  <g fill="none" stroke="#8FE4AD" stroke-width="5" stroke-linecap="butt" marker-end="url(#arrow)">
+    <path d="M264 270 H346" />
+    <path d="M264 352 L346.35 333.13" />
+    <path d="M264 470 H346" />
+    <path d="M264 800 H346" />
+    <path d="M264 955 H346" />
+    <path d="M264 1110 H346" />
+  </g>
+
+  <g text-anchor="middle">
+    <text class="object" x="508" y="258">OBJECT A</text>
+    <text class="value" x="508" y="301">["inbox", "archive"]</text>
+    <text class="object" x="508" y="452">OBJECT B</text>
+    <text class="value" x="508" y="493">["inbox", "archive"]</text>
+
+    <text class="object" x="508" y="765">OBJECT A</text>
+    <text class="value" x="508" y="807">["inbox", "archive"]</text>
+    <text class="new-value" x="508" y="839">+ "check"</text>
+    <text class="object" x="508" y="938">OBJECT C</text>
+    <text class="new-value" x="508" y="980">["new"]</text>
+    <text class="object" x="508" y="1093">OBJECT B</text>
+    <text class="value" x="508" y="1135">["inbox", "archive"]</text>
+  </g>
+</svg>

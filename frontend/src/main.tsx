@@ -165,6 +165,7 @@ type LessonTask = {
   requirements?: TaskRequirements;
   hints?: string[];
   starter_code: string;
+  completed?: boolean;
 };
 
 type ManualPracticeTaskAnswer = {
@@ -432,6 +433,45 @@ function formatManualPracticeResult(result: string): string {
   // Старые и новые тексты практики могут уже включать эту подпись, а компонент
   // выводит её один раз для единообразной структуры и доступности.
   return result.replace(/^\s*готово\s*,\s*если\s*:?\s*/iu, "");
+}
+
+function renderPracticeText(text: string): React.ReactNode {
+  const parts: React.ReactNode[] = [];
+  const codePattern = /```[^\n`]*\n([\s\S]*?)```|`([^`\n]+)`/g;
+  let lastIndex = 0;
+
+  for (const match of text.matchAll(codePattern)) {
+    const matchIndex = match.index ?? lastIndex;
+    if (matchIndex > lastIndex) {
+      parts.push(text.slice(lastIndex, matchIndex));
+    }
+
+    if (match[1] !== undefined) {
+      parts.push(
+        <pre className="practice-code-block" key={`block:${matchIndex}`}>
+          <code>{match[1].replace(/\n$/, "")}</code>
+        </pre>,
+      );
+    } else if (match[2] !== undefined) {
+      parts.push(
+        <code className="practice-inline-code" key={`inline:${matchIndex}`}>
+          {match[2]}
+        </code>,
+      );
+    }
+
+    lastIndex = matchIndex + match[0].length;
+  }
+
+  if (lastIndex === 0) {
+    return text;
+  }
+
+  if (lastIndex < text.length) {
+    parts.push(text.slice(lastIndex));
+  }
+
+  return parts;
 }
 
 async function apiRequest<T>(url: string, body?: unknown, method?: string): Promise<T> {
@@ -1133,23 +1173,28 @@ function Workspace({
         </div>
 
         {openViews.length > 0 && activeLesson ? (
-          <article className="lesson-stage" key={`${activeLesson.id}-${activeView}`}>
+          <article className="lesson-stage" key={`${activeLesson.id}:${user?.id ?? "guest"}`}>
             {isLessonUnavailable(activeLesson) ? (
               <LockedLessonView lesson={activeLesson} onRequireAuth={onRequireAuth} isGuest={!user} />
             ) : (
               <>
-                {activeView === "theory" && (
-                  <LessonNavigationProvider nextLesson={nextLesson} onNextLesson={openNextLesson}>
-                    <LearningTheoryView lesson={activeLesson} />
-                  </LessonNavigationProvider>
+                {openViews.includes("theory") && (
+                  <div hidden={activeView !== "theory"}>
+                    <LessonNavigationProvider nextLesson={nextLesson} onNextLesson={openNextLesson}>
+                      <LearningTheoryView lesson={activeLesson} />
+                    </LessonNavigationProvider>
+                  </div>
                 )}
-                {activeView === "practice" && (
-                  <LearningPracticeView
-                    lesson={activeLesson}
-                    isAuthenticated={Boolean(user)}
-                    onRequireAuth={onRequireAuth}
-                    onLessonCompleted={handleLessonCompleted}
-                  />
+                {openViews.includes("practice") && (
+                  <div hidden={activeView !== "practice"}>
+                    <LearningPracticeView
+                      lesson={activeLesson}
+                      isAuthenticated={Boolean(user)}
+                      onRequireAuth={onRequireAuth}
+                      onLessonCompleted={handleLessonCompleted}
+                      progressOwnerKey={user ? String(user.id) : "guest"}
+                    />
+                  </div>
                 )}
               </>
             )}
@@ -2220,37 +2265,84 @@ function LearningTheoryView({ lesson }: { lesson: Lesson }) {
   );
 }
 
+function readStoredStringSet(key: string, signature: string): Set<string> {
+  try {
+    const value = window.localStorage.getItem(key);
+    const parsed: unknown = value ? JSON.parse(value) : null;
+    if (
+      typeof parsed === "object" && parsed !== null &&
+      "signature" in parsed && parsed.signature === signature &&
+      "checked" in parsed && Array.isArray(parsed.checked) &&
+      parsed.checked.every((item) => typeof item === "string")
+    ) {
+      return new Set(parsed.checked);
+    }
+    return new Set();
+  } catch {
+    return new Set();
+  }
+}
+
+function readStoredString(key: string, fallback: string): string {
+  try {
+    return window.localStorage.getItem(key) ?? fallback;
+  } catch {
+    return fallback;
+  }
+}
+
 function SelfCheckPanel({
   lesson,
   isAuthenticated,
   onRequireAuth,
   onLessonCompleted,
+  progressOwnerKey,
+  requiredTasksComplete = true,
+  requiredTaskCount = 0,
+  completedTaskCount = 0,
 }: {
   lesson: Lesson;
   isAuthenticated: boolean;
   onRequireAuth: () => void;
   onLessonCompleted: () => void;
+  progressOwnerKey: string;
+  requiredTasksComplete?: boolean;
+  requiredTaskCount?: number;
+  completedTaskCount?: number;
 }) {
   const manualPractice = lesson.manual_practice ?? [];
-  const [checkedSteps, setCheckedSteps] = useState<Set<string>>(() => new Set());
+  const manualPracticeSignature = JSON.stringify(manualPractice) ?? "";
+  const progressStorageKey = `pymentor:manual-progress:${progressOwnerKey}:${lesson.id}`;
+  const [checkedSteps, setCheckedSteps] = useState<Set<string>>(
+    () => readStoredStringSet(progressStorageKey, manualPracticeSignature),
+  );
   const [openTaskPanels, setOpenTaskPanels] = useState<Record<string, "hint" | "answer" | undefined>>({});
   const [activeTaskIndexes, setActiveTaskIndexes] = useState<Record<string, number>>({});
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    setCheckedSteps(new Set());
-    setOpenTaskPanels({});
-    setActiveTaskIndexes({});
-    setError("");
-  }, [lesson.id]);
+    setCheckedSteps(readStoredStringSet(progressStorageKey, manualPracticeSignature));
+  }, [manualPracticeSignature, progressStorageKey]);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(
+        progressStorageKey,
+        JSON.stringify({ signature: manualPracticeSignature, checked: Array.from(checkedSteps) }),
+      );
+    } catch {
+      // Сохранение локальных отметок необязательно, если хранилище недоступно.
+    }
+  }, [checkedSteps, manualPracticeSignature, progressStorageKey]);
 
   const totalStepCount = manualPractice.reduce(
     (total, exercise) => total + (exercise.tasks?.length ?? exercise.steps?.length ?? 0),
     0,
   );
   const checkedStepCount = checkedSteps.size;
-  const isPracticeComplete = totalStepCount === 0 || checkedStepCount === totalStepCount;
+  const isManualPracticeComplete = totalStepCount === 0 || checkedStepCount === totalStepCount;
+  const isPracticeComplete = isManualPracticeComplete && requiredTasksComplete;
 
   function toggleStep(stepId: string) {
     setCheckedSteps((current) => {
@@ -2314,9 +2406,9 @@ function SelfCheckPanel({
               <article className="manual-practice-card" key={`${lesson.id}-${exercise.title}`}>
               <div className="manual-practice-card__head">
                 <span>Практика {exerciseIndex + 1}</span>
-                <h2>{exercise.title}</h2>
+                <h2>{renderPracticeText(exercise.title)}</h2>
               </div>
-              <p className="manual-practice-card__task">{exercise.task}</p>
+              <div className="manual-practice-card__task">{renderPracticeText(exercise.task)}</div>
               {practiceTask && (
                 <div className="manual-practice-task-list">
                   {(() => {
@@ -2328,9 +2420,9 @@ function SelfCheckPanel({
                       <article className={["manual-practice-task", isDone ? "is-done" : ""].filter(Boolean).join(" ")} key={taskId}>
                         <div className="manual-practice-task__toolbar">
                           <span>Задача {activeTaskIndex + 1} из {taskCount}</span>
-                          <div className="manual-practice-task__navigation" aria-label="Переключение задач">
+                          <div className="practice-task-navigation" aria-label="Переключение задач">
                             <button
-                              className="manual-practice-task__navigation-button"
+                              className="practice-task-navigation__button"
                               type="button"
                               disabled={activeTaskIndex === 0}
                               onClick={() => switchPracticeTask(exerciseId, activeTaskIndex, -1, taskCount)}
@@ -2338,7 +2430,7 @@ function SelfCheckPanel({
                               Назад
                             </button>
                             <button
-                              className="manual-practice-task__navigation-button manual-practice-task__navigation-button--next"
+                              className="practice-task-navigation__button practice-task-navigation__button--next"
                               type="button"
                               disabled={activeTaskIndex === taskCount - 1}
                               onClick={() => switchPracticeTask(exerciseId, activeTaskIndex, 1, taskCount)}
@@ -2349,15 +2441,17 @@ function SelfCheckPanel({
                         </div>
 
                         <div className="manual-practice-task__head">
-                          <h3>{practiceTask.title}</h3>
+                          <h3>{renderPracticeText(practiceTask.title)}</h3>
                         </div>
-                        <p className="manual-practice-task__summary">{practiceTask.task}</p>
+                        <div className="manual-practice-task__summary">
+                          {renderPracticeText(practiceTask.task)}
+                        </div>
 
                         <section className="manual-practice-task__requirements" aria-label={"Техническое задание: " + practiceTask.title}>
                           <h4>Техническое задание</h4>
                           <ol>
                             {practiceTask.requirements.map((requirement) => (
-                              <li key={requirement}>{requirement}</li>
+                              <li key={requirement}>{renderPracticeText(requirement)}</li>
                             ))}
                           </ol>
                         </section>
@@ -2393,17 +2487,21 @@ function SelfCheckPanel({
                         {activePanel === "hint" && (
                           <aside className="manual-practice-task__panel manual-practice-task__panel--hint">
                             <strong>Подсказка</strong>
-                            <p>{practiceTask.hint}</p>
+                            <div className="manual-practice-task__text">
+                              {renderPracticeText(practiceTask.hint)}
+                            </div>
                           </aside>
                         )}
 
                         {activePanel === "answer" && (
                           <aside className="manual-practice-task__panel manual-practice-task__panel--answer">
                             <strong>Разбор решения</strong>
-                            <p>{practiceTask.answer.explanation}</p>
+                            <div className="manual-practice-task__text">
+                              {renderPracticeText(practiceTask.answer.explanation)}
+                            </div>
                             <ol>
                               {practiceTask.answer.steps.map((step) => (
-                                <li key={step}>{step}</li>
+                                <li key={step}>{renderPracticeText(step)}</li>
                               ))}
                             </ol>
                             {practiceTask.answer.code && (
@@ -2413,10 +2511,10 @@ function SelfCheckPanel({
                             )}
                             {practiceTask.answer.checks && practiceTask.answer.checks.length > 0 && (
                               <div className="manual-practice-task__checks">
-                                <strong>Проверьте себя</strong>
+                                <strong>Самопроверка</strong>
                                 <ul>
                                   {practiceTask.answer.checks.map((check) => (
-                                    <li key={check}>{check}</li>
+                                    <li key={check}>{renderPracticeText(check)}</li>
                                   ))}
                                 </ul>
                               </div>
@@ -2433,25 +2531,39 @@ function SelfCheckPanel({
                 <div className="manual-practice-steps">
                   {(exercise.steps ?? []).map((step, stepIndex) => {
                     const stepId = `${lesson.id}:${exerciseIndex}:${stepIndex}`;
+                    const stepTextId = `${stepId}:text`;
                     return (
-                      <label className="manual-practice-step" key={stepId}>
+                      <div
+                        className="manual-practice-step"
+                        key={stepId}
+                        onClick={(event) => {
+                          if (event.target instanceof HTMLElement && event.target.closest("input, label")) {
+                            return;
+                          }
+                          if (!lesson.completed) toggleStep(stepId);
+                        }}
+                      >
                         <input
+                          id={stepId}
                           type="checkbox"
+                          aria-labelledby={stepTextId}
                           checked={checkedSteps.has(stepId) || lesson.completed === true}
                           disabled={lesson.completed}
                           onChange={() => toggleStep(stepId)}
                         />
-                        <span>
-                          <strong>Шаг {stepIndex + 1}.</strong> {step}
-                        </span>
-                      </label>
+                        <div className="manual-practice-step__text" id={stepTextId}>
+                          <label htmlFor={stepId}><strong>Шаг {stepIndex + 1}.</strong></label>{" "}
+                          {renderPracticeText(step)}
+                        </div>
+                      </div>
                     );
                   })}
                 </div>
               )}
-              <p className="manual-practice-card__result">
-                <strong>Готово, если:</strong> {formatManualPracticeResult(exercise.result)}
-              </p>
+              <div className="manual-practice-card__result">
+                <strong>Готово, если:</strong>{" "}
+                {renderPracticeText(formatManualPracticeResult(exercise.result))}
+              </div>
               </article>
             );
           })}
@@ -2461,11 +2573,13 @@ function SelfCheckPanel({
       {!lesson.completed && (
         <section className="self-check-card self-check-card--complete">
           <div>
-            <h2>Зафиксируйте результат</h2>
+            <h2>Зафиксируем результат</h2>
             <p>
-              {totalStepCount > 0
-                ? `Отмечено шагов: ${checkedStepCount} из ${totalStepCount}.`
-                : "После самостоятельной практики отметьте занятие выполненным."}
+              {requiredTaskCount > 0
+                ? `Редакторские задания: ${completedTaskCount} из ${requiredTaskCount}. Ручные шаги: ${checkedStepCount} из ${totalStepCount}.`
+                : totalStepCount > 0
+                  ? `Отмечено шагов: ${checkedStepCount} из ${totalStepCount}.`
+                  : "После самостоятельной практики отметим занятие выполненным."}
             </p>
             {error && <div className="form-error">{error}</div>}
           </div>
@@ -2480,9 +2594,11 @@ function SelfCheckPanel({
               ? "Сохраняем..."
               : !isAuthenticated
                 ? "Войти и отметить"
-                : isPracticeComplete
-                  ? "Задание выполнено"
-                  : "Отметьте все шаги"}
+                : !requiredTasksComplete
+                  ? "Сначала решим задания в редакторе"
+                  : isPracticeComplete
+                    ? "Задание выполнено"
+                    : "Сначала отметим все ручные шаги"}
           </button>
         </section>
       )}
@@ -2495,13 +2611,32 @@ function LearningPracticeView({
   isAuthenticated,
   onRequireAuth,
   onLessonCompleted,
+  progressOwnerKey,
 }: {
   lesson: Lesson;
   isAuthenticated: boolean;
   onRequireAuth: () => void;
   onLessonCompleted: () => void;
+  progressOwnerKey: string;
 }) {
   const tasks = getLessonTasks(lesson);
+  const manualPractice = lesson.manual_practice ?? [];
+  const hasMixedPractice = tasks.length > 0 && manualPractice.length > 0;
+  const [activeTaskIndex, setActiveTaskIndex] = useState(0);
+  const [solvedTaskIds, setSolvedTaskIds] = useState<Set<string>>(
+    () => new Set(tasks.filter((task) => task.completed).map((task) => task.id)),
+  );
+
+  useEffect(() => {
+    setSolvedTaskIds(new Set(getLessonTasks(lesson).filter((task) => task.completed).map((task) => task.id)));
+  }, [lesson.id]);
+
+  const completedTaskCount = tasks.filter((task) => task.completed || solvedTaskIds.has(task.id)).length;
+
+  function handleMixedTaskSolved(taskId: string) {
+    setSolvedTaskIds((current) => new Set(current).add(taskId));
+    onLessonCompleted();
+  }
 
   return (
     <div className="practice-stack">
@@ -2509,38 +2644,48 @@ function LearningPracticeView({
         <span>{lesson.module}</span>
         <h1>Задания: {lesson.title}</h1>
         <p>
-          {lesson.self_check
-            ? "Здесь практика выполняется вне интерпретатора. Выполняйте задачи по порядку, отмечайте каждую готовую задачу или шаг, затем зафиксируйте результат."
+          {hasMixedPractice
+            ? "Сначала решим задания в редакторе, затем выполним ручную часть практики. После обеих частей зафиксируем результат."
+            : lesson.self_check
+            ? "Здесь практика проходит вне интерпретатора. Последовательно выполним задачи, отметим готовые пункты и зафиксируем результат."
             : tasks[0]?.mode === "script"
-              ? "Напишите полноценную программу в редакторе. Backend запустит её в изолированном интерпретаторе и сверит вывод."
-              : "Напишите функцию solve. Backend запустит код в отдельном процессе и проверит её на скрытых тестах."}
+              ? "Напишем полноценную программу в редакторе. Backend запустит её в изолированном интерпретаторе и сверит вывод."
+              : "Реализуем функцию solve. Backend запустит код в отдельном процессе и проверит её на скрытых тестах."}
         </p>
       </div>
+      {tasks.length > 0 && (
+        <div className="task-list">
+          {tasks.map((task, taskIndex) => (
+            <TaskRunner
+              task={task}
+              key={`${task.id}:${task.revision}`}
+              taskNumber={taskIndex + 1}
+              taskTotal={tasks.length}
+              isActive={taskIndex === Math.min(activeTaskIndex, tasks.length - 1)}
+              onNavigateTask={setActiveTaskIndex}
+              progressOwnerKey={progressOwnerKey}
+              onSolved={hasMixedPractice ? () => handleMixedTaskSolved(task.id) : onLessonCompleted}
+            />
+          ))}
+        </div>
+      )}
       {lesson.self_check ? (
         <SelfCheckPanel
           lesson={lesson}
           isAuthenticated={isAuthenticated}
           onRequireAuth={onRequireAuth}
           onLessonCompleted={onLessonCompleted}
+          progressOwnerKey={progressOwnerKey}
+          requiredTasksComplete={!hasMixedPractice || completedTaskCount === tasks.length}
+          requiredTaskCount={hasMixedPractice ? tasks.length : 0}
+          completedTaskCount={hasMixedPractice ? completedTaskCount : 0}
         />
-      ) : tasks.length > 0 ? (
-        <div className="task-list">
-          {tasks.map((task, taskIndex) => (
-            <TaskRunner
-              task={task}
-              key={task.id}
-              taskNumber={taskIndex + 1}
-              taskTotal={tasks.length}
-              onSolved={onLessonCompleted}
-            />
-          ))}
-        </div>
-      ) : (
+      ) : tasks.length === 0 ? (
         <div className="empty-task-card">
           <h2>Задания скоро появятся</h2>
-          <p>Для этого урока пока нет практических задач. Выберите другой урок или вернитесь к теории.</p>
+          <p>Для этого урока пока нет практических задач. Можно выбрать другой урок или вернуться к теории.</p>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }
@@ -2549,14 +2694,21 @@ function TaskRunner({
   task,
   taskNumber,
   taskTotal,
+  isActive,
+  onNavigateTask,
+  progressOwnerKey,
   onSolved,
 }: {
   task: LessonTask;
   taskNumber: number;
   taskTotal: number;
+  isActive: boolean;
+  onNavigateTask: (taskIndex: number) => void;
+  progressOwnerKey: string;
   onSolved?: () => void;
 }) {
-  const [code, setCode] = useState(task.starter_code);
+  const draftStorageKey = `pymentor:task-draft:${progressOwnerKey}:${task.id}:${task.revision}`;
+  const [code, setCode] = useState(() => readStoredString(draftStorageKey, task.starter_code));
   const [result, setResult] = useState<TaskSubmitResponse | null>(null);
   const [runResult, setRunResult] = useState<TaskRunResponse | null>(null);
   const [isRunning, setIsRunning] = useState(false);
@@ -2574,6 +2726,14 @@ function TaskRunner({
   };
   const requirementItems = task.requirements?.items ?? [];
   const hints = task.hints ?? [];
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(draftStorageKey, code);
+    } catch {
+      // Редактор продолжает работать, даже если браузер запрещает localStorage.
+    }
+  }, [code, draftStorageKey]);
 
   function revealNextHint() {
     setVisibleHintCount((current) => Math.min(current + 1, hints.length));
@@ -2627,15 +2787,34 @@ function TaskRunner({
   }
 
   return (
-    <section className="task-card task-card--editor">
+    <section className="task-card task-card--editor" hidden={!isActive}>
       <div className="task-head">
-        <div>
+        <div className="task-head__topline">
           <div className="task-head__meta">
             <span>Задача {taskNumber} из {taskTotal}</span>
             <span>{task.mode === "script" ? "Программа Python" : "Функция solve"}</span>
+            {task.completed && <span className="task-head__meta-completed">Проверено</span>}
           </div>
-          <h2>{task.title}</h2>
+          <div className="practice-task-navigation" aria-label="Переключение задач">
+            <button
+              className="practice-task-navigation__button"
+              type="button"
+              disabled={taskNumber === 1}
+              onClick={() => onNavigateTask(taskNumber - 2)}
+            >
+              Назад
+            </button>
+            <button
+              className="practice-task-navigation__button practice-task-navigation__button--next"
+              type="button"
+              disabled={taskNumber === taskTotal}
+              onClick={() => onNavigateTask(taskNumber)}
+            >
+              Следующая
+            </button>
+          </div>
         </div>
+        <h2>{renderPracticeText(task.title)}</h2>
       </div>
       <div className="task-workspace">
         <div className="task-brief" aria-label="Техническое задание">
@@ -2646,33 +2825,33 @@ function TaskRunner({
           <div className="task-spec">
             <section className="task-spec__item">
               <span>Дано</span>
-              <p>{taskContract.given}</p>
+              <div className="task-spec__text">{renderPracticeText(taskContract.given)}</div>
               {taskContract.given_items && taskContract.given_items.length > 0 && (
                 <ul className="task-spec__list">
                   {taskContract.given_items.map((item) => (
-                    <li key={item}>{item}</li>
+                    <li key={item}>{renderPracticeText(item)}</li>
                   ))}
                 </ul>
               )}
             </section>
             <section className="task-spec__item">
               <span>Нужно сделать</span>
-              <p>{taskContract.todo}</p>
+              <div className="task-spec__text">{renderPracticeText(taskContract.todo)}</div>
               {taskContract.todo_items && taskContract.todo_items.length > 0 && (
                 <ol className="task-spec__list task-spec__list--ordered">
                   {taskContract.todo_items.map((item) => (
-                    <li key={item}>{item}</li>
+                    <li key={item}>{renderPracticeText(item)}</li>
                   ))}
                 </ol>
               )}
             </section>
             <section className="task-spec__item task-spec__item--check">
               <span>Как проверим</span>
-              <p>{taskContract.check}</p>
+              <div className="task-spec__text">{renderPracticeText(taskContract.check)}</div>
               {taskContract.check_items && taskContract.check_items.length > 0 && (
                 <ul className="task-spec__list">
                   {taskContract.check_items.map((item) => (
-                    <li key={item}>{item}</li>
+                    <li key={item}>{renderPracticeText(item)}</li>
                   ))}
                 </ul>
               )}
@@ -2683,7 +2862,7 @@ function TaskRunner({
               <span>Опорные условия</span>
               <ol>
                 {requirementItems.map((item) => (
-                  <li key={item}>{item}</li>
+                  <li key={item}>{renderPracticeText(item)}</li>
                 ))}
               </ol>
             </section>
@@ -2712,7 +2891,7 @@ function TaskRunner({
           <div className="task-code-panel__head">
             <div>
               <span>Редактор решения</span>
-              <p>Сначала запустите один пример, затем отправьте решение на полную проверку.</p>
+               <p>Сначала запустим один пример, затем отправим решение на полную проверку.</p>
             </div>
             <code>Python</code>
           </div>
@@ -2758,7 +2937,7 @@ function TaskRunner({
               </div>
               <ol>
                 {hints.slice(0, visibleHintCount).map((hint) => (
-                  <li key={hint}>{hint}</li>
+                  <li key={hint}>{renderPracticeText(hint)}</li>
                 ))}
               </ol>
             </aside>

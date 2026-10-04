@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1672" height="836" viewBox="0 0 1672 836" role="img" aria-labelledby="title desc">
+  <title id="title">Python string slice boundaries</title>
+  <desc id="desc">The string backend is shown at positions zero through six. The slice text zero colon four selects back and stops before the character at position four.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="16" markerHeight="16" refX="13" refY="8" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M2 2 L13 8 L2 14" fill="none" stroke="#8FE4AD" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+    </marker>
+  </defs>
+  <rect width="1672" height="836" rx="32" fill="#111412" />
+
+  <rect x="96" y="72" width="208" height="60" rx="20" fill="#191D1A" stroke="#354039" stroke-width="2" />
+  <text x="200" y="113" text-anchor="middle" fill="#B8B4AA" font-family="Manrope, Segoe UI, sans-serif" font-size="34" font-weight="700" letter-spacing="2">SLICE MAP</text>
+
+  <text x="152" y="218" fill="#B8B4AA" font-family="Manrope, Segoe UI, sans-serif" font-size="38" font-weight="700" letter-spacing="1">STRING</text>
+
+  <g font-family="Consolas, monospace" text-anchor="middle">
+    <rect x="327" y="168" width="130" height="124" rx="18" fill="#191D1A" stroke="#8FE4AD" stroke-width="3" />
+    <rect x="475" y="168" width="130" height="124" rx="18" fill="#191D1A" stroke="#8FE4AD" stroke-width="3" />
+    <rect x="623" y="168" width="130" height="124" rx="18" fill="#191D1A" stroke="#8FE4AD" stroke-width="3" />
+    <rect x="771" y="168" width="130" height="124" rx="18" fill="#191D1A" stroke="#8FE4AD" stroke-width="3" />
+    <rect x="919" y="168" width="130" height="124" rx="18" fill="#191D1A" stroke="#354039" stroke-width="2" />
+    <rect x="1067" y="168" width="130" height="124" rx="18" fill="#191D1A" stroke="#354039" stroke-width="2" />
+    <rect x="1215" y="168" width="130" height="124" rx="18" fill="#191D1A" stroke="#354039" stroke-width="2" />
+
+    <text x="392" y="250" fill="#F5F2EB" font-size="68" font-weight="700">b</text>
+    <text x="540" y="250" fill="#F5F2EB" font-size="68" font-weight="700">a</text>
+    <text x="688" y="250" fill="#F5F2EB" font-size="68" font-weight="700">c</text>
+    <text x="836" y="250" fill="#F5F2EB" font-size="68" font-weight="700">k</text>
+    <text x="984" y="250" fill="#B8B4AA" font-size="68">e</text>
+    <text x="1132" y="250" fill="#B8B4AA" font-size="68">n</text>
+    <text x="1280" y="250" fill="#B8B4AA" font-size="68">d</text>
+
+    <text x="392" y="360" fill="#8FE4AD" font-size="40">0</text>
+    <text x="540" y="360" fill="#8FE4AD" font-size="40">1</text>
+    <text x="688" y="360" fill="#8FE4AD" font-size="40">2</text>
+    <text x="836" y="360" fill="#8FE4AD" font-size="40">3</text>
+    <text x="984" y="360" fill="#B8B4AA" font-size="40">4</text>
+    <text x="1132" y="360" fill="#B8B4AA" font-size="40">5</text>
+    <text x="1280" y="360" fill="#B8B4AA" font-size="40">6</text>
+  </g>
+
+  <path d="M327 410 V458 H910 V410" fill="none" stroke="#8FE4AD" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
+  <text x="327" y="514" text-anchor="middle" fill="#8FE4AD" font-family="Manrope, Segoe UI, sans-serif" font-size="36" font-weight="700">START 0</text>
+  <text x="910" y="514" text-anchor="middle" fill="#B8B4AA" font-family="Manrope, Segoe UI, sans-serif" font-size="36" font-weight="700">STOP 4</text>
+  <text x="910" y="553" text-anchor="middle" fill="#B8B4AA" font-family="Manrope, Segoe UI, sans-serif" font-size="24" font-weight="600" letter-spacing="1">EXCLUDED</text>
+  <text x="618" y="514" text-anchor="middle" fill="#8FE4AD" font-family="Manrope, Segoe UI, sans-serif" font-size="26" font-weight="700" letter-spacing="1">INCLUDED</text>
+
+  <rect x="214" y="628" width="548" height="142" rx="24" fill="#191D1A" stroke="#354039" stroke-width="2" />
+  <rect x="910" y="628" width="548" height="142" rx="24" fill="#191D1A" stroke="#354039" stroke-width="2" />
+  <text x="258" y="677" fill="#B8B4AA" font-family="Manrope, Segoe UI, sans-serif" font-size="28" font-weight="700" letter-spacing="1">SLICE</text>
+  <text x="954" y="677" fill="#B8B4AA" font-family="Manrope, Segoe UI, sans-serif" font-size="28" font-weight="700" letter-spacing="1">RESULT</text>
+  <text x="258" y="739" fill="#F5F2EB" font-family="Consolas, monospace" font-size="46" font-weight="600">text[0:4]</text>
+  <text x="954" y="739" fill="#8FE4AD" font-family="Consolas, monospace" font-size="52" font-weight="700">"back"</text>
+  <path d="M790 700 H874" fill="none" stroke="#8FE4AD" stroke-width="6" stroke-linecap="round" marker-end="url(#arrow)" />
+</svg>

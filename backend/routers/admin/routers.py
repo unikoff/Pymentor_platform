@@ -39,6 +39,19 @@ def _serialize_account(user: models.User, completed_lessons: int) -> dict:
 def _build_learning_progress(user_id: int, db: Session) -> tuple[list[dict], int]:
     """Собирает компактное дерево треков, блоков, уроков и заданий для админки."""
     completed_ids = user_crud.get_completed_lesson_ids(user_id, db)
+    block_three_tasks = [
+        task
+        for track_summary in get_tracks_summary()
+        if (track := find_track(track_summary["id"])) is not None
+        for lesson in track["lessons"]
+        if str(lesson.get("source_file", "")).startswith("foundations/block_03/")
+        for task in lesson.get("tasks", [])
+    ]
+    completed_task_revisions = user_crud.get_completed_task_revisions(
+        user_id=user_id,
+        task_ids=[task["id"] for task in block_three_tasks],
+        db=db,
+    )
     tracks: list[dict] = []
     completed_lessons = 0
 
@@ -64,16 +77,29 @@ def _build_learning_progress(user_id: int, db: Session) -> tuple[list[dict], int
             )
 
             lesson_completed = lesson["id"] in completed_ids
+            is_block_three = str(lesson.get("source_file", "")).startswith("foundations/block_03/")
             countable = bool(lesson.get("tasks") or lesson.get("self_check"))
-            tasks = [
-                {
-                    "id": task["id"],
-                    "title": task["title"],
-                    "level": task.get("level") if task.get("level") in {"easy", "medium", "hard"} else None,
-                    "completed": lesson_completed,
-                }
-                for task in lesson.get("tasks", [])
-            ]
+            tasks = []
+            for task in lesson.get("tasks", []):
+                task_completed = (
+                    completed_task_revisions.get(task["id"]) == task.get("revision")
+                    if is_block_three
+                    else lesson_completed
+                )
+                tasks.append(
+                    {
+                        "id": task["id"],
+                        "title": task["title"],
+                        "level": task.get("level") if task.get("level") in {"easy", "medium", "hard"} else None,
+                        "completed": task_completed,
+                    }
+                )
+            if is_block_three and tasks:
+                all_tasks_complete = all(task["completed"] for task in tasks)
+                if lesson.get("manual_practice"):
+                    lesson_completed = lesson_completed and all_tasks_complete
+                else:
+                    lesson_completed = all_tasks_complete
             if not tasks and lesson.get("self_check"):
                 tasks = [
                     {
@@ -165,7 +191,13 @@ async def delete_user(user_id: int, request: Request, db: Session = Depends(get_
     )
 
     # Остальное принадлежит только этому пользователю и уходит вместе с ним.
-    for related in (models.Session, models.UserActivityDay, models.UserLessonProgress, models.BookingQuota):
+    for related in (
+        models.Session,
+        models.UserActivityDay,
+        models.UserLessonProgress,
+        models.UserTaskProgress,
+        models.BookingQuota,
+    ):
         db.query(related).filter(related.user_id == user_id).delete(synchronize_session=False)
 
     db.delete(user_db)

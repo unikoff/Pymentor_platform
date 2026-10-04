@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1672" height="836" viewBox="0 0 1672 836" role="img" aria-labelledby="title desc">
+  <title id="title">Data and Traceback</title>
+  <desc id="desc">make_note returns a note without author. note_heading raises KeyError while show_note remains in the active call stack.</desc>
+  <defs>
+    <style>
+      .label { fill: #B8B4AA; font: 600 34px Manrope, "Segoe UI", sans-serif; letter-spacing: 1px; }
+      .node { fill: #191D1A; stroke: #354039; stroke-width: 3; }
+      .node-title { fill: #F5F2EB; font: 600 34px Consolas, "Courier New", monospace; }
+      .body { fill: #B8B4AA; font: 500 32px Manrope, "Segoe UI", sans-serif; }
+      .field { fill: #191D1A; stroke: #354039; stroke-width: 2; }
+      .field-text { fill: #F5F2EB; font: 600 30px Consolas, "Courier New", monospace; }
+      .missing { fill: #191D1A; stroke: #FF7A7A; stroke-width: 3; }
+      .missing-text { fill: #FF7A7A; font: 600 28px Consolas, "Courier New", monospace; }
+      .error-text { fill: #FF7A7A; font: 600 34px Consolas, "Courier New", monospace; }
+      .call { fill: none; stroke: #8FE4AD; stroke-width: 5; stroke-linecap: butt; }
+      .error-call { fill: none; stroke: #FF7A7A; stroke-width: 5; stroke-linecap: butt; }
+      .arrowhead { fill: #8FE4AD; }
+      .error-arrowhead { fill: #FF7A7A; }
+    </style>
+  </defs>
+
+  <rect width="1672" height="836" fill="#111412" />
+  <text class="label" x="80" y="98">Data flow</text>
+
+  <rect class="node" x="80" y="142" width="402" height="236" rx="24" />
+  <text class="label" x="112" y="192">Producer</text>
+  <text class="node-title" x="112" y="254">make_note()</text>
+  <text class="body" x="112" y="320">returns a note</text>
+
+  <rect class="node" x="635" y="142" width="402" height="236" rx="24" />
+  <text class="label" x="667" y="192">Record</text>
+  <text class="node-title" x="667" y="254">note</text>
+  <rect class="field" x="667" y="285" width="116" height="54" rx="14" />
+  <text class="field-text" x="687" y="322">text</text>
+  <rect class="missing" x="797" y="273" width="208" height="78" rx="14" />
+  <text class="missing-text" x="813" y="306">author</text>
+  <text class="missing-text" x="813" y="338">missing</text>
+
+  <rect class="node" x="1190" y="142" width="402" height="236" rx="24" />
+  <text class="label" x="1222" y="192">Consumer</text>
+  <text class="node-title" x="1222" y="254">note_heading()</text>
+  <text class="body" x="1222" y="320">reads note["author"]</text>
+
+  <path class="call" d="M493 260 H610" />
+  <path class="arrowhead" d="M610 252 L626 260 L610 268 Z" />
+  <text class="body" x="518" y="235">returns</text>
+  <path class="call" d="M1048 260 H1165" />
+  <path class="arrowhead" d="M1165 252 L1181 260 L1165 268 Z" />
+  <text class="body" x="1064" y="235">passed</text>
+
+  <text class="label" x="80" y="454">Traceback frames</text>
+
+  <rect class="node" x="80" y="490" width="312" height="190" rx="24" />
+  <text class="label" x="112" y="542">Entry</text>
+  <text class="node-title" x="112" y="613">&lt;module&gt;</text>
+
+  <rect class="node" x="468" y="490" width="312" height="190" rx="24" />
+  <text class="label" x="500" y="542">Caller</text>
+  <text class="node-title" x="500" y="613">show_note()</text>
+
+  <rect class="node" x="856" y="490" width="312" height="190" rx="24" />
+  <text class="label" x="888" y="542">Callee</text>
+  <text class="node-title" x="888" y="613">note_heading()</text>
+
+  <rect class="node" x="1244" y="490" width="348" height="190" rx="24" />
+  <text class="label" x="1276" y="542">Failure</text>
+  <text class="error-text" x="1276" y="613">KeyError</text>
+
+  <path class="call" d="M403 585 H445" />
+  <path class="arrowhead" d="M445 577 L461 585 L445 593 Z" />
+  <path class="call" d="M791 585 H833" />
+  <path class="arrowhead" d="M833 577 L849 585 L833 593 Z" />
+  <path class="error-call" d="M1179 585 H1221" />
+  <path class="error-arrowhead" d="M1221 577 L1237 585 L1221 593 Z" />
+</svg>

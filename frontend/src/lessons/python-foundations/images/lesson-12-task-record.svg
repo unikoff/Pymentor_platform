@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1672" height="836" viewBox="0 0 1672 836" role="img" aria-labelledby="title desc">
+<title id="title">A task dictionary with four required fields</title><desc id="desc">Four exact dictionary keys each point to the value stored in one task record.</desc>
+<rect width="1672" height="836" rx="28" fill="#111412"/>
+<text x="112" y="112" fill="#F5F2EB" font-family="Manrope, Segoe UI, sans-serif" font-size="42" font-weight="700">Task record</text>
+<text x="112" y="164" fill="#B8B4AA" font-family="Manrope, Segoe UI, sans-serif" font-size="26">Four required fields</text>
+<rect x="176" y="218" width="1320" height="520" rx="24" fill="#191D1A" stroke="#354039" stroke-width="2"/>
+<text x="232" y="274" fill="#F5F2EB" font-family="Consolas, monospace" font-size="32" font-weight="700">task</text>
+<text x="412" y="274" fill="#B8B4AA" font-family="Manrope, Segoe UI, sans-serif" font-size="24" letter-spacing="2">KEY</text><text x="1124" y="274" fill="#B8B4AA" font-family="Manrope, Segoe UI, sans-serif" font-size="24" letter-spacing="2">VALUE</text>
+<g fill="#111412" stroke="#354039" stroke-width="2"><rect x="232" y="302" width="500" height="78" rx="14"/><rect x="940" y="302" width="500" height="78" rx="14"/><rect x="232" y="400" width="500" height="78" rx="14"/><rect x="940" y="400" width="500" height="78" rx="14"/><rect x="232" y="498" width="500" height="78" rx="14"/><rect x="940" y="498" width="500" height="78" rx="14"/><rect x="232" y="596" width="500" height="78" rx="14"/><rect x="940" y="596" width="500" height="78" rx="14"/></g>
+<g fill="#F5F2EB" font-family="Consolas, monospace" font-size="30"><text x="268" y="352">"id"</text><text x="268" y="450">"title"</text><text x="268" y="548">"priority"</text><text x="268" y="646">"is_done"</text><text x="976" y="352">31</text><text x="976" y="450">"Повторить пример"</text><text x="976" y="548">2</text><text x="976" y="646">False</text></g>
+<g fill="none" stroke="#8FE4AD" stroke-width="4" stroke-linecap="butt"><path d="M 732 341 H 926"/><path d="M 732 439 H 926"/><path d="M 732 537 H 926"/><path d="M 732 635 H 926"/></g>
+<g fill="#8FE4AD"><path d="M 926 335 L 940 341 L 926 347 Z"/><path d="M 926 433 L 940 439 L 926 445 Z"/><path d="M 926 531 L 940 537 L 926 543 Z"/><path d="M 926 629 L 940 635 L 926 641 Z"/></g>
+</svg>

@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="1520" viewBox="0 0 720 1520" role="img" aria-labelledby="title desc">
+  <title id="title">Position and item on each pass</title>
+  <desc id="desc">A list of three topics passes through enumerate with a start value of one. Each position-item pair is unpacked into the names position and topic.</desc>
+  <defs>
+    <style>
+      .panel { fill: #111412; stroke: #354039; stroke-width: 2; }
+      .node { fill: #191D1A; stroke: #354039; stroke-width: 2; }
+      .label { fill: #F5F2EB; font: 600 34px Manrope, "Segoe UI", sans-serif; }
+      .caption { fill: #B8B4AA; font: 500 28px Manrope, "Segoe UI", sans-serif; }
+      .mono { fill: #F5F2EB; font: 500 31px Consolas, monospace; }
+      .muted-mono { fill: #B8B4AA; font: 500 27px Consolas, monospace; }
+      .flow-line { fill: none; stroke: #8FE4AD; stroke-width: 5; stroke-linecap: butt; }
+      .divider { stroke: #354039; stroke-width: 2; }
+    </style>
+  </defs>
+  <rect width="720" height="1520" fill="#111412" />
+
+  <rect class="panel" x="32" y="32" width="656" height="390" rx="24" />
+  <text class="label" x="68" y="90">Input</text>
+  <text class="muted-mono" x="68" y="132">topics</text>
+  <line class="divider" x1="64" y1="154" x2="656" y2="154" />
+  <text class="mono" x="360" y="220" text-anchor="middle">"Python"</text>
+  <line class="divider" x1="64" y1="246" x2="656" y2="246" />
+  <text class="mono" x="360" y="304" text-anchor="middle">"Python"</text>
+  <line class="divider" x1="64" y1="330" x2="656" y2="330" />
+  <text class="mono" x="360" y="388" text-anchor="middle">"SQL"</text>
+
+  <path class="flow-line" d="M360 422 V484" />
+  <path class="arrow-head" fill="#8FE4AD" d="M360 500 L351 484 L369 484 Z" />
+
+  <rect class="panel" x="32" y="500" width="656" height="420" rx="24" />
+  <text class="label" x="68" y="558">Pair per pass</text>
+  <text class="muted-mono" x="68" y="604">enumerate(topics, start=1)</text>
+  <line class="divider" x1="64" y1="626" x2="656" y2="626" />
+  <text class="mono" x="360" y="698" text-anchor="middle">(1, "Python")</text>
+  <line class="divider" x1="64" y1="724" x2="656" y2="724" />
+  <text class="mono" x="360" y="796" text-anchor="middle">(2, "Python")</text>
+  <line class="divider" x1="64" y1="822" x2="656" y2="822" />
+  <text class="mono" x="360" y="894" text-anchor="middle">(3, "SQL")</text>
+
+  <path class="flow-line" d="M360 920 V982" />
+  <path class="arrow-head" fill="#8FE4AD" d="M360 998 L351 982 L369 982 Z" />
+
+  <rect class="panel" x="32" y="998" width="656" height="490" rx="24" />
+  <text class="label" x="68" y="1056">Names after unpacking</text>
+  <line class="divider" x1="64" y1="1084" x2="656" y2="1084" />
+  <text class="mono" x="360" y="1156" text-anchor="middle">position = 1</text>
+  <text class="mono" x="360" y="1196" text-anchor="middle">topic = "Python"</text>
+  <line class="divider" x1="64" y1="1220" x2="656" y2="1220" />
+  <text class="mono" x="360" y="1280" text-anchor="middle">position = 2</text>
+  <text class="mono" x="360" y="1320" text-anchor="middle">topic = "Python"</text>
+  <line class="divider" x1="64" y1="1344" x2="656" y2="1344" />
+  <text class="mono" x="360" y="1404" text-anchor="middle">position = 3</text>
+  <text class="mono" x="360" y="1444" text-anchor="middle">topic = "SQL"</text>
+</svg>

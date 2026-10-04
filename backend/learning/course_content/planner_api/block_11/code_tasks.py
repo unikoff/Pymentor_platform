@@ -184,41 +184,4 @@ CODE_TASKS: dict[int, list[dict[str, Any]]] = {
                          '                value = value.strip()\n'
                          '            updated[field] = value\n'
                          '    return updated\n'}],
-    62: [{'title': 'Удалите задачу и выберите status',
-       'level': 'easy',
-       'mode': 'solve',
-       'prompt': 'Создайте новый список remaining из копий всех задач, кроме задачи с task_id. Если задача найдена, '
-                 'deleted=True и status=204. Если не найдена, deleted=False и status=404. Верните словарь с точными '
-                 'ключами deleted, status, items.',
-       'contract': {'given': 'Автопроверка вызывает solve(tasks, task_id). tasks — список словарей с ключом id. '
-                             'Нужно смоделировать DELETE без FastAPI imports.',
-                    'todo': 'Создайте новый список remaining из копий всех задач, кроме задачи с task_id. Если '
-                            'задача найдена, deleted=True и status=204. Если не найдена, deleted=False и status=404. '
-                            'Верните словарь с точными ключами deleted, status, items.',
-                    'check': 'Проверяются удаление существующей записи, отсутствующий id и пустой список. Исходные '
-                             'словари не должны использоваться в items напрямую: нужны copy().'},
-       'requirements': {'items': ['новый список remaining', 'флаг deleted', '204 или 404', 'копии оставшихся задач'],
-                        'names': ['tasks', 'task_id', 'remaining', 'deleted', 'status'],
-                        'nodes': ['FunctionDef', 'For', 'If'],
-                        'attributes': ['copy', 'append']},
-       'starter_code': 'def solve(tasks, task_id):\n    # Соберите remaining и определите status\n    pass\n',
-       'tests': [{'name': 'удаление найдено',
-                  'args': [[{'id': 1, 'title': 'HTTP'}, {'id': 2, 'title': 'FastAPI'}], 1],
-                  'expected': {'deleted': True, 'status': 204, 'items': [{'id': 2, 'title': 'FastAPI'}]}},
-                 {'name': 'id отсутствует',
-                  'args': [[{'id': 1, 'title': 'HTTP'}], 7],
-                  'expected': {'deleted': False, 'status': 404, 'items': [{'id': 1, 'title': 'HTTP'}]}},
-                 {'name': 'пустой список',
-                  'args': [[], 1],
-                  'expected': {'deleted': False, 'status': 404, 'items': []}}],
-       'reference_code': 'def solve(tasks, task_id):\n'
-                         '    remaining = []\n'
-                         '    deleted = False\n'
-                         '    for task in tasks:\n'
-                         '        if task["id"] == task_id:\n'
-                         '            deleted = True\n'
-                         '        else:\n'
-                         '            remaining.append(task.copy())\n'
-                         '    status = 204 if deleted else 404\n'
-                         '    return {"deleted": deleted, "status": status, "items": remaining}\n'}],
 }

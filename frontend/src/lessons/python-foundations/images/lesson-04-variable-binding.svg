@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1672" height="836" viewBox="0 0 1672 836" role="img" aria-labelledby="title desc">
+  <title id="title">Reassignment</title>
+  <desc id="desc">shelf_status changes from open to closed. Both values are strings.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="14" markerHeight="14" refX="11" refY="7" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M2 2 L12 7 L2 12" fill="none" stroke="#8FE4AD" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"/>
+    </marker>
+    <marker id="timeline-arrow" markerWidth="14" markerHeight="14" refX="11" refY="7" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M2 2 L12 7 L2 12" fill="none" stroke="#B8B4AA" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"/>
+    </marker>
+    <style>
+      text { font-family: Manrope, "Segoe UI", sans-serif; }
+      .mono { font-family: Consolas, "Courier New", monospace; }
+      .muted { fill: #B8B4AA; }
+      .primary { fill: #F5F2EB; }
+      .green { fill: #8FE4AD; }
+    </style>
+  </defs>
+  <rect width="1672" height="836" fill="#111412"/>
+
+  <text x="88" y="158" class="primary" font-size="42" font-weight="700">Reassignment</text>
+
+  <rect x="80" y="270" width="680" height="430" rx="24" fill="#191D1A" stroke="#354039" stroke-width="2"/>
+  <rect x="912" y="270" width="680" height="430" rx="24" fill="#191D1A" stroke="#354039" stroke-width="2"/>
+
+  <circle cx="132" cy="328" r="22" fill="#222923" stroke="#354039" stroke-width="2"/>
+  <text x="132" y="336" text-anchor="middle" class="green" font-size="20" font-weight="700">1</text>
+
+  <circle cx="964" cy="328" r="22" fill="#222923" stroke="#354039" stroke-width="2"/>
+  <text x="964" y="336" text-anchor="middle" class="green" font-size="20" font-weight="700">2</text>
+  <rect x="126" y="432" width="244" height="112" rx="18" fill="#222923" stroke="#354039" stroke-width="2"/>
+  <text x="248" y="499" text-anchor="middle" class="primary mono" font-size="23">shelf_status</text>
+  <path d="M378 488 H438" fill="none" stroke="#8FE4AD" stroke-width="4" marker-end="url(#arrow)"/>
+  <rect x="454" y="432" width="250" height="112" rx="18" fill="#222923" stroke="#354039" stroke-width="2"/>
+  <text x="579" y="499" text-anchor="middle" class="primary mono" font-size="25">"open"</text>
+  <rect x="454" y="606" width="106" height="48" rx="14" fill="#222923" stroke="#8FE4AD" stroke-width="2"/>
+  <text x="507" y="638" text-anchor="middle" class="green mono" font-size="22">str</text>
+
+  <rect x="958" y="432" width="244" height="112" rx="18" fill="#222923" stroke="#354039" stroke-width="2"/>
+  <text x="1080" y="499" text-anchor="middle" class="primary mono" font-size="23">shelf_status</text>
+  <path d="M1210 488 H1270" fill="none" stroke="#8FE4AD" stroke-width="4" marker-end="url(#arrow)"/>
+  <rect x="1286" y="432" width="250" height="112" rx="18" fill="#222923" stroke="#354039" stroke-width="2"/>
+  <text x="1411" y="499" text-anchor="middle" class="primary mono" font-size="25">"closed"</text>
+  <rect x="1286" y="606" width="106" height="48" rx="14" fill="#222923" stroke="#8FE4AD" stroke-width="2"/>
+  <text x="1339" y="638" text-anchor="middle" class="green mono" font-size="22">str</text>
+
+  <path d="M778 490 H894" fill="none" stroke="#B8B4AA" stroke-width="3" marker-end="url(#timeline-arrow)"/>
+</svg>

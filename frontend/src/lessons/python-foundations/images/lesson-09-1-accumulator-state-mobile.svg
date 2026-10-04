@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="1320" viewBox="0 0 720 1320" role="img" aria-labelledby="title desc">
+  <title id="title">Accumulator state across a loop</title>
+  <desc id="desc">The total begins at zero. Adding 2 changes it to 2, adding 5 changes it to 7, and adding 1 changes it to 8.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="22" markerHeight="22" viewBox="0 0 22 22" refX="18" refY="11" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M2 2 L18 11 L2 20" fill="none" stroke="#8FE4AD" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+    </marker>
+    <style>
+      .label { font-family: Manrope, "Segoe UI", sans-serif; fill: #B8B4AA; font-size: 40px; }
+      .value { font-family: Consolas, monospace; fill: #F5F2EB; font-size: 56px; }
+      .step { font-family: Consolas, monospace; fill: #8FE4AD; font-size: 44px; }
+    </style>
+  </defs>
+  <rect width="720" height="1320" fill="#111412" />
+
+  <g fill="#191D1A" stroke="#354039" stroke-width="2">
+    <rect x="70" y="60" width="580" height="200" rx="24" />
+    <rect x="70" y="390" width="580" height="200" rx="24" />
+    <rect x="70" y="720" width="580" height="200" rx="24" />
+    <rect x="70" y="1050" width="580" height="200" rx="24" />
+  </g>
+
+  <g text-anchor="middle">
+    <text class="label" x="360" y="122">INITIAL</text>
+    <text class="value" x="360" y="198">total = 0</text>
+
+    <text class="label" x="360" y="452">AFTER POINT 2</text>
+    <text class="value" x="360" y="528">total = 2</text>
+
+    <text class="label" x="360" y="782">AFTER POINT 5</text>
+    <text class="value" x="360" y="858">total = 7</text>
+
+    <text class="label" x="360" y="1112">AFTER POINT 1</text>
+    <text class="value" x="360" y="1188">total = 8</text>
+  </g>
+
+  <g fill="none" stroke="#8FE4AD" stroke-width="5" stroke-linecap="round" marker-end="url(#arrow)">
+    <path d="M360 275 V370" />
+    <path d="M360 605 V700" />
+    <path d="M360 935 V1030" />
+  </g>
+  <g class="step">
+    <text x="430" y="337">+ 2</text>
+    <text x="430" y="667">+ 5</text>
+    <text x="430" y="997">+ 1</text>
+  </g>
+</svg>

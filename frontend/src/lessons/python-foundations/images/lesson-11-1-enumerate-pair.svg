@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1672" height="836" viewBox="0 0 1672 836" role="img" aria-labelledby="title desc">
+  <title id="title">Position and item</title>
+  <desc id="desc">A list value becomes a position-item pair and unpacks into two names on each pass.</desc>
+
+  <rect width="1672" height="836" rx="28" fill="#111412" />
+  <text x="836" y="112" text-anchor="middle" fill="#F5F2EB" font-family="Manrope, Segoe UI, sans-serif" font-size="46" font-weight="700">Position and item</text>
+
+  <g fill="#191D1A" stroke="#354039" stroke-width="2">
+    <rect x="64" y="190" width="432" height="466" rx="24" />
+    <rect x="620" y="190" width="432" height="466" rx="24" />
+    <rect x="1176" y="190" width="432" height="466" rx="24" />
+  </g>
+  <g stroke="#354039" stroke-width="2">
+    <path d="M 80 284 H 480 M 80 396 H 480 M 80 489 H 480 M 80 582 H 480" />
+    <path d="M 636 284 H 1036 M 636 396 H 1036 M 636 489 H 1036 M 636 582 H 1036" />
+    <path d="M 1192 284 H 1592 M 1192 396 H 1592 M 1192 489 H 1592 M 1192 582 H 1592" />
+  </g>
+  <g fill="#F5F2EB" font-family="Manrope, Segoe UI, sans-serif" font-size="30" font-weight="700" text-anchor="middle">
+    <text x="280" y="248">Input</text>
+    <text x="836" y="248">Pair per pass</text>
+    <text x="1392" y="248">Names</text>
+  </g>
+  <g fill="#B8B4AA" font-family="Consolas, monospace" font-size="24" text-anchor="middle">
+    <text x="280" y="324">topics</text>
+    <text x="836" y="324">enumerate(topics, start=1)</text>
+    <text x="1392" y="324">unpack</text>
+  </g>
+  <g fill="#F5F2EB" font-family="Consolas, monospace" font-size="28" text-anchor="middle">
+    <text x="280" y="359">"Python"</text>
+    <text x="280" y="452">"Python"</text>
+    <text x="280" y="545">"SQL"</text>
+    <text x="836" y="359">(1, "Python")</text>
+    <text x="836" y="452">(2, "Python")</text>
+    <text x="836" y="545">(3, "SQL")</text>
+  </g>
+  <g fill="#F5F2EB" font-family="Consolas, monospace" font-size="23" text-anchor="middle">
+    <text x="1392" y="350">position = 1</text>
+    <text x="1392" y="379">topic = "Python"</text>
+    <text x="1392" y="443">position = 2</text>
+    <text x="1392" y="472">topic = "Python"</text>
+    <text x="1392" y="536">position = 3</text>
+    <text x="1392" y="565">topic = "SQL"</text>
+  </g>
+  <g fill="none" stroke="#8FE4AD" stroke-width="5" stroke-linecap="butt">
+    <path d="M 496 359 H 608" />
+    <path d="M 496 452 H 608" />
+    <path d="M 496 545 H 608" />
+    <path d="M 1052 359 H 1164" />
+    <path d="M 1052 452 H 1164" />
+    <path d="M 1052 545 H 1164" />
+  </g>
+  <g fill="#8FE4AD">
+    <path d="M 608 352 L 620 359 L 608 366 Z" />
+    <path d="M 608 445 L 620 452 L 608 459 Z" />
+    <path d="M 608 538 L 620 545 L 608 552 Z" />
+    <path d="M 1164 352 L 1176 359 L 1164 366 Z" />
+    <path d="M 1164 445 L 1176 452 L 1164 459 Z" />
+    <path d="M 1164 538 L 1176 545 L 1164 552 Z" />
+  </g>
+</svg>

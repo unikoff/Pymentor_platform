@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="1320" viewBox="0 0 720 1320" role="img" aria-labelledby="title desc">
+  <title id="title">Separate task objects</title>
+  <desc id="desc">Two calls with the same inputs return separate task dictionaries. Changing the first task leaves the second unchanged.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="18" markerHeight="20" viewBox="0 0 18 20" refX="0" refY="10" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M0 0 L18 10 L0 20 Z" fill="#8FE4AD" />
+    </marker>
+    <style>
+      .title { font-family: Manrope, "Segoe UI", sans-serif; fill: #F5F2EB; font-size: 52px; font-weight: 700; }
+      .heading { font-family: Manrope, "Segoe UI", sans-serif; fill: #F5F2EB; font-size: 42px; font-weight: 700; }
+      .label { font-family: Manrope, "Segoe UI", sans-serif; fill: #B8B4AA; font-size: 34px; }
+      .code { font-family: Consolas, monospace; fill: #F5F2EB; font-size: 34px; }
+      .changed { font-family: Consolas, monospace; fill: #8FE4AD; font-size: 34px; font-weight: 700; }
+      .unchanged { font-family: Consolas, monospace; fill: #B8B4AA; font-size: 32px; }
+    </style>
+  </defs>
+  <rect width="720" height="1320" fill="#111412" />
+  <text class="title" x="48" y="92">Separate task objects</text>
+
+  <rect x="48" y="150" width="624" height="330" rx="24" fill="#191D1A" stroke="#354039" stroke-width="2" />
+  <text class="heading" x="82" y="212">CALLER</text>
+  <text class="label" x="82" y="265">same inputs</text>
+  <text class="code" x="82" y="326">first = create_task(...)</text>
+  <text class="code" x="82" y="382">second = create_task(...)</text>
+  <text class="code" x="82" y="438">first["is_done"] = True</text>
+
+  <path d="M230 480 V542" fill="none" stroke="#8FE4AD" stroke-width="5" marker-end="url(#arrow)" />
+  <text class="label" x="84" y="528">call 1</text>
+  <path d="M500 480 V542" fill="none" stroke="#8FE4AD" stroke-width="5" marker-end="url(#arrow)" />
+  <text class="label" x="540" y="528">call 2</text>
+
+  <rect x="48" y="560" width="624" height="220" rx="24" fill="#191D1A" stroke="#354039" stroke-width="2" />
+  <text class="heading" x="82" y="630">create_task</text>
+  <text class="label" x="82" y="700">new dict</text>
+  <text class="label" x="82" y="748">each call</text>
+
+  <path d="M220 780 L207.3 877.2" fill="none" stroke="#8FE4AD" stroke-width="5" stroke-dasharray="16 8" marker-end="url(#arrow)" />
+  <text class="label" x="62" y="850">return 1</text>
+  <path d="M500 780 L512.7 877.2" fill="none" stroke="#8FE4AD" stroke-width="5" stroke-dasharray="16 8" marker-end="url(#arrow)" />
+  <text class="label" x="540" y="850">return 2</text>
+
+  <rect x="48" y="895" width="300" height="300" rx="24" fill="#191D1A" stroke="#354039" stroke-width="2" />
+  <text class="heading" x="82" y="970">first</text>
+    <text class="label" x="82" y="1030">id</text>
+  <text class="label" x="82" y="1072">title</text>
+  <text class="label" x="82" y="1114">priority</text>
+  <text class="changed" x="82" y="1162">is_done: True</text>
+
+  <rect x="372" y="895" width="300" height="300" rx="24" fill="#191D1A" stroke="#354039" stroke-width="2" />
+  <text class="heading" x="406" y="970">second</text>
+    <text class="label" x="406" y="1030">id</text>
+  <text class="label" x="406" y="1072">title</text>
+  <text class="label" x="406" y="1114">priority</text>
+  <text class="unchanged" x="406" y="1162">is_done: False</text>
+</svg>

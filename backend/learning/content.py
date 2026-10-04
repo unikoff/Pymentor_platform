@@ -765,7 +765,22 @@ def _build_lesson(
     tasks = _tasks_for_lesson(identity_source, text, lesson_id, legacy_lesson_id, track_id, path.name)
     for task in tasks:
         task["revision"] = build_task_revision(task)
-    manual_practice = [] if tasks else get_manual_practice(track_id, path.name)
+    mixed_practice_lessons = {
+        "foundations/block_01/04 - Переменные и базовые типы.md",
+        "foundations/block_01/05 - Числа, операции и преобразование типов.md",
+        "foundations/block_02/06 - Строки и форматирование.md",
+        "foundations/block_02/07 - Boolean, сравнения и логика.md",
+        "foundations/block_02/09 - Цикл for и последовательности.md",
+        "foundations/block_02/09.1 - Накопление, счётчик и итог после цикла.md",
+        "foundations/block_03/11 - Списки, кортежи и множества.md",
+        "foundations/block_03/13 - Функции, параметры и return.md",
+        "foundations/block_03/15 - Ошибки, traceback и отладка.md",
+    }
+    manual_practice = (
+        get_manual_practice(track_id, path.name)
+        if not tasks or relative in mixed_practice_lessons
+        else []
+    )
     self_check = identity_source in SELF_CHECK_LESSONS or bool(manual_practice)
     video = _extract_youtube_video(text, title)
 

@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="1320" viewBox="0 0 720 1320" role="img" aria-labelledby="title desc">
+  <title id="title">For loop passes one sequence item at a time</title>
+  <desc id="desc">A sequence supplies its next item to the loop body. The body returns to request another item. When no items remain, execution continues after the loop. An empty sequence goes directly to the next statement.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 14 14" refX="12" refY="7" markerWidth="14" markerHeight="14" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M 1 1 L 12 7 L 1 13" fill="none" stroke="#8FE4AD" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+    </marker>
+    <style>
+      .bg { fill: #111412; }
+      .node { fill: #191D1A; stroke: #354039; stroke-width: 2; }
+      .edge { fill: none; stroke: #8FE4AD; stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#arrow); }
+      .title { fill: #F5F2EB; font: 600 44px Manrope, "Segoe UI", sans-serif; text-anchor: middle; }
+      .code { fill: #F5F2EB; font: 38px Consolas, "Courier New", monospace; text-anchor: middle; }
+      .edge-label { fill: #B8B4AA; font: 34px Manrope, "Segoe UI", sans-serif; text-anchor: middle; }
+      .item { fill: #111412; stroke: #354039; stroke-width: 2; }
+    </style>
+  </defs>
+  <rect class="bg" x="0" y="0" width="720" height="1320" />
+
+  <rect class="node" x="70" y="72" width="580" height="200" rx="24" />
+  <text class="title" x="360" y="132">Sequence</text>
+  <rect class="item" x="184" y="174" width="96" height="58" rx="12" />
+  <rect class="item" x="312" y="174" width="96" height="58" rx="12" />
+  <rect class="item" x="440" y="174" width="96" height="58" rx="12" />
+  <text class="code" x="232" y="216">"к"</text>
+  <text class="code" x="360" y="216">"о"</text>
+  <text class="code" x="488" y="216">"т"</text>
+
+  <path class="edge" d="M 360 272 V 310" />
+  <text class="edge-label" x="458" y="315">in order</text>
+
+  <polygon class="node" points="360,310 650,430 360,550 70,430" />
+  <text class="title" x="360" y="445">Next item?</text>
+
+  <path class="edge" d="M 360 550 V 620" />
+  <text class="edge-label" x="414" y="592">Yes</text>
+
+  <rect class="node" x="110" y="620" width="500" height="140" rx="24" />
+  <text class="title" x="360" y="674">Current item</text>
+  <text class="code" x="360" y="728">symbol = "к"</text>
+
+  <path class="edge" d="M 360 760 V 830" />
+
+  <rect class="node" x="110" y="830" width="500" height="150" rx="24" />
+  <text class="title" x="360" y="890">Loop body</text>
+  <text class="code" x="360" y="946">print(symbol)</text>
+
+  <path class="edge" d="M 610 905 H 656 V 430 H 650" />
+  <text class="edge-label" x="630" y="682" transform="rotate(-90 630 682)">Repeat</text>
+
+  <path class="edge" d="M 70 430 H 64 V 1160 H 100" />
+  <text class="edge-label" x="110" y="570" transform="rotate(-90 110 570)">No</text>
+  <rect class="node" x="100" y="1080" width="520" height="160" rx="24" />
+  <text class="title" x="360" y="1174">After loop</text>
+</svg>

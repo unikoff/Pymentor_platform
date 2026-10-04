@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="1320" viewBox="0 0 720 1320" role="img" aria-labelledby="title desc">
+  <title id="title">Independent checks and one conditional chain</title>
+  <desc id="desc">Two independent checks can each run an action. A priority chain tests thresholds in order and selects only the first matching category.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="16" markerHeight="16" viewBox="0 0 16 16" refX="14" refY="8" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M2 2 L14 8 L2 14" fill="none" stroke="#8FE4AD" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+    </marker>
+    <style>
+      .panel { fill: #111412; stroke: #354039; stroke-width: 2; }
+      .node { fill: #191D1A; stroke: #354039; stroke-width: 2; }
+      .label { fill: #F5F2EB; font: 600 30px Manrope, "Segoe UI", sans-serif; }
+      .caption { fill: #B8B4AA; font: 500 23px Manrope, "Segoe UI", sans-serif; }
+      .edge { fill: none; stroke: #8FE4AD; stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#arrow); }
+      .edge-label { fill: #B8B4AA; font: 600 22px Manrope, "Segoe UI", sans-serif; }
+    </style>
+  </defs>
+  <rect width="720" height="1320" fill="#111412" />
+
+  <rect class="panel" x="32" y="32" width="656" height="430" rx="24" />
+  <text class="label" x="68" y="88">Separate checks</text>
+  <text class="caption" x="68" y="122">Each condition controls its own action</text>
+  <rect class="node" x="64" y="174" width="252" height="88" rx="20" />
+  <text class="label" x="190" y="228" text-anchor="middle">has ticket</text>
+  <rect class="node" x="404" y="174" width="252" height="88" rx="20" />
+  <text class="label" x="530" y="228" text-anchor="middle">ticket notice</text>
+  <path class="edge" d="M316 218 H394" />
+  <text class="edge-label" x="356" y="202" text-anchor="middle">yes</text>
+
+  <rect class="node" x="64" y="294" width="252" height="88" rx="20" />
+  <text class="label" x="190" y="348" text-anchor="middle">seat free</text>
+  <rect class="node" x="404" y="294" width="252" height="88" rx="20" />
+  <text class="label" x="530" y="348" text-anchor="middle">seat notice</text>
+  <path class="edge" d="M316 338 H394" />
+  <text class="edge-label" x="356" y="322" text-anchor="middle">yes</text>
+  <text class="caption" x="68" y="428">Both actions can run</text>
+
+  <rect class="panel" x="32" y="492" width="656" height="796" rx="24" />
+  <text class="label" x="68" y="548">One chain</text>
+  <text class="caption" x="68" y="582">The first match ends the choice</text>
+
+  <rect class="node" x="240" y="614" width="200" height="72" rx="20" />
+  <text class="label" x="340" y="660" text-anchor="middle">priority</text>
+  <rect class="node" x="240" y="728" width="200" height="88" rx="20" />
+  <text class="label" x="340" y="782" text-anchor="middle">&gt;= 4?</text>
+  <path class="edge" d="M340 686 V718" />
+  <rect class="node" x="490" y="728" width="164" height="88" rx="20" />
+  <text class="label" x="572" y="782" text-anchor="middle">Urgent</text>
+  <path class="edge" d="M440 772 H480" />
+  <text class="edge-label" x="464" y="752" text-anchor="middle">yes</text>
+
+  <rect class="node" x="240" y="900" width="200" height="88" rx="20" />
+  <text class="label" x="340" y="954" text-anchor="middle">&gt;= 2?</text>
+  <path class="edge" d="M340 816 V890" />
+  <text class="edge-label" x="366" y="866">no</text>
+  <rect class="node" x="490" y="900" width="164" height="88" rx="20" />
+  <text class="label" x="572" y="954" text-anchor="middle">In work</text>
+  <path class="edge" d="M440 944 H480" />
+  <text class="edge-label" x="464" y="924" text-anchor="middle">yes</text>
+
+  <rect class="node" x="256" y="1094" width="168" height="88" rx="20" />
+  <text class="label" x="340" y="1148" text-anchor="middle">Low</text>
+  <path class="edge" d="M340 988 V1084" />
+  <text class="edge-label" x="366" y="1044">no</text>
+</svg>

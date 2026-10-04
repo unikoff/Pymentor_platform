@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1672" height="836" viewBox="0 0 1672 836" role="img" aria-labelledby="title desc">
+  <title id="title">Boolean operators combine two answers</title>
+  <desc id="desc">A truth table shows all four combinations of two Boolean inputs and the results of AND and OR.</desc>
+  <rect width="1672" height="836" fill="#111412" />
+
+  <text x="96" y="126" fill="#B8B4AA" font-family="Manrope, Segoe UI, sans-serif" font-size="22" font-weight="600" letter-spacing="2">TRUTH TABLE</text>
+  <text x="96" y="180" fill="#F5F2EB" font-family="Manrope, Segoe UI, sans-serif" font-size="34" font-weight="700">AND / OR</text>
+
+  <text x="233" y="286" fill="#B8B4AA" font-family="Manrope, Segoe UI, sans-serif" font-size="23" font-weight="700" text-anchor="middle">A</text>
+  <text x="537" y="286" fill="#B8B4AA" font-family="Manrope, Segoe UI, sans-serif" font-size="23" font-weight="700" text-anchor="middle">B</text>
+  <text x="911" y="286" fill="#F5F2EB" font-family="Manrope, Segoe UI, sans-serif" font-size="23" font-weight="700" text-anchor="middle">A AND B</text>
+  <text x="1362" y="286" fill="#F5F2EB" font-family="Manrope, Segoe UI, sans-serif" font-size="23" font-weight="700" text-anchor="middle">A OR B</text>
+
+  <g font-family="Consolas, monospace" font-size="29" font-weight="600" text-anchor="middle">
+    <g>
+      <rect x="96" y="312" width="274" height="88" rx="24" fill="#191D1A" stroke="#354039" stroke-width="2" />
+      <text x="233" y="368" fill="#B8B4AA">FALSE</text>
+      <rect x="400" y="312" width="274" height="88" rx="24" fill="#191D1A" stroke="#354039" stroke-width="2" />
+      <text x="537" y="368" fill="#B8B4AA">FALSE</text>
+      <rect x="704" y="312" width="414" height="88" rx="24" fill="#191D1A" stroke="#354039" stroke-width="2" />
+      <text x="911" y="368" fill="#B8B4AA">FALSE</text>
+      <rect x="1148" y="312" width="428" height="88" rx="24" fill="#191D1A" stroke="#354039" stroke-width="2" />
+      <text x="1362" y="368" fill="#B8B4AA">FALSE</text>
+    </g>
+    <g>
+      <rect x="96" y="424" width="274" height="88" rx="24" fill="#191D1A" stroke="#354039" stroke-width="2" />
+      <text x="233" y="480" fill="#B8B4AA">FALSE</text>
+      <rect x="400" y="424" width="274" height="88" rx="24" fill="#263D30" stroke="#354039" stroke-width="2" />
+      <text x="537" y="480" fill="#8FE4AD">TRUE</text>
+      <rect x="704" y="424" width="414" height="88" rx="24" fill="#191D1A" stroke="#354039" stroke-width="2" />
+      <text x="911" y="480" fill="#B8B4AA">FALSE</text>
+      <rect x="1148" y="424" width="428" height="88" rx="24" fill="#263D30" stroke="#354039" stroke-width="2" />
+      <text x="1362" y="480" fill="#8FE4AD">TRUE</text>
+    </g>
+    <g>
+      <rect x="96" y="536" width="274" height="88" rx="24" fill="#263D30" stroke="#354039" stroke-width="2" />
+      <text x="233" y="592" fill="#8FE4AD">TRUE</text>
+      <rect x="400" y="536" width="274" height="88" rx="24" fill="#191D1A" stroke="#354039" stroke-width="2" />
+      <text x="537" y="592" fill="#B8B4AA">FALSE</text>
+      <rect x="704" y="536" width="414" height="88" rx="24" fill="#191D1A" stroke="#354039" stroke-width="2" />
+      <text x="911" y="592" fill="#B8B4AA">FALSE</text>
+      <rect x="1148" y="536" width="428" height="88" rx="24" fill="#263D30" stroke="#354039" stroke-width="2" />
+      <text x="1362" y="592" fill="#8FE4AD">TRUE</text>
+    </g>
+    <g>
+      <rect x="96" y="648" width="274" height="88" rx="24" fill="#263D30" stroke="#354039" stroke-width="2" />
+      <text x="233" y="704" fill="#8FE4AD">TRUE</text>
+      <rect x="400" y="648" width="274" height="88" rx="24" fill="#263D30" stroke="#354039" stroke-width="2" />
+      <text x="537" y="704" fill="#8FE4AD">TRUE</text>
+      <rect x="704" y="648" width="414" height="88" rx="24" fill="#263D30" stroke="#354039" stroke-width="2" />
+      <text x="911" y="704" fill="#8FE4AD">TRUE</text>
+      <rect x="1148" y="648" width="428" height="88" rx="24" fill="#263D30" stroke="#354039" stroke-width="2" />
+      <text x="1362" y="704" fill="#8FE4AD">TRUE</text>
+    </g>
+  </g>
+</svg>

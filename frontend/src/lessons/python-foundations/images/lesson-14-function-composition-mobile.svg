@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="1560" viewBox="0 0 720 1560" role="img" aria-labelledby="title desc">
+  <title id="title">Function composition from input to output</title>
+  <desc id="desc">A caller passes the raw title to normalization. The caller also sends task id and priority directly to a validation step. Valid values continue to task creation, formatting, and printing; invalid values stop before a task is created.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="20" markerHeight="20" viewBox="0 0 20 20" refX="0" refY="10" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M0 0 L16 10 L0 20 Z" fill="#8FE4AD" />
+    </marker>
+  </defs>
+  <rect width="720" height="1560" rx="28" fill="#111412" />
+
+  <rect x="48" y="42" width="286" height="58" rx="18" fill="#191D1A" stroke="#354039" stroke-width="2" />
+  <text x="191" y="80" text-anchor="middle" fill="#B8B4AA" font-family="Manrope, Segoe UI, sans-serif" font-size="27" font-weight="700" letter-spacing="1.2">FUNCTION FLOW</text>
+  <text x="48" y="157" fill="#F5F2EB" font-family="Manrope, Segoe UI, sans-serif" font-size="32" font-weight="700">Result → next input</text>
+
+  <g font-family="Manrope, Segoe UI, sans-serif" text-anchor="middle">
+    <rect x="90" y="205" width="540" height="165" rx="24" fill="#191D1A" stroke="#354039" stroke-width="2" />
+    <text x="360" y="245" fill="#B8B4AA" font-size="24" font-weight="700" letter-spacing="1">CALLER</text>
+    <text x="360" y="296" fill="#F5F2EB" font-family="Consolas, monospace" font-size="30" font-weight="700">input() → raw_title</text>
+    <text x="360" y="345" fill="#B8B4AA" font-family="Consolas, monospace" font-size="23">task_id + priority</text>
+
+    <rect x="90" y="420" width="540" height="165" rx="24" fill="#191D1A" stroke="#8FE4AD" stroke-width="3" />
+    <text x="360" y="460" fill="#8FE4AD" font-size="24" font-weight="700" letter-spacing="1">FUNCTION 01</text>
+    <text x="360" y="515" fill="#F5F2EB" font-family="Consolas, monospace" font-size="31" font-weight="700">normalize_title</text>
+    <text x="360" y="558" fill="#B8B4AA" font-family="Consolas, monospace" font-size="22">strip() → clean_title</text>
+
+    <rect x="90" y="635" width="540" height="225" rx="24" fill="#191D1A" stroke="#354039" stroke-width="2" />
+    <text x="360" y="675" fill="#B8B4AA" font-size="24" font-weight="700" letter-spacing="1">CALLER CHECK</text>
+    <text x="360" y="721" fill="#F5F2EB" font-family="Consolas, monospace" font-size="23">clean_title != ""</text>
+    <text x="360" y="761" fill="#F5F2EB" font-family="Consolas, monospace" font-size="23">1 &lt;= priority &lt;= 5</text>
+    <text x="360" y="801" fill="#F5F2EB" font-family="Consolas, monospace" font-size="23">task_id &gt; 0</text>
+    <text x="360" y="840" fill="#B8B4AA" font-size="20" font-weight="600">otherwise: no task</text>
+
+    <rect x="90" y="910" width="540" height="165" rx="24" fill="#191D1A" stroke="#8FE4AD" stroke-width="3" />
+    <text x="360" y="950" fill="#8FE4AD" font-size="24" font-weight="700" letter-spacing="1">FUNCTION 02</text>
+    <text x="360" y="1005" fill="#F5F2EB" font-family="Consolas, monospace" font-size="32" font-weight="700">create_task(...)</text>
+    <text x="360" y="1048" fill="#B8B4AA" font-family="Consolas, monospace" font-size="22">full task dict</text>
+
+    <rect x="90" y="1120" width="540" height="165" rx="24" fill="#191D1A" stroke="#8FE4AD" stroke-width="3" />
+    <text x="360" y="1160" fill="#8FE4AD" font-size="24" font-weight="700" letter-spacing="1">FUNCTION 03</text>
+    <text x="360" y="1215" fill="#F5F2EB" font-family="Consolas, monospace" font-size="31" font-weight="700">format_task(task)</text>
+    <text x="360" y="1258" fill="#B8B4AA" font-family="Consolas, monospace" font-size="22">display string</text>
+
+    <rect x="90" y="1330" width="540" height="165" rx="24" fill="#191D1A" stroke="#354039" stroke-width="2" />
+    <text x="360" y="1370" fill="#B8B4AA" font-size="24" font-weight="700" letter-spacing="1">CALLER</text>
+    <text x="360" y="1425" fill="#F5F2EB" font-family="Consolas, monospace" font-size="31" font-weight="700">print(message)</text>
+    <text x="360" y="1468" fill="#B8B4AA" font-family="Consolas, monospace" font-size="22">terminal output</text>
+  </g>
+
+  <path d="M360 370 V404" fill="none" stroke="#8FE4AD" stroke-width="5" stroke-linecap="round" marker-end="url(#arrow)" />
+  <path d="M360 585 V619" fill="none" stroke="#8FE4AD" stroke-width="5" stroke-linecap="round" marker-end="url(#arrow)" />
+  <path d="M360 860 V894" fill="none" stroke="#8FE4AD" stroke-width="5" stroke-linecap="round" marker-end="url(#arrow)" />
+  <path d="M360 1075 V1104" fill="none" stroke="#8FE4AD" stroke-width="5" stroke-linecap="round" marker-end="url(#arrow)" />
+  <path d="M360 1285 V1314" fill="none" stroke="#8FE4AD" stroke-width="5" stroke-linecap="round" marker-end="url(#arrow)" />
+  <text x="414" y="402" fill="#B8B4AA" font-family="Manrope, Segoe UI, sans-serif" font-size="20" font-weight="700">text</text>
+  <text x="414" y="617" fill="#B8B4AA" font-family="Manrope, Segoe UI, sans-serif" font-size="20" font-weight="700">clean</text>
+  <text x="414" y="892" fill="#B8B4AA" font-family="Manrope, Segoe UI, sans-serif" font-size="20" font-weight="700">valid</text>
+  <text x="414" y="1106" fill="#B8B4AA" font-family="Manrope, Segoe UI, sans-serif" font-size="20" font-weight="700">task</text>
+  <text x="414" y="1316" fill="#B8B4AA" font-family="Manrope, Segoe UI, sans-serif" font-size="20" font-weight="700">string</text>
+
+  <path d="M630 320 H666 V750 H646" fill="none" stroke="#8FE4AD" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
+  <text x="694" y="535" transform="rotate(-90 694 535)" text-anchor="middle" fill="#B8B4AA" font-family="Consolas, monospace" font-size="22" font-weight="600">task_id + priority</text>
+
+</svg>
