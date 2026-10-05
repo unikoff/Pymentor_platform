@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1672" height="836" viewBox="0 0 1672 836" role="img" aria-labelledby="title desc">
+  <title id="title">Git publication flow</title>
+  <desc id="desc">Four Git states connected by git add, git commit, and git push.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="6" orient="auto" markerUnits="strokeWidth">
+      <path d="M2 2 L10 6 L2 10" fill="none" stroke="#8FE4AD" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <style>
+      .bg { fill: #111412; }
+      .node { fill: #191D1A; stroke: #354039; stroke-width: 3; }
+      .edge { fill: none; stroke: #8FE4AD; stroke-width: 4; marker-end: url(#arrow); }
+      .head { fill: #F5F2EB; font: 600 32px Manrope, "Segoe UI", sans-serif; }
+      .sub { fill: #B8B4AA; font: 24px Manrope, "Segoe UI", sans-serif; }
+      .cmd { fill: #8FE4AD; font: 600 23px Consolas, monospace; }
+      .step { fill: #8FE4AD; font: 600 20px Manrope, "Segoe UI", sans-serif; letter-spacing: 2px; }
+    </style>
+  </defs>
+  <rect class="bg" width="1672" height="836" rx="28"/>
+  <text class="step" x="100" y="118">FROM LOCAL FILES TO A REMOTE BRANCH</text>
+
+  <rect class="node" x="82" y="290" width="320" height="220" rx="22"/>
+  <text class="head" x="242" y="376" text-anchor="middle">Working tree</text>
+  <text class="sub" x="242" y="421" text-anchor="middle">edited files</text>
+  <text class="sub" x="242" y="458" text-anchor="middle">review the changes</text>
+
+  <rect class="node" x="492" y="290" width="320" height="220" rx="22"/>
+  <text class="head" x="652" y="376" text-anchor="middle">Staging area</text>
+  <text class="sub" x="652" y="421" text-anchor="middle">selected files</text>
+  <text class="sub" x="652" y="458" text-anchor="middle">review the snapshot</text>
+
+  <rect class="node" x="902" y="290" width="320" height="220" rx="22"/>
+  <text class="head" x="1062" y="376" text-anchor="middle">Local commit</text>
+  <text class="sub" x="1062" y="421" text-anchor="middle">saved snapshot</text>
+  <text class="sub" x="1062" y="458" text-anchor="middle">record its commit id</text>
+
+  <rect class="node" x="1312" y="290" width="278" height="220" rx="22"/>
+  <text class="head" x="1451" y="376" text-anchor="middle">Remote branch</text>
+  <text class="sub" x="1451" y="421" text-anchor="middle">published commit</text>
+  <text class="sub" x="1451" y="458" text-anchor="middle">verify the same id</text>
+
+  <path class="edge" d="M405 400 H474"/>
+  <path class="edge" d="M815 400 H884"/>
+  <path class="edge" d="M1225 400 H1294"/>
+  <text class="cmd" x="440" y="263" text-anchor="middle">git add</text>
+  <text class="cmd" x="850" y="263" text-anchor="middle">git commit</text>
+  <text class="cmd" x="1260" y="263" text-anchor="middle">git push</text>
+
+  <text class="sub" x="836" y="634" text-anchor="middle">Each arrow moves a reviewed result into the next Git state.</text>
+</svg>

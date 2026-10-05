@@ -1,9 +1,30 @@
 import type { ComponentType } from "react";
-import { Lesson45, Lesson46, Lesson47, Lesson48, Lesson49, Lesson50 } from "./block9";
-import { Lesson51, Lesson52, Lesson53, Lesson54, Lesson55, Lesson56 } from "./block10";
-import { Lesson57, Lesson58, Lesson59, Lesson60, Lesson61, Lesson62 } from "./block11";
-import { Lesson63, Lesson64, Lesson65, Lesson66, Lesson67, Lesson68 } from "./block12";
-import { LearningRoadmap, MonthTheory } from "./overview";
+import { LearningRoadmap } from "./block_00/LearningRoadmap";
+import { MonthTheory } from "./block_00/MonthTheory";
+import { Lesson45 } from "./block_09/Lesson45";
+import { Lesson46 } from "./block_09/Lesson46";
+import { Lesson47 } from "./block_09/Lesson47";
+import { Lesson48 } from "./block_09/Lesson48";
+import { Lesson49 } from "./block_09/Lesson49";
+import { Lesson50 } from "./block_09/Lesson50";
+import { Lesson51 } from "./block_10/Lesson51";
+import { Lesson52 } from "./block_10/Lesson52";
+import { Lesson53 } from "./block_10/Lesson53";
+import { Lesson54 } from "./block_10/Lesson54";
+import { Lesson55 } from "./block_10/Lesson55";
+import { Lesson56 } from "./block_10/Lesson56";
+import { Lesson57 } from "./block_11/Lesson57";
+import { Lesson58 } from "./block_11/Lesson58";
+import { Lesson59 } from "./block_11/Lesson59";
+import { Lesson60 } from "./block_11/Lesson60";
+import { Lesson61 } from "./block_11/Lesson61";
+import { Lesson62 } from "./block_11/Lesson62";
+import { Lesson63 } from "./block_12/Lesson63";
+import { Lesson64 } from "./block_12/Lesson64";
+import { Lesson65 } from "./block_12/Lesson65";
+import { Lesson66 } from "./block_12/Lesson66";
+import { Lesson67 } from "./block_12/Lesson67";
+import { Lesson68 } from "./block_12/Lesson68";
 
 const COURSE_FOLDER = "planner_api";
 const BLOCK_FOLDERS = [
@@ -39,8 +60,8 @@ export const pages: Record<string, ComponentType<{ module?: string }>> = {
   [source("60 - CRUD, создать, получить список и найти по id.md")]: Lesson60,
   [source("61 - PUT и PATCH, полная и частичная замена.md")]: Lesson61,
   [source("62 - DELETE, 204 и HTTPException.md")]: Lesson62,
-  [source("63 - APIRouter, prefix, tags и include_router.md")]: Lesson63,
-  [source("64 - Тесты FastAPI через TestClient.md")]: Lesson64,
+  [source("63 - Тесты FastAPI через TestClient и независимое состояние.md")]: Lesson63,
+  [source("64 - APIRouter, prefix, tags и include_router.md")]: Lesson64,
   [source("65 - Финальный проект 1, контракт и архитектура Planner API.md")]: Lesson65,
   [source("66 - Финальный проект 2, schemas, storage, crud и routers.md")]: Lesson66,
   [source("67 - Финальный проект 3, полная CRUD-логика.md")]: Lesson67,

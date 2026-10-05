@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1672" height="836" viewBox="0 0 1672 836" role="img" aria-labelledby="title desc">
+  <title id="title">Shared Planner Core</title>
+  <desc id="desc">CLI and HTTP API use separate PlannerService and JsonStorage instances configured for the same tasks.json file.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="18" markerHeight="18" refX="15" refY="9" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M2 2 L16 9 L2 16" fill="none" stroke="#8FE4AD" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="arrow-muted" markerWidth="18" markerHeight="18" refX="15" refY="9" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M2 2 L16 9 L2 16" fill="none" stroke="#B8B4AA" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+  <rect width="1672" height="836" fill="#111412"/>
+  <g fill="#191D1A" stroke="#354039" stroke-width="2">
+    <rect x="48" y="86" width="1070" height="266" rx="24"/>
+    <rect x="48" y="484" width="1070" height="266" rx="24"/>
+    <rect x="1280" y="298" width="344" height="240" rx="24"/>
+    <rect x="80" y="156" width="240" height="128" rx="20"/>
+    <rect x="398" y="156" width="280" height="128" rx="20"/>
+    <rect x="760" y="156" width="300" height="128" rx="20"/>
+    <rect x="80" y="554" width="240" height="128" rx="20"/>
+    <rect x="398" y="554" width="280" height="128" rx="20"/>
+    <rect x="760" y="554" width="300" height="128" rx="20"/>
+  </g>
+  <g fill="none" stroke="#8FE4AD" stroke-width="5" stroke-linecap="round" marker-end="url(#arrow)">
+    <path d="M320 220 H398"/>
+    <path d="M678 220 H760"/>
+    <path d="M320 618 H398"/>
+    <path d="M678 618 H760"/>
+    <path d="M1060 192 L1280 352"/>
+    <path d="M1060 580 L1280 448"/>
+  </g>
+  <g fill="none" stroke="#B8B4AA" stroke-width="4" stroke-linecap="round" stroke-dasharray="10 9" marker-end="url(#arrow-muted)">
+    <path d="M1280 382 L1060 224"/>
+    <path d="M1280 502 L1060 634"/>
+  </g>
+  <g font-family="Manrope, Segoe UI, sans-serif" text-anchor="middle">
+    <g fill="#B8B4AA" font-size="20" font-weight="700" letter-spacing="2">
+      <text x="90" y="124" text-anchor="start">CLI PROCESS</text>
+      <text x="90" y="522" text-anchor="start">API PROCESS</text>
+    </g>
+    <g fill="#F5F2EB" font-size="27" font-weight="700">
+      <text x="200" y="212">CLI</text>
+      <text x="538" y="212">PlannerService</text>
+      <text x="910" y="212">JsonStorage</text>
+      <text x="200" y="610">HTTP API</text>
+      <text x="538" y="610">PlannerService</text>
+      <text x="910" y="610">JsonStorage</text>
+      <text x="1452" y="405">tasks.json</text>
+    </g>
+    <g fill="#B8B4AA" font-size="19">
+      <text x="200" y="248">command</text>
+      <text x="538" y="248">same rules</text>
+      <text x="910" y="248">service instance A</text>
+      <text x="200" y="646">request</text>
+      <text x="538" y="646">same rules</text>
+      <text x="910" y="646">service instance B</text>
+      <text x="1452" y="446">one configured path</text>
+    </g>
+    <g fill="#F5F2EB" font-size="17" font-weight="700">
+      <text x="1162" y="232">SAVE</text>
+      <text x="1160" y="344">LOAD</text>
+      <text x="1160" y="473">SAVE</text>
+      <text x="1160" y="630">LOAD</text>
+    </g>
+  </g>
+</svg>

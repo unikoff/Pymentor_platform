@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="1220" viewBox="0 0 720 1220">
+  <title>Task flow on a narrow screen</title>
+  <desc>Accepted title and priority and the current tasks list feed one add operation. It creates a record and produces two results: the same list with one new record, and the returned task for display.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="18" markerHeight="18" refX="15" refY="9" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M 2 2 L 15 9 L 2 16" fill="none" stroke="#8FE4AD" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+  <rect width="720" height="1220" fill="#111412"/>
+
+  <text x="60" y="82" fill="#F5F2EB" font-family="Manrope, Segoe UI, sans-serif" font-size="36" font-weight="700">Task flow</text>
+  <text x="60" y="126" fill="#B8B4AA" font-family="Manrope, Segoe UI, sans-serif" font-size="25">two inputs, one shared state</text>
+
+  <g fill="#191D1A" stroke="#354039" stroke-width="3">
+    <rect x="60" y="190" width="280" height="200" rx="24"/>
+    <rect x="380" y="190" width="280" height="200" rx="24"/>
+    <rect x="70" y="500" width="580" height="270" rx="24"/>
+    <rect x="60" y="910" width="280" height="190" rx="24"/>
+    <rect x="380" y="910" width="280" height="190" rx="24"/>
+  </g>
+
+  <g fill="none" stroke="#8FE4AD" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M 200 390 V 450 H 280 V 500" marker-end="url(#arrow)"/>
+    <path d="M 520 390 V 450 H 440 V 500" marker-end="url(#arrow)"/>
+    <path d="M 360 770 V 835"/>
+    <path d="M 360 835 H 200 V 910" marker-end="url(#arrow)"/>
+    <path d="M 360 835 H 520 V 910" marker-end="url(#arrow)"/>
+  </g>
+
+  <g fill="#F5F2EB" font-family="Manrope, Segoe UI, sans-serif" text-anchor="middle">
+    <text x="200" y="246" font-size="27" font-weight="700">VALID INPUT</text>
+    <text x="200" y="296" fill="#B8B4AA" font-family="Consolas, monospace" font-size="23">title + priority</text>
+    <text x="200" y="338" fill="#B8B4AA" font-size="19">both values accepted</text>
+
+    <text x="520" y="246" font-size="27" font-weight="700">CURRENT TASKS</text>
+    <text x="520" y="296" fill="#B8B4AA" font-family="Consolas, monospace" font-size="23">one list</text>
+    <text x="520" y="338" fill="#B8B4AA" font-size="19">all current ids</text>
+
+    <text x="360" y="562" font-size="31" font-weight="700">ADD TASK</text>
+    <text x="360" y="621" fill="#B8B4AA" font-family="Consolas, monospace" font-size="24">get_next_id()</text>
+    <text x="360" y="665" fill="#B8B4AA" font-family="Consolas, monospace" font-size="24">create_task()</text>
+    <text x="360" y="709" fill="#B8B4AA" font-size="23">append one record</text>
+    <text x="360" y="748" fill="#8FE4AD" font-size="20">returns that record</text>
+
+    <text x="200" y="970" font-size="26" font-weight="700">SAME TASKS</text>
+    <text x="200" y="1022" fill="#B8B4AA" font-size="22">old records + one new</text>
+    <text x="200" y="1060" fill="#B8B4AA" font-family="Consolas, monospace" font-size="20">tasks</text>
+
+    <text x="520" y="970" font-size="25" font-weight="700">RETURNED TASK</text>
+    <text x="520" y="1022" fill="#B8B4AA" font-family="Consolas, monospace" font-size="21">format_task()</text>
+    <text x="520" y="1060" fill="#B8B4AA" font-size="19">then print</text>
+  </g>
+</svg>

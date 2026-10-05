@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="1280" viewBox="0 0 720 1280">
+  <title>Mark one task done on a narrow screen</title>
+  <desc>mark_task_done searches by id. If it finds the dictionary from tasks, it sets is_done to true. If the id is missing, it returns false and leaves the list unchanged.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="18" markerHeight="18" refX="2" refY="9" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M 2 2 L 16 9 L 2 16 Z" fill="#8FE4AD"/>
+    </marker>
+  </defs>
+  <rect width="720" height="1280" fill="#111412"/>
+
+  <text x="60" y="82" fill="#F5F2EB" font-family="Manrope, Segoe UI, sans-serif" font-size="34" font-weight="700">Mark one task done</text>
+  <g fill="#191D1A" stroke="#354039" stroke-width="3">
+    <rect x="60" y="180" width="600" height="190" rx="24"/>
+    <rect x="60" y="440" width="600" height="160" rx="24"/>
+    <rect x="60" y="720" width="280" height="150" rx="24"/>
+    <rect x="380" y="720" width="280" height="150" rx="24"/>
+    <rect x="60" y="970" width="280" height="175" rx="24"/>
+    <rect x="380" y="970" width="280" height="175" rx="24"/>
+  </g>
+
+  <g fill="none" stroke="#8FE4AD" stroke-width="5" stroke-linecap="butt" stroke-linejoin="round" marker-end="url(#arrow)">
+    <path d="M 360 370 V 426"/>
+    <path d="M 360 600 V 660 H 200 V 706"/>
+    <path d="M 360 600 V 660 H 520 V 706"/>
+    <path d="M 200 870 V 956"/>
+    <path d="M 520 870 V 956"/>
+  </g>
+
+  <g fill="#F5F2EB" font-family="Manrope, Segoe UI, sans-serif" text-anchor="middle">
+    <text x="360" y="226" font-size="30" font-weight="700">tasks</text>
+    <text x="360" y="280" font-size="24">id: 20 · is_done: false</text>
+    <text x="360" y="324" font-size="24">id: 31 · is_done: false</text>
+    <text x="360" y="498" font-size="29" font-weight="700">mark_task_done()</text>
+    <text x="360" y="548" fill="#B8B4AA" font-size="23">calls find_task()</text>
+    <text x="200" y="778" font-size="28" font-weight="700">found</text>
+    <text x="200" y="824" fill="#B8B4AA" font-size="22">same dictionary</text>
+    <text x="520" y="778" font-size="28" font-weight="700">None</text>
+    <text x="520" y="824" fill="#B8B4AA" font-size="22">id not found</text>
+    <text x="200" y="1030" font-size="26" font-weight="700">is_done = True</text>
+    <text x="200" y="1078" fill="#B8B4AA" font-size="22">returns True</text>
+    <text x="520" y="1030" font-size="26" font-weight="700">False</text>
+    <text x="520" y="1078" fill="#B8B4AA" font-size="22">no changes</text>
+  </g>
+  <text x="360" y="1210" fill="#B8B4AA" font-family="Manrope, Segoe UI, sans-serif" font-size="22" text-anchor="middle">only the found task changes</text>
+</svg>

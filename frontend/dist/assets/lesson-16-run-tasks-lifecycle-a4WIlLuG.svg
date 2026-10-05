@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1672" height="836" viewBox="0 0 1672 836" role="img" aria-labelledby="title desc">
+  <title id="title">StudyHub run and task-list lifecycle</title>
+  <desc id="desc">A single run creates one task list before the menu loop. List and rejected commands return to the menu; exit breaks the loop and ends the process.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 16 16" refX="0" refY="8" markerWidth="16" markerHeight="16" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M 0 1 L 15 8 L 0 15 Z" fill="#8FE4AD" />
+    </marker>
+    <marker id="arrow-muted" viewBox="0 0 16 16" refX="0" refY="8" markerWidth="16" markerHeight="16" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M 0 1 L 15 8 L 0 15 Z" fill="#B8B4AA" />
+    </marker>
+  </defs>
+  <rect x="48" y="48" width="1576" height="740" rx="28" fill="#111412" stroke="#354039" stroke-width="2" />
+  <text x="88" y="112" fill="#B8B4AA" font-family="Manrope, Segoe UI, sans-serif" font-size="28" font-weight="700" letter-spacing="2">ONE PROCESS</text>
+
+  <rect x="112" y="190" width="220" height="120" rx="22" fill="#191D1A" stroke="#354039" stroke-width="2" />
+  <text x="222" y="238" text-anchor="middle" fill="#F5F2EB" font-family="Consolas, monospace" font-size="34" font-weight="700">main.py</text>
+  <text x="222" y="278" text-anchor="middle" fill="#B8B4AA" font-family="Manrope, Segoe UI, sans-serif" font-size="25">calls run()</text>
+
+  <rect x="402" y="190" width="220" height="120" rx="22" fill="#191D1A" stroke="#354039" stroke-width="2" />
+  <text x="512" y="238" text-anchor="middle" fill="#F5F2EB" font-family="Consolas, monospace" font-size="38" font-weight="700">run()</text>
+  <text x="512" y="278" text-anchor="middle" fill="#B8B4AA" font-family="Manrope, Segoe UI, sans-serif" font-size="25">one launch</text>
+  <path d="M 332 250 L 387 250" fill="none" stroke="#8FE4AD" stroke-width="5" marker-end="url(#arrow)" />
+
+  <rect x="692" y="190" width="270" height="120" rx="22" fill="#191D1A" stroke="#354039" stroke-width="2" />
+  <text x="827" y="238" text-anchor="middle" fill="#F5F2EB" font-family="Consolas, monospace" font-size="34" font-weight="700">tasks = []</text>
+  <text x="827" y="278" text-anchor="middle" fill="#B8B4AA" font-family="Manrope, Segoe UI, sans-serif" font-size="25">created once</text>
+  <path d="M 622 250 L 677 250" fill="none" stroke="#8FE4AD" stroke-width="5" marker-end="url(#arrow)" />
+
+  <rect x="1010" y="145" width="570" height="520" rx="26" fill="#151916" stroke="#354039" stroke-width="2" />
+  <text x="1050" y="194" fill="#B8B4AA" font-family="Consolas, monospace" font-size="30" font-weight="700">while True</text>
+  <path d="M 962 250 L 995 250" fill="none" stroke="#8FE4AD" stroke-width="5" marker-end="url(#arrow)" />
+
+  <rect x="1070" y="225" width="450" height="100" rx="20" fill="#191D1A" stroke="#354039" stroke-width="2" />
+  <text x="1295" y="266" text-anchor="middle" fill="#F5F2EB" font-family="Manrope, Segoe UI, sans-serif" font-size="32" font-weight="700">menu + input</text>
+  <text x="1295" y="301" text-anchor="middle" fill="#B8B4AA" font-family="Consolas, monospace" font-size="26">show_menu() → command</text>
+
+  <path d="M 1295 325 L 1295 370 L 1172 370 L 1172 395" fill="none" stroke="#8FE4AD" stroke-width="5" marker-end="url(#arrow)" />
+  <path d="M 1295 370 L 1415 370 L 1415 395" fill="none" stroke="#8FE4AD" stroke-width="5" marker-end="url(#arrow)" />
+  <path d="M 1295 370 L 1295 533" fill="none" stroke="#8FE4AD" stroke-width="5" marker-end="url(#arrow)" />
+
+  <rect x="1062" y="410" width="220" height="112" rx="18" fill="#191D1A" stroke="#354039" stroke-width="2" />
+  <text x="1172" y="453" text-anchor="middle" fill="#F5F2EB" font-family="Consolas, monospace" font-size="34" font-weight="700">list</text>
+  <text x="1172" y="490" text-anchor="middle" fill="#B8B4AA" font-family="Manrope, Segoe UI, sans-serif" font-size="24">reads tasks</text>
+
+  <rect x="1305" y="410" width="220" height="112" rx="18" fill="#191D1A" stroke="#354039" stroke-width="2" />
+  <text x="1415" y="453" text-anchor="middle" fill="#F5F2EB" font-family="Consolas, monospace" font-size="30" font-weight="700">unknown</text>
+  <text x="1415" y="490" text-anchor="middle" fill="#B8B4AA" font-family="Manrope, Segoe UI, sans-serif" font-size="24">reject</text>
+
+  <rect x="1185" y="548" width="220" height="82" rx="18" fill="#191D1A" stroke="#354039" stroke-width="2" />
+  <text x="1295" y="583" text-anchor="middle" fill="#F5F2EB" font-family="Consolas, monospace" font-size="30" font-weight="700">exit</text>
+  <text x="1295" y="613" text-anchor="middle" fill="#B8B4AA" font-family="Consolas, monospace" font-size="23">break</text>
+
+  <path d="M 962 275 L 985 275 L 985 466 L 1047 466" fill="none" stroke="#B8B4AA" stroke-width="4" stroke-dasharray="10 10" marker-end="url(#arrow-muted)" />
+  <text x="980" y="394" text-anchor="end" fill="#B8B4AA" font-family="Manrope, Segoe UI, sans-serif" font-size="22">same list</text>
+
+  <path d="M 1172 522 L 1172 570 L 1035 570 L 1035 275 L 1055 275" fill="none" stroke="#8FE4AD" stroke-width="4" stroke-dasharray="10 10" marker-end="url(#arrow)" />
+  <path d="M 1415 522 L 1415 570 L 1555 570 L 1555 275 L 1535 275" fill="none" stroke="#8FE4AD" stroke-width="4" stroke-dasharray="10 10" marker-end="url(#arrow)" />
+  <text x="1060" y="610" fill="#B8B4AA" font-family="Manrope, Segoe UI, sans-serif" font-size="22">repeat</text>
+
+  <path d="M 1295 630 L 1295 675" fill="none" stroke="#8FE4AD" stroke-width="5" marker-end="url(#arrow)" />
+  <rect x="1175" y="690" width="240" height="62" rx="18" fill="#191D1A" stroke="#354039" stroke-width="2" />
+  <text x="1295" y="731" text-anchor="middle" fill="#F5F2EB" font-family="Manrope, Segoe UI, sans-serif" font-size="28" font-weight="700">process ends</text>
+</svg>

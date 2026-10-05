@@ -33,7 +33,7 @@ JSON уже изучен и работает. Пределы этого этап
 
 ### Что меняется по сравнению с прежним планом
 
-Источник сравнения: [старый план](../../PLANNER_API_BLOCK_11_PATH.md), [TSX](../../../frontend/src/lessons/planner-api/block11.tsx) и [практика блока](../../../backend/learning/course_content/planner_api/block_11/manual.py).
+Источник сравнения: [старый план](../../PLANNER_API_BLOCK_11_PATH.md), [TSX](../../../frontend/src/lessons/planner-api/block_11/Lesson57.tsx) и [практика блока](../../../backend/learning/course_content/planner_api/block_11/manual.py).
 
 - Вход уже содержит настоящий POST, не echo. Создание не откладывается до конца блока.
 - Тема «хранилище в памяти» заменяется исследованием настоящего JSON-сохранения и server-owned id. JsonStorage не реализуется повторно.

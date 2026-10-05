@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1672" height="836" viewBox="0 0 1672 836" role="img" aria-labelledby="title desc">
+  <title id="title">StudyHub state for one run</title>
+  <desc id="desc">Run creates one tasks list before its menu loop. List reads it; exit ends the loop.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 18 18" refX="0" refY="9" markerWidth="18" markerHeight="18" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M 0 1 L 17 9 L 0 17 Z" fill="#8FE4AD" />
+    </marker>
+  </defs>
+  <rect x="48" y="48" width="1576" height="740" rx="28" fill="#111412" stroke="#354039" stroke-width="2" />
+  <text x="90" y="118" fill="#B8B4AA" font-family="Manrope, Segoe UI, sans-serif" font-size="40" font-weight="700" letter-spacing="2">ONE RUN</text>
+  <rect x="112" y="170" width="320" height="170" rx="24" fill="#191D1A" stroke="#354039" stroke-width="2" />
+  <text x="272" y="237" text-anchor="middle" fill="#F5F2EB" font-family="Consolas, monospace" font-size="64" font-weight="700">run()</text>
+  <text x="272" y="298" text-anchor="middle" fill="#B8B4AA" font-family="Manrope, Segoe UI, sans-serif" font-size="48">one launch</text>
+  <rect x="676" y="170" width="320" height="170" rx="24" fill="#191D1A" stroke="#354039" stroke-width="2" />
+  <text x="836" y="237" text-anchor="middle" fill="#F5F2EB" font-family="Consolas, monospace" font-size="54" font-weight="700">tasks = []</text>
+  <text x="836" y="298" text-anchor="middle" fill="#B8B4AA" font-family="Manrope, Segoe UI, sans-serif" font-size="48">created once</text>
+  <path d="M 432 255 L 659 255" fill="none" stroke="#8FE4AD" stroke-width="7" marker-end="url(#arrow)" />
+  <rect x="1120" y="170" width="400" height="170" rx="24" fill="#191D1A" stroke="#354039" stroke-width="2" />
+  <text x="1320" y="237" text-anchor="middle" fill="#F5F2EB" font-family="Consolas, monospace" font-size="62" font-weight="700">while</text>
+  <text x="1320" y="298" text-anchor="middle" fill="#B8B4AA" font-family="Manrope, Segoe UI, sans-serif" font-size="48">menu loop</text>
+  <path d="M 996 255 L 1103 255" fill="none" stroke="#8FE4AD" stroke-width="7" marker-end="url(#arrow)" />
+  <rect x="220" y="500" width="460" height="170" rx="24" fill="#191D1A" stroke="#354039" stroke-width="2" />
+  <text x="450" y="567" text-anchor="middle" fill="#F5F2EB" font-family="Consolas, monospace" font-size="62" font-weight="700">list</text>
+  <text x="450" y="628" text-anchor="middle" fill="#B8B4AA" font-family="Manrope, Segoe UI, sans-serif" font-size="48">reads tasks</text>
+  <rect x="990" y="500" width="460" height="170" rx="24" fill="#191D1A" stroke="#354039" stroke-width="2" />
+  <text x="1220" y="567" text-anchor="middle" fill="#F5F2EB" font-family="Consolas, monospace" font-size="62" font-weight="700">exit</text>
+  <text x="1220" y="628" text-anchor="middle" fill="#B8B4AA" font-family="Manrope, Segoe UI, sans-serif" font-size="48">break loop</text>
+  <path d="M 836 340 L 836 430 L 450 430 L 450 483" fill="none" stroke="#B8B4AA" stroke-width="6" stroke-dasharray="14 12" marker-end="url(#arrow)" />
+  <text x="590" y="414" text-anchor="middle" fill="#B8B4AA" font-family="Manrope, Segoe UI, sans-serif" font-size="42">same list</text>
+  <path d="M 1320 340 L 1320 483" fill="none" stroke="#8FE4AD" stroke-width="6" marker-end="url(#arrow)" />
+  <text x="836" y="742" text-anchor="middle" fill="#B8B4AA" font-family="Manrope, Segoe UI, sans-serif" font-size="56">lost on exit</text>
+</svg>

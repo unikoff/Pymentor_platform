@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="836" height="1460" viewBox="0 0 836 1460">
+  <title>Task title search flow on a narrow screen</title>
+  <desc>The tasks list flows down through a case-insensitive title filter to the matching records, in the same order, inside a new list.</desc>
+  <rect width="836" height="1460" fill="#111412"/>
+  <g font-family="Manrope, Segoe UI, sans-serif" fill="#F5F2EB">
+    <rect x="40" y="40" width="756" height="480" rx="24" fill="#191D1A" stroke="#354039" stroke-width="2"/>
+    <text x="80" y="100" font-size="34" font-weight="700">TASKS</text>
+    <text x="80" y="138" font-size="22" fill="#B8B4AA">all records</text>
+    <rect x="80" y="166" width="676" height="92" rx="16" fill="#111412" stroke="#354039" stroke-width="2"/>
+    <text x="110" y="204" font-family="Consolas, monospace" font-size="22" fill="#B8B4AA">id=10</text>
+    <text x="110" y="239" font-size="28">Learn Python</text>
+    <rect x="80" y="276" width="676" height="92" rx="16" fill="#111412" stroke="#354039" stroke-width="2"/>
+    <text x="110" y="314" font-family="Consolas, monospace" font-size="22" fill="#B8B4AA">id=20</text>
+    <text x="110" y="349" font-size="28">Read README</text>
+    <rect x="80" y="386" width="676" height="92" rx="16" fill="#111412" stroke="#354039" stroke-width="2"/>
+    <text x="110" y="424" font-family="Consolas, monospace" font-size="22" fill="#B8B4AA">id=30</text>
+    <text x="110" y="459" font-size="28">Practice PYTHON</text>
+
+    <path d="M418 520 L418 548" fill="none" stroke="#8FE4AD" stroke-width="5"/><path d="M411 548 L418 562 L425 548 Z" fill="#8FE4AD"/>
+    <rect x="40" y="562" width="756" height="228" rx="24" fill="#191D1A" stroke="#354039" stroke-width="2"/>
+    <text x="80" y="620" font-size="30" font-weight="700">FILTER</text>
+    <text x="80" y="684" font-family="Consolas, monospace" font-size="28">query in title.lower()</text>
+    <text x="80" y="740" font-size="22" fill="#B8B4AA">keep matching rows</text>
+    <path d="M418 790 L418 818" fill="none" stroke="#8FE4AD" stroke-width="5"/><path d="M411 818 L418 832 L425 818 Z" fill="#8FE4AD"/>
+
+    <rect x="40" y="832" width="756" height="588" rx="24" fill="#191D1A" stroke="#354039" stroke-width="2"/>
+    <text x="80" y="892" font-size="34" font-weight="700">MATCHES</text>
+    <text x="80" y="930" font-size="22" fill="#B8B4AA">source order</text>
+    <rect x="80" y="958" width="676" height="100" rx="16" fill="#111412" stroke="#354039" stroke-width="2"/>
+    <text x="110" y="1000" font-family="Consolas, monospace" font-size="22" fill="#B8B4AA">id=10</text>
+    <text x="110" y="1038" font-size="28">Learn Python</text>
+    <rect x="80" y="1080" width="676" height="100" rx="16" fill="#111412" stroke="#354039" stroke-width="2"/>
+    <text x="110" y="1122" font-family="Consolas, monospace" font-size="22" fill="#B8B4AA">id=30</text>
+    <text x="110" y="1160" font-size="28">Practice PYTHON</text>
+    <text x="418" y="1260" text-anchor="middle" font-size="24" fill="#B8B4AA">new list</text>
+    <text x="418" y="1310" text-anchor="middle" font-size="24" fill="#8FE4AD">same records</text>
+  </g>
+</svg>

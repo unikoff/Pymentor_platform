@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="1800" viewBox="0 0 800 1800">
+  <title>POST request saved before response</title>
+  <desc>The client sends a POST through FastAPI and PlannerService. JsonStorage reads and saves the shared JSON file. After saving, FastAPI returns TaskRead to the same client.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="18" markerHeight="18" refX="14" refY="9" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M 2 2 L 15 9 L 2 16" fill="none" stroke="#8FE4AD" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="arrow-start" markerWidth="18" markerHeight="18" refX="14" refY="9" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
+      <path d="M 2 2 L 15 9 L 2 16" fill="none" stroke="#8FE4AD" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+  <rect width="800" height="1800" fill="#111412"/>
+  <text x="64" y="82" fill="#F5F2EB" font-family="Manrope, Segoe UI, sans-serif" font-size="30" font-weight="700">POST SAVED BEFORE RESPONSE</text>
+  <text x="64" y="124" fill="#B8B4AA" font-family="Manrope, Segoe UI, sans-serif" font-size="22">One Planner · one shared JSON file</text>
+
+  <g fill="#191D1A" stroke="#354039" stroke-width="2">
+    <rect x="170" y="195" width="460" height="165" rx="24"/>
+    <rect x="170" y="470" width="460" height="195" rx="24"/>
+    <rect x="170" y="775" width="460" height="195" rx="24"/>
+    <rect x="170" y="1080" width="460" height="195" rx="24"/>
+    <rect x="170" y="1385" width="460" height="165" rx="24"/>
+  </g>
+  <g fill="#F5F2EB" font-family="Manrope, Segoe UI, sans-serif" text-anchor="middle">
+    <text x="400" y="252" font-size="30" font-weight="700">Client</text>
+    <text x="400" y="302" font-size="24" fill="#B8B4AA">POST /tasks</text>
+    <text x="400" y="525" font-size="30" font-weight="700">FastAPI</text>
+    <text x="400" y="570" font-size="23" fill="#B8B4AA">validates TaskCreate</text>
+    <text x="400" y="608" font-size="23" fill="#B8B4AA">forms TaskRead</text>
+    <text x="400" y="830" font-size="30" font-weight="700">PlannerService</text>
+    <text x="400" y="875" font-size="23" fill="#B8B4AA">add_task()</text>
+    <text x="400" y="913" font-size="22" fill="#B8B4AA">id from current tasks</text>
+    <text x="400" y="1135" font-size="30" font-weight="700">JsonStorage</text>
+    <text x="400" y="1180" font-size="23" fill="#B8B4AA">loads and saves</text>
+    <text x="400" y="1218" font-size="22" fill="#B8B4AA">the full Task</text>
+    <text x="400" y="1442" font-size="30" font-weight="700">tasks.json</text>
+    <text x="400" y="1492" font-size="23" fill="#B8B4AA">shared file · keeps tags</text>
+  </g>
+  <g fill="none" stroke="#8FE4AD" stroke-width="5" stroke-linecap="round" marker-end="url(#arrow)">
+    <path d="M 400 360 V 464"/>
+    <path d="M 400 665 V 769"/>
+    <path d="M 400 970 V 1074" marker-start="url(#arrow-start)"/>
+    <path d="M 400 1275 V 1379" marker-start="url(#arrow-start)"/>
+  </g>
+  <g fill="#B8B4AA" font-family="Manrope, Segoe UI, sans-serif" font-size="20">
+    <text x="452" y="420">request</text>
+    <text x="452" y="725">validated input</text>
+    <text x="452" y="1030">load / save</text>
+    <text x="452" y="1335">read / write</text>
+  </g>
+  <path d="M 170 555 H 78 V 276 H 169" fill="none" stroke="#8FE4AD" stroke-width="5" stroke-dasharray="12 10" stroke-linecap="round" marker-end="url(#arrow)"/>
+  <rect x="4" y="404" width="156" height="48" rx="18" fill="#111412"/>
+  <text x="82" y="435" text-anchor="middle" fill="#F5F2EB" font-family="Manrope, Segoe UI, sans-serif" font-size="20" font-weight="600">201 · TaskRead</text>
+  <text x="64" y="1692" fill="#B8B4AA" font-family="Manrope, Segoe UI, sans-serif" font-size="22">HTTP responds after the file is saved.</text>
+</svg>

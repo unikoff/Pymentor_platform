@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1672" height="836" viewBox="0 0 1672 836" role="img" aria-labelledby="title desc">
+  <title id="title">List view and task data flow</title>
+  <desc id="desc">The run function passes the same task list to show_tasks. An empty list produces one empty message and returns to run. A non-empty list visits each task, formats it, and prints one line. The task list length, order, and fields remain unchanged.</desc>
+  <rect width="1672" height="836" rx="32" fill="#111412" />
+
+  <rect x="80" y="52" width="250" height="56" rx="18" fill="#191D1A" stroke="#354039" stroke-width="2" />
+  <text x="205" y="89" text-anchor="middle" fill="#B8B4AA" font-family="Manrope, Segoe UI, sans-serif" font-size="24" font-weight="700" letter-spacing="1.5">LIST VIEW</text>
+
+  <g font-family="Manrope, Segoe UI, sans-serif" text-anchor="middle">
+    <rect x="80" y="275" width="270" height="130" rx="24" fill="#191D1A" stroke="#354039" stroke-width="2" />
+    <text x="215" y="309" fill="#B8B4AA" font-size="18" font-weight="700" letter-spacing="1">CALLER</text>
+    <text x="215" y="352" fill="#F5F2EB" font-family="Consolas, monospace" font-size="28" font-weight="700">run()</text>
+    <text x="215" y="384" fill="#B8B4AA" font-family="Consolas, monospace" font-size="21">list</text>
+
+    <rect x="420" y="250" width="370" height="180" rx="24" fill="#191D1A" stroke="#8FE4AD" stroke-width="3" />
+    <text x="605" y="288" fill="#8FE4AD" font-size="18" font-weight="700" letter-spacing="1">VIEW FUNCTION</text>
+    <text x="605" y="342" fill="#F5F2EB" font-family="Consolas, monospace" font-size="27" font-weight="700">show_tasks(tasks)</text>
+    <text x="605" y="385" fill="#B8B4AA" font-size="19">same list from add</text>
+
+    <polygon points="970,270 1070,340 970,410 870,340" fill="#191D1A" stroke="#354039" stroke-width="2" />
+    <text x="970" y="334" fill="#F5F2EB" font-family="Consolas, monospace" font-size="21" font-weight="700">tasks</text>
+    <text x="970" y="360" fill="#B8B4AA" font-size="18">empty?</text>
+
+    <rect x="1185" y="105" width="400" height="205" rx="24" fill="#191D1A" stroke="#354039" stroke-width="2" />
+    <text x="1385" y="145" fill="#B8B4AA" font-size="18" font-weight="700" letter-spacing="1">EMPTY LIST</text>
+    <text x="1385" y="195" fill="#F5F2EB" font-family="Consolas, monospace" font-size="21">print empty message</text>
+    <text x="1385" y="240" fill="#B8B4AA" font-family="Consolas, monospace" font-size="20">return to run()</text>
+
+    <rect x="1185" y="415" width="400" height="240" rx="24" fill="#191D1A" stroke="#354039" stroke-width="2" />
+    <text x="1385" y="455" fill="#B8B4AA" font-size="18" font-weight="700" letter-spacing="1">NONEMPTY LIST</text>
+    <text x="1385" y="489" fill="#F5F2EB" font-family="Consolas, monospace" font-size="19">for task in tasks</text>
+
+    <rect x="1205" y="510" width="190" height="66" rx="16" fill="#111412" stroke="#354039" stroke-width="2" />
+    <text x="1300" y="550" fill="#F5F2EB" font-family="Consolas, monospace" font-size="17" font-weight="700">format_task(task)</text>
+    <rect x="1420" y="510" width="145" height="66" rx="16" fill="#111412" stroke="#354039" stroke-width="2" />
+    <text x="1492" y="550" fill="#F5F2EB" font-family="Consolas, monospace" font-size="18" font-weight="700">print(line)</text>
+    <text x="1385" y="620" fill="#B8B4AA" font-family="Consolas, monospace" font-size="18">then return to run()</text>
+
+    <rect x="80" y="700" width="1505" height="84" rx="20" fill="#191D1A" stroke="#354039" stroke-width="2" />
+    <text x="833" y="736" fill="#8FE4AD" font-size="17" font-weight="700" letter-spacing="1">READ ONLY</text>
+    <text x="833" y="765" fill="#F5F2EB" font-family="Consolas, monospace" font-size="20">tasks keeps its length, order, and fields</text>
+  </g>
+
+  <g fill="none" stroke="#8FE4AD" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M350 340 H402" />
+    <path d="M790 340 H852" />
+    <path d="M970 270 V205 H1167" />
+    <path d="M970 410 V520 H1167" />
+    <path d="M1395 543 H1402" />
+  </g>
+  <g fill="#8FE4AD">
+    <path d="M420 340 L402 330 L402 350 Z" />
+    <path d="M870 340 L852 330 L852 350 Z" />
+    <path d="M1185 205 L1167 195 L1167 215 Z" />
+    <path d="M1185 520 L1167 510 L1167 530 Z" />
+    <path d="M1420 543 L1402 533 L1402 553 Z" />
+  </g>
+  <g fill="#B8B4AA" font-family="Manrope, Segoe UI, sans-serif" font-size="17" font-weight="700" letter-spacing="1">
+    <text x="1030" y="190">YES</text>
+    <text x="1030" y="500">NO</text>
+  </g>
+</svg>

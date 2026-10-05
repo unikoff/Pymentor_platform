@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="1320" viewBox="0 0 720 1320" role="img" aria-labelledby="title desc">
+  <title id="title">Git publication flow</title>
+  <desc id="desc">Four Git states connected vertically by git add, git commit, and git push.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="6" orient="auto" markerUnits="strokeWidth">
+      <path d="M2 2 L10 6 L2 10" fill="none" stroke="#8FE4AD" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <style>
+      .bg { fill: #111412; }
+      .node { fill: #191D1A; stroke: #354039; stroke-width: 3; }
+      .edge { fill: none; stroke: #8FE4AD; stroke-width: 4; marker-end: url(#arrow); }
+      .head { fill: #F5F2EB; font: 600 32px Manrope, "Segoe UI", sans-serif; }
+      .sub { fill: #B8B4AA; font: 24px Manrope, "Segoe UI", sans-serif; }
+      .cmd { fill: #8FE4AD; font: 600 23px Consolas, monospace; }
+      .step { fill: #8FE4AD; font: 600 20px Manrope, "Segoe UI", sans-serif; letter-spacing: 2px; }
+    </style>
+  </defs>
+  <rect class="bg" width="720" height="1320" rx="28"/>
+  <text class="step" x="54" y="82">FROM FILES TO REMOTE</text>
+
+  <rect class="node" x="64" y="126" width="592" height="198" rx="22"/>
+  <text class="head" x="360" y="194" text-anchor="middle">Working tree</text>
+  <text class="sub" x="360" y="239" text-anchor="middle">edited files · review changes</text>
+
+  <path class="edge" d="M360 329 V380"/>
+  <text class="cmd" x="390" y="363">git add</text>
+  <rect class="node" x="64" y="392" width="592" height="198" rx="22"/>
+  <text class="head" x="360" y="460" text-anchor="middle">Staging area</text>
+  <text class="sub" x="360" y="505" text-anchor="middle">selected files · review snapshot</text>
+
+  <path class="edge" d="M360 595 V646"/>
+  <text class="cmd" x="390" y="629">git commit</text>
+  <rect class="node" x="64" y="658" width="592" height="198" rx="22"/>
+  <text class="head" x="360" y="726" text-anchor="middle">Local commit</text>
+  <text class="sub" x="360" y="771" text-anchor="middle">saved snapshot · note commit id</text>
+
+  <path class="edge" d="M360 861 V912"/>
+  <text class="cmd" x="390" y="895">git push</text>
+  <rect class="node" x="64" y="924" width="592" height="198" rx="22"/>
+  <text class="head" x="360" y="992" text-anchor="middle">Remote branch</text>
+  <text class="sub" x="360" y="1037" text-anchor="middle">published commit · verify same id</text>
+
+  <text class="sub" x="360" y="1194" text-anchor="middle">Publication confirms the commit arrived.</text>
+  <text class="sub" x="360" y="1234" text-anchor="middle">It does not prove a clean clone can run.</text>
+</svg>

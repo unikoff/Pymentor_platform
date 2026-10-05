@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="1500" viewBox="0 0 800 1500" role="img" aria-labelledby="title description">
+  <title id="title">Planner contracts on a narrow screen</title>
+  <desc id="description">A vertical view shows the client request entering TaskCreate and PlannerService. The Task is saved in full to JsonStorage and projected through TaskRead into a dashed response to the same client.</desc>
+  <defs>
+
+    <style>
+      .bg { fill: #111412; }
+      .node { fill: #191D1A; stroke: #354039; stroke-width: 2; }
+      .label { fill: #F5F2EB; font: 700 28px Manrope, "Segoe UI", sans-serif; }
+      .detail { fill: #B8B4AA; font: 22px Manrope, "Segoe UI", sans-serif; }
+      .code { fill: #B8B4AA; font: 21px Consolas, "Segoe UI Mono", monospace; }
+      .arrow { fill: none; stroke: #8FE4AD; stroke-width: 6; stroke-linecap: round; stroke-linejoin: round; }
+      .response { stroke-dasharray: 14 13; }
+    </style>
+  </defs>
+  <rect class="bg" width="800" height="1500"/>
+  <rect class="node" x="70" y="190" width="660" height="140" rx="24"/>
+  <text class="label" x="400" y="244" text-anchor="middle">HTTP client</text>
+  <text class="detail" x="400" y="285" text-anchor="middle">sends request · receives response</text>
+  <rect class="node" x="150" y="410" width="500" height="145" rx="24"/>
+  <text class="label" x="400" y="466" text-anchor="middle">TaskCreate</text>
+  <text class="detail" x="400" y="507" text-anchor="middle">request schema</text>
+  <text class="code" x="400" y="536" text-anchor="middle">title · priority</text>
+  <rect class="node" x="150" y="630" width="500" height="145" rx="24"/>
+  <text class="label" x="400" y="686" text-anchor="middle">PlannerService</text>
+  <text class="detail" x="400" y="727" text-anchor="middle">existing operation</text>
+  <text class="detail" x="400" y="756" text-anchor="middle">creates the task</text>
+  <rect class="node" x="150" y="850" width="500" height="145" rx="24"/>
+  <text class="label" x="400" y="906" text-anchor="middle">Task</text>
+  <text class="detail" x="400" y="947" text-anchor="middle">domain object</text>
+  <text class="code" x="400" y="976" text-anchor="middle">id · title · tags</text>
+  <rect class="node" x="50" y="1125" width="320" height="180" rx="24"/>
+  <text class="label" x="210" y="1180" text-anchor="middle">JsonStorage</text>
+  <text class="detail" x="210" y="1221" text-anchor="middle">saves full Task</text>
+  <text class="code" x="210" y="1257" text-anchor="middle">tags remain in JSON</text>
+  <rect class="node" x="430" y="1125" width="320" height="180" rx="24"/>
+  <text class="label" x="590" y="1180" text-anchor="middle">TaskRead</text>
+  <text class="detail" x="590" y="1221" text-anchor="middle">public response schema</text>
+  <text class="code" x="590" y="1257" text-anchor="middle">id · title · priority</text>
+  <text class="code" x="590" y="1285" text-anchor="middle">is_done</text>
+  <path class="arrow" d="M280 330V394"/><path d="M272 394L280 410L288 394" fill="none" stroke="#8FE4AD" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <path class="arrow" d="M400 555V614"/><path d="M392 614L400 630L408 614" fill="none" stroke="#8FE4AD" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <path class="arrow" d="M400 775V834"/><path d="M392 834L400 850L408 834" fill="none" stroke="#8FE4AD" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <path class="arrow" d="M290 995V1060H210V1109"/><path d="M202 1109L210 1125L218 1109" fill="none" stroke="#8FE4AD" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <text class="detail" x="80" y="1098">save full Task</text>
+  <path class="arrow" d="M510 995V1060H590V1109"/><path d="M582 1109L590 1125L598 1109" fill="none" stroke="#8FE4AD" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <text class="detail" x="526" y="1098">public view</text>
+  <path class="arrow response" d="M750 1215H775V370H520V346"/><path d="M512 346L520 330L528 346" fill="none" stroke="#8FE4AD" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

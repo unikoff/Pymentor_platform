@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1672" height="836" viewBox="0 0 1672 836" role="img" aria-labelledby="title desc">
+  <title id="title">Published Planner to a clean copy</title>
+  <desc id="desc">A published repository is cloned into a separate folder. The clone contains README and main.py, while a new virtual environment is created locally. Its Python interpreter runs that copy. After exit and restart, task memory is empty while source files and Git history remain.</desc>
+  <defs>
+    <style>
+      .bg { fill: #111412; }
+      .card { fill: #191D1A; stroke: #354039; stroke-width: 2; }
+      .inner { fill: #111412; stroke: #354039; stroke-width: 2; }
+      .accent { fill: #8FE4AD; font: 700 24px 'Segoe UI', Arial, sans-serif; letter-spacing: 2px; }
+      .title { fill: #F5F2EB; font: 700 34px 'Segoe UI', Arial, sans-serif; }
+      .body { fill: #B8B4AA; font: 24px 'Segoe UI', Arial, sans-serif; }
+      .code { fill: #F5F2EB; font: 22px Consolas, 'Courier New', monospace; }
+      .small { fill: #B8B4AA; font: 19px 'Segoe UI', Arial, sans-serif; }
+      .line { fill: none; stroke: #8FE4AD; stroke-width: 6; }
+      .head { fill: #8FE4AD; }
+      .label { fill: #8FE4AD; font: 700 18px 'Segoe UI', Arial, sans-serif; }
+      .label-compact { font-size: 16px; }
+    </style>
+  </defs>
+  <rect class="bg" width="1672" height="836" />
+
+  <rect class="card" x="80" y="170" width="300" height="250" rx="24" />
+  <text class="accent" x="115" y="220">PUBLISHED</text>
+  <text class="title" x="115" y="272">Repository</text>
+  <text class="body" x="115" y="326">same Git history</text>
+  <text class="code" x="115" y="370">branch · commit</text>
+
+  <rect class="card" x="510" y="120" width="420" height="350" rx="24" />
+  <text class="accent" x="550" y="170">CLEAN CLONE</text>
+  <text class="small" x="550" y="204">separate project folder</text>
+  <rect class="inner" x="550" y="232" width="160" height="78" rx="16" />
+  <text class="code" x="570" y="280">README.md</text>
+  <rect class="inner" x="730" y="232" width="160" height="78" rx="16" />
+  <text class="code" x="770" y="280">main.py</text>
+  <rect class="inner" x="550" y="342" width="340" height="82" rx="16" />
+  <text class="code" x="580" y="378">.venv/</text>
+  <text class="small" x="580" y="406">created here after clone</text>
+
+  <rect class="card" x="1050" y="170" width="250" height="250" rx="24" />
+  <text class="accent" x="1085" y="220">RUN</text>
+  <text class="small" x="1085" y="270">local interpreter</text>
+  <text class="code" x="1085" y="318">.venv Python</text>
+  <text class="code" x="1085" y="356">→ main.py</text>
+
+  <rect class="card" x="1420" y="170" width="230" height="250" rx="24" />
+  <text class="accent" x="1450" y="220">PLANNER</text>
+  <text class="body" x="1450" y="275">full scenario</text>
+  <text class="code" x="1450" y="320">add · list · find</text>
+  <text class="code" x="1450" y="358">search · done</text>
+  <text class="code" x="1450" y="392">stats</text>
+
+  <path class="line" d="M380 295 H494" />
+  <path class="head" d="M494 287 L510 295 L494 303 Z" />
+  <text class="label" x="398" y="270">git clone</text>
+  <path class="line" d="M930 295 H1034" />
+  <path class="head" d="M1034 287 L1050 295 L1034 303 Z" />
+  <text class="label label-compact" x="938" y="250">README steps</text>
+  <path class="line" d="M1300 295 H1404" />
+  <path class="head" d="M1404 287 L1420 295 L1404 303 Z" />
+  <text class="label" x="1330" y="270">run</text>
+
+  <rect class="card" x="80" y="545" width="1570" height="220" rx="24" />
+  <text class="accent" x="120" y="592">PROCESS MEMORY</text>
+  <rect class="inner" x="150" y="620" width="520" height="100" rx="18" />
+  <text class="title" x="185" y="663">First run</text>
+  <text class="code" x="185" y="699">tasks = [accepted tasks]</text>
+  <path class="line" d="M670 670 H984" />
+  <path class="head" d="M984 662 L1000 670 L984 678 Z" />
+  <text class="label" x="770" y="648">exit + restart</text>
+  <rect class="inner" x="1000" y="620" width="580" height="100" rx="18" />
+  <text class="title" x="1035" y="663">New process</text>
+  <text class="code" x="1035" y="699">tasks = [] · files and history remain</text>
+</svg>

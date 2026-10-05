@@ -1,0 +1,115 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1672" height="836" viewBox="0 0 1672 836" fill="none" role="img" aria-labelledby="title description">
+  <title id="title">PUT and PATCH resource changes</title>
+  <desc id="description">PUT sends a full representation and replaces the resource state. PATCH sends selected fields and preserves fields that are not part of the change.</desc>
+  <defs>
+    <marker id="arrow" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" viewBox="0 0 12 12" refX="2" refY="6" orient="auto">
+      <path d="M2 2L10 6L2 10" stroke="#8BE9B8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <style>
+      .sans { font-family: Inter, "Segoe UI", sans-serif; }
+      .mono { font-family: "JetBrains Mono", Consolas, monospace; }
+      .heading { font-size: 25px; font-weight: 750; letter-spacing: 1px; fill: #F2F5F3; }
+      .label { font-size: 17px; font-weight: 700; letter-spacing: 1px; fill: #AAB7B0; }
+      .value { font-size: 19px; font-weight: 650; fill: #DCE6E0; }
+      .accent { fill: #8BE9B8; }
+      .partial { fill: #73D8E8; }
+      .panel { fill: #111915; stroke: #2A3931; stroke-width: 2; }
+      .card { fill: #17211B; stroke: #385345; stroke-width: 2; }
+      .field { fill: #1B2721; stroke: #385345; stroke-width: 1.5; }
+      .changed { fill: #17251E; stroke: #4BC89B; stroke-width: 1.8; }
+      .line { stroke: #8BE9B8; stroke-width: 4; stroke-linecap: round; marker-end: url(#arrow); }
+    </style>
+  </defs>
+
+  <rect width="1672" height="836" rx="28" fill="#0E1512"/>
+  <rect x="1" y="1" width="1670" height="834" rx="27" stroke="#2A3931" stroke-width="2"/>
+  <text x="64" y="86" class="sans heading accent">PUT AND PATCH</text>
+
+  <rect x="54" y="132" width="766" height="650" rx="24" class="panel"/>
+  <rect x="852" y="132" width="766" height="650" rx="24" class="panel"/>
+
+  <rect x="88" y="164" width="100" height="48" rx="14" fill="#1A2821" stroke="#4BC89B" stroke-width="2"/>
+  <text x="138" y="196" text-anchor="middle" class="mono heading accent">PUT</text>
+  <text x="210" y="195" class="sans label">FULL REPRESENTATION</text>
+
+  <rect x="886" y="164" width="126" height="48" rx="14" fill="#19262A" stroke="#59CDE2" stroke-width="2"/>
+  <text x="949" y="196" text-anchor="middle" class="mono heading partial">PATCH</text>
+  <text x="1034" y="195" class="sans label">SELECTED FIELDS</text>
+
+  <rect x="82" y="286" width="202" height="380" rx="18" class="card"/>
+  <rect x="326" y="286" width="202" height="380" rx="18" class="card"/>
+  <rect x="570" y="286" width="202" height="380" rx="18" class="card"/>
+  <text x="183" y="326" text-anchor="middle" class="sans label">CURRENT</text>
+  <text x="427" y="326" text-anchor="middle" class="sans label">REQUEST</text>
+  <text x="671" y="326" text-anchor="middle" class="sans label">RESULT</text>
+  <path d="M284 476H312" class="line"/>
+  <path d="M528 476H556" class="line"/>
+
+  <rect x="102" y="358" width="162" height="68" rx="12" class="field"/>
+  <text x="122" y="384" class="sans label">TITLE</text>
+  <text x="122" y="412" class="mono value">HTTP</text>
+  <rect x="102" y="438" width="162" height="68" rx="12" class="field"/>
+  <text x="122" y="464" class="sans label">PRIORITY</text>
+  <text x="122" y="492" class="mono value">3</text>
+  <rect x="102" y="518" width="162" height="68" rx="12" class="field"/>
+  <text x="122" y="544" class="sans label">DONE</text>
+  <text x="122" y="572" class="mono value">NO</text>
+
+  <rect x="346" y="358" width="162" height="68" rx="12" class="changed"/>
+  <text x="366" y="384" class="sans label">TITLE</text>
+  <text x="366" y="412" class="mono value accent">API</text>
+  <rect x="346" y="438" width="162" height="68" rx="12" class="changed"/>
+  <text x="366" y="464" class="sans label">PRIORITY</text>
+  <text x="366" y="492" class="mono value accent">5</text>
+  <rect x="346" y="518" width="162" height="68" rx="12" class="changed"/>
+  <text x="366" y="544" class="sans label">DONE</text>
+  <text x="366" y="572" class="mono value accent">YES</text>
+  <text x="427" y="624" text-anchor="middle" class="sans label">ALL FIELDS</text>
+
+  <rect x="590" y="358" width="162" height="68" rx="12" class="changed"/>
+  <text x="610" y="384" class="sans label">TITLE</text>
+  <text x="610" y="412" class="mono value accent">API</text>
+  <rect x="590" y="438" width="162" height="68" rx="12" class="changed"/>
+  <text x="610" y="464" class="sans label">PRIORITY</text>
+  <text x="610" y="492" class="mono value accent">5</text>
+  <rect x="590" y="518" width="162" height="68" rx="12" class="changed"/>
+  <text x="610" y="544" class="sans label">DONE</text>
+  <text x="610" y="572" class="mono value accent">YES</text>
+
+  <rect x="880" y="286" width="202" height="380" rx="18" class="card"/>
+  <rect x="1124" y="286" width="202" height="380" rx="18" class="card"/>
+  <rect x="1368" y="286" width="202" height="380" rx="18" class="card"/>
+  <text x="981" y="326" text-anchor="middle" class="sans label">CURRENT</text>
+  <text x="1225" y="326" text-anchor="middle" class="sans label">REQUEST</text>
+  <text x="1469" y="326" text-anchor="middle" class="sans label">RESULT</text>
+  <path d="M1082 476H1110" class="line"/>
+  <path d="M1326 476H1354" class="line"/>
+
+  <rect x="900" y="358" width="162" height="68" rx="12" class="field"/>
+  <text x="920" y="384" class="sans label">TITLE</text>
+  <text x="920" y="412" class="mono value">HTTP</text>
+  <rect x="900" y="438" width="162" height="68" rx="12" class="field"/>
+  <text x="920" y="464" class="sans label">PRIORITY</text>
+  <text x="920" y="492" class="mono value">3</text>
+  <rect x="900" y="518" width="162" height="68" rx="12" class="field"/>
+  <text x="920" y="544" class="sans label">DONE</text>
+  <text x="920" y="572" class="mono value">NO</text>
+
+  <rect x="1144" y="438" width="162" height="68" rx="12" fill="#19262A" stroke="#59CDE2" stroke-width="2"/>
+  <text x="1164" y="464" class="sans label">PRIORITY</text>
+  <text x="1164" y="492" class="mono value partial">5</text>
+  <text x="1225" y="552" text-anchor="middle" class="sans label">ONE FIELD</text>
+
+  <rect x="1388" y="358" width="162" height="68" rx="12" class="field"/>
+  <text x="1408" y="384" class="sans label">TITLE</text>
+  <text x="1408" y="412" class="mono value">HTTP</text>
+  <rect x="1388" y="438" width="162" height="68" rx="12" fill="#19262A" stroke="#59CDE2" stroke-width="2"/>
+  <text x="1408" y="464" class="sans label">PRIORITY</text>
+  <text x="1408" y="492" class="mono value partial">5</text>
+  <rect x="1388" y="518" width="162" height="68" rx="12" class="field"/>
+  <text x="1408" y="544" class="sans label">DONE</text>
+  <text x="1408" y="572" class="mono value">NO</text>
+
+  <text x="671" y="714" text-anchor="middle" class="sans label accent">FULL STATE REPLACED</text>
+  <text x="1469" y="714" text-anchor="middle" class="sans label partial">OTHER FIELDS KEPT</text>
+</svg>

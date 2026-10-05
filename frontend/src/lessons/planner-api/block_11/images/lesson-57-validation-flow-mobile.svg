@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="1440" viewBox="0 0 720 1440" role="img" aria-labelledby="title desc">
+  <title id="title">Validation before the Planner action</title>
+  <desc id="desc">A vertical view of the Planner request flow. TaskCreate normalizes a string before Field checks its limits. Invalid body stops with 422 before the endpoint. Valid data reaches the existing service and JSON storage, then the API responds with 201.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="16" markerHeight="16" refX="13" refY="8" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M2 2 L13 8 L2 14" fill="none" stroke="#8FE4AD" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+  <rect width="720" height="1580" fill="#111412"/>
+
+
+
+  <g transform="translate(0,-90)">
+  <g fill="#191D1A" stroke="#354039" stroke-width="2">
+    <rect x="50" y="145" width="620" height="112" rx="22"/>
+    <rect x="50" y="315" width="620" height="140" rx="22"/>
+    <rect x="50" y="510" width="620" height="140" rx="22"/>
+    <rect x="45" y="710" width="290" height="130" rx="22"/>
+    <rect x="385" y="710" width="290" height="130" rx="22"/>
+    <rect x="145" y="935" width="430" height="120" rx="22"/>
+    <rect x="50" y="1135" width="620" height="140" rx="22"/>
+    <rect x="115" y="1350" width="490" height="120" rx="22"/>
+  </g>
+  <g fill="#F5F2EB" font-family="Manrope, Segoe UI, sans-serif" text-anchor="middle">
+    <text x="360" y="192" font-size="30" font-weight="700">JSON body</text>
+    <text x="360" y="229" font-size="24" fill="#B8B4AA">title · priority</text>
+    <text x="360" y="362" font-size="30" font-weight="700">TaskCreate</text>
+    <text x="360" y="401" font-size="24" fill="#B8B4AA">before: strip title</text>
+    <text x="360" y="432" font-size="22" fill="#B8B4AA">Pydantic checks other types</text>
+    <text x="360" y="557" font-size="30" font-weight="700">Field limits</text>
+    <text x="360" y="598" font-size="24" fill="#B8B4AA">title: 1–120 · priority: 1–5</text>
+    <text x="360" y="629" font-size="22" fill="#B8B4AA">checked after normalization</text>
+    <text x="190" y="759" font-size="26" font-weight="700">422 · body error</text>
+    <text x="190" y="798" font-size="22" fill="#B8B4AA">route skipped</text>
+    <text x="530" y="759" font-size="26" font-weight="700">Valid body</text>
+    <text x="530" y="798" font-size="22" fill="#B8B4AA">continue</text>
+    <text x="360" y="984" font-size="30" font-weight="700">Endpoint</text>
+    <text x="360" y="1023" font-size="24" fill="#B8B4AA">calls PlannerService</text>
+    <text x="360" y="1187" font-size="30" font-weight="700">PlannerService</text>
+    <text x="360" y="1227" font-size="24" fill="#B8B4AA">Task · JSON saved</text>
+    <text x="360" y="1401" font-size="30" font-weight="700">Saved Task</text>
+    <text x="360" y="1440" font-size="24" fill="#B8B4AA">201 response</text>
+  </g>
+  <g fill="none" stroke="#8FE4AD" stroke-width="5" stroke-linecap="round" marker-end="url(#arrow)">
+    <path d="M360 257 V311"/>
+    <path d="M360 455 V506"/>
+    <path d="M360 650 V680 H190 V706"/>
+    <path d="M360 650 V680 H530 V706"/>
+    <path d="M530 840 V885 H360 V931"/>
+    <path d="M360 1055 V1131"/>
+    <path d="M360 1275 V1350"/>
+  </g>
+
+
+  </g>
+</svg>
