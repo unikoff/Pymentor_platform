@@ -45,7 +45,7 @@
 
 ### Сверка с реальными материалами
 
-Изучены текущие [Markdown первого блока](../../../backend/learning/course_content/foundations/block_01/), [block1.tsx](../../../frontend/src/lessons/python-foundations/block1.tsx), [manual.py](../../../backend/learning/course_content/foundations/block_01/manual.py), [code_tasks.py](../../../backend/learning/course_content/foundations/block_01/code_tasks.py) и [экспорты/проверка каталога](../../../backend/learning/course_content/foundations/block_01/__init__.py).
+Изучены текущие [Markdown первого блока](../../../backend/learning/course_content/foundations/block_01/), [TSX-занятия блока](../../../frontend/src/lessons/python-foundations/block_01/), [manual.py](../../../backend/learning/course_content/foundations/block_01/manual.py), [code_tasks.py](../../../backend/learning/course_content/foundations/block_01/code_tasks.py) и [экспорты/проверка каталога](../../../backend/learning/course_content/foundations/block_01/__init__.py).
 
 В теории уже есть аналогии, пошаговые трассы, предсказание вывода и поиск ошибок. Их нужно сохранить и углубить. Наличие такого элемента не доказывает, что практика уже проверяет тот же навык.
 

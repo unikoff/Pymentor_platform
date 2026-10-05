@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="1320" viewBox="0 0 720 1320" role="img" aria-labelledby="title desc">
+  <title id="title">Published Planner to a clean copy</title>
+  <desc id="desc">The vertical flow shows a published repository cloned into a separate folder, a local virtual environment created there, and its Python interpreter running main.py. After exit and restart, task memory is empty while files and Git history remain.</desc>
+  <defs>
+    <style>
+      .bg { fill: #111412; }
+      .card { fill: #191D1A; stroke: #354039; stroke-width: 2; }
+      .inner { fill: #111412; stroke: #354039; stroke-width: 2; }
+      .accent { fill: #8FE4AD; font: 700 25px 'Segoe UI', Arial, sans-serif; letter-spacing: 2px; }
+      .title { fill: #F5F2EB; font: 700 35px 'Segoe UI', Arial, sans-serif; }
+      .body { fill: #B8B4AA; font: 25px 'Segoe UI', Arial, sans-serif; }
+      .code { fill: #F5F2EB; font: 24px Consolas, 'Courier New', monospace; }
+      .small { fill: #B8B4AA; font: 21px 'Segoe UI', Arial, sans-serif; }
+      .line { fill: none; stroke: #8FE4AD; stroke-width: 6; }
+      .head { fill: #8FE4AD; }
+      .label { fill: #8FE4AD; font: 700 19px 'Segoe UI', Arial, sans-serif; }
+    </style>
+  </defs>
+  <rect class="bg" width="720" height="1320" />
+
+  <rect class="card" x="60" y="70" width="600" height="145" rx="24" />
+  <text class="accent" x="95" y="113">PUBLISHED</text>
+  <text class="title" x="95" y="162">Repository · branch · commit</text>
+  <path class="line" d="M360 215 V250" />
+  <path class="head" d="M352 250 L360 266 L368 250 Z" />
+  <text class="label" x="388" y="247">git clone</text>
+
+  <rect class="card" x="60" y="270" width="600" height="250" rx="24" />
+  <text class="accent" x="95" y="315">CLEAN CLONE</text>
+  <text class="small" x="95" y="350">separate project folder</text>
+  <rect class="inner" x="95" y="375" width="230" height="62" rx="14" />
+  <text class="code" x="115" y="415">README.md</text>
+  <rect class="inner" x="355" y="375" width="230" height="62" rx="14" />
+  <text class="code" x="405" y="415">main.py</text>
+  <rect class="inner" x="95" y="450" width="490" height="48" rx="14" />
+  <text class="code" x="115" y="482">.venv/ created here after clone</text>
+  <path class="line" d="M360 520 V555" />
+  <path class="head" d="M352 555 L360 571 L368 555 Z" />
+  <text class="label" x="388" y="545">README steps</text>
+
+  <rect class="card" x="60" y="575" width="600" height="160" rx="24" />
+  <text class="accent" x="95" y="620">RUN</text>
+  <text class="code" x="95" y="667">.venv\Scripts\python.exe</text>
+  <text class="code" x="95" y="704">main.py</text>
+  <path class="line" d="M360 735 V770" />
+  <path class="head" d="M352 770 L360 786 L368 770 Z" />
+  <text class="label" x="388" y="768">run</text>
+
+  <rect class="card" x="60" y="790" width="600" height="150" rx="24" />
+  <text class="accent" x="95" y="835">PLANNER</text>
+  <text class="title" x="95" y="892">Full user scenario</text>
+  <path class="line" d="M360 940 V975" />
+  <path class="head" d="M352 975 L360 991 L368 975 Z" />
+  <text class="label" x="388" y="973">exit + restart</text>
+
+  <rect class="card" x="60" y="995" width="600" height="255" rx="24" />
+  <text class="accent" x="95" y="1040">PROCESS MEMORY</text>
+  <rect class="inner" x="95" y="1060" width="230" height="145" rx="16" />
+  <text class="title" x="115" y="1105">First run</text>
+  <text class="code" x="115" y="1150">tasks = [...]</text>
+  <text class="small" x="115" y="1185">accepted tasks</text>
+  <rect class="inner" x="355" y="1060" width="230" height="145" rx="16" />
+  <text class="title" x="375" y="1105">New run</text>
+  <text class="code" x="375" y="1150">tasks = []</text>
+  <text class="small" x="375" y="1185">files + history remain</text>
+</svg>

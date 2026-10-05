@@ -10,7 +10,7 @@
 
 ### Что проверено в текущих материалах
 
-Источники первой главы: [общая концепция](../python-foundations/COURSE.md), [концепт её финального блока](../python-foundations/BLOCK_4.md), [реальная теория финального блока](../../../frontend/src/lessons/python-foundations/block4.tsx), [ручная практика](../../../backend/learning/course_content/foundations/block_04/manual.py) и [задания редактора](../../../backend/learning/course_content/foundations/block_04/code_tasks.py).
+Источники первой главы: [общая концепция](../python-foundations/COURSE.md), [концепт её финального блока](../python-foundations/BLOCK_4.md), [TSX-занятия финального блока](../../../frontend/src/lessons/python-foundations/block_04/), [ручная практика](../../../backend/learning/course_content/foundations/block_04/manual.py) и [задания редактора](../../../backend/learning/course_content/foundations/block_04/code_tasks.py).
 
 Источники второй главы: [метаданные](../../../backend/learning/course_content/deeper/track.json), [Markdown-каталог](../../../backend/learning/course_content/deeper/), [обзор TSX](../../../frontend/src/lessons/python-deeper/overview.tsx), теория [блока 5](../../../frontend/src/lessons/python-deeper/block5.tsx), [блока 6](../../../frontend/src/lessons/python-deeper/block6.tsx), [блока 7](../../../frontend/src/lessons/python-deeper/block7.tsx), [блока 8](../../../frontend/src/lessons/python-deeper/block8.tsx), их практические каталоги и [загрузчик](../../../backend/learning/content.py).
 

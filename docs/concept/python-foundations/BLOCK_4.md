@@ -118,7 +118,7 @@
 
 ### Что проверено в текущей выдаче
 
-Изучены [Markdown блока](../../../backend/learning/course_content/foundations/block_04/), [block4.tsx](../../../frontend/src/lessons/python-foundations/block4.tsx), [manual.py](../../../backend/learning/course_content/foundations/block_04/manual.py), [code_tasks.py](../../../backend/learning/course_content/foundations/block_04/code_tasks.py), [экспорт блока](../../../backend/learning/course_content/foundations/block_04/__init__.py) и [загрузчик](../../../backend/learning/content.py). Резервные MD и TSX содержат общий материал, но CTA и фактическая карточка не везде совпадают.
+Изучены [Markdown блока](../../../backend/learning/course_content/foundations/block_04/), [TSX-занятия блока](../../../frontend/src/lessons/python-foundations/block_04/), [manual.py](../../../backend/learning/course_content/foundations/block_04/manual.py), [code_tasks.py](../../../backend/learning/course_content/foundations/block_04/code_tasks.py), [экспорт блока](../../../backend/learning/course_content/foundations/block_04/__init__.py) и [загрузчик](../../../backend/learning/content.py). Резервные MD и TSX содержат общий материал, но CTA и фактическая карточка не везде совпадают.
 
 Вызов `_build_lesson` на пяти реальных MD подтвердил следующую выдачу. Это проверка сборки данных курса, не браузерное подтверждение интерфейса.
 

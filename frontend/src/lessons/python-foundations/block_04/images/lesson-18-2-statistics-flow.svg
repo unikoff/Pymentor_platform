@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1672" height="836" viewBox="0 0 1672 836">
+  <title>Planner statistics data flow</title>
+  <desc>The current full tasks list passes to build_statistics, which returns total, completed, and left. completion_percent reads that summary, and the menu prints all four values before requesting the next command.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="14" markerHeight="14" refX="0" refY="7" orient="auto" markerUnits="userSpaceOnUse" viewBox="0 0 14 14">
+      <path d="M0 0 L14 7 L0 14 Z" fill="#8FE4AD"/>
+    </marker>
+  </defs>
+  <rect width="1672" height="836" fill="#111412"/>
+  <g font-family="Manrope, Segoe UI, sans-serif" fill="#F5F2EB">
+    <text x="72" y="76" font-size="28" font-weight="700">CURRENT PLANNER STATE</text>
+    <rect x="72" y="116" width="340" height="592" rx="24" fill="#191D1A" stroke="#354039" stroke-width="2"/>
+    <text x="104" y="166" font-size="26" font-weight="700">TASKS</text>
+    <text x="104" y="201" font-size="18" fill="#B8B4AA">full list · current flags</text>
+    <rect x="104" y="236" width="276" height="112" rx="16" fill="#111412" stroke="#354039" stroke-width="2"/>
+    <text x="128" y="277" font-family="Consolas, monospace" font-size="19" fill="#B8B4AA">id=10</text>
+    <text x="128" y="319" font-size="22">is_done=True</text>
+    <rect x="104" y="372" width="276" height="112" rx="16" fill="#111412" stroke="#354039" stroke-width="2"/>
+    <text x="128" y="413" font-family="Consolas, monospace" font-size="19" fill="#B8B4AA">id=20</text>
+    <text x="128" y="455" font-size="22">is_done=False</text>
+    <text x="104" y="548" font-size="18" fill="#B8B4AA">add / done update this list</text>
+    <text x="104" y="584" font-size="18" fill="#B8B4AA">search matches stay separate</text>
+
+    <rect x="520" y="265" width="300" height="280" rx="24" fill="#191D1A" stroke="#354039" stroke-width="2"/>
+    <text x="552" y="323" font-size="22" font-weight="700">BUILD STATISTICS</text>
+    <text x="552" y="374" font-family="Consolas, monospace" font-size="19" fill="#8FE4AD">build_statistics(</text>
+    <text x="552" y="402" font-family="Consolas, monospace" font-size="19" fill="#8FE4AD">tasks)</text>
+    <text x="552" y="455" font-size="18" fill="#B8B4AA">reads, does not mutate</text>
+
+    <rect x="928" y="236" width="290" height="338" rx="24" fill="#191D1A" stroke="#354039" stroke-width="2"/>
+    <text x="960" y="286" font-size="24" font-weight="700">SUMMARY</text>
+    <text x="960" y="348" font-family="Consolas, monospace" font-size="21">total: 2</text>
+    <text x="960" y="395" font-family="Consolas, monospace" font-size="21">completed: 1</text>
+    <text x="960" y="442" font-family="Consolas, monospace" font-size="21">left: 1</text>
+    <text x="960" y="514" font-size="18" fill="#B8B4AA">new dictionary</text>
+
+    <rect x="1320" y="116" width="280" height="244" rx="24" fill="#191D1A" stroke="#354039" stroke-width="2"/>
+    <text x="1352" y="166" font-size="24" font-weight="700">PERCENT</text>
+    <text x="1352" y="222" font-family="Consolas, monospace" font-size="18" fill="#8FE4AD">completion_percent</text>
+    <text x="1352" y="270" font-size="18" fill="#B8B4AA">reads summary</text>
+
+    <rect x="1320" y="460" width="280" height="248" rx="24" fill="#191D1A" stroke="#354039" stroke-width="2"/>
+    <text x="1352" y="510" font-size="24" font-weight="700">MENU</text>
+    <text x="1352" y="566" font-size="18">prints 4 values</text>
+    <text x="1352" y="604" font-size="18" fill="#B8B4AA">then asks again</text>
+
+    <path d="M412 405 H506" fill="none" stroke="#8FE4AD" stroke-width="5" marker-end="url(#arrow)"/>
+    <path d="M820 405 H914" fill="none" stroke="#8FE4AD" stroke-width="5" marker-end="url(#arrow)"/>
+    <path d="M1218 332 H1260 V238 H1306" fill="none" stroke="#8FE4AD" stroke-width="5" marker-end="url(#arrow)"/>
+    <path d="M1460 360 V446" fill="none" stroke="#8FE4AD" stroke-width="5" marker-end="url(#arrow)"/>
+  </g>
+</svg>

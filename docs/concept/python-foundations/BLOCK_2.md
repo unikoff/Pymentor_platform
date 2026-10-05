@@ -68,7 +68,7 @@ BLOCK_1.md существует и содержит необходимые пр�
 
 ### Текущее подключение материалов
 
-Второй блок состоит из семи Markdown-файлов в [папке блока](../../../backend/learning/course_content/foundations/block_02/). Все семь компонентов теории находятся в [block2.tsx](../../../frontend/src/lessons/python-foundations/block2.tsx), а привязки `source_file` перечислены в [карте курса](../../../frontend/src/lessons/python-foundations/index.ts). Практика берётся из [manual.py](../../../backend/learning/course_content/foundations/block_02/manual.py) и [code_tasks.py](../../../backend/learning/course_content/foundations/block_02/code_tasks.py); выдачу собирает [_build_lesson](../../../backend/learning/content.py).
+Второй блок состоит из семи Markdown-файлов в [папке блока](../../../backend/learning/course_content/foundations/block_02/). Теория вынесена в [отдельные TSX-занятия блока](../../../frontend/src/lessons/python-foundations/block_02/), а привязки `source_file` перечислены в [карте курса](../../../frontend/src/lessons/python-foundations/index.ts). Практика берётся из [manual.py](../../../backend/learning/course_content/foundations/block_02/manual.py) и [code_tasks.py](../../../backend/learning/course_content/foundations/block_02/code_tasks.py); выдачу собирает [_build_lesson](../../../backend/learning/content.py).
 
 Номера сортируются как части числа, поэтому порядок дробных уроков сохраняется: 6, 7, 8, 9, 9.1, 10, 10.1, затем 11. Загрузчик включает ручную и редакторскую практику вместе для уроков 6, 7, 9 и 9.1. Для остальных уроков подключён один формат.
 

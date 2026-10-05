@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="1340" viewBox="0 0 800 1340">
+  <title>DELETE request and saved removal</title>
+  <desc>A client sends a DELETE request to FastAPI. PlannerService removes the task and saves the JSON file. FastAPI returns an empty 204 response to the same client.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="18" markerHeight="18" refX="15" refY="9" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M2 2 L16 9 L2 16" fill="none" stroke="#8FE4AD" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="arrow-muted" markerWidth="18" markerHeight="18" refX="15" refY="9" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M2 2 L16 9 L2 16" fill="none" stroke="#B8B4AA" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+
+  <rect width="800" height="1340" fill="#111412"/>
+
+  <rect x="100" y="80" width="600" height="200" rx="24" fill="#191D1A" stroke="#354039" stroke-width="2"/>
+  <text x="140" y="132" fill="#B8B4AA" font-family="Manrope, Segoe UI, sans-serif" font-size="27" font-weight="700" letter-spacing="1">CLIENT</text>
+  <text x="140" y="188" fill="#F5F2EB" font-family="Consolas, monospace" font-size="25">DELETE /tasks/{task_id}</text>
+  <text x="140" y="236" fill="#B8B4AA" font-family="Manrope, Segoe UI, sans-serif" font-size="22">one existing task</text>
+
+  <rect x="100" y="370" width="600" height="200" rx="24" fill="#191D1A" stroke="#354039" stroke-width="2"/>
+  <text x="140" y="422" fill="#B8B4AA" font-family="Manrope, Segoe UI, sans-serif" font-size="27" font-weight="700" letter-spacing="1">FASTAPI</text>
+  <text x="140" y="478" fill="#F5F2EB" font-family="Manrope, Segoe UI, sans-serif" font-size="25">validate path</text>
+  <text x="140" y="526" fill="#B8B4AA" font-family="Consolas, monospace" font-size="22">then call service</text>
+
+  <rect x="100" y="700" width="600" height="200" rx="24" fill="#191D1A" stroke="#354039" stroke-width="2"/>
+  <text x="140" y="752" fill="#B8B4AA" font-family="Manrope, Segoe UI, sans-serif" font-size="27" font-weight="700" letter-spacing="1">PLANNER SERVICE</text>
+  <text x="140" y="808" fill="#F5F2EB" font-family="Consolas, monospace" font-size="25">delete_task(id)</text>
+  <text x="140" y="856" fill="#B8B4AA" font-family="Manrope, Segoe UI, sans-serif" font-size="22">one shared operation</text>
+
+  <rect x="100" y="1090" width="600" height="200" rx="24" fill="#191D1A" stroke="#354039" stroke-width="2"/>
+  <text x="140" y="1142" fill="#B8B4AA" font-family="Manrope, Segoe UI, sans-serif" font-size="27" font-weight="700" letter-spacing="1">JSON FILE</text>
+  <text x="140" y="1198" fill="#F5F2EB" font-family="Manrope, Segoe UI, sans-serif" font-size="25">target ID removed</text>
+  <text x="140" y="1246" fill="#B8B4AA" font-family="Manrope, Segoe UI, sans-serif" font-size="22">other tasks stay</text>
+
+  <path d="M 400 280 V 370" fill="none" stroke="#8FE4AD" stroke-width="5" marker-end="url(#arrow)"/>
+  <text x="140" y="340" fill="#B8B4AA" font-family="Manrope, Segoe UI, sans-serif" font-size="20">DELETE request</text>
+
+  <path d="M 560 370 V 280" fill="none" stroke="#B8B4AA" stroke-width="4" stroke-dasharray="12 10" marker-end="url(#arrow-muted)"/>
+  <text x="575" y="340" fill="#F5F2EB" font-family="Manrope, Segoe UI, sans-serif" font-size="22" font-weight="700">204 EMPTY</text>
+
+  <path d="M 400 570 V 700" fill="none" stroke="#8FE4AD" stroke-width="5" marker-end="url(#arrow)"/>
+  <text x="430" y="642" fill="#B8B4AA" font-family="Consolas, monospace" font-size="20">delete_task(id)</text>
+
+  <path d="M 360 900 V 1090" fill="none" stroke="#8FE4AD" stroke-width="5" marker-end="url(#arrow)"/>
+  <text x="140" y="1000" fill="#B8B4AA" font-family="Manrope, Segoe UI, sans-serif" font-size="21">save JSON</text>
+  <path d="M 520 1090 V 900" fill="none" stroke="#B8B4AA" stroke-width="4" stroke-dasharray="12 10" marker-end="url(#arrow-muted)"/>
+  <text x="540" y="1000" fill="#B8B4AA" font-family="Manrope, Segoe UI, sans-serif" font-size="19">loaded tasks</text>
+</svg>

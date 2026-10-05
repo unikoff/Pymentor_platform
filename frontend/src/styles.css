@@ -2400,17 +2400,498 @@ pre {
   background: #101714;
 }
 
+.lesson-diagram {
+  container-name: lesson-diagram;
+  container-type: inline-size;
+  display: grid;
+  gap: 16px;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: #111412;
+}
+
+.lesson-diagram--vertical {
+  width: 100%;
+  max-width: 760px;
+  margin-inline: auto;
+}
+
+.lesson-diagram-caption {
+  margin: 0;
+  color: #b8b4aa;
+  font-size: 0.9375rem;
+  text-align: center;
+}
+
+.lesson-diagram-flow {
+  display: flex;
+  min-width: 0;
+  align-items: stretch;
+  gap: 0;
+}
+
+.lesson-diagram-flow--vertical {
+  flex-direction: column;
+}
+
+.lesson-diagram-node {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  flex: 1 1 0;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 10px;
+  padding: 18px;
+  border: 1px solid #354039;
+  border-radius: 16px;
+  background: #191d1a;
+}
+
+.lesson-diagram-node--terminator {
+  align-items: center;
+  border-radius: 999px;
+  text-align: center;
+}
+
+.lesson-diagram-node--decision {
+  width: min(100%, 220px);
+  flex: 0 1 220px;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  min-height: 130px;
+  margin-inline: auto;
+  padding: 28px;
+  background: #202821;
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+  text-align: center;
+}
+
+.lesson-diagram-node--input-output {
+  background: #1b2420;
+  clip-path: polygon(12% 0, 100% 0, 88% 100%, 0 100%);
+  padding-inline: 28px;
+}
+
+.lesson-diagram-node--database {
+  border-radius: 50% / 14%;
+  background: #1b2420;
+}
+
+.lesson-diagram-node--subprocess::before {
+  position: absolute;
+  inset: 8px 12px;
+  border-inline: 1px solid #68746b;
+  content: "";
+  pointer-events: none;
+}
+
+.lesson-diagram-group,
+.lesson-diagram-lane {
+  display: grid;
+  min-width: 0;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid #354039;
+  border-radius: 12px;
+  background: #141815;
+}
+
+.lesson-diagram-branches {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+  gap: 12px;
+}
+
+.lesson-diagram-branch {
+  display: grid;
+  min-width: 0;
+  align-content: start;
+  gap: 10px;
+  padding: 12px;
+  border: 1px dashed #536157;
+  border-radius: 10px;
+  background: #141815;
+}
+
+.lesson-diagram-branch > h4 {
+  margin: 0;
+  color: #8fe4ad;
+  font-size: 0.8125rem;
+  text-align: center;
+}
+
+.lesson-diagram-group > h3,
+.lesson-diagram-lane > h3 {
+  margin: 0;
+  color: #b8b4aa;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.lesson-diagram-lane {
+  border-inline-start: 3px solid #68746b;
+}
+
+.lesson-diagram-note {
+  display: grid;
+  gap: 6px;
+  padding: 12px 14px;
+  border-inline-start: 3px solid #8fe4ad;
+  border-radius: 6px;
+  background: #191d1a;
+  color: #d5d1c7;
+  font-size: 0.875rem;
+}
+
+.lesson-diagram-note strong {
+  color: #f5f2eb;
+}
+
+.lesson-diagram-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin: 0;
+  padding: 0;
+  color: #b8b4aa;
+  font-size: 0.8125rem;
+  list-style: none;
+}
+
+.lesson-diagram-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.lesson-diagram-node h3,
+.lesson-diagram-node p {
+  margin: 0;
+}
+
+.lesson-diagram-node h3 {
+  color: #f5f2eb;
+  font-size: 1.0625rem;
+  line-height: 1.3;
+}
+
+.lesson-diagram-node p {
+  color: #b8b4aa;
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+.testclient-lifecycle .lesson-diagram-node {
+  padding-inline: 10px;
+}
+
+.testclient-lifecycle .lesson-diagram-node h3 {
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.lesson-diagram-node code {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  padding: 5px 8px;
+  border-radius: 6px;
+  background: #111412;
+  color: #f5f2eb;
+  font-size: 0.8125rem;
+}
+
+.lesson-diagram-connector {
+  position: relative;
+  display: grid;
+  min-width: 76px;
+  flex: 0 1 108px;
+  align-items: center;
+  justify-items: center;
+  color: #b8b4aa;
+  font-size: 0.75rem;
+  line-height: 1.35;
+  text-align: center;
+}
+
+.lesson-diagram-arrow {
+  width: 100%;
+  height: 12px;
+  background: #8fe4ad;
+  clip-path: polygon(0 40%, calc(100% - 10px) 40%, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, calc(100% - 10px) 60%, 0 60%);
+}
+
+.lesson-diagram-arrow--both {
+  clip-path: polygon(0 50%, 10px 0, 10px 40%, calc(100% - 10px) 40%, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, calc(100% - 10px) 60%, 10px 60%, 10px 100%);
+}
+
+.lesson-diagram-arrow--backward {
+  transform: scaleX(-1);
+}
+
+.lesson-diagram-arrow--dashed {
+  background: repeating-linear-gradient(90deg, #8fe4ad 0 8px, transparent 8px 13px);
+}
+
+.lesson-diagram-connector > span:first-child {
+  position: absolute;
+  z-index: 1;
+  top: calc(50% + 10px);
+  left: 2px;
+  right: 2px;
+  padding: 1px 3px;
+  background: #111412;
+}
+
+.lesson-diagram-exchange {
+  display: flex;
+  min-width: 152px;
+  flex: 0 1 196px;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+}
+
+.lesson-diagram-exchange-path {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: #b8b4aa;
+  font-size: 0.75rem;
+  line-height: 1.35;
+  text-align: center;
+}
+
+.lesson-diagram-exchange-arrow {
+  position: relative;
+  width: 100%;
+  height: 12px;
+  background: #8fe4ad;
+  clip-path: polygon(0 40%, calc(100% - 10px) 40%, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, calc(100% - 10px) 60%, 0 60%);
+}
+
+.lesson-diagram-exchange-path--reverse .lesson-diagram-exchange-arrow {
+  background: repeating-linear-gradient(90deg, #8fe4ad 0 7px, transparent 7px 12px);
+  clip-path: inset(40% 0 40%);
+}
+
+.lesson-diagram-exchange-path--reverse .lesson-diagram-exchange-arrow::before {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 10px;
+  height: 12px;
+  background: #8fe4ad;
+  clip-path: polygon(100% 0, 0 50%, 100% 100%);
+  content: "";
+  transform: translateY(-50%);
+}
+
+.lesson-binding-pair {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.lesson-binding-arrow {
+  position: relative;
+  width: 30px;
+  height: 10px;
+  flex: 0 0 30px;
+  background: #8fe4ad;
+  clip-path: polygon(0 40%, calc(100% - 8px) 40%, calc(100% - 8px) 0, 100% 50%, calc(100% - 8px) 100%, calc(100% - 8px) 60%, 0 60%);
+}
+
+.lesson-diagram-results {
+  display: grid;
+  width: 100%;
+  gap: 8px;
+}
+
+.lesson-diagram-results p {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.lesson-diagram-track {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+  color: #b8b4aa;
+  font-size: 0.75rem;
+}
+
+.lesson-diagram-track ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lesson-diagram-track li {
+  position: relative;
+  display: grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  border: 1px solid #68746b;
+  border-radius: 50%;
+  color: #f5f2eb;
+  font-family: Consolas, monospace;
+  font-size: 0.75rem;
+}
+
+.lesson-diagram-track li:not(:last-child)::after {
+  position: absolute;
+  top: 50%;
+  left: 100%;
+  width: 6px;
+  border-top: 2px solid #68746b;
+  content: "";
+  transform: translateY(-50%);
+}
+
+.lesson-diagram-track li.is-active {
+  border-color: #8fe4ad;
+  color: #8fe4ad;
+}
+
+@container lesson-diagram (max-width: 720px) {
+  .lesson-diagram-flow {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .lesson-diagram-node {
+    flex: auto;
+    padding: 16px;
+  }
+
+  .lesson-diagram-connector {
+    display: flex;
+    min-width: 0;
+    min-height: 54px;
+    flex: auto;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 12px;
+    padding-inline: 18px;
+    text-align: left;
+  }
+
+  .lesson-diagram-arrow {
+    align-self: stretch;
+    width: 12px;
+    height: auto;
+    min-height: 50px;
+    flex: 0 0 12px;
+    clip-path: polygon(40% 0, 60% 0, 60% calc(100% - 9px), 100% calc(100% - 9px), 50% 100%, 0 calc(100% - 9px), 40% calc(100% - 9px));
+  }
+
+  .lesson-diagram-arrow--both {
+    clip-path: polygon(50% 0, 100% 9px, 60% 9px, 60% calc(100% - 9px), 100% calc(100% - 9px), 50% 100%, 0 calc(100% - 9px), 40% calc(100% - 9px), 40% 9px, 0 9px);
+  }
+
+  .lesson-diagram-arrow--backward {
+    transform: scaleY(-1);
+  }
+
+  .lesson-diagram-arrow--dashed {
+    background: repeating-linear-gradient(180deg, #8fe4ad 0 8px, transparent 8px 13px);
+  }
+
+  .lesson-diagram-connector > span:first-child {
+    position: static;
+    padding: 0;
+    background: transparent;
+  }
+
+  .lesson-diagram-exchange {
+    min-height: 70px;
+    min-width: 0;
+    flex: auto;
+    flex-direction: row;
+    gap: 12px;
+    padding: 8px 18px;
+  }
+
+  .lesson-diagram-exchange-path {
+    min-width: 0;
+    flex: 1 1 0;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    text-align: left;
+  }
+
+  .lesson-diagram-exchange-arrow {
+    align-self: stretch;
+    width: 12px;
+    height: auto;
+    min-height: 54px;
+    flex: 0 0 12px;
+    clip-path: polygon(40% 0, 60% 0, 60% calc(100% - 9px), 100% calc(100% - 9px), 50% 100%, 0 calc(100% - 9px), 40% calc(100% - 9px));
+  }
+
+  .lesson-diagram-exchange-path--reverse .lesson-diagram-exchange-arrow {
+    background: repeating-linear-gradient(180deg, #8fe4ad 0 7px, transparent 7px 12px);
+    clip-path: inset(0 40% 0 40%);
+    transform: rotate(180deg);
+  }
+
+  .lesson-diagram-exchange-path--reverse .lesson-diagram-exchange-arrow::before {
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    clip-path: polygon(0 0, 100% 0, 50% 100%);
+  }
+}
+
+@media (max-width: 640px) {
+  .lesson-diagram {
+    gap: 12px;
+    padding: 16px;
+  }
+}
+
+.lesson-infographic--lesson58 img {
+  aspect-ratio: auto;
+  object-fit: contain;
+}
+
+.lesson-infographic--lesson59 img {
+  aspect-ratio: auto;
+  object-fit: contain;
+}
+
+.lesson-infographic--lesson57 picture {
+  display: block;
+  width: 100%;
+}
+
+.lesson-infographic--lesson57 img {
+  aspect-ratio: auto;
+  object-fit: contain;
+}
+
 .lesson-infographic--lesson53 img {
   aspect-ratio: auto;
   object-fit: contain;
 }
 
 .lesson-infographic--lesson54 img {
-  aspect-ratio: auto;
-  object-fit: contain;
-}
-
-.lesson-infographic--lesson05 img {
   aspect-ratio: auto;
   object-fit: contain;
 }
@@ -2458,6 +2939,55 @@ pre {
 .lesson-infographic--lesson14 img {
   aspect-ratio: auto;
   object-fit: contain;
+}
+
+.lesson-infographic--lesson19-1 img {
+  aspect-ratio: auto;
+  object-fit: contain;
+}
+
+.lesson-infographic--lesson18-1 img {
+  aspect-ratio: auto;
+  object-fit: contain;
+}
+
+.lesson-infographic--lesson18 img {
+  aspect-ratio: auto;
+  object-fit: contain;
+}
+
+.lesson-infographic--lesson18-2 img {
+  aspect-ratio: auto;
+  object-fit: contain;
+}
+
+.lesson-infographic--lesson18-2 picture {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+}
+
+.lesson-infographic--lesson17 img {
+  aspect-ratio: auto;
+  object-fit: contain;
+}
+
+.lesson-infographic--lesson17 picture {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+}
+
+.lesson-infographic--lesson17-1 img {
+  aspect-ratio: auto;
+  object-fit: contain;
+  max-width: 100%;
+}
+
+.lesson-infographic--lesson17-1 picture {
+  display: block;
+  width: 100%;
+  max-width: 100%;
 }
 
 .lesson-infographic--portrait {
@@ -5998,4 +6528,9 @@ pre {
   .manual-practice-task__actions {
     grid-template-columns: 1fr;
   }
+}
+
+.lesson-infographic--lesson62 img {
+  aspect-ratio: auto;
+  object-fit: contain;
 }

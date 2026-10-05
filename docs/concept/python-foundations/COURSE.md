@@ -23,7 +23,7 @@
 - коллекции, словари, функции, декомпозиция и отладка;
 - меню, операции над задачами, документация, публикация и контрольная точка.
 
-Опора: [план обучения](../../../backend/learning/course_content/foundations/block_00/План%20обучения.md), [каталог курса](../../../backend/learning/course_content/foundations/track.json), [теория блока 1](../../../frontend/src/lessons/python-foundations/block1.tsx), [блока 2](../../../frontend/src/lessons/python-foundations/block2.tsx), [блока 3](../../../frontend/src/lessons/python-foundations/block3.tsx), [блока 4](../../../frontend/src/lessons/python-foundations/block4.tsx) и практика в соответствующих `block_01`–`block_04` каталога `foundations`.
+Опора: [план обучения](../../../backend/learning/course_content/foundations/block_00/План%20обучения.md), [каталог курса](../../../backend/learning/course_content/foundations/track.json), занятия [блока 1](../../../frontend/src/lessons/python-foundations/block_01/), [блока 2](../../../frontend/src/lessons/python-foundations/block_02/), [блока 3](../../../frontend/src/lessons/python-foundations/block_03/) и [блока 4](../../../frontend/src/lessons/python-foundations/block_04/), а также практика в соответствующих `block_01`–`block_04` каталога `foundations`.
 
 В материалах уже есть объяснения и интерактив. Проблема не решается одним увеличением числа абзацев: нужно сделать глубину достаточной для первого знакомства, согласовать теорию с заданиями и снизить размер самостоятельного скачка между шагами.
 

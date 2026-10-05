@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1672" height="836" viewBox="0 0 1672 836" role="img" aria-labelledby="title description">
+  <title id="title">Planner request, domain task, and public response</title>
+  <desc id="description">The client sends a request through FastAPI and TaskCreate to PlannerService. The domain Task is saved in full by JsonStorage and returned through FastAPI and TaskRead as a response to the same client.</desc>
+  <defs>
+    <style>
+      .bg { fill: #111412; }
+      .frame { fill: #141815; stroke: #354039; stroke-width: 2; }
+      .node { fill: #191D1A; stroke: #354039; stroke-width: 2; }
+      .label { fill: #F5F2EB; font: 700 23px Manrope, "Segoe UI", sans-serif; }
+      .detail { fill: #B8B4AA; font: 18px Manrope, "Segoe UI", sans-serif; }
+      .code { fill: #B8B4AA; font: 17px Consolas, "Segoe UI Mono", monospace; }
+      .arrow { fill: none; stroke: #8FE4AD; stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; }
+      .response { stroke-dasharray: 12 12; }
+    </style>
+  </defs>
+  <rect class="bg" width="1672" height="836"/>
+
+  <rect class="node" x="76" y="270" width="235" height="150" rx="24"/>
+  <text class="label" x="193" y="320" text-anchor="middle">HTTP client</text>
+  <text class="detail" x="193" y="358" text-anchor="middle">request + response</text>
+
+  <rect class="frame" x="390" y="190" width="360" height="560" rx="28"/>
+  <text class="label" x="420" y="236">FastAPI</text>
+  <rect class="node" x="430" y="270" width="280" height="132" rx="22"/>
+  <text class="label" x="570" y="316" text-anchor="middle">TaskCreate</text>
+  <text class="detail" x="570" y="352" text-anchor="middle">title · priority</text>
+  <text class="detail" x="570" y="380" text-anchor="middle">request schema</text>
+  <rect class="node" x="430" y="532" width="280" height="164" rx="22"/>
+  <text class="label" x="570" y="578" text-anchor="middle">TaskRead</text>
+  <text class="detail" x="570" y="614" text-anchor="middle">public response schema</text>
+  <text class="code" x="570" y="650" text-anchor="middle">id · title · priority</text>
+  <text class="code" x="570" y="677" text-anchor="middle">is_done</text>
+
+  <rect class="node" x="840" y="270" width="300" height="160" rx="24"/>
+  <text class="label" x="990" y="320" text-anchor="middle">PlannerService</text>
+  <text class="detail" x="990" y="358" text-anchor="middle">existing operation</text>
+  <text class="detail" x="990" y="386" text-anchor="middle">creates the task</text>
+
+  <rect class="node" x="1230" y="270" width="300" height="160" rx="24"/>
+  <text class="label" x="1380" y="320" text-anchor="middle">Task</text>
+  <text class="detail" x="1380" y="358" text-anchor="middle">domain object</text>
+  <text class="code" x="1380" y="388" text-anchor="middle">id · title · tags</text>
+
+  <rect class="node" x="1230" y="570" width="350" height="160" rx="24"/>
+  <text class="label" x="1405" y="620" text-anchor="middle">JsonStorage</text>
+  <text class="detail" x="1405" y="658" text-anchor="middle">saves the full record</text>
+  <text class="code" x="1405" y="688" text-anchor="middle">tags remain in JSON</text>
+
+  <path class="arrow" d="M311 320H414"/><path d="M414 312L430 320L414 328" fill="none" stroke="#8FE4AD" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path class="arrow" d="M710 320H824"/><path d="M824 312L840 320L824 328" fill="none" stroke="#8FE4AD" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path class="arrow" d="M1140 320H1214"/><path d="M1214 312L1230 320L1214 328" fill="none" stroke="#8FE4AD" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <path class="arrow" d="M1380 430V554"/><path d="M1372 554L1380 570L1388 554" fill="none" stroke="#8FE4AD" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <text class="detail" x="1404" y="508">save full Task</text>
+
+  <path class="arrow" d="M1230 365H1180V480H780V614H726"/><path d="M726 606L710 614L726 622" fill="none" stroke="#8FE4AD" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <text class="detail" x="1010" y="463" text-anchor="middle">public view · response_model</text>
+
+  <path class="arrow response" d="M430 614H311V470H193V436"/><path d="M185 436L193 420L201 436" fill="none" stroke="#8FE4AD" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

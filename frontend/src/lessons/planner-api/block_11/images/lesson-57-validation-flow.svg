@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1672" height="620" viewBox="0 0 1672 620" role="img" aria-labelledby="title desc">
+  <title id="title">Validation before the Planner action</title>
+  <desc id="desc">A request body reaches TaskCreate. A before validator normalizes strings before Field checks limits. Valid data reaches the endpoint and the existing PlannerService and JsonStorage. Validation errors stop before the endpoint. A successful request returns 201 to the client.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="16" markerHeight="16" refX="13" refY="8" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M2 2 L13 8 L2 14" fill="none" stroke="#8FE4AD" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+</defs>
+  <rect width="1672" height="836" fill="#111412"/>
+
+
+
+  <g transform="translate(0,-120)">
+  <g fill="#191D1A" stroke="#354039" stroke-width="2">
+    <rect x="72" y="235" width="210" height="142" rx="22"/>
+    <rect x="350" y="235" width="250" height="142" rx="22"/>
+    <rect x="668" y="235" width="240" height="142" rx="22"/>
+    <rect x="976" y="235" width="210" height="142" rx="22"/>
+    <rect x="1254" y="235" width="340" height="142" rx="22"/>
+    <rect x="555" y="500" width="365" height="124" rx="22"/>
+    <rect x="1050" y="500" width="430" height="124" rx="22"/>
+  </g>
+
+  <g fill="#F5F2EB" font-family="Manrope, Segoe UI, sans-serif" text-anchor="middle">
+    <text x="177" y="286" font-size="24" font-weight="700">JSON body</text>
+    <text x="177" y="326" font-size="18" fill="#B8B4AA">title · priority</text>
+    <text x="475" y="286" font-size="24" font-weight="700">TaskCreate</text>
+    <text x="475" y="326" font-size="18" fill="#B8B4AA">before: strip strings</text>
+    <text x="788" y="286" font-size="24" font-weight="700">Field limits</text>
+    <text x="788" y="326" font-size="18" fill="#B8B4AA">title 1–120 · priority 1–5</text>
+    <text x="1081" y="286" font-size="24" font-weight="700">Endpoint</text>
+    <text x="1081" y="326" font-size="18" fill="#B8B4AA">runs after validation</text>
+    <text x="1424" y="286" font-size="24" font-weight="700">Planner core</text>
+    <text x="1424" y="326" font-size="18" fill="#B8B4AA">PlannerService → JsonStorage</text>
+    <text x="737" y="548" font-size="23" font-weight="700">422 · validation error</text>
+    <text x="737" y="584" font-size="18" fill="#B8B4AA">Route skipped</text>
+    <text x="1265" y="548" font-size="23" font-weight="700">Service ValueError</text>
+    <text x="1265" y="584" font-size="18" fill="#B8B4AA">Maps to 422</text>
+  </g>
+
+  <g fill="none" stroke="#8FE4AD" stroke-width="5" stroke-linecap="round" marker-end="url(#arrow)">
+    <path d="M282 306 H346"/>
+    <path d="M600 306 H664"/>
+    <path d="M908 306 H972"/>
+    <path d="M1186 306 H1250"/>
+    <path d="M788 377 V500"/>
+    <path d="M1530 377 V470 H1265 V500"/>
+  </g>
+
+  <path d="M1330 377 V438 H1080 V377" fill="none" stroke="#8FE4AD" stroke-width="5" marker-end="url(#arrow)"/>
+  <text x="1080" y="468" fill="#B8B4AA" font-family="Manrope, Segoe UI, sans-serif" font-size="18" text-anchor="middle">Task returns to route</text>
+
+
+  </g>
+</svg>

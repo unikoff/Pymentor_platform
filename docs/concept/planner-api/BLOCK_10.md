@@ -36,7 +36,7 @@ APIRouter, response_model, TestClient, Depends, SQLAlchemy, авторизаци
 
 ### Что меняется
 
-Текущая опора: [прежний план](../../PLANNER_API_BLOCK_10_PATH.md), [TSX](../../../frontend/src/lessons/planner-api/block10.tsx) и [практика блока](../../../backend/learning/course_content/planner_api/block_10/manual.py). Их старые прототипы ещё предстоит привести к этому маршруту.
+Текущая опора: [прежний план](../../PLANNER_API_BLOCK_10_PATH.md), [TSX](../../../frontend/src/lessons/planner-api/block_10/Lesson51.tsx) и [практика блока](../../../backend/learning/course_content/planner_api/block_10/manual.py). Их старые прототипы ещё предстоит привести к этому маршруту.
 
 - Первое задание первого предметного GET-занятия создаёт JSON через существующий CLI, не словари по таблице.
 - Item использует готовый get_task, не вторую функцию поиска.

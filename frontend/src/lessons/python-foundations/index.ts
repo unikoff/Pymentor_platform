@@ -1,9 +1,39 @@
 import type { ComponentType } from "react";
-import { Lesson01, Lesson02, Lesson03, Lesson03_1, Lesson03_2, Lesson03_3, Lesson04, Lesson05 } from "./block1";
-import { Lesson06, Lesson07, Lesson08, Lesson09, Lesson09_1, Lesson10, Lesson10_1 } from "./block2";
-import { Lesson11, Lesson11_1, Lesson12, Lesson12_1, Lesson13, Lesson13_1, Lesson14, Lesson15 } from "./block3";
-import { Lesson16, Lesson16_1, Lesson17, Lesson17_1, Lesson18, Lesson18_1, Lesson18_2, Lesson19, Lesson19_1, Lesson20 } from "./block4";
-import { LearningRoadmap, MonthTheory } from "./overview";
+import { LearningRoadmap } from "./block_00/LearningRoadmap";
+import { MonthTheory } from "./block_00/MonthTheory";
+import { Lesson01 } from "./block_01/Lesson01";
+import { Lesson02 } from "./block_01/Lesson02";
+import { Lesson03 } from "./block_01/Lesson03";
+import { Lesson03_1 } from "./block_01/Lesson03_1";
+import { Lesson03_2 } from "./block_01/Lesson03_2";
+import { Lesson03_3 } from "./block_01/Lesson03_3";
+import { Lesson04 } from "./block_01/Lesson04";
+import { Lesson05 } from "./block_01/Lesson05";
+import { Lesson06 } from "./block_02/Lesson06";
+import { Lesson07 } from "./block_02/Lesson07";
+import { Lesson08 } from "./block_02/Lesson08";
+import { Lesson09 } from "./block_02/Lesson09";
+import { Lesson09_1 } from "./block_02/Lesson09_1";
+import { Lesson10 } from "./block_02/Lesson10";
+import { Lesson10_1 } from "./block_02/Lesson10_1";
+import { Lesson11 } from "./block_03/Lesson11";
+import { Lesson11_1 } from "./block_03/Lesson11_1";
+import { Lesson12 } from "./block_03/Lesson12";
+import { Lesson12_1 } from "./block_03/Lesson12_1";
+import { Lesson13 } from "./block_03/Lesson13";
+import { Lesson13_1 } from "./block_03/Lesson13_1";
+import { Lesson14 } from "./block_03/Lesson14";
+import { Lesson15 } from "./block_03/Lesson15";
+import { Lesson16 } from "./block_04/Lesson16";
+import { Lesson16_1 } from "./block_04/Lesson16_1";
+import { Lesson17 } from "./block_04/Lesson17";
+import { Lesson17_1 } from "./block_04/Lesson17_1";
+import { Lesson18 } from "./block_04/Lesson18";
+import { Lesson18_1 } from "./block_04/Lesson18_1";
+import { Lesson18_2 } from "./block_04/Lesson18_2";
+import { Lesson19 } from "./block_04/Lesson19";
+import { Lesson19_1 } from "./block_04/Lesson19_1";
+import { Lesson20 } from "./block_04/Lesson20";
 
 /**
  * Дизайн-страницы курса «Основы Python и мышление программиста».

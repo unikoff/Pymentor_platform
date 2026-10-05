@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="1340" viewBox="0 0 720 1340" role="img" aria-labelledby="title desc">
+  <title id="title">List view on a narrow screen</title>
+  <desc id="desc">The run function passes the same task list to show_tasks. An empty list produces one message. A non-empty list visits each task, formats it, and prints one line. The list length, order, and fields stay unchanged.</desc>
+  <rect width="720" height="1340" fill="#111412" />
+
+  <text x="60" y="92" fill="#B8B4AA" font-family="Manrope, Segoe UI, sans-serif" font-size="26" font-weight="700" letter-spacing="1.5">LIST VIEW</text>
+
+  <g fill="#191D1A" stroke="#354039" stroke-width="3">
+    <rect x="60" y="155" width="600" height="130" rx="24" />
+    <rect x="60" y="345" width="600" height="175" rx="24" stroke="#8FE4AD" />
+    <polygon points="360,600 600,690 360,780 120,690" />
+    <rect x="60" y="880" width="270" height="220" rx="24" />
+    <rect x="390" y="880" width="270" height="280" rx="24" />
+    <rect x="60" y="1210" width="600" height="100" rx="20" />
+  </g>
+
+  <g fill="none" stroke="#8FE4AD" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M360 285 V327" />
+    <path d="M360 520 V582" />
+    <path d="M120 690 H60 V840 H195 V862" />
+    <path d="M600 690 H660 V840 H525 V862" />
+    <path d="M525 1032 V1052" />
+  </g>
+  <g fill="#8FE4AD">
+    <path d="M350 327 L360 345 L370 327 Z" />
+    <path d="M350 582 L360 600 L370 582 Z" />
+    <path d="M185 862 L195 880 L205 862 Z" />
+    <path d="M515 862 L525 880 L535 862 Z" />
+    <path d="M515 1052 L525 1070 L535 1052 Z" />
+  </g>
+
+  <g text-anchor="middle" font-family="Manrope, Segoe UI, sans-serif">
+    <text x="92" y="822" fill="#B8B4AA" font-size="17" font-weight="700" letter-spacing="1">YES</text>
+    <text x="628" y="822" fill="#B8B4AA" font-size="17" font-weight="700" letter-spacing="1">NO</text>
+    <text x="360" y="192" fill="#B8B4AA" font-size="20" font-weight="700" letter-spacing="1">CALLER</text>
+    <text x="360" y="237" fill="#F5F2EB" font-family="Consolas, monospace" font-size="30" font-weight="700">run()</text>
+    <text x="360" y="267" fill="#B8B4AA" font-family="Consolas, monospace" font-size="22">list</text>
+
+    <text x="360" y="390" fill="#8FE4AD" font-size="20" font-weight="700" letter-spacing="1">VIEW FUNCTION</text>
+    <text x="360" y="438" fill="#F5F2EB" font-family="Consolas, monospace" font-size="29" font-weight="700">show_tasks(tasks)</text>
+    <text x="360" y="482" fill="#B8B4AA" font-size="21">same list from add</text>
+
+    <text x="360" y="683" fill="#F5F2EB" font-family="Consolas, monospace" font-size="25" font-weight="700">tasks empty?</text>
+
+    <text x="195" y="925" fill="#B8B4AA" font-size="19" font-weight="700" letter-spacing="1">EMPTY LIST</text>
+    <text x="195" y="978" fill="#F5F2EB" font-family="Consolas, monospace" font-size="18">print message</text>
+    <text x="195" y="1024" fill="#B8B4AA" font-family="Consolas, monospace" font-size="18">return to run()</text>
+
+    <text x="525" y="925" fill="#B8B4AA" font-size="19" font-weight="700" letter-spacing="1">NONEMPTY</text>
+    <text x="525" y="970" fill="#F5F2EB" font-family="Consolas, monospace" font-size="18">for task in tasks</text>
+    <text x="525" y="1020" fill="#F5F2EB" font-family="Consolas, monospace" font-size="17">format_task(task)</text>
+    <text x="525" y="1108" fill="#F5F2EB" font-family="Consolas, monospace" font-size="19">print(line)</text>
+    <text x="525" y="1142" fill="#B8B4AA" font-family="Consolas, monospace" font-size="16">return to run()</text>
+
+    <text x="360" y="1253" fill="#8FE4AD" font-size="18" font-weight="700" letter-spacing="1">READ ONLY</text>
+    <text x="360" y="1290" fill="#F5F2EB" font-family="Consolas, monospace" font-size="19">length · order · fields stay the same</text>
+  </g>
+</svg>
