@@ -44,7 +44,7 @@
 
 ### Что было сверено и что меняется
 
-Контекст сверяется с [предыдущим планом](../../PLANNER_API_BLOCK_12_PATH.md), [TSX](../../../frontend/src/lessons/planner-api/block_12/Lesson63.tsx), [manual.py](../../../backend/learning/course_content/planner_api/block_12/manual.py), [code_tasks.py](../../../backend/learning/course_content/planner_api/block_12/code_tasks.py) и новым входом из блока 11.
+Контекст сверяется с [предыдущим планом](../../PLANNER_API_BLOCK_12_PATH.md), [TSX](../../../frontend/src/lessons/planner-api/block_12/Lesson63.tsx), [manual.py](../../../backend/learning/course_content/chapter_03/block_12/manual.py), [code_tasks.py](../../../backend/learning/course_content/chapter_03/block_12/code_tasks.py) и новым входом из блока 11.
 
 - Убираем первую сборку CRUD из начала финала: эти маршруты уже созданы раньше.
 - Меняем порядок первых двух тем. Сначала автоматические проверки и состояние, затем перенос маршрутов под их защитой.

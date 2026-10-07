@@ -1,11 +1,32 @@
 import type { ComponentType } from "react";
-import { Lesson93, Lesson94, Lesson95, Lesson96, Lesson97, Lesson98 } from "./block17";
-import { Lesson99, Lesson100, Lesson101, Lesson102, Lesson103, Lesson104 } from "./block18";
-import { Lesson105, Lesson106, Lesson107, Lesson108, Lesson109, Lesson110 } from "./block19";
-import { Lesson111, Lesson112, Lesson113, Lesson114, Lesson115, Lesson116 } from "./block20";
-import { LearningRoadmap, MonthTheory } from "./overview";
+import { Lesson93 } from "./block_17/Lesson93";
+import { Lesson94 } from "./block_17/Lesson94";
+import { Lesson95 } from "./block_17/Lesson95";
+import { Lesson96 } from "./block_17/Lesson96";
+import { Lesson97 } from "./block_17/Lesson97";
+import { Lesson98 } from "./block_17/Lesson98";
+import { Lesson99 } from "./block_18/Lesson99";
+import { Lesson100 } from "./block_18/Lesson100";
+import { Lesson101 } from "./block_18/Lesson101";
+import { Lesson102 } from "./block_18/Lesson102";
+import { Lesson103 } from "./block_18/Lesson103";
+import { Lesson104 } from "./block_18/Lesson104";
+import { Lesson105 } from "./block_19/Lesson105";
+import { Lesson106 } from "./block_19/Lesson106";
+import { Lesson107 } from "./block_19/Lesson107";
+import { Lesson108 } from "./block_19/Lesson108";
+import { Lesson109 } from "./block_19/Lesson109";
+import { Lesson110 } from "./block_19/Lesson110";
+import { Lesson111 } from "./block_20/Lesson111";
+import { Lesson112 } from "./block_20/Lesson112";
+import { Lesson113 } from "./block_20/Lesson113";
+import { Lesson114 } from "./block_20/Lesson114";
+import { Lesson115 } from "./block_20/Lesson115";
+import { Lesson116 } from "./block_20/Lesson116";
+import { LearningRoadmap } from "./block_00/LearningRoadmap";
+import { MonthTheory } from "./block_00/MonthTheory";
 
-const COURSE_FOLDER = "personal_api";
+const COURSE_FOLDER = "chapter_05";
 const LESSON_BLOCKS = [[93, 98, "block_17"], [99, 104, "block_18"], [105, 110, "block_19"], [111, 116, "block_20"]] as const;
 const source = (file: string) => {
   const filename = file.split("/").pop() ?? file;

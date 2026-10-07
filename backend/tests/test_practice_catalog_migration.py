@@ -15,17 +15,17 @@ from fastapi import FastAPI
 from learning import content, rich_code_tasks, rich_practice
 from learning.code_runner import run_python_task
 from learning.course_content import (
-    async_api,
-    database_api,
-    deeper,
-    deployment,
-    foundations,
-    lms,
-    personal_api,
-    planner_api,
-    postgresql,
+    chapter_07 as async_api,
+    chapter_04 as database_api,
+    chapter_02 as deeper,
+    chapter_08 as deployment,
+    chapter_01 as foundations,
+    chapter_09 as lms,
+    chapter_05 as personal_api,
+    chapter_03 as planner_api,
+    chapter_06 as postgresql,
 )
-from learning.course_content.planner_api import block_09, block_10, block_11, block_12
+from learning.course_content.chapter_03 import block_09, block_10, block_11, block_12
 from learning.practice_helpers import merge_lesson_maps, validate_block
 from routers.learning import routers
 
@@ -33,21 +33,23 @@ from routers.learning import routers
 class PracticeCatalogMigrationTests(unittest.TestCase):
     def test_every_course_uses_block_packages_and_keeps_legacy_exports(self):
         courses = (
-            ("foundations", "FOUNDATIONS", foundations, ((1, 5, "block_01"), (6, 10, "block_02"), (11, 15, "block_03"), (16, 20, "block_04"))),
-            ("deeper", "DEEPER", deeper, ((21, 26, "block_05"), (27, 32, "block_06"), (33, 38, "block_07"), (39, 44, "block_08"))),
-            ("planner_api", "PLANNER_API", planner_api, ((45, 50, "block_09"), (51, 56, "block_10"), (57, 62, "block_11"), (63, 68, "block_12"))),
-            ("database_api", "DATABASE_API", database_api, ((69, 74, "block_13"), (75, 80, "block_14"), (81, 86, "block_15"), (87, 92, "block_16"))),
-            ("personal_api", "PERSONAL_API", personal_api, ((93, 98, "block_17"), (99, 104, "block_18"), (105, 110, "block_19"), (111, 116, "block_20"))),
-            ("postgresql", "POSTGRESQL", postgresql, ((117, 122, "block_21"), (123, 128, "block_22"), (129, 134, "block_23"), (135, 140, "block_24"))),
-            ("async_api", "ASYNC", async_api, ((141, 146, "block_25"), (147, 152, "block_26"), (153, 158, "block_27"), (159, 164, "block_28"))),
-            ("deployment", "DEPLOY", deployment, ((165, 170, "block_29"), (171, 176, "block_30"), (177, 182, "block_31"), (183, 188, "block_32"))),
-            ("lms", "LMS", lms, ((189, 194, "block_33"), (195, 200, "block_34"), (201, 206, "block_35"), (207, 212, "block_36"))),
+            ("chapter_01", "FOUNDATIONS", foundations, ((1, 5, "block_01"), (6, 10, "block_02"), (11, 15, "block_03"), (16, 20, "block_04"))),
+            ("chapter_02", "DEEPER", deeper, ((21, 27, "block_05"), (28, 35, "block_06"), (36, 38, "block_07"), (39, 44, "block_08"))),
+            ("chapter_03", "PLANNER_API", planner_api, ((45, 50, "block_09"), (51, 56, "block_10"), (57, 62, "block_11"), (63, 68, "block_12"))),
+            ("chapter_04", "DATABASE_API", database_api, ((69, 74, "block_13"), (75, 80, "block_14"), (81, 86, "block_15"), (87, 92, "block_16"))),
+            ("chapter_05", "PERSONAL_API", personal_api, ((93, 98, "block_17"), (99, 104, "block_18"), (105, 110, "block_19"), (111, 116, "block_20"))),
+            ("chapter_06", "POSTGRESQL", postgresql, ((117, 122, "block_21"), (123, 128, "block_22"), (129, 134, "block_23"), (135, 140, "block_24"))),
+            ("chapter_07", "ASYNC", async_api, ((141, 146, "block_25"), (147, 152, "block_26"), (153, 158, "block_27"), (159, 164, "block_28"))),
+            ("chapter_08", "DEPLOY", deployment, ((165, 170, "block_29"), (171, 176, "block_30"), (177, 182, "block_31"), (183, 188, "block_32"))),
+            ("chapter_09", "LMS", lms, ((189, 194, "block_33"), (195, 200, "block_34"), (201, 206, "block_35"), (207, 212, "block_36"))),
         )
         for slug, prefix, package, ranges in courses:
             with self.subTest(course=slug):
                 course_dir = content.COURSE_ROOT / slug
                 self.assertTrue(course_dir.is_dir())
-                self.assertEqual(package.TRACK_ID, content._load_track_meta(course_dir)["id"])
+                metadata = content._load_track_meta(course_dir)
+                self.assertEqual(package.TRACK_ID, metadata["id"])
+                self.assertTrue(metadata["title"].startswith(f"Глава {int(slug[-2:])}: "))
                 self.assertIn(package.TRACK_ID, package.TRACK_ALIASES)
                 self.assertIs(getattr(rich_practice, f"{prefix}_OVERVIEW_PRACTICE"), package.OVERVIEW_PRACTICE)
                 self.assertIs(getattr(rich_practice, f"{prefix}_PRACTICE"), package.MANUAL_PRACTICE)
@@ -110,8 +112,8 @@ class PracticeCatalogMigrationTests(unittest.TestCase):
                 self.assertEqual(expected_access, lesson["access"], (track["id"], lesson["source_file"]))
 
     def test_course_and_blocks_use_normal_python_package_names(self):
-        self.assertEqual("learning.course_content.planner_api", planner_api.__name__)
-        root = content.COURSE_ROOT / "planner_api"
+        self.assertEqual("learning.course_content.chapter_03", planner_api.__name__)
+        root = content.COURSE_ROOT / "chapter_03"
         self.assertFalse((content.COURSE_ROOT / "practice").exists())
         for directory in root.iterdir():
             if directory.is_dir():
@@ -212,7 +214,7 @@ class PracticeCatalogMigrationTests(unittest.TestCase):
                     self.assertTrue((path.parent / target).resolve().is_file())
 
     def test_editor_still_has_priority_over_manual_practice(self):
-        track_dir = content.COURSE_ROOT / "planner_api"
+        track_dir = content.COURSE_ROOT / "chapter_03"
         path = next(track_dir.rglob("45 - *.md"))
         task = {"title": "Example", "prompt": "Example", "tests": []}
         with patch.object(content, "get_code_tasks", return_value=[task]), \

@@ -167,30 +167,17 @@ class CodeRunnerRegressionTests(unittest.TestCase):
             result["error"],
         )
 
-    def test_callback_task_accepts_equivalent_if_selection(self) -> None:
-        task = rich_code_tasks.DEEPER_CODE_TASKS[26][0]
-        code = """def solve(values, mode, offset):
-    def double(value):
-        return value * 2
+    def test_callback_task_accepts_independent_closures(self) -> None:
+        task = rich_code_tasks.DEEPER_CODE_TASKS["26.1"][0]
+        code = """def solve(first_message, second_message):
+    def make_labeler(prefix):
+        def label(message):
+            return f"{prefix}: {message}"
+        return label
 
-    def square(value):
-        return value * value
-
-    def make_transformer(operation, offset):
-        def transform(value):
-            return operation(value) + offset
-        return transform
-
-    if mode == 'double':
-        callback = double
-    else:
-        callback = square
-
-    transformer = make_transformer(callback, offset)
-    result = []
-    for value in values:
-        result.append(transformer(value))
-    return result
+    notice = make_labeler("Важно")
+    question = make_labeler("Вопрос")
+    return [notice(first_message), question(second_message), notice(second_message)]
 """
 
         result = run_python_task(code, task)

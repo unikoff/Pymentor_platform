@@ -68,7 +68,7 @@ BLOCK_1.md существует и содержит необходимые пр�
 
 ### Текущее подключение материалов
 
-Второй блок состоит из семи Markdown-файлов в [папке блока](../../../backend/learning/course_content/foundations/block_02/). Теория вынесена в [отдельные TSX-занятия блока](../../../frontend/src/lessons/python-foundations/block_02/), а привязки `source_file` перечислены в [карте курса](../../../frontend/src/lessons/python-foundations/index.ts). Практика берётся из [manual.py](../../../backend/learning/course_content/foundations/block_02/manual.py) и [code_tasks.py](../../../backend/learning/course_content/foundations/block_02/code_tasks.py); выдачу собирает [_build_lesson](../../../backend/learning/content.py).
+Второй блок состоит из семи Markdown-файлов в [папке блока](../../../backend/learning/course_content/chapter_01/block_02/). Теория вынесена в [отдельные TSX-занятия блока](../../../frontend/src/lessons/python-foundations/block_02/), а привязки `source_file` перечислены в [карте курса](../../../frontend/src/lessons/python-foundations/index.ts). Практика берётся из [manual.py](../../../backend/learning/course_content/chapter_01/block_02/manual.py) и [code_tasks.py](../../../backend/learning/course_content/chapter_01/block_02/code_tasks.py); выдачу собирает [_build_lesson](../../../backend/learning/content.py).
 
 Номера сортируются как части числа, поэтому порядок дробных уроков сохраняется: 6, 7, 8, 9, 9.1, 10, 10.1, затем 11. Загрузчик включает ручную и редакторскую практику вместе для уроков 6, 7, 9 и 9.1. Для остальных уроков подключён один формат.
 
@@ -416,7 +416,7 @@ BLOCK_1.md существует и содержит необходимые пр�
 
 1. **Идентичность урока.** `_stable_lesson_id` строится по пути исходного материала; `_lesson_identity_source` сохраняет заданные старые источники там, где материал переносился. При переименовании файла нужно отдельно проверить совместимость прежнего пути, идентификатора урока и ссылок прогресса.
 2. **Карта теории.** Frontend использует `source_file` из карты [index.ts](../../../frontend/src/lessons/python-foundations/index.ts), чтобы связать семь Markdown-материалов с `Lesson06`, `Lesson07`, `Lesson08`, `Lesson09`, `Lesson09_1`, `Lesson10` и `Lesson10_1`.
-3. **Каталоги практики.** [manual.py](../../../backend/learning/course_content/foundations/block_02/manual.py) хранит ручные задания с целыми и строковыми ключами, включая `9.1` и `10.1`. [code_tasks.py](../../../backend/learning/course_content/foundations/block_02/code_tasks.py) подключает редакторские задания по ключам `6`, `7`, `9`, `9.1` и `10`.
+3. **Каталоги практики.** [manual.py](../../../backend/learning/course_content/chapter_01/block_02/manual.py) хранит ручные задания с целыми и строковыми ключами, включая `9.1` и `10.1`. [code_tasks.py](../../../backend/learning/course_content/chapter_01/block_02/code_tasks.py) подключает редакторские задания по ключам `6`, `7`, `9`, `9.1` и `10`.
 4. **Совместная выдача.** В `_build_lesson` уроки 6, 7, 9 и 9.1 явно включены в смешанный режим: платформа показывает задания редактора, затем ручную проектную практику. Для остальных уроков блока сохраняется один формат; в частности, 10.1 проверяет реальный ввод в проекте через локальный `manual.py`.
 5. **Проверка маршрута.** При изменении карты сверяем порядок 6 → 7 → 8 → 9 → 9.1 → 10 → 10.1 → 11 и наличие обоих форматов у смешанных уроков. Проверка через загрузчик не подтверждает браузерный вид или сохранность записанного прогресса; эти свойства проверяются отдельно, когда меняются карта курса или идентификаторы.
 

@@ -1,0 +1,6 @@
+{
+  "title": "Глава 7: Асинхронный Python",
+  "tagline": "asyncio, конкурентный I/O, async FastAPI и Async SQLAlchemy",
+  "order": 7,
+  "id": "Асинхронность и производительность backend - Async StudyHub"
+}

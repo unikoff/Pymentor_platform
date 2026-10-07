@@ -4,7 +4,7 @@
 
     course_content/
       README.md                <- инструкция для автора курса (не отдаётся студентам)
-      foundations/             <- Python-safe имя курса; публичный ID — в track.json
+      chapter_01/  <- Python-safe имя курса; публичный ID — в track.json
         track.json
         block_00/              <- обзор и карта обучения
           План обучения.md
@@ -120,24 +120,42 @@ PYTHON_DEEPER_MODULE_LABELS = {
     "22 - Функция как контракт, вход, правило, результат.md": "Блок 5. Функции как строительный материал",
     "23 - Позиционные, именованные аргументы и значения по умолчанию.md": "Блок 5. Функции как строительный материал",
     "24 - Область видимости и изменяемые объекты.md": "Блок 5. Функции как строительный материал",
+    "24.1 - Состояние запуска и изменяемый default.md": "Блок 5. Функции как строительный материал",
     "25 - args, kwargs и распаковка.md": "Блок 5. Функции как строительный материал",
     "26 - Функция как значение, callbacks и замыкания.md": "Блок 5. Функции как строительный материал",
-    "27 - Декораторы, от обычной обёртки к синтаксису at.md": "Блок 6. Декораторы, исключения и импорты",
-    "28 - Как возникает исключение и как читать traceback.md": "Блок 6. Декораторы, исключения и импорты",
-    "29 - try и конкретные except.md": "Блок 6. Декораторы, исключения и импорты",
-    "30 - else, finally, raise и собственные исключения.md": "Блок 6. Декораторы, исключения и импорты",
-    "31 - Модули, импорты и точка входа.md": "Блок 6. Декораторы, исключения и импорты",
-    "32 - Пакеты, init.py и направление импортов.md": "Блок 6. Декораторы, исключения и импорты",
-    "33 - Ответственность файлов небольшого проекта.md": "Блок 7. Архитектура, файлы, JSON и начало ООП",
-    "34 - Файлы, pathlib, with и кодировка.md": "Блок 7. Архитектура, файлы, JSON и начало ООП",
-    "35 - JSON, сериализация и десериализация.md": "Блок 7. Архитектура, файлы, JSON и начало ООП",
+    "26.1 - Вложенная функция и замыкание.md": "Блок 5. Функции как строительный материал",
+    "27 - Диагностическая обёртка существующей функции.md": "Блок 5. Функции как строительный материал",
+    "27.1 - Синтаксис @ и границы применения.md": "Блок 5. Функции как строительный материал",
+    "28 - Как возникает исключение и как читать traceback.md": "Блок 6. Ошибки, модули и рабочее JSON-хранение",
+    "29 - try и конкретные except.md": "Блок 6. Ошибки, модули и рабочее JSON-хранение",
+    "30 - else, finally, raise и собственные исключения.md": "Блок 6. Ошибки, модули и рабочее JSON-хранение",
+    "30.1 - Собственная ошибка и обязательное получение задачи.md": "Блок 6. Ошибки, модули и рабочее JSON-хранение",
+    "31 - Модули, импорты и точка входа.md": "Блок 6. Ошибки, модули и рабочее JSON-хранение",
+    "32 - Пакеты, init.py и направление импортов.md": "Блок 6. Ошибки, модули и рабочее JSON-хранение",
+    "33 - Отделить CLI от сборки.md": "Блок 6. Ошибки, модули и рабочее JSON-хранение",
+    "34 - Файл как ресурс, путь, режим, with и UTF-8.md": "Блок 6. Ошибки, модули и рабочее JSON-хранение",
+    "35 - Подключить загрузку и сохранение после изменения.md": "Блок 6. Ошибки, модули и рабочее JSON-хранение",
+    "35.1 - Проверить форму восстановленного состояния.md": "Блок 6. Ошибки, модули и рабочее JSON-хранение",
+    "35.2 - Ошибки хранения и сохранность данных.md": "Блок 6. Ошибки, модули и рабочее JSON-хранение",
     "36 - Класс, объект, init и self.md": "Блок 7. Архитектура, файлы, JSON и начало ООП",
+    "36.1 - Обычная Task в настоящем пакете.md": "Блок 7. Архитектура, файлы, JSON и начало ООП",
+    "36.2 - Экземпляр, атрибут класса и общие ссылки.md": "Блок 7. Архитектура, файлы, JSON и начало ООП",
     "37 - Атрибуты, методы и str.md": "Блок 7. Архитектура, файлы, JSON и начало ООП",
+    "37.1 - Представление, инкапсуляция и вычисляемое property.md": "Блок 7. Архитектура, файлы, JSON и начало ООП",
+    "37.2 - Task на границе словаря.md": "Блок 7. Архитектура, файлы, JSON и начало ООП",
     "38 - Инкапсуляция, геттеры, сеттеры и property.md": "Блок 7. Архитектура, файлы, JSON и начало ООП",
-    "39 - dataclass, композиция и границы наследования.md": "Блок 8. Проектирование, SOLID, тесты и финальный проект",
-    "40 - SOLID на примере StudyHub.md": "Блок 8. Проектирование, SOLID, тесты и финальный проект",
+    "38.1 - Независимые tags и совместимость записи.md": "Блок 7. Архитектура, файлы, JSON и начало ООП",
+    "38.2 - Выбор формы и базовая композиция.md": "Блок 7. Архитектура, файлы, JSON и начало ООП",
+    "39 - Включить Task в существующий Planner.md": "Блок 8. Проектирование, SOLID, тесты и финальный проект",
+    "39.1 - JsonStorage вокруг готового хранения.md": "Блок 8. Проектирование, SOLID, тесты и финальный проект",
+    "40 - MemoryStorage и один договор.md": "Блок 8. Проектирование, SOLID, тесты и финальный проект",
+    "40.1 - PlannerService и перенос чтения.md": "Блок 8. Проектирование, SOLID, тесты и финальный проект",
+    "40.2 - Единое изменение и тонкий CLI.md": "Блок 8. Проектирование, SOLID, тесты и финальный проект",
     "41 - Первые тесты через pytest.md": "Блок 8. Проектирование, SOLID, тесты и финальный проект",
+    "41.1 - Свежая fixture и параметризация.md": "Блок 8. Проектирование, SOLID, тесты и финальный проект",
+    "41.2 - Файловая интеграция через tmp_path.md": "Блок 8. Проектирование, SOLID, тесты и финальный проект",
     "42 - Финальный проект 1, архитектура Persistent Planner.md": "Блок 8. Проектирование, SOLID, тесты и финальный проект",
+    "42.1 - Регрессия команд, сохранений и безопасной сборки.md": "Блок 8. Проектирование, SOLID, тесты и финальный проект",
     "43 - Финальный проект 2, модель, сервисы и хранение.md": "Блок 8. Проектирование, SOLID, тесты и финальный проект",
     "44 - Финальный проект 3, тесты, README, GitHub Release и защита.md": "Блок 8. Проектирование, SOLID, тесты и финальный проект",
 }
@@ -180,30 +198,30 @@ RICH_TRACK_MODULE_LABELS = {
 # New package/block names are Python-safe. This table preserves the old source
 # paths and module labels used by saved progress, lesson pages, and the UI.
 LEGACY_COURSE_LAYOUTS = {
-    "foundations": {"track_id": NEW_PYTHON_TRACK_NAME, "source_dirs": {"block_00": None, "block_01": None, "block_02": None, "block_03": None, "block_04": None}},
-    "deeper": {"track_id": PYTHON_DEEPER_TRACK_NAME, "source_dirs": {"block_00": None, "block_05": None, "block_06": None, "block_07": None, "block_08": None}},
-    "planner_api": {"track_id": PLANNER_API_TRACK_NAME, "source_dirs": {"block_00": None, "block_09": None, "block_10": None, "block_11": None, "block_12": None}},
-    "database_api": {
+    "chapter_01": {"track_id": NEW_PYTHON_TRACK_NAME, "source_dirs": {"block_00": None, "block_01": None, "block_02": None, "block_03": None, "block_04": None}},
+    "chapter_02": {"track_id": PYTHON_DEEPER_TRACK_NAME, "source_dirs": {"block_00": None, "block_05": None, "block_06": None, "block_07": None, "block_08": None}},
+    "chapter_03": {"track_id": PLANNER_API_TRACK_NAME, "source_dirs": {"block_00": None, "block_09": None, "block_10": None, "block_11": None, "block_12": None}},
+    "chapter_04": {
         "track_id": "FastAPI, SQLite и SQLAlchemy - StudyHub Database API",
         "source_dirs": {"block_00": "00 Обзор", "block_13": "Блок 13 - FastAPI как цельное приложение (6 занятий)", "block_14": "Блок 14 - SQLite и основы SQLAlchemy (6 занятий)", "block_15": "Блок 15 - CRUD и запросы SQLAlchemy (6 занятий)", "block_16": "Блок 16 - Связи, Alembic и Database API (6 занятий)"},
     },
-    "personal_api": {
+    "chapter_05": {
         "track_id": "Аутентификация, сессии, токены и завершение FastAPI - Personal StudyHub API",
         "source_dirs": {"block_00": "00 Обзор", "block_17": "Блок 17 - Пользователь и основы безопасности (6 занятий)", "block_18": "Блок 18 - Cookie и server-side sessions (6 занятий)", "block_19": "Блок 19 - Bearer, JWT, refresh и права (6 занятий)", "block_20": "Блок 20 - Остальные возможности и Personal StudyHub (6 занятий)"},
     },
-    "postgresql": {
+    "chapter_06": {
         "track_id": "SQL, PostgreSQL и выбор хранилища - PostgreSQL StudyHub",
         "source_dirs": {"block_00": "00 Обзор", "block_21": "Блок 21 - SQL как язык работы с данными (6 занятий)", "block_22": "Блок 22 - PostgreSQL и перенос StudyHub (6 занятий)", "block_23": "Блок 23 - JOIN, агрегаты и транзакции (6 занятий)", "block_24": "Блок 24 - Индексы, планы запросов и модели хранения (6 занятий)"},
     },
-    "async_api": {
+    "chapter_07": {
         "track_id": "Асинхронность и производительность backend - Async StudyHub",
         "source_dirs": {"block_00": "00 Обзор", "block_25": "Блок 25 - Coroutine, event loop и async,await (6 занятий)", "block_26": "Блок 26 - Конкурентные задачи, timeout и cancellation (6 занятий)", "block_27": "Блок 27 - Асинхронный FastAPI и внешние HTTP-сервисы (6 занятий)", "block_28": "Блок 28 - Async SQLAlchemy, нагрузка и наблюдаемость (6 занятий)"},
     },
-    "deployment": {
+    "chapter_08": {
         "track_id": "Docker, CI-CD и первый стабильный деплой - Deployable StudyHub",
         "source_dirs": {"block_00": "00 Обзор", "block_29": "Блок 29 - Linux, процессы, окружения и логи (6 занятий)", "block_30": "Блок 30 - Dockerfile и контейнер приложения (6 занятий)", "block_31": "Блок 31 - Docker Compose, API, PostgreSQL и Redis (6 занятий)", "block_32": "Блок 32 - GitHub Actions, CI,CD и первый деплой (6 занятий)"},
     },
-    "lms": {
+    "chapter_09": {
         "track_id": "StudyHub LMS, Redis, портфолио и собеседования - StudyHub LMS Release",
         "source_dirs": {"block_00": "00 Обзор", "block_33": "Блок 33 - Проектирование StudyHub LMS Core (6 занятий)", "block_34": "Блок 34 - Курсы, зачисление и прогресс (6 занятий)", "block_35": "Блок 35 - Redis, кеш и фоновые операции (6 занятий)", "block_36": "Блок 36 - Финальное качество, портфолио и интервью (6 занятий)"},
     },
@@ -704,7 +722,7 @@ PLANNER_API_BLOCK_FOLDERS = {
 # Явные алиасы Planner API. Для других перенесённых курсов прежний путь
 # восстанавливается из LEGACY_COURSE_LAYOUTS. source_file остаётся физическим.
 LESSON_SOURCE_ALIASES = {
-    f"planner_api/{PLANNER_API_BLOCK_FOLDERS[module]}/{filename}":
+    f"chapter_03/{PLANNER_API_BLOCK_FOLDERS[module]}/{filename}":
     f"{PLANNER_API_TRACK_NAME}/{filename}"
     for filename, module in PLANNER_API_MODULE_LABELS.items()
 }
@@ -759,22 +777,23 @@ def _build_lesson(
     title = "Карта обучения" if path.name == "План обучения.md" else _extract_title(path, text)
     access = _lesson_access(path, track_dir, track_id)
     number_parts = _lesson_number_parts(path.name)
-    if track_id == NEW_PYTHON_TRACK_NAME and number_parts and not re.match(r"^\d+(?:\.\d+)*\.", title):
+    if track_id in {NEW_PYTHON_TRACK_NAME, PYTHON_DEEPER_TRACK_NAME} and number_parts and not re.match(r"^\d+(?:\.\d+)*\.", title):
         display_number = ".".join(str(part) for part in number_parts)
         title = f"{display_number}. {title}"
     tasks = _tasks_for_lesson(identity_source, text, lesson_id, legacy_lesson_id, track_id, path.name)
     for task in tasks:
         task["revision"] = build_task_revision(task)
     mixed_practice_lessons = {
-        "foundations/block_01/04 - Переменные и базовые типы.md",
-        "foundations/block_01/05 - Числа, операции и преобразование типов.md",
-        "foundations/block_02/06 - Строки и форматирование.md",
-        "foundations/block_02/07 - Boolean, сравнения и логика.md",
-        "foundations/block_02/09 - Цикл for и последовательности.md",
-        "foundations/block_02/09.1 - Накопление, счётчик и итог после цикла.md",
-        "foundations/block_03/11 - Списки, кортежи и множества.md",
-        "foundations/block_03/13 - Функции, параметры и return.md",
-        "foundations/block_03/15 - Ошибки, traceback и отладка.md",
+        "chapter_01/block_01/04 - Переменные и базовые типы.md",
+        "chapter_01/block_01/05 - Числа, операции и преобразование типов.md",
+        "chapter_01/block_02/06 - Строки и форматирование.md",
+        "chapter_01/block_02/07 - Boolean, сравнения и логика.md",
+        "chapter_01/block_02/09 - Цикл for и последовательности.md",
+        "chapter_01/block_02/09.1 - Накопление, счётчик и итог после цикла.md",
+        "chapter_01/block_03/11 - Списки, кортежи и множества.md",
+        "chapter_01/block_03/13 - Функции, параметры и return.md",
+        "chapter_01/block_03/15 - Ошибки, traceback и отладка.md",
+        "chapter_02/block_05/25 - args, kwargs и распаковка.md",
     }
     manual_practice = (
         get_manual_practice(track_id, path.name)

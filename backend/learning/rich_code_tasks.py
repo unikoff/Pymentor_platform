@@ -5,15 +5,15 @@ from __future__ import annotations
 import re
 from typing import Any
 
-from learning.course_content import planner_api as _planner_api
-from learning.course_content import foundations as _foundations
-from learning.course_content import deeper as _deeper
-from learning.course_content import database_api as _database_api
-from learning.course_content import personal_api as _personal_api
-from learning.course_content import postgresql as _postgresql
-from learning.course_content import async_api as _async_api
-from learning.course_content import deployment as _deployment
-from learning.course_content import lms as _lms
+from learning.course_content import chapter_03 as _planner_api
+from learning.course_content import chapter_01 as _foundations
+from learning.course_content import chapter_02 as _deeper
+from learning.course_content import chapter_04 as _database_api
+from learning.course_content import chapter_05 as _personal_api
+from learning.course_content import chapter_06 as _postgresql
+from learning.course_content import chapter_07 as _async_api
+from learning.course_content import chapter_08 as _deployment
+from learning.course_content import chapter_09 as _lms
 from learning.practice_helpers import _contract, _dynamic_script, _script, _solve, lesson_catalog_key
 
 
