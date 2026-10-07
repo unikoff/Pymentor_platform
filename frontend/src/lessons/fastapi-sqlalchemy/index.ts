@@ -1,11 +1,32 @@
 import type { ComponentType } from "react";
-import { Lesson69, Lesson70, Lesson71, Lesson72, Lesson73, Lesson74 } from "./block13";
-import { Lesson75, Lesson76, Lesson77, Lesson78, Lesson79, Lesson80 } from "./block14";
-import { Lesson81, Lesson82, Lesson83, Lesson84, Lesson85, Lesson86 } from "./block15";
-import { Lesson87, Lesson88, Lesson89, Lesson90, Lesson91, Lesson92 } from "./block16";
-import { LearningRoadmap, MonthTheory } from "./overview";
+import { Lesson69 } from "./block_13/Lesson69";
+import { Lesson70 } from "./block_13/Lesson70";
+import { Lesson71 } from "./block_13/Lesson71";
+import { Lesson72 } from "./block_13/Lesson72";
+import { Lesson73 } from "./block_13/Lesson73";
+import { Lesson74 } from "./block_13/Lesson74";
+import { Lesson75 } from "./block_14/Lesson75";
+import { Lesson76 } from "./block_14/Lesson76";
+import { Lesson77 } from "./block_14/Lesson77";
+import { Lesson78 } from "./block_14/Lesson78";
+import { Lesson79 } from "./block_14/Lesson79";
+import { Lesson80 } from "./block_14/Lesson80";
+import { Lesson81 } from "./block_15/Lesson81";
+import { Lesson82 } from "./block_15/Lesson82";
+import { Lesson83 } from "./block_15/Lesson83";
+import { Lesson84 } from "./block_15/Lesson84";
+import { Lesson85 } from "./block_15/Lesson85";
+import { Lesson86 } from "./block_15/Lesson86";
+import { Lesson87 } from "./block_16/Lesson87";
+import { Lesson88 } from "./block_16/Lesson88";
+import { Lesson89 } from "./block_16/Lesson89";
+import { Lesson90 } from "./block_16/Lesson90";
+import { Lesson91 } from "./block_16/Lesson91";
+import { Lesson92 } from "./block_16/Lesson92";
+import { LearningRoadmap } from "./block_00/LearningRoadmap";
+import { MonthTheory } from "./block_00/MonthTheory";
 
-const COURSE_FOLDER = "database_api";
+const COURSE_FOLDER = "chapter_04";
 const LESSON_BLOCKS = [[69, 74, "block_13"], [75, 80, "block_14"], [81, 86, "block_15"], [87, 92, "block_16"]] as const;
 const source = (file: string) => {
   const filename = file.split("/").pop() ?? file;

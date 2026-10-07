@@ -54,8 +54,8 @@ planner_api/
 Прямой импорт для проверки:
 
 ```python
-from learning.course_content.planner_api import MANUAL_PRACTICE, CODE_TASKS
-from learning.course_content.planner_api.block_09 import MANUAL_PRACTICE as block_09_manual
+from learning.course_content.chapter_03 import MANUAL_PRACTICE, CODE_TASKS
+from learning.course_content.chapter_03.block_09 import MANUAL_PRACTICE as block_09_manual
 ```
 
 Старые `learning.rich_practice.get_manual_practice` и `learning.rich_code_tasks.get_code_tasks` работают как прежде и перенаправляют все курсы в новые каталоги. Сами карточки в этих двух файлах больше не редактируются.
@@ -64,7 +64,7 @@ from learning.course_content.planner_api.block_09 import MANUAL_PRACTICE as bloc
 
 Markdown и практика каждого курса распределены по `block_00` и его учебным блокам. `track.json`, `__init__.py` курса и служебный `README.md` находятся в корне пакета.
 
-Названия папок используют `snake_case`, без пробелов и дефисов. Пакеты подключаются обычными импортами. Русские названия курса и блоков остаются в интерфейсе. `track.json.id` сохраняет прежний ID курса; не меняй его при редактировании содержания.
+Названия папок используют `chapter_{номер}`, без пробелов и дефисов. Пакеты подключаются обычными импортами. Русские названия курса и блоков остаются в track.json и интерфейсе. `track.json.id` сохраняет прежний ID курса; не меняй его при редактировании содержания.
 
 `source_file` содержит новый физический путь. Загрузчик восстанавливает прежний путь урока и сохраняет ID, прогресс и task ID. Реестры в `frontend/src/lessons/*/index.ts` преобразуют старые ключи компонентов в новые пути. Не переименовывай Markdown и не перемещай его при обычном редактировании текста.
 

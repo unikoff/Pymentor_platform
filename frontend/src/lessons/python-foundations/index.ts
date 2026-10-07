@@ -37,15 +37,20 @@ import { Lesson20 } from "./block_04/Lesson20";
 
 /**
  * Дизайн-страницы курса «Основы Python и мышление программиста».
- * Ключ — source_file урока из бэкенда (папка трека + имя .md).
+ * Ключ — source_file урока из бэкенда (папка трека, блок и имя .md).
  * Всё, что относится к курсу, лежит в этой папке.
  */
 
-const COURSE = "foundations";
+const COURSE = "chapter_01";
 const source = (file: string) => {
-  const filename = file.split("/").pop() ?? file;
+  const parts = file.split("/");
+  const filename = parts[parts.length - 1] ?? file;
   const lessonNumber = Number(filename.match(/^\d+/)?.[0] ?? 0);
-  const block = lessonNumber === 0 ? "block_00" : `block_${String(Math.ceil(lessonNumber / 5)).padStart(2, "0")}`;
+  const block = parts.length > 1
+    ? parts[parts.length - 2]
+    : lessonNumber === 0
+      ? "block_00"
+      : `block_${String(Math.ceil(lessonNumber / 5)).padStart(2, "0")}`;
   return `${COURSE}/${block}/${filename}`;
 };
 

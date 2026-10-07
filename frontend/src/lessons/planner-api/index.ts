@@ -26,7 +26,7 @@ import { Lesson66 } from "./block_12/Lesson66";
 import { Lesson67 } from "./block_12/Lesson67";
 import { Lesson68 } from "./block_12/Lesson68";
 
-const COURSE_FOLDER = "planner_api";
+const COURSE_FOLDER = "chapter_03";
 const BLOCK_FOLDERS = [
   { first: 45, last: 50, folder: "block_09" },
   { first: 51, last: 56, folder: "block_10" },

@@ -7,526 +7,443 @@ import {
   Callout,
   CodeBlock,
   CodeSequence,
-  CompareSolutions,
-  FillBlank,
+  Diagram,
+  DiagramArrow,
+  DiagramFlow,
+  DiagramNode,
   KeyTakeaways,
   Lead,
+  LinkedNotes,
   MatchPairs,
-  MethodGrid,
-  PracticeCta,
   PredictOutput,
   QuizCard,
-  RecallCard,
   RichHero,
   RichLesson,
   Section,
   StepThrough,
-  TrueFalse,
-  TypeCard,
-  TypeCards,
-  TheoryBridge,
 } from "../../shared";
 
-// 26. Функция как значение: callbacks и замыкания
+// 26. Функция как значение и таблица команд
 export function Lesson26({ module }: { module?: string }) {
   return (
     <RichLesson>
       <RichHero
         chip={module ?? "Блок 5 · Функции и поток данных"}
-        title="Функция как значение: callbacks и замыкания"
-        intro="Посмотрим на функцию не только как на команду со скобками, но и как на обычное значение: её можно сохранить, передать другой функции и вернуть как результат. На этой основе соберём callbacks и первые замыкания для StudyHub."
+        title="Функция как значение и таблица команд"
+        intro="Свяжем названия рабочих команд с готовыми обработчиками и передадим выбранной функции общий список задач. Сначала разберём, как функция становится значением таблицы и почему вызов происходит позже."
         tags={[
-          { icon: <FunctionSquare size={14} />, label: "функции как объекты" },
-          { icon: <GitFork size={14} />, label: "callbacks и замыкания" },
+          { icon: <FunctionSquare size={14} />, label: "функция как значение" },
+          { icon: <GitFork size={14} />, label: "таблица обработчиков" },
         ]}
       />
-      <TheoryBridge link={"Функцию можно хранить и передавать как значение: callback получает ясный момент вызова, а замыкание помнит настройку."} boundary={"Замыкание не требует магии или декораторов: важно увидеть, какую внешнюю переменную хранит возвращённая функция."} />
 
-      <Section number="01" title="От вызова функции к передаче поведения">
+      <Section number="00" title="Вступление">
         <Lead>
-          Раньше функция была для нас именованной командой: записали имя, добавили скобки и получили результат.
-          Теперь сделаем следующий шаг. В Python само имя функции тоже является значением, поэтому функцию можно
-          передать в другую часть программы как готовое правило поведения.
+          В предыдущем шаге мы исследовали, как функция собирает аргументы и передаёт их дальше, сохраняя форму вызова.
+          Теперь перенесём знакомые обработчики Planner из условий в таблицу: <code>run</code> будет выбирать функцию
+          по команде, а затем вызывать её с общим списком задач.
         </Lead>
 
-        <div className="lesson-route">
-          <ol>
-            <li>
-              <strong>Различить функцию и вызов:</strong> понять разницу между <code className="lesson-token">normalize_title</code> и <code className="lesson-token">normalize_title(...)</code>.
-            </li>
-            <li>
-              <strong>Передать функцию:</strong> принять её через параметр и вызвать внутри другой функции.
-            </li>
-            <li>
-              <strong>Создать callback:</strong> заменить жёстко записанное действие передаваемым правилом.
-            </li>
-            <li>
-              <strong>Вернуть функцию:</strong> построить замыкание, которое запоминает значение внешнего вызова.
-            </li>
-          </ol>
-          <p>
-            В конце занятия StudyHub сможет применять разные операции и фильтры без копирования одинаковых циклов.
-          </p>
-        </div>
-
-        <Callout tone="info">
-          Главный вопрос урока: <strong>мы передаём готовый результат или правило, которое нужно выполнить позже?</strong>
-        </Callout>
-      </Section>
-
-      <Section number="02" title="Имя функции и вызов функции — разные значения">
-        <Lead>
-          Скобки означают «выполни сейчас». Имя без скобок означает «возьми саму функцию». Это похоже на разницу
-          между готовым документом и инструкцией, по которой документ можно подготовить позже.
-        </Lead>
-
-        <CodeBlock
-          caption="функция и результат вызова"
-          code={
-            'def normalize_title(title):\n' +
-            '    return title.strip().capitalize()\n\n' +
-            'operation = normalize_title\n' +
-            'result = normalize_title("  python  ")\n\n' +
-            'print(operation)\n' +
-            'print(result)'
-          }
-        />
-
-        <TypeCards>
-          <TypeCard badge="без ()" title="Сама функция" code="operation = normalize_title">
-            Переменная <code>operation</code> хранит ссылку на функцию. Тело функции пока не выполняется.
-          </TypeCard>
-          <TypeCard badge="с ()" badgeTone="float" title="Результат вызова" code={'result = normalize_title(" python ")'}>
-            Python вызывает функцию сейчас и сохраняет возвращённую строку.
-          </TypeCard>
-          <TypeCard badge="callable" badgeTone="str" title="Значение можно вызвать" code="callable(operation)  # True">
-            Встроенная функция <code>callable()</code> сообщает, можно ли использовать значение со скобками.
-          </TypeCard>
-        </TypeCards>
-
-        <CompareSolutions
-          question="Как сохранить правило нормализации для будущего вызова?"
-          left={{
-            title: "Выполнить немедленно",
-            code: 'operation = normalize_title(" SQL ")',
-            note: "operation получает строку SQL.",
-          }}
-          right={{
-            title: "Сохранить функцию",
-            code: "operation = normalize_title",
-            note: "operation получает саму функцию.",
-          }}
-          preferred="right"
-          explanation="Для будущего вызова функцию передают без круглых скобок."
-        />
-
-        <PredictOutput
-          code={
-            'def double(number):\n' +
-            '    return number * 2\n\n' +
-            'operation = double\n' +
-            'print(operation(5))\n' +
-            'print(operation(8))'
-          }
-          output={"10\n16"}
-          hint="operation и double указывают на одну функцию."
-        />
-      </Section>
-
-      <Section number="03" title="Callback — функция, переданная для будущего вызова">
-        <Lead>
-          Callback — это функция, которую одна часть программы получает через параметр и вызывает в подходящий
-          момент. Получатель не обязан знать внутреннее устройство callback. Ему достаточно знать его контракт.
-        </Lead>
-
-        <StepThrough
-          code={
-            'def apply_operation(task, operation):\n' +
-            '    return operation(task)\n\n' +
-            'def mark_done(task):\n' +
-            '    result = task.copy()\n' +
-            '    result["is_done"] = True\n' +
-            '    return result\n\n' +
-            'task = {"title": "Python", "is_done": False}\n' +
-            'updated = apply_operation(task, mark_done)'
-          }
-          steps={[
-            { line: 9, note: "В apply_operation передаются словарь task и сама функция mark_done без скобок.", vars: { operation: "mark_done", "task['is_done']": "False" } },
-            { line: 1, note: "apply_operation вызывает полученное правило и передаёт ему task.", vars: { вызов: "mark_done(task)" } },
-            { line: 4, note: "mark_done создаёт копию, чтобы не менять исходный словарь.", vars: { "result is task": "False" } },
-            { line: 5, note: "Статус копии становится True.", vars: { "result['is_done']": "True" } },
-            { line: 9, note: "Возвращённый словарь сохраняется в updated.", vars: { "task['is_done']": "False", "updated['is_done']": "True" } },
+        <LinkedNotes
+          variant="connected"
+          items={[
+            {
+              title: "Точка старта",
+              description: "У нас есть команды Planner, готовые обработчики с общим входом tasks и словари для хранения соответствий.",
+            },
+            {
+              title: "Новый вопрос",
+              description: "Как сохранить функцию, чтобы вызвать её только после выбора команды?",
+            },
+            {
+              title: "Результат",
+              description: "Мы свяжем рабочие команды с обработчиками и подключим выбор в run, сохранив прежнее поведение Planner.",
+            },
           ]}
         />
+
+        <p>
+          Сначала разберём разницу между именем функции и её вызовом. Затем проследим, кто передаёт callback, кто его
+          вызывает и какие условия должны совпадать. Эта опора поможет перейти от отдельных веток к таблице действий
+          в основном проекте. Замыкания и вложенные функции оставим следующему занятию.
+        </p>
+      </Section>
+
+      <Section number="01" title="Имя функции, вызов и полученный результат">
+        <Lead>
+          При выполнении <code>def</code> Python создаёт функцию и связывает с ней имя. Когда мы пишем это имя без
+          круглых скобок, мы обращаемся к самой функции. Добавив скобки и аргументы, мы вызываем её. После вызова
+          программа получает возвращённое значение; если функция ничего явно не возвращает, результатом становится
+          <code> None</code>.
+        </Lead>
+
+        <p>
+          Представим функцию как контакт в телефоне. Имя <code>prepare_greeting</code> похоже на сохранённый контакт:
+          оно указывает, кому можно позвонить. Запись <code>prepare_greeting("Python")</code> похожа на сам звонок.
+          Контакт не совершает вызов автоматически, и передача контакта другому приложению тоже сама по себе никому
+          не звонит. Граница аналогии в том, что функция при вызове выполняет точный программный код и может вернуть
+          значение или произвести побочный эффект.
+        </p>
+
+        <CodeBlock
+          caption="сохраняем функцию, затем вызываем"
+          code={
+            'def prepare_greeting(name):\n' +
+            '    return f"Привет, {name}!"\n\n' +
+            'greeting_function = prepare_greeting\n' +
+            'message = greeting_function("Python")\n' +
+            'print(message)'
+          }
+        />
+
+        <p>
+          При присваивании <code>greeting_function = prepare_greeting</code> мы сохраняем ссылку на функцию. Её тело
+          начнёт работать на следующей строке, когда появятся скобки и аргумент. В результате <code>message</code>
+          получит строку <code>Привет, Python!</code>. Здесь нет отдельной копии алгоритма: оба имени указывают на
+          одну функцию.
+        </p>
+
+        <p>
+          В Planner это различие особенно заметно на обработчиках. Выражение <code>handle_find</code> сохраняет
+          функцию, а <code>handle_find(tasks)</code> запускает её с текущим списком. Обработчик может читать ввод и
+          печатать карточку, а явного результата для вызывающего кода не возвращать. Тогда значение вызова равно
+          <code> None</code>, хотя пользователь увидел действие. Поэтому при выборе функции мы учитываем аргументы и
+          ожидаемые эффекты, а не только значение <code>return</code>.
+        </p>
+
+        <Callout tone="info">
+          Сначала мы различаем три вещи: имя функции, вызов со скобками и значение, которое вернул этот вызов.
+          Таблица команд хранит первое.
+        </Callout>
+
+        <p>Перед чтением ответа предскажем результат короткого вызова:</p>
+        <PredictOutput
+          code={
+            'def make_tag(value):\n' +
+            '    return "[" + value + "]"\n\n' +
+            'tag_function = make_tag\n' +
+            'print(tag_function("ready"))'
+          }
+          output="[ready]"
+          hint="Сначала запишем, что именно связывается с tag_function."
+        />
+        <p>
+          Будет напечатано <code>[ready]</code>. Присваивание сохранило функцию, а вызов через
+          <code> tag_function</code> передал ей строку и получил результат.
+        </p>
+      </Section>
+
+      <Section number="02" title="Callback задаёт момент вызова">
+        <Lead>
+          Callback, или обратный вызов, здесь означает обычную функцию, которую мы передали другой части программы,
+          чтобы та вызвала её в нужный момент. Особого синтаксиса у callback нет. Термин описывает роль функции во
+          взаимодействии: одна часть кода решает, какое действие передать, другая знает, когда его запускать.
+        </Lead>
+
+        <p>
+          Например, <code>run_report(formatter, row)</code> может получить форматирующую функцию и применить её к
+          строке отчёта. Тот, кто вызывает <code>run_report</code>, выбирает правило. Сам <code>run_report</code>
+          вызывает переданную функцию, когда дошёл до строки. Так общий ход работы остаётся в одном месте, а
+          отдельное правило можно заменить.
+        </p>
+
+        <p>
+          Это похоже на заказ в мастерской: мы передаём специалисту образец и требование, а он выполняет работу в
+          согласованный момент. Передача задаёт ожидаемое действие, но ещё не означает, что оно уже выполнено.
+          Граница сравнения: callback является вызываемым значением, а код-получатель явно обращается к нему со
+          своими аргументами.
+        </p>
+
+        <p>
+          Чтобы такой обмен работал, нам нужен договор функции, или callback contract: ожидаемое число и смысл
+          аргументов, а также нужный результат или эффект. В <code>handle_*(tasks)</code> каждый обработчик получает
+          один и тот же список. При выборе команды <code>run</code> передаёт этот список выбранному обработчику.
+          Обработчики могут по-разному спрашивать ввод и печатать сообщения, поэтому для них важен общий вход и общая
+          роль, а не одинаковый внутренний алгоритм.
+        </p>
+
+        <p>
+          Callback может менять переданный список и при этом возвращать <code>None</code>. Другой callback может
+          ничего не менять и вернуть строку. Сам факт передачи не гарантирует совместимость: функция
+          <code>handle_add(tasks, title)</code> ждёт два аргумента и не подходит месту, где вызывающая сторона
+          передаёт один <code>tasks</code>. Сначала мы сверяем договор вызова, потом сохраняем подходящую функцию.
+        </p>
 
         <MatchPairs
-          prompt="Соедините часть callback-сценария с её ролью."
-          leftTitle="Фрагмент"
-          rightTitle="Роль"
+          prompt="Сопоставим запись и её роль в работе с функциями."
+          leftTitle="Запись"
+          rightTitle="Что происходит"
           pairs={[
-            { left: "operation", right: "параметр для переданной функции" },
-            { left: "mark_done", right: "конкретный callback" },
-            { left: "operation(task)", right: "вызов callback внутри общей функции" },
-            { left: "apply_operation(...) ", right: "функция высшего порядка" },
+            { left: <code>handle_find</code>, right: "ссылка на функцию" },
+            { left: <code>handle_find(tasks)</code>, right: "вызов с аргументом" },
+            { left: <code>run(callback)</code>, right: "получатель переданной функции" },
           ]}
-          explanation="Функция высшего порядка принимает или возвращает другую функцию."
+          explanation="Скобки запускают тело функции, а роль callback появляется из-за передачи и последующего вызова."
         />
+      </Section>
+
+      <Section number="03" title="Таблица связывает ключ с функцией">
+        <Lead>
+          Словарь умеет хранить пары «пару ключа и значения». Если значением становится функция, словарь может играть
+          роль таблицы действий. Посмотрим на форматирование коротких подписей.
+        </Lead>
+
+        <CodeBlock
+          caption="значения словаря могут быть функциями"
+          code={
+            'def short_label(text):\n' +
+            '    return text[:3]\n\n' +
+            'def upper_label(text):\n' +
+            '    return text.upper()\n\n' +
+            'formatters = {\n' +
+            '    "short": short_label,\n' +
+            '    "upper": upper_label,\n' +
+            '}'
+          }
+        />
+
+        <p>
+          Создание <code>formatters</code> связывает два строковых ключа с двумя функциями. При этом ни
+          <code> short_label</code>, ни <code>upper_label</code> пока не получают входной текст. В значении каждого
+          элемента находится вызываемая функция, потому что после имени нет скобок.
+        </p>
+
+        <p>
+          Здесь таблица похожа на указатель в помещении: по надписи мы находим нужную дверь. Сам указатель не
+          выполняет работу за кабинетом; он помогает выбрать адрес, после чего посетитель отдельно входит. В
+          программе поиск по словарю даёт ссылку, а отдельный вызов запускает найденную функцию. Так мы строим выбор,
+          сохраняя каждый обработчик в одном месте.
+        </p>
+
+        <p>
+          Если при создании таблицы написать <code>upper_label("release")</code>, Python немедленно вызовет
+          форматтер и запишет строку <code>"RELEASE"</code>. В ячейке таблицы окажется результат, а не функция. Если
+          обработчик выполняет <code>print</code>, эффект также случится слишком рано. Имена без скобок нужны здесь
+          потому, что действие должно дождаться выбора команды.
+        </p>
 
         <BugHunt
           code={
-            'def apply_operation(task, operation):\n' +
-            '    return operation(task)\n\n' +
-            'updated = apply_operation(task, mark_done(task))'
+            'def notify(channel):\n' +
+            '    print("Отправили в", channel)\n\n' +
+            'workers = {"backup": notify("backup")}\n' +
+            'worker = workers["backup"]\n' +
+            'worker("daily")'
           }
-          question="Почему второй аргумент передан неверно?"
+          question="Почему эта таблица не хранит функцию для позднего вызова?"
           options={[
-            "mark_done(task) уже выполнилась и передала словарь вместо функции",
-            "Callback всегда должен быть строкой",
-            "Функцию нельзя вызывать внутри другой функции",
+            "notify вызвана при создании словаря, а её результатом стал None",
+            "Значением словаря не может быть функция",
+            "У print всегда должен быть return",
           ]}
           correctIndex={0}
-          explanation="apply_operation ожидает вызываемое правило, а не заранее вычисленный результат."
-          fix={'updated = apply_operation(task, mark_done)'}
+          explanation="Скобки запускают notify сразу. Чтобы сохранить действие, мы кладём в таблицу имя notify без вызова."
+          fix={'workers = {"backup": notify}'}
         />
+        <p>
+          Мы исправляем запись на <code>workers = {"{...}"}</code> с именем <code>notify</code> без скобок. Тогда
+          функция сохранится, а сообщение появится только после отдельного вызова выбранного обработчика.
+        </p>
       </Section>
 
-      <Section number="04" title="Контракт callback должен быть понятным">
+      <Section number="04" title="Выбираем обработчик в Planner">
         <Lead>
-          Возможность передать любую функцию не означает, что подойдёт любая функция. Получатель callback ожидает
-          определённое количество аргументов и определённый результат. Это и есть контракт callback.
+          В Planner таблица связывает каждую рабочую команду с уже готовой функцией: <code>add</code> с
+          <code> handle_add</code>, <code>list</code> с <code>handle_list</code>, <code>find</code> с
+          <code> handle_find</code>, <code>done</code> с <code>handle_done</code>, <code>search</code> с
+          <code> handle_search</code>, <code>stats</code> с <code>handle_stats</code>. Эти обработчики уже отвечают
+          за предметное действие. Мы меняем только способ выбора, чтобы не переписывать добавление, поиск или
+          статистику.
         </Lead>
+
+        <p>
+          <code>run</code> остаётся диспетчером: диспетчер получает команду и направляет её подходящему действию.
+          Сначала он показывает меню и читает ввод, затем нормализует его через знакомые
+          <code> .strip().lower()</code>. Команда <code>exit</code> завершает цикл отдельно: это команда управления
+          жизненным циклом, её обработчик не лежит среди шести рабочих операций. Для другой команды мы ищем функцию
+          в таблице. Если ключ найден, передаём ей тот же список <code>tasks</code>. Если ключа нет, показываем
+          прежнее сообщение о неизвестной команде и продолжаем цикл.
+        </p>
+
+        <p>Для известной рабочей команды путь состоит из последовательных шагов:</p>
+        <ol>
+          <li><code>run</code> читает и нормализует введённую команду.</li>
+          <li>Таблица находит функцию по строковому ключу.</li>
+          <li><code>run</code> передаёт найденной функции текущий <code>tasks</code>.</li>
+          <li>Обработчик выполняет одно действие, после чего управление возвращается циклу меню.</li>
+        </ol>
+
+        <p>
+          Этот путь описывает известную рабочую команду. При <code>exit</code> мы выходим из цикла до поиска
+          функции. При неизвестном ключе обработчик не вызывается. В обоих случаях <code>run</code> сохраняет
+          управление меню. Таблица не заменяет цикл, ввод или обработчики; она заменяет только длинный выбор между
+          рабочими ветками.
+        </p>
+
+        <p>
+          Порядок операций помогает нам найти ошибку до запуска: нормализовать, отдельно распознать выход, найти
+          ключ, проверить результат поиска, вызвать подходящую функцию с текущим состоянием. Если сразу вызвать
+          результат поиска, неизвестный ключ может дать <code>None</code>, а затем программа попробует вызвать
+          <code>None</code> как функцию. Если вызвать обработчик дважды, пользователь увидит повторный эффект или
+          состояние изменится больше одного раза.
+        </p>
+
+        <Diagram caption="Путь одной известной рабочей команды">
+          <DiagramFlow label="От ввода команды до вызова её обработчика">
+            <DiagramNode title="run">
+              <p>Читает и нормализует команду</p>
+            </DiagramNode>
+            <DiagramArrow label="ищет ключ" />
+            <DiagramNode title="Таблица обработчиков">
+              <p>Находит функцию для команды</p>
+            </DiagramNode>
+            <DiagramArrow label="передаёт tasks" />
+            <DiagramNode title="handle_*(tasks)">
+              <p>Выполняет ровно одно действие</p>
+            </DiagramNode>
+          </DiagramFlow>
+        </Diagram>
+
+        <p>
+          Посмотрим на независимый пример выбора форматтера. Таблица создаётся заранее; затем
+          <code>render</code> находит метод по ключу, проверяет его наличие и выполняет один вызов:
+        </p>
 
         <CodeBlock
-          caption="callback-предикат"
+          caption="поиск и поздний вызов"
           code={
-            'def filter_tasks(tasks, predicate):\n' +
-            '    result = []\n' +
-            '    for task in tasks:\n' +
-            '        if predicate(task):\n' +
-            '            result.append(task)\n' +
-            '    return result\n\n' +
-            'def is_open(task):\n' +
-            '    return not task["is_done"]'
+            'def render(formats, name, value):\n' +
+            '    if name not in formats:\n' +
+            '        return "Нет формата"\n' +
+            '    return formats[name](value)\n\n' +
+            'formats = {"short": str.lower, "full": str.upper}\n' +
+            'print(render(formats, "full", "Planner"))'
           }
         />
-
-        <MethodGrid
-          rows={[
-            [<>predicate(task)</>, "получает одну задачу"],
-            [<>return True</>, "задача входит в результат"],
-            [<>return False</>, "задача пропускается"],
-            [<>filter_tasks(tasks, is_open)</>, "передаёт правило без вызова"],
-          ]}
-        />
-
-        <CompareSolutions
-          question="Какой callback подходит функции filter_tasks()?"
-          left={{
-            title: "Возвращает bool",
-            code: 'def has_high_priority(task):\n    return task["priority"] >= 4',
-            note: "Совпадает с контрактом predicate(task) -> bool.",
-          }}
-          right={{
-            title: "Ничего не возвращает",
-            code: 'def show_title(task):\n    print(task["title"])',
-            note: "Функция возвращает None, поэтому условие всегда ложно.",
-          }}
-          preferred="left"
-          explanation="Фильтр ожидает логическое правило, а не функцию вывода."
-        />
-
-        <TrueFalse
-          statement={
-            <>
-              Любую функцию можно безопасно передать как callback, даже если она принимает другое количество
-              аргументов.
-            </>
-          }
-          isTrue={false}
-          explanation="Вызов завершится TypeError, если контракт параметров не совпадает."
-        />
-
-        <Callout>
-          Хорошее имя параметра сообщает ожидаемую роль: <code>predicate</code> проверяет, <code>operation</code>
-          изменяет или преобразует, <code>formatter</code> создаёт строку.
-        </Callout>
-      </Section>
-
-      <Section number="05" title="Переданное поведение уменьшает повторение">
-        <Lead>
-          Без callback для каждого фильтра пришлось бы писать новый цикл. Callback позволяет оставить один общий
-          алгоритм обхода и менять только правило отбора.
-        </Lead>
-
-        <CompareSolutions
-          question="Как избежать нескольких одинаковых циклов?"
-          left={{
-            title: "Отдельный цикл для каждого фильтра",
-            code:
-              'def get_open_tasks(tasks):\n' +
-              '    result = []\n' +
-              '    for task in tasks:\n' +
-              '        if not task["is_done"]:\n' +
-              '            result.append(task)\n' +
-              '    return result',
-            note: "Следующий фильтр повторит обход и добавление.",
-          }}
-          right={{
-            title: "Один алгоритм и разные callbacks",
-            code:
-              'open_tasks = filter_tasks(tasks, is_open)\n' +
-              'urgent_tasks = filter_tasks(tasks, is_urgent)',
-            note: "Меняется только правило predicate.",
-          }}
-          preferred="right"
-          explanation="Общий цикл сосредоточен в filter_tasks, а предметные правила остаются маленькими функциями."
-        />
-
-        <CodeBlock
-          caption="таблица действий вместо длинной цепочки"
-          code={
-            'ACTIONS = {\n' +
-            '    "done": mark_done,\n' +
-            '    "reset": reset_status,\n' +
-            '}\n\n' +
-            'operation = ACTIONS.get(command)\n' +
-            'if operation is None:\n' +
-            '    print("Неизвестная операция")\n' +
-            'else:\n' +
-            '    task = operation(task)'
-          }
-        />
-
-        <CodeSequence
-          title="Соберите безопасный выбор callback"
-          prompt="Неизвестная команда не должна вызывать значение None."
-          pieces={[
-            { id: "get", code: "operation = ACTIONS.get(command)" },
-            { id: "check", code: "if operation is None:" },
-            { id: "error", code: '    return "Неизвестная операция"' },
-            { id: "call", code: "result = operation(task)" },
-            { id: "return", code: "return result" },
-          ]}
-          correctOrder={["get", "check", "error", "call", "return"]}
-          explanation="Сначала значение читается и проверяется, затем callback вызывается."
-        />
-
-        <Callout tone="info">
-          Словарь функций полезен, когда команды уже стабильно соответствуют действиям. Не заменяйте им простой
-          <code>if</code>, если вариантов всего два и таблица ухудшает читаемость.
-        </Callout>
-      </Section>
-
-      <Section number="06" title="Замыкание возвращает настроенную функцию">
-        <Lead>
-          Функция может не только принимать другую функцию, но и возвращать её. Внутренняя функция сохраняет доступ
-          к значениям внешнего вызова. Такая связка называется замыканием.
-        </Lead>
 
         <StepThrough
           code={
-            'def make_min_priority_filter(min_priority):\n' +
-            '    def matches(task):\n' +
-            '        return task["priority"] >= min_priority\n' +
-            '    return matches\n\n' +
-            'is_high_priority = make_min_priority_filter(4)\n' +
-            'print(is_high_priority({"priority": 5}))\n' +
-            'print(is_high_priority({"priority": 2}))'
+            'def render(formats, name, value):\n' +
+            '    if name not in formats:\n' +
+            '        return "Нет формата"\n' +
+            '    return formats[name](value)\n\n' +
+            'formats = {"short": str.lower, "full": str.upper}\n' +
+            'print(render(formats, "full", "Planner"))'
           }
           steps={[
-            { line: 5, note: "Внешняя функция вызывается со значением 4.", vars: { min_priority: "4" } },
-            { line: 1, note: "Создаётся внутренняя функция matches. Она использует min_priority из внешней области.", vars: { matches: "функция", min_priority: "4" } },
-            { line: 3, note: "Наружу возвращается сама функция matches, а не результат её вызова.", vars: { is_high_priority: "matches с порогом 4" } },
-            { line: 6, note: "При первом вызове priority 5 сравнивается с сохранённым порогом 4.", vars: { "5 >= 4": "True" } },
-            { line: 7, note: "При втором вызове используется тот же сохранённый порог.", vars: { "2 >= 4": "False" } },
+            { line: 6, note: "Мы создаём таблицу ссылок на готовые методы строк. Методы ещё не вызваны.", vars: { formats: "ключи short и full" } },
+            { line: 7, note: "Вызывается render; аргумент name равен full.", vars: { name: "full", value: "Planner" } },
+            { line: 1, note: "По ключу full находим функцию str.upper и сохраняем ссылку.", vars: { formatter: "str.upper" } },
+            { line: 4, note: "Теперь найденный метод вызывается со строкой value.", vars: { value: "Planner", result: "PLANNER" } },
           ]}
         />
 
-        <TypeCards>
-          <TypeCard badge="внешняя" title="Настраивает правило" code="make_min_priority_filter(4)">
-            Получает параметр настройки и создаёт внутреннюю функцию.
-          </TypeCard>
-          <TypeCard badge="внутренняя" badgeTone="float" title="Работает с задачей" code="matches(task)">
-            Получает конкретную задачу и использует сохранённый порог.
-          </TypeCard>
-          <TypeCard badge="closure" badgeTone="str" title="Помнит окружение" code="min_priority = 4">
-            Значение остаётся доступным внутренней функции после завершения внешнего вызова.
-          </TypeCard>
-        </TypeCards>
-
-        <FillBlank
-          prompt="Верните внутреннюю функцию, не вызывая её."
-          before={"    return "}
-          after={""}
-          options={["matches", "matches()", "min_priority"]}
-          answer="matches"
-          explanation="Замыкание возвращает функцию, поэтому скобки не нужны."
-        />
-
-        <Callout>
-          Пока используйте замыкания для настройки неизменяемого правила. Изменение захваченного состояния через
-          <code>nonlocal</code> будет изучаться только при реальной необходимости.
-        </Callout>
+        <p>
+          Словарь создаётся до вызова <code>render</code>. Внутри неё ключ <code>full</code> даёт ссылку на
+          <code> str.upper</code>. После проверки мы вызываем найденный метод со строкой <code>Planner</code> и
+          получаем <code>PLANNER</code>. При отсутствующем ключе функция возвращает сообщение и не пытается вызвать
+          <code> None</code>.
+        </p>
       </Section>
 
-      <Section number="07" title="Связываем callback и замыкание в StudyHub">
+      <Section number="05" title="Собираем безопасный порядок диспетчеризации">
         <Lead>
-          Замыкание создаёт настроенный predicate, а общая функция фильтрации применяет его к каждой задаче. Так
-          один механизм поддерживает разные пороги и статусы без копирования циклов.
+          Перед практикой восстановим ход одной итерации. Мы сохраняем таблицу до начала цикла: так она создаётся
+          один раз и не запускает действия. Внутри цикла получаем и нормализуем команду. Затем отделяем
+          <code> exit</code>, проверяем наличие рабочего обработчика и, только после успешного поиска, вызываем его
+          с тем же <code>tasks</code>.
         </Lead>
 
-        <CodeBlock
-          caption="настраиваемые фильтры"
-          code={
-            'def filter_tasks(tasks, predicate):\n' +
-            '    result = []\n' +
-            '    for task in tasks:\n' +
-            '        if predicate(task):\n' +
-            '            result.append(task)\n' +
-            '    return result\n\n' +
-            'def make_status_filter(required_status):\n' +
-            '    def matches(task):\n' +
-            '        return task["status"] == required_status\n' +
-            '    return matches\n\n' +
-            'is_done = make_status_filter("done")\n' +
-            'done_tasks = filter_tasks(tasks, is_done)'
-          }
-        />
+        <p>
+          Порядок можно проверить и без кода: нормализация ввода, отдельная обработка выхода, поиск обработчика,
+          сообщение при неизвестном ключе, один вызов найденной функции. Если переставить поиск перед нормализацией,
+          команда с пробелами или другим регистром перестанет соответствовать прежнему поведению. Если забыть
+          проверку, неизвестная команда приведёт к вызову <code>None</code>.
+        </p>
 
-        <PredictOutput
-          code={
-            'def make_multiplier(factor):\n' +
-            '    def multiply(number):\n' +
-            '        return number * factor\n' +
-            '    return multiply\n\n' +
-            'double = make_multiplier(2)\n' +
-            'triple = make_multiplier(3)\n' +
-            'print(double(5))\n' +
-            'print(triple(5))'
-          }
-          output={"10\n15"}
-          hint="Каждая возвращённая функция хранит собственное значение factor."
-        />
-
-        <RecallCard
-          question="Чем callback отличается от замыкания?"
-          hint="Один термин описывает роль функции, другой — сохранённое окружение."
-          answer={
-            <p>
-              Callback — функция, переданная для вызова другой частью программы. Замыкание — функция, которая
-              сохраняет доступ к значениям внешней области. Одна функция может одновременно быть замыканием и
-              использоваться как callback.
-            </p>
-          }
-        />
-
-        <BugHunt
-          code={
-            'is_done = make_status_filter("done")\n' +
-            'done_tasks = filter_tasks(tasks, is_done())'
-          }
-          question="Почему is_done не нужно вызывать заранее?"
-          options={[
-            "is_done ожидает конкретную задачу, которую передаст filter_tasks",
-            "Замыкания нельзя вызывать",
-            "filter_tasks принимает только строки",
+        <CodeSequence
+          title="Порядок одной итерации меню"
+          prompt="Расставим этапы обработки известной рабочей команды и защитим остальные случаи."
+          pieces={[
+            { id: "normalize", code: "Привести ввод к знакомому формату" },
+            { id: "exit", code: "Обработать exit отдельно от рабочих действий" },
+            { id: "lookup", code: "Найти обработчик по ключу команды" },
+            { id: "unknown", code: "Для отсутствующего ключа сохранить сообщение об ошибке" },
+            { id: "invoke", code: "Вызвать найденный обработчик один раз с тем же tasks" },
           ]}
+          correctOrder={["normalize", "exit", "lookup", "unknown", "invoke"]}
+          explanation="Мы ищем действие после нормализации и вызываем только после проверки результата поиска. exit завершает цикл отдельно."
+          incorrectExplanation="Сверим порядок: сначала нормализация, затем отдельный выход, поиск, проверка неизвестной команды и один вызов."
+        />
+
+        <p>
+          При сборке таблицы и при её использовании происходят разные шаги. Создание связывает имена команд с
+          функциями. Поиск выбирает одну ссылку. Вызов запускает один обработчик. Такая последовательность оставляет
+          данные явными: все действия получают текущий список из <code>run</code>, а новый список в обработчике не
+          возникает.
+        </p>
+
+        <p>
+          Если у функций разные параметры, одну таблицу нельзя безопасно вызвать одинаковым способом. В этом занятии
+          все шесть рабочих обработчиков уже принимают <code>tasks</code>. В следующем шаге мы отдельно исследуем
+          вложенную функцию и замыкание. Здесь не добавляем настройки через фабрику, <code>nonlocal</code> или
+          декораторы.
+        </p>
+
+        <QuizCard
+          question="Что мы должны положить в таблицу, если хотим вызвать обработчик после выбора команды?"
+          options={["handle_add", "handle_add(tasks)", '"handle_add"']}
           correctIndex={0}
-          explanation="Фильтр сам вызовет predicate(task) для каждого элемента."
-          fix={'done_tasks = filter_tasks(tasks, is_done)'}
+          explanation="Сохраняем ссылку на функцию без скобок. Вызов произойдёт после выбора ключа."
         />
-      </Section>
-
-      <Section number="08" title="Практика: подготовка к декораторам">
-        <Lead>
-          Декоратор строится на тех же действиях: принимает функцию, создаёт внутреннюю функцию и возвращает её.
-          Сейчас соберём эту механику вручную, не используя синтаксис <code>@</code>.
-        </Lead>
-
-        <CodeBlock
-          caption="ручная обёртка функции"
-          code={
-            'def log_call(function):\n' +
-            '    def wrapper(*args, **kwargs):\n' +
-            '        print(f"Вызов: {function.__name__}")\n' +
-            '        return function(*args, **kwargs)\n' +
-            '    return wrapper\n\n' +
-            'logged_create_task = log_call(create_task)\n' +
-            'task = logged_create_task("FastAPI", priority=5)'
-          }
-        />
-
-        <div className="lesson-practice-steps">
-          <h3>Задание 1. Общая операция</h3>
-          <p>
-            Реализуйте <code className="lesson-token">apply_operation(task, operation)</code>. Проверьте её с
-            функциями <code>mark_done</code> и <code>reset_status</code>.
-          </p>
-
-          <h3>Задание 2. Общий фильтр</h3>
-          <p>
-            Реализуйте <code className="lesson-token">filter_tasks(tasks, predicate)</code>. Callback должен
-            получать один словарь и возвращать <code>bool</code>.
-          </p>
-
-          <h3>Задание 3. Фабрика predicates</h3>
-          <p>
-            Создайте <code className="lesson-token">make_min_priority_filter(min_priority)</code> и получите
-            отдельные фильтры для порогов 3 и 5.
-          </p>
-
-          <h3>Задание 4. Ручная обёртка</h3>
-          <p>
-            Добавьте <code className="lesson-token">log_call(function)</code>, которая печатает имя функции и
-            возвращает её настоящий результат.
-          </p>
-        </div>
-
-        <div className="lesson-check-group">
-          <QuizCard
-            question="Что передаётся без скобок в filter_tasks(tasks, is_open)?"
-            options={["сама функция", "результат функции", "строка с именем"]}
-            correctIndex={0}
-            explanation="Callback должен быть вызван позже внутри filter_tasks."
-          />
-          <QuizCard
-            question="Что должна возвращать функция predicate?"
-            options={["bool", "обязательно dict", "ничего"]}
-            correctIndex={0}
-            explanation="Логический результат определяет, попадёт ли элемент в фильтр."
-          />
-          <QuizCard
-            question="Что сохраняет замыкание make_min_priority_filter(4)?"
-            options={["значение min_priority", "весь список задач", "результат print"]}
-            correctIndex={0}
-            explanation="Внутренняя функция продолжает видеть параметр внешнего вызова."
-          />
-          <QuizCard
-            question="На какой механике основан декоратор?"
-            options={[
-              "функция принимает функцию и возвращает новую функцию",
-              "цикл обязательно изменяет глобальную переменную",
-              "словарь превращается в класс",
-            ]}
-            correctIndex={0}
-            explanation="Именно эту механику показывает ручная обёртка log_call."
-          />
-        </div>
 
         <KeyTakeaways
           points={[
-            <>Имя функции без скобок является значением, которое можно сохранить или передать.</>,
-            <>Скобки запускают функцию и дают результат конкретного вызова.</>,
-            <>Callback передаётся другой функции для последующего вызова.</>,
-            <>Контракт callback определяет ожидаемые параметры и возвращаемое значение.</>,
-            <>Функция высшего порядка принимает или возвращает другую функцию.</>,
-            <>Замыкание сохраняет доступ к значениям внешнего вызова.</>,
-            <>Настроенное замыкание может использоваться как callback.</>,
-            <>Декораторы строятся на той же механике передачи и возврата функций.</>,
+            <>Имя без скобок сохраняет функцию; скобки начинают её вызов.</>,
+            <>Callback передаётся другой части программы для вызова в нужный момент.</>,
+            <>Общий договор задаёт аргументы и ожидаемый результат или эффект.</>,
+            <>Словарь связывает ключи с функциями, если мы кладём туда имена без вызова.</>,
+            <>run отдельно управляет exit, неизвестным вводом и вызовом обработчика с тем же tasks.</>,
+          ]}
+        />
+      </Section>
+
+      <Section number="06" title="Что мы будем делать в практике">
+        <Lead>
+          Теперь соединим знакомые словари и обработчики в текущем Planner. Мы продолжаем ту же историю проекта и
+          работаем с его <code>main.py</code>, где предыдущие шаги уже оставили общий список <code>tasks</code> и
+          обработчики <code>handle_*(tasks)</code>.
+        </Lead>
+
+        <LinkedNotes
+          variant="connected"
+          items={[
+            {
+              title: "Свяжем команды с функциями",
+              description: "Получим таблицу из шести рабочих ключей и существующих обработчиков; её создание не запустит ни один из них.",
+            },
+            {
+              title: "Подключим поздний вызов",
+              description: "После нормализации и отдельной обработки exit найдём обработчик, передадим тот же tasks и выполним действие один раз.",
+            },
+            {
+              title: "Проверим прежний CLI",
+              description: "Сохраним список, статистику, добавление, поиск, завершение, пустой список, неизвестную команду и сообщение выхода.",
+            },
           ]}
         />
 
-        <PracticeCta text="Добавьте apply_operation(), filter_tasks(), make_min_priority_filter() и ручную обёртку log_call(). Проверьте функции на данных StudyHub и сделайте коммит feat: add callbacks and closures." />
+        <p>
+          Сначала мы проверим, что в проекте действительно есть предпосылки из предыдущих шагов: нужные обработчики
+          и явная передача состояния. Затем изменим только выбор рабочего действия в <code>run</code>. Так предметные
+          функции останутся владельцами своих правил, а диспетчер будет отвечать за выбор и время вызова.
+        </p>
+        <p>
+          Результат подтвердим повторением сценариев Planner и отдельной проверкой момента вызова. Таблица не должна
+          печатать сообщения при создании, неизвестная команда не должна приводить к вызову <code>None</code>, а
+          каждая рабочая команда должна один раз получить прежний список задач. В следующем занятии мы разберём
+          возвращаемую функцию, которая хранит внешнюю настройку.
+        </p>
       </Section>
     </RichLesson>
   );

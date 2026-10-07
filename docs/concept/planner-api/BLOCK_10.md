@@ -36,7 +36,7 @@ APIRouter, response_model, TestClient, Depends, SQLAlchemy, авторизаци
 
 ### Что меняется
 
-Текущая опора: [прежний план](../../PLANNER_API_BLOCK_10_PATH.md), [TSX](../../../frontend/src/lessons/planner-api/block_10/Lesson51.tsx) и [практика блока](../../../backend/learning/course_content/planner_api/block_10/manual.py). Их старые прототипы ещё предстоит привести к этому маршруту.
+Текущая опора: [прежний план](../../PLANNER_API_BLOCK_10_PATH.md), [TSX](../../../frontend/src/lessons/planner-api/block_10/Lesson51.tsx) и [практика блока](../../../backend/learning/course_content/chapter_03/block_10/manual.py). Их старые прототипы ещё предстоит привести к этому маршруту.
 
 - Первое задание первого предметного GET-занятия создаёт JSON через существующий CLI, не словари по таблице.
 - Item использует готовый get_task, не вторую функцию поиска.
@@ -82,7 +82,7 @@ APIRouter, response_model, TestClient, Depends, SQLAlchemy, авторизаци
 
 В API используется одна явная проекция Task → id/title/priority/is_done. Не возвращаем все внутренние поля через Task.to_dict, не удаляем tags из сохранённой модели. Переименование all → total выполняется только в HTTP-ответе статистики, сохраняя прежний get_statistics и CLI.
 
-Основная практика path/query проектная. При реализации следует согласовать [manual.py](../../../backend/learning/course_content/planner_api/block_10/manual.py), [code_tasks.py](../../../backend/learning/course_content/planner_api/block_10/code_tasks.py), MD и TSX: старые code tasks не должны перекрывать проектные карточки в [загрузчике](../../../backend/learning/content.py). Этот концепт сам по себе выдачу заданий не меняет.
+Основная практика path/query проектная. При реализации следует согласовать [manual.py](../../../backend/learning/course_content/chapter_03/block_10/manual.py), [code_tasks.py](../../../backend/learning/course_content/chapter_03/block_10/code_tasks.py), MD и TSX: старые code tasks не должны перекрывать проектные карточки в [загрузчике](../../../backend/learning/content.py). Этот концепт сам по себе выдачу заданий не меняет.
 
 ## 3. Паспорта занятий
 

@@ -687,7 +687,7 @@ code,
 }
 
 .module-lessons.is-open {
-  max-height: 520px;
+  max-height: 2000px;
   opacity: 1;
   transform: translateY(0);
 }
@@ -2404,11 +2404,26 @@ pre {
   container-name: lesson-diagram;
   container-type: inline-size;
   display: grid;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
   gap: 16px;
   padding: 22px;
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
   background: #111412;
+}
+
+.lesson-diagram :where(*) {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.lesson-diagram :where(code, pre) {
+  white-space: pre-wrap;
 }
 
 .lesson-diagram--vertical {
@@ -2593,7 +2608,6 @@ pre {
 
 .testclient-lifecycle .lesson-diagram-node h3 {
   font-size: 0.9rem;
-  white-space: nowrap;
 }
 
 .lesson-diagram-node code {
@@ -4119,6 +4133,17 @@ pre {
 
 .rich-lesson--client-server .tracer {
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+}
+
+@media (max-width: 640px) {
+  .rich-lesson--lesson33 .tracer,
+  .rich-lesson--lesson33 .method-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .rich-lesson--lesson33 .method-row {
+    gap: var(--space-2);
+  }
 }
 
 .tracer-note {

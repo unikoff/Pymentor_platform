@@ -1,0 +1,6 @@
+{
+  "id": "HTTP, API и FastAPI - Planner API",
+  "title": "Глава 3: HTTP и FastAPI",
+  "tagline": "HTTP, Pydantic, CRUD, роутеры и тесты FastAPI",
+  "order": 3
+}

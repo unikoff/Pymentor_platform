@@ -1,18 +1,16 @@
+import { FileText, Wrench } from "lucide-react";
 import {
-  LockKeyhole,
-  ShieldCheck,
-} from "lucide-react";
-import {
-  BranchExplorer,
   BugHunt,
   Callout,
   CodeBlock,
-  CodeSequence,
   CompareSolutions,
-  FillBlank,
-  KeyTakeaways,
+  Diagram,
+  DiagramArrow,
+  DiagramFlow,
+  DiagramNode,
   Lead,
-  PracticeCta,
+  LinkedNotes,
+  MethodGrid,
   PredictOutput,
   QuizCard,
   RecallCard,
@@ -21,538 +19,481 @@ import {
   Section,
   StepThrough,
   TrueFalse,
-  TypeCard,
-  TypeCards,
-  TheoryBridge,
 } from "../../shared";
 
-// 38. Инкапсуляция, геттеры, сеттеры и property
 export function Lesson38({ module }: { module?: string }) {
   return (
     <RichLesson>
       <RichHero
         variant="project"
-        chip={module ?? "Блок 7 · Файлы, JSON и объектная модель"}
-        title="Инкапсуляция, геттеры, сеттеры и property"
-        intro="Защитим допустимое состояние Task: разберём публичный интерфейс и внутренние атрибуты, добавим явные геттеры и сеттеры, затем сохраним удобный синтаксис через @property и проведём все изменения через единые правила валидации."
+        chip={module ?? "Блок 7 · Обычные классы и модель Task"}
+        title="Dataclass после обычного класса"
+        intro="Мы уже написали обычную Task и явно задали её проверки, методы и преобразования. Теперь разберём, как dataclass убирает часть повторяющегося кода, что он генерирует и что мы продолжаем отвечать за сами."
         tags={[
-          { icon: <LockKeyhole size={14} />, label: "границы объекта" },
-          { icon: <ShieldCheck size={14} />, label: "property и инварианты" },
+          { icon: <Wrench size={14} />, label: "модель без шаблонного кода" },
+          { icon: <FileText size={14} />, label: "поля и поведение" },
         ]}
       />
-      <TheoryBridge link={"Модель должна не только хранить данные, но и защищать правило их изменения: setter проверяет значение, property сохраняет удобный доступ."} boundary={"Подчёркивание в имени — соглашение, не защита; ценность инкапсуляции в одном месте для правила изменения."} />
 
-      <Section number="01" title="Инкапсуляция защищает правила модели">
+      <Section number="00" title="От обычной Task к dataclass">
         <Lead>
-          Пока любой код может выполнить <code className="lesson-token">task.priority = -100</code> или записать в
-          title пустую строку. Объект продолжит существовать, но перестанет соответствовать правилам StudyHub.
-          Инкапсуляция направляет чтение и изменение через согласованный публичный интерфейс.
+          В предыдущих занятиях мы подготовили одну обычную <code className="lesson-token">Task</code>: её
+          конструктор проверяет значения, методы меняют состояние, а явные преобразователи обмениваются данными со
+          словарём. Рабочие операции Planner пока используют словари. Поэтому здесь меняется устройство модели, а не
+          весь путь приложения.
         </Lead>
 
-        <div className="lesson-route">
-          <ol>
-            <li>
-              <strong>Определить инварианты:</strong> название непустое, приоритет от 1 до 5, id положительный.
-            </li>
-            <li>
-              <strong>Скрыть внутреннюю запись:</strong> хранить значения в <code className="lesson-token">_title</code>
-              и <code className="lesson-token">_priority</code> по соглашению о внутреннем использовании.
-            </li>
-            <li>
-              <strong>Открыть контролируемый доступ:</strong> сначала через методы, затем через
-              <code className="lesson-token">@property</code> и сеттер.
-            </li>
-          </ol>
-          <p>
-            Итогом станет Task, который не принимает некорректное состояние ни при создании, ни при последующем
-            изменении, ни при восстановлении из JSON.
-          </p>
-        </div>
+        <LinkedNotes
+          variant="connected"
+          items={[
+            {
+              title: "Точка старта",
+              description: "Обычная Task уже хранит четыре поля, применяет правила и создаёт словарь через явный метод.",
+            },
+            {
+              title: "Новый вопрос",
+              description: "Какую повторяющуюся часть класса Python может собрать по объявлениям полей?",
+            },
+            {
+              title: "Результат",
+              description: "Та же Task станет dataclass, сохранив проверки, методы и конвертеры.",
+            },
+          ]}
+        />
 
-        <TypeCards>
-          <TypeCard badge="state" title="Состояние" code={'_title\n_priority\n_is_done'}>
-            Внутренние данные объекта, которые должны подчиняться правилам модели.
-          </TypeCard>
-          <TypeCard badge="public" badgeTone="float" title="Публичный интерфейс" code={'task.title\ntask.mark_done()'}>
-            Стабильные операции, которыми пользуются services и main.
-          </TypeCard>
-          <TypeCard badge="invariant" badgeTone="str" title="Условие корректности" code={'1 <= priority <= 5'}>
-            Правило должно оставаться истинным на протяжении жизни объекта.
-          </TypeCard>
-        </TypeCards>
+        <p>
+          Мы не объявляем обычный класс ошибкой и не вводим вторую модель. Сначала разберём механизм на отдельном
+          примере, затем перенесём уже знакомую Task и сверим, что изменилось только её объявление.
+        </p>
+      </Section>
+
+      <Section number="01" title="Какая работа повторяется в классе с данными">
+        <Lead>
+          В обычном классе автор вручную перечисляет поля в <code className="lesson-token">__init__</code>, принимает
+          для них параметры и присваивает их экземпляру. Для проверки, отладки и сравнения значений тоже приходится
+          писать отдельный код, если такое поведение нужно. Когда класс в основном описывает данные, часть этой
+          конструкции повторяет список полей.
+        </Lead>
+
+        <p>
+          <code className="lesson-token">dataclass</code> находится в стандартной библиотеке Python. Мы импортируем
+          декоратор <code className="lesson-token">dataclass</code> из модуля <code>dataclasses</code> и ставим его
+          перед определением класса. При обработке объявления Python использует отмеченные поля, чтобы создать
+          несколько обычных методов класса. Это не отдельная система хранения и не новый вид объекта: экземпляры
+          остаются объектами того же класса.
+        </p>
+
+        <p>
+          Представим бланк для заявки на экскурсию. Названия полей задают, какие ответы должны быть у заявки, а
+          типичные операции вроде заполнения и показа можно подготовить по этому бланку. Но бланк не знает, допустимо
+          ли название экскурсии и верно ли указано число участников. В Python объявления полей похожи на структуру
+          бланка, а проверки предметных правил всё ещё задаём мы.
+        </p>
+
+        <CompareSolutions
+          question="Какая запись убирает ручное присваивание одних и тех же объявленных полей?"
+          left={{
+            title: "Обычный класс",
+            code:
+              "class ReadingPlan:\n" +
+              "    def __init__(self, topic, minutes=20):\n" +
+              "        self.topic = topic\n" +
+              "        self.minutes = minutes",
+            note: "Параметры и присваивания перечислены вручную.",
+          }}
+          right={{
+            title: "Dataclass",
+            code:
+              "@dataclass\n" +
+              "class ReadingPlan:\n" +
+              "    topic: str\n" +
+              "    minutes: int = 20",
+            note: "Поля объявлены один раз; типичные методы строятся из них.",
+          }}
+          preferred="right"
+          explanation="Здесь поля и договор конструктора уже описывают одну и ту же структуру. Dataclass снимает повтор присваиваний, но не определяет правила самой предметной области."
+        />
 
         <Callout tone="info">
-          Инкапсуляция не означает «запретить всё внешнему коду». Она означает предоставить ясный способ работы, при
-          котором объект сохраняет корректное состояние.
+          Dataclass не проверяет аннотации, не нормализует строки, не создаёт <code>to_dict</code> и не открывает JSON.
+          Она помогает с повторяющимися методами, а не принимает решение о правильности данных за автора.
         </Callout>
       </Section>
 
-      <Section number="02" title="Подчёркивание обозначает внутренний атрибут">
+      <Section number="02" title="Поля формируют конструктор и значения по умолчанию">
         <Lead>
-          В Python одно начальное подчёркивание является соглашением: атрибут предназначен для внутреннего
-          использования класса. Язык технически не запрещает доступ, но разработчик видит границу и понимает, что
-          прямое изменение может нарушить контракт.
+          Аннотация поля показывает, какие данные ожидаются у экземпляра. После <code className="lesson-token">@dataclass</code>
+          из объявлений строится <code className="lesson-token">__init__</code>: он принимает аргументы и сохраняет
+          их в соответствующие атрибуты. Этот конструктор выполняет знакомое присваивание за нас, но пока не проверяет
+          допустимость значений.
         </Lead>
 
-        <CompareSolutions
-          question="Как показать, что запись должна проходить через правила класса?"
-          left={{
-            title: "Полностью открытый атрибут",
-            code:
-              'task.priority = 100\n' +
-              'print(task.priority)',
-            note: "Любое значение записывается без проверки.",
-          }}
-          right={{
-            title: "Внутреннее хранение",
-            code:
-              'self._priority = checked_priority\n' +
-              'print(task.priority)',
-            note: "Внешний интерфейс отделён от способа хранения.",
-          }}
-          preferred="right"
-          explanation="Подчёркивание сообщает о внутренней детали, а публичное имя priority можно связать с property."
-        />
-
-        <TrueFalse
-          statement={
-            <>
-              Атрибут <code>_priority</code> становится абсолютно недоступным за пределами класса.
-            </>
-          }
-          isTrue={false}
-          explanation="Это соглашение, а не жёсткий модификатор доступа. Ответственный код не обходит публичный интерфейс без необходимости."
-        />
-
-        <BugHunt
-          code={
-            'class Task:\n' +
-            '    def __init__(self, priority):\n' +
-            '        self._priority = priority\n\n' +
-            'task = Task(3)\n' +
-            'task._priority = -5'
-          }
-          question="Почему одно подчёркивание не гарантирует корректность?"
-          options={[
-            "В Python это только соглашение, прямой доступ технически возможен",
-            "Отрицательные числа всегда превращаются в положительные",
-            "__init__ запрещает последующие изменения",
-          ]}
-          correctIndex={0}
-          explanation="Корректность обеспечивает публичный интерфейс и дисциплина использования, а не магическая блокировка имени."
-        />
-
-        <RecallCard
-          question="Зачем тогда использовать _priority, если Python не запрещает доступ?"
-          answer={
-            <p>
-              Имя отделяет внутреннее представление от публичного API. Это позволяет позже изменить хранение или
-              добавить проверки, не переписывая все обычные обращения <code>task.priority</code>.
-            </p>
-          }
-        />
-      </Section>
-
-      <Section number="03" title="Явный геттер возвращает значение">
-        <Lead>
-          Геттер является обычным методом чтения. Он полезен как первый учебный шаг: видно, что внешний код вызывает
-          действие, а класс решает, какое значение вернуть. Но тривиальный геттер для каждого поля может сделать
-          Python-код избыточным.
-        </Lead>
+        <p>Посмотрим на независимый пример. Код ниже завершён: он создаёт план чтения с обязательной темой и обычной длительностью по умолчанию.</p>
 
         <CodeBlock
-          caption="явный метод чтения"
+          caption="полный пример: план чтения"
           code={
-            'class Task:\n' +
-            '    def __init__(self, title):\n' +
-            '        self._title = title\n\n' +
-            '    def get_title(self):\n' +
-            '        return self._title\n\n' +
-            'task = Task("Python")\n' +
-            'print(task.get_title())'
+            "from dataclasses import dataclass\n\n" +
+            "@dataclass\n" +
+            "class ReadingPlan:\n" +
+            "    topic: str\n" +
+            "    minutes: int = 20\n\n" +
+            "plan = ReadingPlan(\"Списки\")\n" +
+            "print(plan.topic)\n" +
+            "print(plan.minutes)"
           }
+        />
+
+        <p>
+          Мы передали только тему. Созданный <code>__init__</code> записывает её в <code>plan.topic</code>, а для
+          <code>minutes</code> использует значение <code>20</code>. Если передать второе значение, например
+          <code>ReadingPlan("Списки", 35)</code>, оно заменит default для этого экземпляра. Само определение класса
+          при этом не меняется.
+        </p>
+
+        <StepThrough
+          code={
+            "@dataclass\n" +
+            "class ReadingPlan:\n" +
+            "    topic: str\n" +
+            "    minutes: int = 20\n\n" +
+            "plan = ReadingPlan(\"Списки\")"
+          }
+          steps={[
+            { line: 0, note: "Когда класс определяется, декоратор видит его поля и готовит стандартные методы.", vars: { поля: "topic, minutes" } },
+            { line: 5, note: "Вызов класса передаёт тему снаружи; поле minutes не получило аргумент.", vars: { topic: '"Списки"' } },
+            { line: 5, note: "Сгенерированный конструктор сохраняет тему и берёт значение minutes по умолчанию.", vars: { "plan.topic": '"Списки"', "plan.minutes": "20" } },
+          ]}
+        />
+
+        <p>
+          Это подготовленная трассировка порядка, а не сообщение о выполненном запуске. При объявлении сначала идут
+          поля без значения по умолчанию, а затем поля с default. Так же устроена сигнатура функции: обязательное
+          значение нельзя поставить после параметра, который уже можно пропустить. Позиционные аргументы следуют
+          порядку полей, именованные позволяют явно назвать получателя.
+        </p>
+
+        <MethodGrid
+          rows={[
+            ["topic: str", "Обязательное поле и первый параметр конструктора."],
+            ["minutes: int = 20", "Поле можно не передавать, тогда экземпляр получает 20."],
+            ["ReadingPlan(topic=\"Списки\")", "Именованный вызов явно показывает, какое поле получает значение."],
+          ]}
         />
 
         <PredictOutput
           code={
-            'class Task:\n' +
-            '    def __init__(self, priority):\n' +
-            '        self._priority = priority\n\n' +
-            '    def get_priority(self):\n' +
-            '        return self._priority\n\n' +
-            'task = Task(4)\n' +
-            'print(task.get_priority())'
+            "from dataclasses import dataclass\n\n" +
+            "@dataclass\n" +
+            "class ReadingPlan:\n" +
+            "    topic: str\n" +
+            "    minutes: int = 20\n\n" +
+            "plan = ReadingPlan(\"Списки\")\n" +
+            "print(plan.topic)\n" +
+            "print(plan.minutes)"
           }
-          output={"4"}
-          hint="Метод только читает внутренний атрибут и возвращает его."
+          output={'Списки\n20'}
+          hint="Первый аргумент попадает в обязательное поле. Второе поле получает default."
         />
-
-        <CompareSolutions
-          question="Нужен ли отдельный get_id(), если чтение id не требует логики?"
-          left={{
-            title: "Метод для каждого поля",
-            code: 'task.get_id()\ntask.get_title()\ntask.get_priority()',
-            note: "Много церемониального кода без дополнительного правила.",
-          }}
-          right={{
-            title: "Свойства Python",
-            code: 'task.id\ntask.title\ntask.priority',
-            note: "Читается как атрибут, но класс может выполнить код property.",
-          }}
-          preferred="right"
-          explanation="Property сохраняет естественный синтаксис доступа и оставляет место для логики."
-        />
-
-        <Callout>
-          Геттер не должен неожиданно менять объект или записывать файл. Операция чтения должна оставаться
-          предсказуемой.
-        </Callout>
       </Section>
 
-      <Section number="04" title="Сеттер проверяет до изменения">
+      <Section number="03" title="Аннотация описывает, а __post_init__ проверяет">
         <Lead>
-          Сеттер получает новое значение, проверяет его и только после успеха заменяет внутренний атрибут. Если
-          проверка не пройдена, старое корректное состояние должно сохраниться.
+          Запись <code className="lesson-token">pages: int</code> сообщает читателю и инструментам, что поле
+          рассчитано на целое число. Сам Python не превращает эту аннотацию в проверку входа. При желании можно
+          создать объект с текстом в <code>pages</code>, пока обычный код явно не проверит значение.
         </Lead>
 
-        <StepThrough
+        <p>
+          В dataclass есть специальный метод <code className="lesson-token">__post_init__</code>. Сгенерированный
+          конструктор сначала присваивает аргументы объявленным полям, а после этого один раз вызывает этот метод на
+          новом экземпляре. Поэтому там удобно повторно использовать уже подготовленные проверки и нормализацию.
+          Если проверка поднимает исключение, вызов конструктора завершается ошибкой: вызывающий код не получает
+          допустимый объект.
+        </p>
+
+        <p>
+          Представим пункт регистрации после заполнения анкеты. Сначала ответы оказываются в соответствующих
+          графах, затем сотрудник сверяет обязательные условия и либо принимает анкету, либо возвращает её с
+          ошибкой. В нашем коде присваивания делает сгенерированный <code>__init__</code>, а сверку выполняет
+          <code>__post_init__</code>. Эта аналогия описывает только создание: последующее присваивание полю само не
+          вызывает повторную проверку.
+        </p>
+
+        <p>
+          Сначала объявления полей задают структуру класса, затем проследим создание одного экземпляра по шагам.
+        </p>
+
+        <Diagram caption="Как dataclass создаёт проверенный экземпляр">
+          <DiagramFlow label="Генерация конструктора и проверка Task">
+            <DiagramNode title="Поля + @dataclass" shape="input-output">
+              <p>Поля задают состав данных и порядок аргументов</p>
+            </DiagramNode>
+            <DiagramArrow label="генерирует" />
+            <DiagramNode title="__init__">
+              <p>Принимает аргументы и присваивает значения полям</p>
+            </DiagramNode>
+            <DiagramArrow label="после присваивания" />
+            <DiagramNode title="__post_init__">
+              <p>Применяет проверки и нормализацию</p>
+            </DiagramNode>
+            <DiagramArrow label="если проверки пройдены" />
+            <DiagramNode title="Готовый объект Task" shape="terminator">
+              <p>Возвращается вызывающему коду</p>
+            </DiagramNode>
+          </DiagramFlow>
+        </Diagram>
+
+        <p>
+          Схема показывает успешный путь. Если <code>__post_init__</code> поднимает исключение, создание останавливается
+          на проверке, и вызывающий код получает ошибку.
+        </p>
+
+        <p>
+          В отдельном примере с аудиофрагментом проверим типы и значения после начального присваивания. Мы сначала
+          проверяем строку до вызова <code>strip()</code>, затем проверяем очищенное название и длительность. Ни один
+          неверный кандидат не заменяет корректные данные молча.
+        </p>
+
+        <CodeBlock
+          caption="полный пример: правила при создании"
           code={
-            'class Task:\n' +
-            '    def set_priority(self, value):\n' +
-            '        if not 1 <= value <= 5:\n' +
-            '            raise ValueError("Приоритет должен быть от 1 до 5")\n' +
-            '        self._priority = value\n\n' +
-            'task.set_priority(4)'
+            "from dataclasses import dataclass\n\n" +
+            "@dataclass\n" +
+            "class AudioClip:\n" +
+            "    title: str\n" +
+            "    seconds: int\n\n" +
+            "    def __post_init__(self):\n" +
+            "        if not isinstance(self.title, str):\n" +
+            "            raise TypeError(\"title должен быть строкой\")\n" +
+            "        self.title = self.title.strip()\n" +
+            "        if not self.title:\n" +
+            "            raise ValueError(\"Название не может быть пустым\")\n" +
+            "        if type(self.seconds) is not int or self.seconds <= 0:\n" +
+            "            raise ValueError(\"seconds должен быть положительным целым\")\n\n" +
+            "clip = AudioClip(\"  Первый выпуск  \", 180)\n" +
+            "print(clip.title, clip.seconds)"
           }
-          steps={[
-            { line: 6, note: "В метод передаётся новое значение 4.", vars: { value: "4" } },
-            { line: 2, note: "Проверка диапазона проходит.", vars: { условие: "False для ветки ошибки" } },
-            { line: 4, note: "Только после проверки изменяется внутренний атрибут.", vars: { "task._priority": "4" } },
-          ]}
         />
 
-        <BranchExplorer
-          code={
-            'cleaned = value.strip()\n' +
-            'if not cleaned:\n' +
-            '    raise ValueError("Пустое название")\n' +
-            'self._title = cleaned\n' +
-            'return self._title'
-          }
-          scenarios={[
-            { label: 'value = "  JSON  "', activeLine: 4, output: "сохраняется JSON" },
-            { label: 'value = "   "', activeLine: 2, output: "ValueError, старое значение не меняется" },
-          ]}
-        />
+        <p>
+          Условия выполняются по порядку. Сначала мы убеждаемся, что с названием можно работать как со строкой,
+          затем сохраняем очищенное значение. Для длительности точное сравнение типа исключает логическое
+          <code>True</code>, которое в Python является разновидностью целого числа. В проектной Task три предметных
+          валидатора уже существуют; dataclass должен вызвать их, а не копировать их диапазоны и сообщения.
+        </p>
 
         <BugHunt
           code={
-            'def set_title(self, value):\n' +
-            '    self._title = value.strip()\n' +
-            '    if not self._title:\n' +
-            '        raise ValueError("Пустое название")'
+            "from dataclasses import dataclass\n\n" +
+            "@dataclass\n" +
+            "class Chapter:\n" +
+            "    pages: int\n\n" +
+            "    def __post_init__(self):\n" +
+            "        if self.pages < 1:\n" +
+            "            raise ValueError(\"Страница должна быть положительной\")\n\n" +
+            "chapter = Chapter(\"много страниц\")"
           }
-          question="Почему порядок действий опасен?"
+          question="Почему аннотации pages: int недостаточно, чтобы пример отверг неверный тип понятным отказом?"
           options={[
-            "Некорректное значение записывается до проверки",
-            "strip нельзя использовать в методе",
-            "ValueError удаляет объект",
+            "Сравнение строки с числом завершится TypeError до предметной проверки",
+            "Dataclass не вызывает __post_init__ при создании",
+            "Целые значения нельзя сравнивать с числом 1",
           ]}
           correctIndex={0}
-          explanation="При исключении объект уже содержит пустое название. Сначала проверяют локальное значение, затем присваивают."
+          explanation="Конструктор принимает строку, потому что аннотация не выполняет проверку. Затем сравнение pages < 1 ломается с TypeError. Сначала проверяем тип, потом допустимый диапазон."
           fix={
-            'def set_title(self, value):\n' +
-            '    cleaned = value.strip()\n' +
-            '    if not cleaned:\n' +
-            '        raise ValueError("Пустое название")\n' +
-            '    self._title = cleaned'
+            "if type(self.pages) is not int:\n" +
+            "    raise TypeError(\"pages должен быть целым числом\")\n" +
+            "if self.pages < 1:\n" +
+            "    raise ValueError(\"Страница должна быть положительной\")"
           }
-        />
-
-        <CodeSequence
-          title="Соберите безопасный сеттер"
-          prompt="Проверка должна завершиться до изменения объекта."
-          pieces={[
-            { id: "clean", code: "cleaned = value.strip()" },
-            { id: "check", code: "if not cleaned:" },
-            { id: "raise", code: '    raise ValueError("Пустое название")' },
-            { id: "assign", code: "self._title = cleaned" },
-          ]}
-          correctOrder={["clean", "check", "raise", "assign"]}
-          explanation="Локальная переменная позволяет проверить кандидата, не разрушая прежнее состояние."
         />
       </Section>
 
-      <Section number="05" title="property сохраняет синтаксис обычного атрибута">
+      <Section number="04" title="Переносим прежнюю Task, не придумывая новые правила">
         <Lead>
-          Декоратор <code className="lesson-token">@property</code> превращает метод чтения в управляемый атрибут.
-          Внешний код пишет <code>task.priority</code>, но Python вызывает метод. Сеттер с тем же публичным именем
-          перехватывает присваивание <code>task.priority = value</code>.
+          Теперь свяжем механизм с проектом. В обычном классе <code className="lesson-token">Task</code> уже есть
+          идентификатор, название, приоритет и состояние завершения. В её объявлении сначала указываются обязательные
+          поля <code>id</code> и <code>title</code>, затем поля со значениями по умолчанию
+          <code>priority=2</code> и <code>is_done=False</code>. Эти имена и порядок сохраняют договор привычного
+          конструктора.
         </Lead>
 
+        <p>
+          Сгенерированный конструктор принимает аргументы в этом порядке. Он не должен принудительно сбрасывать
+          явно переданное <code>is_done=True</code>: default используется только тогда, когда значение не передали.
+          Иначе восстановленная запись о завершённой задаче превратится в незавершённую уже при создании объекта.
+          Чтобы оставить прежние позиционные и именованные вызовы понятными, мы не переименовываем поле в
+          <code>task_id</code> только из-за имени параметра старой словарной фабрики.
+        </p>
+
+        <p>Ниже только объявление полей будущей Task, не полная модель и не готовый ответ для практики.</p>
+
         <CodeBlock
-          caption="свойство priority"
+          caption="фрагмент: поля целевой модели"
           code={
-            'class Task:\n' +
-            '    @property\n' +
-            '    def priority(self):\n' +
-            '        return self._priority\n\n' +
-            '    @priority.setter\n' +
-            '    def priority(self, value):\n' +
-            '        if not isinstance(value, int):\n' +
-            '            raise TypeError("Приоритет должен быть int")\n' +
-            '        if not 1 <= value <= 5:\n' +
-            '            raise ValueError("Приоритет должен быть от 1 до 5")\n' +
-            '        self._priority = value'
+            "@dataclass\n" +
+            "class Task:\n" +
+            "    id: int\n" +
+            "    title: str\n" +
+            "    priority: int = 2\n" +
+            "    is_done: bool = False"
           }
         />
 
-        <StepThrough
-          code={
-            'task.priority = 5\n' +
-            'print(task.priority)'
-          }
-          steps={[
-            { line: 0, note: "Присваивание вызывает метод, отмеченный @priority.setter.", vars: { value: "5" } },
-            { line: 0, note: "После проверок сеттер записывает self._priority.", vars: { "task._priority": "5" } },
-            { line: 1, note: "Чтение вызывает метод, отмеченный @property.", vars: { вывод: "5" } },
-          ]}
-        />
-
-        <FillBlank
-          prompt="Свяжите сеттер с уже объявленным свойством title."
-          before="    @"
-          after=".setter"
-          options={["title", "_title", "property"]}
-          answer="title"
-          explanation="Имя сеттера должно ссылаться на публичное property title."
-        />
+        <p>
+          В <code>__post_init__</code> задача повторно использует
+          <code>validate_task_id</code>, <code>validate_title</code> и
+          <code>validate_priority</code>. Они проверяют и, где уже предусмотрено, нормализуют свои значения. Статус
+          мы проверяем как настоящий <code>bool</code>, а не вызываем <code>bool(value)</code>: преобразование могло
+          бы скрыть неверную строку. Новую копию общих правил в модель не переносим.
+        </p>
 
         <TrueFalse
           statement={
             <>
-              После добавления property внешний код обязан заменить <code>task.priority</code> на
-              <code>task.get_priority()</code>.
+              Если мы создаём <code>Task(12, "Черновик", 3, True)</code>, default поля
+              <code>is_done</code> заменит явно переданное значение на <code>False</code>.
             </>
           }
           isTrue={false}
-          explanation="Преимущество property в сохранении привычного синтаксиса атрибута."
+          explanation="Значение по умолчанию используется только при пропущенном аргументе. Переданный True остаётся значением поля, а __post_init__ проверяет его тип."
         />
+
+        <p>
+          Как и раньше, словарная фабрика остаётся для действующего CLI. Модель Task только готовит следующий этап
+          миграции. Мы не добавляем методы команд, новый список задач или запись JSON внутрь класса.
+        </p>
       </Section>
 
-      <Section number="06" title="__init__ использует те же публичные правила">
+      <Section number="05" title="Генерация не заменяет методы и конвертеры">
         <Lead>
-          Не нужно дублировать проверку при создании и при последующем изменении. Инициализатор может присваивать
-          значения через property: <code className="lesson-token">self.priority = priority</code>. Тогда срабатывает
-          тот же сеттер и объект нельзя создать с нарушенным инвариантом.
+          Для каждого экземпляра dataclass по умолчанию создаёт удобное представление <code className="lesson-token">__repr__</code>
+          и сравнение полей через <code className="lesson-token">__eq__</code>. Их назначение разное: repr помогает
+          увидеть состав объекта при диагностике, а равенство отвечает, совпадают ли значения полей у двух объектов
+          одного класса.
         </Lead>
 
-        <CompareSolutions
-          question="Как избежать двух разных проверок приоритета?"
-          left={{
-            title: "Обход property",
-            code:
-              'def __init__(self, priority):\n' +
-              '    self._priority = priority',
-            note: "Некорректное значение попадёт в объект без сеттера.",
-          }}
-          right={{
-            title: "Единый публичный путь",
-            code:
-              'def __init__(self, priority):\n' +
-              '    self.priority = priority',
-            note: "Присваивание вызывает @priority.setter.",
-          }}
-          preferred="right"
-          explanation="Все точки изменения используют одно правило, поэтому поведение не расходится."
+        <p>
+          В примере <code>ReadingPlan</code> два плана с одной темой и одинаковым числом минут могут быть равны по
+          <code>==</code>. Но они были созданы двумя отдельными вызовами класса, поэтому проверка
+          <code>is</code> показывает, что это разные экземпляры. Равные значения не означают один общий объект. Это
+          новое поведение: обычный класс из предыдущего шага ещё не сравнивал Task по всем полям.
+        </p>
+
+        <p>
+          Сгенерированное равенство сравнивает значения полей у экземпляров одного класса. Поэтому два плана с одной
+          темой, но разной длительностью не равны: совпадение части данных не заменяет сравнение всего набора.
+          Присваивание <code>first = second</code> работает иначе: оба имени начинают ссылаться на один объект, и тогда
+          <code>first is second</code> даст <code>True</code>. Для Task это означает сравнение сразу
+          <code>id</code>, <code>title</code>, <code>priority</code> и <code>is_done</code>, а не только названия.
+          Если проекту когда-нибудь понадобится другой смысл равенства, например только по идентификатору, это будет
+          отдельный договор модели. Здесь мы оставляем стандартное правило и наблюдаем его до миграции.
+        </p>
+
+        <MethodGrid
+          rows={[
+            ["repr(plan)", "Показывает класс и значения полей для чтения при отладке."],
+            ["first == second", "У dataclass сравнивает поля экземпляров одного типа."],
+            ["first is second", "Проверяет, указывают ли имена на один объект."],
+            ["to_dict()", "Остаётся нашим явным договором словарной записи."],
+          ]}
         />
 
-        <CodeBlock
-          caption="инициализация через свойства"
-          code={
-            'class Task:\n' +
-            '    def __init__(self, task_id, title, priority, is_done=False):\n' +
-            '        if not isinstance(task_id, int) or task_id <= 0:\n' +
-            '            raise ValueError("id должен быть положительным int")\n' +
-            '        self._id = task_id\n' +
-            '        self.title = title\n' +
-            '        self.priority = priority\n' +
-            '        self._is_done = bool(is_done)'
-          }
-        />
+        <p>
+          Представление из <code>__repr__</code> не становится форматом JSON. Существующие
+          <code>to_dict()</code> и <code>Task.from_dict()</code> продолжают явно перечислять четыре прежних поля.
+          Dataclass не знает, какие ключи должны быть в файле, что делать с повреждённой записью и как открыть путь.
+          При восстановлении запись передаёт статус и остальные значения в обычный конструктор, после чего
+          <code>__post_init__</code> применяет правила модели.
+        </p>
 
-        <PredictOutput
-          code={
-            'try:\n' +
-            '    task = Task(1, "Python", 9)\n' +
-            'except ValueError as error:\n' +
-            '    print(error)'
-          }
-          output={"Приоритет должен быть от 1 до 5"}
-          hint="__init__ присваивает через priority property, поэтому вызывается сеттер."
-        />
-
-        <Callout>
-          Не создавайте объект частично, а затем не пытайтесь «довалидировать» его в services. Модель должна защищать
-          свои базовые инварианты самостоятельно.
-        </Callout>
-      </Section>
-
-      <Section number="07" title="Вычисляемое property не обязано храниться">
-        <Lead>
-          Свойство может вычислять значение из других атрибутов. Например, статусная метка или признак высокого
-          приоритета не требуют отдельного поля: иначе сохранённое значение может разойтись с исходными данными.
-        </Lead>
-
-        <CodeBlock
-          caption="свойства только для чтения"
-          code={
-            'class Task:\n' +
-            '    @property\n' +
-            '    def is_high_priority(self):\n' +
-            '        return self.priority >= 4\n\n' +
-            '    @property\n' +
-            '    def status_mark(self):\n' +
-            '        return "x" if self.is_done else " "'
-          }
-        />
-
-        <PredictOutput
-          code={
-            'task = Task(1, "Python", 4)\n' +
-            'print(task.is_high_priority)\n' +
-            'print(task.status_mark)\n' +
-            'task.mark_done()\n' +
-            'print(task.status_mark)'
-          }
-          output={"True\n \nx"}
-          hint="У вычисляемых свойств нет круглых скобок и отдельного сохранённого значения."
-        />
-
-        <BugHunt
-          code={
-            'task.is_high_priority = False'
-          }
-          question="Почему присваивание свойству только для чтения недопустимо?"
+        <QuizCard
+          question="Какие части должны остаться в нашей модели после перехода на dataclass?"
           options={[
-            "Для property не объявлен setter, а значение вычисляется из priority",
-            "False нельзя присваивать объекту",
-            "Все property должны храниться в JSON",
+            "to_dict/from_dict, предметные методы и собственные проверки",
+            "Только поля: dataclass генерирует проверки и JSON",
+            "Отдельные методы для каждой команды CLI",
           ]}
           correctIndex={0}
-          explanation="Чтобы изменить результат, нужно изменить исходный priority через его контролируемый сеттер."
-          fix={'task.priority = 2\nprint(task.is_high_priority)  # False'}
+          explanation="Декоратор генерирует несколько стандартных методов. Преобразования, правила Task и её предметное поведение остаются явным кодом."
         />
 
-        <RecallCard
-          question="Почему is_high_priority лучше вычислять, а не сохранять отдельным bool?"
-          answer={
-            <p>
-              Результат полностью определяется priority. При хранении двух полей пришлось бы синхронизировать их при
-              каждом изменении, а вычисляемое property всегда отражает актуальное значение.
-            </p>
-          }
-        />
+        <p>
+          Если до перехода в Task был собственный <code>__str__</code>, он остаётся способом показать карточку
+          человеку. Вычисляемый <code>status_label</code> по-прежнему читает текущее поле
+          <code>is_done</code>. Строка, repr и словарь отвечают на разные вопросы, поэтому мы не восстанавливаем
+          объект из текста для показа.
+        </p>
       </Section>
 
-      <Section number="08" title="Финальная модель блока и интеграция с JSON">
+      <Section number="06" title="Что не меняется после __post_init__">
         <Lead>
-          Финальный Task принимает данные через единые свойства, предоставляет безопасные операции и возвращает
-          обычный словарь для storage. При загрузке JSON создание Task снова запускает те же проверки.
+          Проверка при создании не означает постоянное наблюдение за каждым полем. После успешного создания
+          выражение <code className="lesson-token">task.priority = 9</code> напрямую присваивает значение и не
+          запускает <code>__post_init__</code> ещё раз. Это не повод возвращать второй конструктор или прятать
+          незнакомое поведение в dataclass.
         </Lead>
 
-        <CodeBlock
-          caption="models.py: итог блока 7"
-          code={
-            'class Task:\n' +
-            '    def __init__(self, task_id, title, priority, is_done=False):\n' +
-            '        if not isinstance(task_id, int) or task_id <= 0:\n' +
-            '            raise ValueError("Некорректный id")\n' +
-            '        self._id = task_id\n' +
-            '        self.title = title\n' +
-            '        self.priority = priority\n' +
-            '        self._is_done = bool(is_done)\n\n' +
-            '    @property\n' +
-            '    def id(self):\n' +
-            '        return self._id\n\n' +
-            '    @property\n' +
-            '    def title(self):\n' +
-            '        return self._title\n\n' +
-            '    @title.setter\n' +
-            '    def title(self, value):\n' +
-            '        cleaned = value.strip()\n' +
-            '        if not cleaned:\n' +
-            '            raise ValueError("Пустое название")\n' +
-            '        self._title = cleaned\n\n' +
-            '    @property\n' +
-            '    def priority(self):\n' +
-            '        return self._priority\n\n' +
-            '    @priority.setter\n' +
-            '    def priority(self, value):\n' +
-            '        if not isinstance(value, int):\n' +
-            '            raise TypeError("Приоритет должен быть int")\n' +
-            '        if not 1 <= value <= 5:\n' +
-            '            raise ValueError("Приоритет должен быть от 1 до 5")\n' +
-            '        self._priority = value\n\n' +
-            '    @property\n' +
-            '    def is_done(self):\n' +
-            '        return self._is_done\n\n' +
-            '    def mark_done(self):\n' +
-            '        self._is_done = True\n\n' +
-            '    def __str__(self):\n' +
-            '        mark = "x" if self.is_done else " "\n' +
-            '        return f"[{mark}] {self.id}. {self.title}"\n\n' +
-            '    def to_dict(self):\n' +
-            '        return {\n' +
-            '            "id": self.id,\n' +
-            '            "title": self.title,\n' +
-            '            "priority": self.priority,\n' +
-            '            "is_done": self.is_done,\n' +
-            '        }'
+        <p>
+          Сохраняем уже изученные явные методы <code>mark_done</code>, <code>rename</code> и
+          <code>set_priority</code>. Переименование и смена приоритета сначала пропускают кандидата через общие
+          валидаторы, затем присваивают поле. Если проверка не прошла, старое значение остаётся на месте. Для
+          вычисляемого <code>status_label</code> и пользовательского <code>__str__</code> оставляем прежний договор.
+        </p>
+
+        <TrueFalse
+          statement={
+            <>
+              После вызова <code>task.set_priority(4)</code> dataclass запускает
+              <code>__post_init__</code> при каждом следующем прямом присваивании поля.
+            </>
           }
+          isTrue={false}
+          explanation="__post_init__ связан с завершением создания экземпляра. Для дальнейшего изменения используем проверяющий метод модели."
         />
 
-        <div className="lesson-check-group">
-          <QuizCard
-            question="Что обозначает _priority?"
-            options={["внутреннюю деталь по соглашению", "абсолютно закрытое поле", "атрибут модуля json"]}
-            correctIndex={0}
-            explanation="Одно подчёркивание просит использовать публичный интерфейс класса."
-          />
-          <QuizCard
-            question="В каком порядке работает безопасный сеттер?"
-            options={["подготовить, проверить, присвоить", "присвоить, затем проверить", "сохранить JSON, затем проверить"]}
-            correctIndex={0}
-            explanation="Объект не должен получать некорректное промежуточное состояние."
-          />
-          <QuizCard
-            question="Что делает @property?"
-            options={["даёт методу синтаксис чтения атрибута", "автоматически сохраняет JSON", "создаёт новый класс"]}
-            correctIndex={0}
-            explanation="Чтение task.priority вызывает метод priority без круглых скобок."
-          />
-          <QuizCard
-            question="Почему __init__ присваивает self.priority = priority?"
-            options={["чтобы использовать тот же сеттер", "чтобы обойти проверку", "чтобы создать глобальную переменную"]}
-            correctIndex={0}
-            explanation="Создание и последующие изменения подчиняются одному правилу."
-          />
-        </div>
+        <p>
+          Эта граница важна и для обычных классов, и для dataclass: публичное поле можно изменить в обход метода,
+          если вызывающий код намеренно так поступит. Мы не обещаем абсолютный запрет обхода и не добавляем сейчас
+          <code>frozen</code>, <code>slots</code>, сортировку или новые свойства. Следующее занятие вводит
+          независимые <code>tags</code>, поэтому здесь оставляем ровно четыре поля.
+        </p>
+      </Section>
 
-        <KeyTakeaways
-          points={[
-            <>Инкапсуляция отделяет публичный интерфейс от внутреннего хранения.</>,
-            <>Одно подчёркивание обозначает внутреннюю деталь по соглашению Python.</>,
-            <>Геттер читает значение, сеттер проверяет кандидата до присваивания.</>,
-            <><code>@property</code> сохраняет синтаксис обычного атрибута.</>,
-            <><code>@name.setter</code> контролирует присваивание публичному свойству.</>,
-            <><code>__init__</code> использует те же свойства и не дублирует валидацию.</>,
-            <>Вычисляемое property не нужно отдельно хранить и синхронизировать.</>,
-            <>Восстановление Task из JSON снова проверяет инварианты модели.</>,
+      <Section number="07" title="Что мы будем делать в практике">
+        <Lead>
+          Мы начнём с обычной <code className="lesson-token">Task</code> в
+          <code className="lesson-token">app.models</code>, у которой уже есть методы, вычисляемое представление и
+          четырёхпольные конвертеры. Задача практики: заменить шаблонную конструкцию класса, сохранив границы
+          действующего проекта.
+        </Lead>
+
+        <LinkedNotes
+          variant="connected"
+          items={[
+            {
+              title: "Заменим шаблон",
+              description: "Объявления полей dataclass дадут прежний конструктор с теми же именами и значениями по умолчанию.",
+            },
+            {
+              title: "Перенесём правила",
+              description: "__post_init__ применит существующие валидаторы и проверку статуса, а прежние методы и конвертеры останутся в Task.",
+            },
+            {
+              title: "Сверим результат",
+              description: "Проверим отказ на ошибочных данных, круг старой записи, repr, равенство и отдельность экземпляров.",
+            },
           ]}
         />
 
-        <PracticeCta text="Переведите title и priority на свойства с внутренними атрибутами. Проверьте создание с пустым title, приоритетами 0 и 6, успешное изменение, сохранение старого значения после ошибки, вычисляемый is_high_priority и загрузку некорректной записи из JSON." />
+        <p>
+          Конструктор и <code>__post_init__</code> подготовлены примерами до задания. Мы проверим не только новую
+          модель, но и привычное поведение проекта: в <code>app.models</code> останется одна Task, импорт не запустит
+          CLI, а функциональные операции, файл и JSON продолжат работать со словарями. Новое поле
+          <code>tags</code> появится на следующем шаге.
+        </p>
       </Section>
     </RichLesson>
   );

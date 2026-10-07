@@ -33,7 +33,7 @@ JSON уже изучен и работает. Пределы этого этап
 
 ### Что меняется по сравнению с прежним планом
 
-Источник сравнения: [старый план](../../PLANNER_API_BLOCK_11_PATH.md), [TSX](../../../frontend/src/lessons/planner-api/block_11/Lesson57.tsx) и [практика блока](../../../backend/learning/course_content/planner_api/block_11/manual.py).
+Источник сравнения: [старый план](../../PLANNER_API_BLOCK_11_PATH.md), [TSX](../../../frontend/src/lessons/planner-api/block_11/Lesson57.tsx) и [практика блока](../../../backend/learning/course_content/chapter_03/block_11/manual.py).
 
 - Вход уже содержит настоящий POST, не echo. Создание не откладывается до конца блока.
 - Тема «хранилище в памяти» заменяется исследованием настоящего JSON-сохранения и server-owned id. JsonStorage не реализуется повторно.
@@ -75,7 +75,7 @@ JSON уже изучен и работает. Пределы этого этап
 
 Дополнительный клиентский id/is_done не становится серверным. Unknown extra-поле при стандартной настройке модели не обязано давать 422. Rule max текущих id допускает повтор удалённого максимума; историческую уникальность не обещаем.
 
-Новые постоянные части здесь: schemas.py и недостающие методы существующего services.py. CLI, build_service, модели, storage и данные не переносятся в новый проект. Источник практики [manual.py](../../../backend/learning/course_content/planner_api/block_11/manual.py) должен быть согласован с [code_tasks.py](../../../backend/learning/course_content/planner_api/block_11/code_tasks.py), MD/TSX и [загрузчиком](../../../backend/learning/content.py) при реализации карты.
+Новые постоянные части здесь: schemas.py и недостающие методы существующего services.py. CLI, build_service, модели, storage и данные не переносятся в новый проект. Источник практики [manual.py](../../../backend/learning/course_content/chapter_03/block_11/manual.py) должен быть согласован с [code_tasks.py](../../../backend/learning/course_content/chapter_03/block_11/code_tasks.py), MD/TSX и [загрузчиком](../../../backend/learning/content.py) при реализации карты.
 
 ## 3. Паспорта занятий
 
