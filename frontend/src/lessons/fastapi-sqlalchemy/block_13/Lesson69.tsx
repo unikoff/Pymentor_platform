@@ -1,5 +1,26 @@
 import { Layers, Route } from "lucide-react";
-import { BranchExplorer, BugHunt, Callout, CodeBlock, CodeSequence, CompareSolutions, FillBlank, KeyTakeaways, Lead, MatchPairs, PracticeCta, QuizCard, RichHero, RichLesson, Section, StepThrough } from "../../shared";
+import {
+  BugHunt,
+  Callout,
+  CodeBlock,
+  CodeSequence,
+  Diagram,
+  DiagramArrow,
+  DiagramFlow,
+  DiagramNode,
+  DiagramNote,
+  FillBlank,
+  KeyTakeaways,
+  Lead,
+  LinkedNotes,
+  MatchPairs,
+  PracticeCta,
+  QuizCard,
+  RichHero,
+  RichLesson,
+  Section,
+} from "../../shared";
+
 const BLOCK_TITLE = "Этап 4 · Блок 13 · FastAPI как цельное приложение";
 
 export function Lesson69({ module }: { module?: string }) {
@@ -8,652 +29,476 @@ export function Lesson69({ module }: { module?: string }) {
       <RichHero
         variant="project"
         chip={module ?? BLOCK_TITLE}
-        title={"Путь HTTP-запроса внутри FastAPI"}
-        intro={"Разберём FastAPI как конвейер, а не как набор decorators: request проходит через Uvicorn, поиск route, разбор параметров, Pydantic validation, dependencies, endpoint и формирование response."}
+        title={"Пакет ресурса tasks: перенос без смены поведения"}
+        intro={"Сгруппируем уже знакомые HTTP-маршруты и схемы в пакет одного ресурса. Мы проследим реальные импорты и проверим, что API, CLI и договор задач остаются прежними."}
         tags={[
-          { icon: <Route size={14} />, label: "request → response" },
-          { icon: <Layers size={14} />, label: "границы ответственности" },
+          { icon: <Layers size={14} />, label: "модуль → пакет" },
+          { icon: <Route size={14} />, label: "сохраняем HTTP-договор" },
         ]}
       />
 
-      <Section number="01" title={"Зачем видеть весь конвейер"}>
+      <Section number="00" title={"От отдельного router к пакету ресурса"}>
         <Lead>
-          {"После третьего этапа endpoint уже работает, но его легко воспринимать как магическую функцию. Перед подключением базы данных важно увидеть, какие шаги FastAPI выполняет до и после строки вашего Python-кода."}
+          {"В занятиях 64-68 мы уже подключали APIRouter, проверяли API через TestClient и сохраняли один сервис с JSON-хранилищем. Теперь возьмём ту же рабочую основу и подготовим её к следующему этапу: файлы HTTP-ресурса будут собраны рядом, а сервис и данные останутся на прежнем месте."}
         </Lead>
 
-        <div className="lesson-practice-steps">
-          <h3>{"Симптом магии"}</h3>
-          <p>
-            {"Ученик меняет decorator, schema и return одновременно, но не понимает, на каком этапе возник status 422 или 500."}
-          </p>
-
-          <h3>{"Новая модель"}</h3>
-          <p>
-            {"Request проходит последовательность независимых границ, каждая из которых отвечает на свой вопрос."}
-          </p>
-
-          <h3>{"Практическая польза"}</h3>
-          <p>
-            {"По status и traceback можно определить, дошёл ли request до endpoint и какая часть требует проверки."}
-          </p>
-
-        </div>
-
-        <CodeBlock
-          caption={"маршрут запроса"}
-          code={
-            "HTTP client\n" +
-            "→ Uvicorn принимает соединение\n" +
-            "→ FastAPI находит route\n" +
-            "→ извлекает path, query, headers и body\n" +
-            "→ Pydantic проверяет данные\n" +
-            "→ FastAPI решает dependencies\n" +
-            "→ endpoint связывает шаги\n" +
-            "→ response data сериализуется\n" +
-            "→ client получает status, headers и body"
-          }
+        <LinkedNotes
+          variant="connected"
+          items={[
+            {
+              title: "Точка старта",
+              description: "В app/routers/tasks.py лежат маршруты, в app/schemas.py находятся HTTP-схемы. app/api.py подключает router, а CLI использует тот же PlannerService.",
+            },
+            {
+              title: "Новый вопрос",
+              description: "Как разложить файлы одного ресурса по пакету и обновить адреса импортов, чтобы не создать вторую копию и не изменить ответы API?",
+            },
+            {
+              title: "Результат",
+              description: "Маршруты и схемы находятся в app/routers/tasks/, импорты указывают на новые модули, прежние операции и CLI продолжают работать.",
+            },
+          ]}
         />
 
-        <CodeSequence
-          title={"Соберите путь request"}
-          prompt={"Расположите этапы от клиента до response."}
-          pieces={[
-            { id: "client", code: "клиент отправляет request" },
-            { id: "route", code: "FastAPI выбирает route" },
-            { id: "parse", code: "параметры извлекаются и проверяются" },
-            { id: "deps", code: "dependencies решаются" },
-            { id: "handler", code: "endpoint выполняется" },
-            { id: "response", code: "формируется response" },
+        <p>
+          {"Мы не начинаем новый Planner и не переносим весь проект в HTTP-пакет. Наше изменение ограничено размещением router и схем. Оно завершает знакомую работу с API и создаёт пустые места для следующих тем, но само по себе не добавляет настройки, зависимости или SQL."}
+        </p>
+      </Section>
+
+      <Section number="01" title={"Сначала различим роли существующих файлов"}>
+        <Lead>
+          {"Перед переносом полезно восстановить карту ответственности. Мы уже знаем отдельные части по предыдущим занятиям, поэтому сейчас не переобъясняем Task, сервис или JSON. Уточняем, какой файл является владельцем HTTP-адаптера, а какой остаётся за границами ресурса."}
+        </Lead>
+
+        <LinkedNotes
+          items={[
+            {
+              title: "app/api.py",
+              description: "Создаёт FastAPI-приложение, собирает сервис и подключает router. Здесь же остаются health и stats.",
+            },
+            {
+              title: "app/routers/tasks.py",
+              description: "В исходном состоянии содержит APIRouter и обработчики HTTP-ресурса tasks.",
+            },
+            {
+              title: "app/schemas.py",
+              description: "Содержит Pydantic-схемы для входа и публичного ответа. Их контракт уже использует клиент.",
+            },
+            {
+              title: "app/main.py и прикладные слои",
+              description: "Сборка PlannerService, CLI, Task и JsonStorage остаются на своих местах. Это общие части проекта, а не файлы одного HTTP-ресурса.",
+            },
           ]}
-          correctOrder={[
-            "client",
-            "route",
-            "parse",
-            "deps",
-            "handler",
-            "response",
+        />
+
+        <p>
+          {"Представим приложение как мастерскую с отдельными рабочими столами. Router принимает HTTP-задачу, схема описывает форму передаваемого заказа, а сервис выполняет предметную работу. Мы меняем расположение первых двух столов, но не переносим саму мастерскую, её инструменты или архив данных. Аналогия ограничена расположением: Python-модуль и пакет подчиняются правилам импортов, а не физическим стенам."}
+        </p>
+
+        <MatchPairs
+          prompt={"Соединим файл и его фактическую ответственность."}
+          leftTitle={"Файл"}
+          rightTitle={"Результат переноса"}
+          pairs={[
+            { left: "app/routers/tasks.py", right: "станет app/routers/tasks/router.py" },
+            { left: "app/schemas.py", right: "станет app/routers/tasks/schemas.py" },
+            { left: "app/api.py", right: "останется на уровне приложения" },
+            { left: "app/main.py", right: "сохранит build_service и CLI" },
           ]}
-          explanation={"Endpoint вызывается только после успешного разбора входа и зависимостей."}
+          explanation={"Перемещаем только router и его схемы. Точку сборки и общий прикладной слой сохраняем."}
         />
 
         <Callout tone="info">
-          {"Конвейер не означает, что каждый этап нужно вручную программировать. Его нужно понимать, чтобы диагностировать и правильно размещать код."}
+          {"Наличие отдельного APIRouter уже знакомо. Новое здесь не повторное создание router, а переход от единственного файла к пакету с несколькими связанными модулями."}
         </Callout>
       </Section>
 
-      <Section number="02" title={"Uvicorn принимает request, FastAPI выбирает route"}>
+      <Section number="02" title={"Модуль и пакет меняют адрес, не поведение"}>
         <Lead>
-          {"Сетевой сервер и веб-фреймворк выполняют разные роли. Uvicorn слушает адрес и передаёт ASGI-сообщения приложению, а FastAPI сопоставляет method и path с зарегистрированной функцией."}
+          {"Python-модуль в нашем примере это файл, из которого можно импортировать имена. Пакет это каталог с модулями, соединёнными общей частью адреса. Пакет помогает удержать связанные файлы рядом, но не выполняет их обязанности вместо них."}
         </Lead>
 
-        <div className="lesson-practice-steps">
-          <h3>{"Uvicorn"}</h3>
-          <p>
-            {"Долгоживущий процесс принимает сетевые обращения на host и port."}
-          </p>
-
-          <h3>{"FastAPI app"}</h3>
-          <p>
-            {"Хранит зарегистрированные routes и общую конфигурацию приложения."}
-          </p>
-
-          <h3>{"APIRouter"}</h3>
-          <p>
-            {"Группирует endpoints, но после include_router они участвуют в общей таблице маршрутов."}
-          </p>
-
-        </div>
+        <p>
+          {"Для отдельного примера возьмём функцию, которая формирует короткий отчёт. Сначала она лежит в reports.py. Когда рядом появляется отдельный форматтер, мы можем собрать каталог reports с файлами rendering.py и formatters.py. Импорт теперь называет каталог и нужный модуль. Функция по-прежнему выполняет тот же код; изменились место и путь, по которому её находит вызывающий файл."}
+        </p>
 
         <CodeBlock
-          caption={"регистрация router"}
+          caption={"Схема путей независимого примера, не программа для запуска"}
           code={
-            "from fastapi import FastAPI\n" +
+            "До:\n" +
+            "app/reports.py\n" +
+            "from app.reports import render\n" +
             "\n" +
-            "from app.routers.tasks import router as tasks_router\n" +
-            "\n" +
-            "app = FastAPI()\n" +
-            "app.include_router(tasks_router)"
+            "После:\n" +
+            "app/reports/__init__.py\n" +
+            "app/reports/rendering.py\n" +
+            "from app.reports.rendering import render"
           }
         />
 
+        <p>
+          {"Здесь __init__.py показывает, что мы оформили каталог как обычный пакет проекта. Он может быть пустым. Импорт из подпакета не обязан проходить через __init__.py: мы напрямую обращаемся к rendering.py. Добавлять туда повторный экспорт можно только осознанно, когда такой публичный адрес нужен. В нашей целевой структуре файлы и импорты используют прямые адреса, а __init__.py остаётся пустым."}
+        </p>
+
+        <p>
+          {"Папка-пакет напоминает папку с разделителями: в ней проще найти связанные документы, но разделители не переписывают их содержимое. Граница этой аналогии в том, что каталог влияет на имя модуля и импорт, поэтому после переноса нужно проверить каждого потребителя. Простого перетаскивания файла в проводнике недостаточно."}
+        </p>
+
+        <CodeSequence
+          title={"Путь от приложения к схеме"}
+          prompt={"Расположим реальные модули от места подключения router до модуля его схем."}
+          pieces={[
+            { id: "api", code: "app/api.py импортирует router ресурса" },
+            { id: "router", code: "app/routers/tasks/router.py импортирует схемы" },
+            { id: "schemas", code: "app/routers/tasks/schemas.py объявляет контракты" },
+          ]}
+          correctOrder={["api", "router", "schemas"]}
+          explanation={"Импорт идёт от точки сборки к маршрутам, а от маршрутов к нужным схемам. Схемы не импортируют router обратно."}
+          incorrectExplanation={"Сверим каждый шаг с импортом в соседнем модуле: следующий адрес должен быть тем, который текущий файл действительно использует."}
+        />
+
+        <Callout tone="info">
+          {"Имя файла не задаёт URL. HTTP-путь складывается из prefix APIRouter и локального пути обработчика; перемещение модуля при сохранённых объявлениях не меняет адрес запроса."}
+        </Callout>
+      </Section>
+
+      <Section number="03" title={"Собираем только файлы ресурса"}>
+        <Lead>
+          {"Пакет tasks должен помогать найти всё, что относится к HTTP-ресурсу задач. Если сложить туда каждый слой приложения, граница станет названием папки без ясной ответственности."}
+        </Lead>
+
+        <p>
+          {"В целевом состоянии router.py содержит APIRouter, обработчики и преобразование результата сервиса в публичный ответ. schemas.py содержит TaskCreate, TaskPatch, TaskRead и TaskUpdate. Эти файлы меняют адрес, но не смысл. Ошибки, Task, PlannerService, JsonStorage, CLI и build_service остаются в верхних слоях приложения."}
+        </p>
+
         <CodeBlock
-          caption={"route"}
+          caption={"Пакет ресурса внутри целевой структуры приложения"}
           code={
-            "from fastapi import APIRouter\n" +
-            "\n" +
-            "router = APIRouter(\n" +
-            "    prefix=\"/tasks\",\n" +
-            "    tags=[\"tasks\"],\n" +
-            ")\n" +
-            "\n" +
-            "@router.post(\"/\", status_code=201)\n" +
-            "def create_task(...):\n" +
+            "app/\n" +
+            "├── api.py\n" +
+            "├── main.py\n" +
+            "├── core/\n" +
+            "│   ├── __init__.py\n" +
+            "│   ├── config.py\n" +
+            "│   └── dependencies.py\n" +
+            "└── routers/\n" +
+            "    ├── __init__.py\n" +
+            "    └── tasks/\n" +
+            "        ├── __init__.py\n" +
+            "        ├── router.py\n" +
+            "        ├── schemas.py\n" +
+            "        └── crud.py"
+          }
+        />
+
+        <p>
+          {"Часть новых пустых файлов легко принять за уже готовую возможность. В этой точке config.py ещё не читает среду, dependencies.py ещё не предоставляет объект через Depends, а crud.py ещё не содержит SQL. Мы создаём только согласованные места для следующих шагов; пустой файл не равен реализованному механизму."}
+        </p>
+
+        <p>
+          {"В блоках 14 и 15 появятся другие обязанности, поэтому сейчас оставляем их будущему маршруту. Если переместить build_service в router.py, CLI потеряет общий способ сборки. Если перенести Task или storage, изменится граница, которую этот рефакторинг не должен трогать. Сравниваем файлы не по похожему имени, а по тому, кто их использует и какой результат они уже обеспечивают."}
+        </p>
+
+        <QuizCard
+          question={"Какой файл после B остаётся за пределами пакета tasks?"}
+          options={[
+            "app/routers/tasks/schemas.py",
+            "app/routers/tasks/router.py",
+            "app/storage.py",
+          ]}
+          correctIndex={2}
+          explanation={"Storage обслуживает общий сервис и CLI, поэтому не принадлежит только HTTP-ресурсу tasks."}
+        />
+
+        <Callout tone="warn">
+          {"Пустой app/routers/tasks/crud.py не является новой CRUD-реализацией. Мы оставляем его пустым до занятия, где появится SQL-путь."}
+        </Callout>
+      </Section>
+
+      <Section number="04" title={"Направление импортов защищает границы"}>
+        <Lead>
+          {"При изменении дерева файлов мы обновляем адреса в точках, которые реально импортируют перемещённые модули. В целевом пакете app/api.py подключает router, а router.py импортирует схемы. Так направление зависимости остаётся понятным и без обратного импорта приложения."}
+        </Lead>
+
+        <Diagram caption={"Направление импортов после переноса"} orientation="horizontal">
+          <DiagramFlow label={"Карта импортов от приложения к HTTP-схемам"} orientation="horizontal">
+            <DiagramNode title={"app/api.py"} shape="process">
+              <p>{"Импортирует router и подключает его к FastAPI."}</p>
+            </DiagramNode>
+            <DiagramArrow label={"импорт router"} />
+            <DiagramNode title={"tasks/router.py"} shape="subprocess">
+              <p>{"Объявляет операции и использует схемы ресурса."}</p>
+            </DiagramNode>
+            <DiagramArrow label={"импорт схем"} />
+            <DiagramNode title={"tasks/schemas.py"} shape="input-output">
+              <p>{"Описывает входные данные и форму ответа."}</p>
+            </DiagramNode>
+          </DiagramFlow>
+          <DiagramNote title={"Что схема показывает"}>
+            <p>{"Это карта импортов, а не полный ход HTTP-запроса. api.py также собирает сервис через main.py, а обработчик получает готовый Planner из request.app.state."}</p>
+          </DiagramNote>
+        </Diagram>
+
+        <p>
+          {"Порядок чтения на широком экране идёт слева направо, а на узком экране компоненты выстраиваются сверху вниз. Подписанные соединители обозначают именно импорт: api.py импортирует модуль router, и этот модуль импортирует модуль schemas. Мы не проводим стрелку к сервису, потому что обработчик получает его из состояния текущего приложения, а не через импорт main.py."}
+        </p>
+
+        <p>
+          {"Граф импортов похож на указатели в здании: от входа мы идём к нужному отделу, а от него к форме, которую он использует. Если отдел пытается при запуске снова открыть вход, указатели замыкаются в круг и загрузка может встретить модуль, который ещё не закончил инициализацию. Поэтому router не должен импортировать app из app/api.py: само api.py подключает router."}
+        </p>
+
+        <p>
+          {"Когда tasks.py был файлом, выражение app.routers.tasks указывало на модуль. После замены файла каталогом тот же префикс указывает на пакет. В целевом checkpoint __init__.py не экспортирует router, поэтому api.py должен назвать подмодуль router.py явно. Аналогично router.py импортирует схемы из нового пути, а не из оставшегося app.schemas."}
+        </p>
+
+        <FillBlank
+          prompt={"Укажем модуль, в котором находится router после перемещения."}
+          before={"from "}
+          after={".router import router as tasks_router"}
+          options={[
+            "app.routers.tasks",
+            "app.routers",
+            "app.api",
+          ]}
+          answer={"app.routers.tasks"}
+          explanation={"Файл router.py находится внутри каталога-пакета tasks, поэтому полный путь включает обе части."}
+        />
+
+        <BugHunt
+          code={
+            "from app.routers.tasks import router as tasks_router\n" +
+            "from app.schemas import TaskCreate, TaskRead"
+          }
+          question={"Что осталось от прежнего дерева после переноса?"}
+          options={[
+            "Оба импорта ещё называют старые расположения модулей",
+            "FastAPI запретил импортировать Pydantic-схемы",
+            "Маршруты нельзя хранить в отдельных пакетах",
+          ]}
+          correctIndex={0}
+          explanation={"После появления каталога tasks прямые пути ведут к router.py и schemas.py; прежние адреса больше не являются целевыми."}
+          fix={
+            "from app.routers.tasks.router import router as tasks_router\n" +
+            "from app.routers.tasks.schemas import TaskCreate, TaskRead"
+          }
+        />
+
+        <Callout tone="info">
+          {"Старый модуль не оставляем рядом как запасной вариант. Два места с похожим содержимым затрудняют понимание, какой router реально подключён, и могут привести к повторной регистрации при подключении обоих."}
+        </Callout>
+      </Section>
+
+            <Section number="05" title={"Подпись маршрута остаётся знакомой"}>
+        <Lead>
+          {"Перенос меняет расположение router.py и schemas.py, но не параметры уже знакомого GET, PUT и PATCH. Сохраняем проверку task_id в той форме, которую разбирали раньше."}
+        </Lead>
+
+        <p>
+          {"В треке planner-api, занятие 54 «Path-параметры и поиск объекта», мы уже использовали Annotated[int, Path(gt=0)]. Здесь сохраняем знакомое объявление: int задаёт тип path-значения, а Path(gt=0) отклоняет ноль и отрицательные числа. Переносим обработчик в новый пакет, но не меняем способ описывать и проверять task_id."}
+        </p>
+
+        <CodeBlock
+          caption={"Сигнатура read_task после переноса"}
+          code={
+            "def read_task(request: Request,\n" +
+            "              task_id: Annotated[int, Path(gt=0)]):\n" +
             "    ..."
           }
         />
 
-        <MatchPairs
-          prompt={"Соедините часть системы и ответственность."}
-          leftTitle={"Компонент"}
-          rightTitle={"Ответственность"}
-          pairs={[
-            { left: "Uvicorn", right: "принять сетевой request" },
-            { left: "FastAPI", right: "выбрать зарегистрированный route" },
-            { left: "APIRouter", right: "сгруппировать endpoints одной области" },
-            { left: "endpoint", right: "связать вход с предметной операцией" },
-          ]}
-          explanation={"Один request проходит через несколько ролей, но каждая остаётся отдельной."}
-        />
+        <p>
+          {"Адрес по-прежнему содержит обязательный сегмент /{task_id}. Сохраняется прежняя граница проверки: FastAPI разбирает значение как int и проверяет Path(gt=0) до вызова обработчика. Значит, изменение касается структуры модулей и импортов; URL, валидация и ответы маршрута остаются прежними."}
+        </p>
 
-        <Callout tone="info">
-          {"Route определяется сочетанием method и path. Одинаковый path может иметь разные handlers для GET и POST."}
-        </Callout>
-      </Section>
-
-      <Section number="03" title={"Разбор path, query, headers и body"}>
-        <Lead>
-          {"После выбора route FastAPI смотрит на сигнатуру endpoint и dependencies. По имени route, типам и специальным маркерам он определяет, откуда взять каждое значение."}
-        </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>{"Path"}</h3>
-          <p>
-            {"Имя находится в шаблоне /tasks/{task_id} и является обязательным."}
-          </p>
-
-          <h3>{"Query"}</h3>
-          <p>
-            {"Параметр отсутствует в path и имеет простой тип или Query."}
-          </p>
-
-          <h3>{"Header"}</h3>
-          <p>
-            {"Явно объявляется через Header; underscore обычно преобразуется в hyphen."}
-          </p>
-
-          <h3>{"Body"}</h3>
-          <p>
-            {"Pydantic-модель параметра читается из JSON body."}
-          </p>
-
-        </div>
+        <p>
+          {"В PUT и PATCH обязательны и task_id, и payload. В форме Annotated у task_id нет значения по умолчанию, поэтому можем оставить порядок request, task_id, payload. Python допускает эти обязательные параметры в таком порядке; FastAPI сопоставляет ID с path, а TaskUpdate с body. Переставлять аргументы, чтобы обойти default, здесь не требуется."}
+        </p>
 
         <CodeBlock
-          caption={"сигнатура"}
+          caption={"Порядок обязательных параметров PUT"}
           code={
-            "from typing import Annotated\n" +
-            "from fastapi import Header, Query\n" +
-            "\n" +
-            "@router.get(\"/{task_id}\")\n" +
-            "def get_task(\n" +
-            "    task_id: int,\n" +
-            "    include_tags: Annotated[bool, Query()] = True,\n" +
-            "    x_client_version: Annotated[str | None, Header()] = None,\n" +
+            "def update_task(\n" +
+            "    request: Request,\n" +
+            "    task_id: Annotated[int, Path(gt=0)],\n" +
+            "    payload: TaskUpdate,\n" +
             "):\n" +
             "    ..."
           }
         />
 
-        <CodeBlock
-          caption={"POST body"}
-          code={
-            "@router.post(\"/\", status_code=201)\n" +
-            "def create_task(task: TaskCreate):\n" +
-            "    ..."
-          }
-        />
-
-        <FillBlank
-          prompt={"Откуда FastAPI возьмёт task_id?"}
-          before={"@router.get(\"/tasks/{task_id}\")\ndef get_task(task_id: "}
-          after={" ): ..."}
+        <QuizCard
+          question={"Что сохраняем в объявлении task_id при переносе?"}
           options={[
-            "int",
-            "Header()",
-            "TaskCreate",
+            "Связь типа int с проверкой Path(gt=0)",
+            "Делаем ID необязательным и задаём ему значение 0",
+            "Убираем Path и оставляем проверку только внутри PlannerService",
           ]}
-          answer={"int"}
-          explanation={"Имя есть в path, а type hint задаёт преобразование к int."}
+          correctIndex={0}
+          explanation={"Оставляем знакомую форму из занятия 54: FastAPI получает тип int и прежнее ограничение положительного ID."}
         />
 
         <Callout tone="info">
-          {"FastAPI не угадывает предметный смысл параметра. Источник определяется объявлением endpoint и route."}
+          {"После перемещения сохраняем ту же сигнатуру с Annotated[int, Path(gt=0)], маршрут /{task_id}, схемы и статусы. Структурный рефакторинг сам по себе не меняет HTTP-договор."}
         </Callout>
       </Section>
 
-      <Section number="04" title={"Pydantic validation происходит до endpoint"}>
+      <Section number="06" title={"Проследим реальные GET и POST"}>
         <Lead>
-          {"Если JSON body не соответствует TaskCreate, endpoint не получает наполовину заполненный объект. Pydantic формирует validation errors, а FastAPI возвращает 422."}
+          {"После определения границ мы можем пройти знакомые запросы через реальные файлы StudyHub. Мы не подменяем их универсальной схемой внутренних шагов FastAPI: называем только то, что подтверждено кодом текущего Planner."}
         </Lead>
 
-        <div className="lesson-practice-steps">
-          <h3>{"Required fields"}</h3>
-          <p>
-            {"Поле без default должно присутствовать в request body."}
-          </p>
-
-          <h3>{"Types"}</h3>
-          <p>
-            {"Вход преобразуется, когда это безопасно, либо отклоняется."}
-          </p>
-
-          <h3>{"Constraints"}</h3>
-          <p>
-            {"Field проверяет длину, диапазон и другие ограничения."}
-          </p>
-
-          <h3>{"Не предметная ошибка"}</h3>
-          <p>
-            {"Отсутствующая задача — 404 из логики приложения, а не schema validation."}
-          </p>
-
-        </div>
+        <p>
+          {"Сначала возьмём GET /tasks/{task_id}. api.py создаёт приложение, помещает собранный Planner в app.state и подключает task-router. Объявление GET находится в router.py. Обработчик получает request и task_id, вызывает метод сервиса, а затем формирует публичные поля для TaskRead. Если предметный метод сообщает, что задачи нет, router переводит известную ошибку в HTTP 404."}
+        </p>
 
         <CodeBlock
-          caption={"schema"}
+          caption={"Фрагмент реального route из целевого checkpoint"}
           code={
-            "from pydantic import BaseModel, Field\n" +
-            "\n" +
-            "class TaskCreate(BaseModel):\n" +
-            "    title: str = Field(min_length=1, max_length=120)\n" +
-            "    priority: int = Field(ge=1, le=5)"
+            "@router.get(\"/{task_id}\", response_model=TaskRead)\n" +
+            "def read_task(request: Request,\n" +
+            "              task_id: Annotated[int, Path(gt=0)]):\n" +
+            "    task = _call_with_task_not_found_as_404(\n" +
+            "        request.app.state.planner.get_task, task_id\n" +
+            "    )\n" +
+            "    return _task_read_data(task)"
           }
         />
 
+        <p>
+          {"Теперь рассмотрим изменяющий POST /tasks. Локальный путь обработчика пустой, а общий prefix router равен /tasks, поэтому адрес клиента получается /tasks. TaskCreate описывает body, проверяет и очищает title; обработчик вызывает add_task у существующего Planner. Ответ формируется в публичной схеме TaskRead, а декоратор задаёт status 201."}
+        </p>
+
         <CodeBlock
-          caption={"невалидный body"}
+          caption={"Фрагмент успешного пути POST в router.py"}
           code={
-            "{\n" +
-            "  \"title\": \"\",\n" +
-            "  \"priority\": 9\n" +
-            "}\n" +
-            "\n" +
-            "→ 422 Unprocessable Entity\n" +
-            "→ endpoint не вызван"
+            "@router.post(\"\", status_code=201, response_model=TaskRead)\n" +
+            "def create_task(request: Request, payload: TaskCreate):\n" +
+            "    task = request.app.state.planner.add_task(\n" +
+            "        payload.title,\n" +
+            "        priority=payload.priority,\n" +
+            "    )\n" +
+            "    return _task_read_data(task)"
           }
         />
 
-        <BranchExplorer
-          code={
-            "получить JSON body\n" +
-            "проверить required fields\n" +
-            "проверить types\n" +
-            "проверить Field constraints\n" +
-            "создать TaskCreate\n" +
-            "вызвать endpoint"
-          }
-          scenarios={[
-            { label: "валидный body", activeLine: 5, output: "endpoint called" },
-            { label: "нет priority", activeLine: 1, output: "422 before endpoint" },
-            { label: "priority = 9", activeLine: 3, output: "422 before endpoint" },
+        <p>
+          {"Task внутри приложения хранит больше деталей, чем публичный ответ. Здесь TaskRead выводит id, title, priority и is_done, а внутренние tags не становятся новым полем ответа. Перенос schemas.py не даёт права незаметно менять форму данных. Так мы отделяем HTTP-контракт от предметного объекта, не переписывая уже освоенную модель."}
+        </p>
+
+        <CodeSequence
+          title={"Соберём знакомый POST"}
+          prompt={"Выберем порядок, который соответствует реальным частям POST /tasks."}
+          pieces={[
+            { id: "route", code: "FastAPI подключает route из APIRouter" },
+            { id: "body", code: "TaskCreate описывает и проверяет body" },
+            { id: "service", code: "PlannerService.add_task выполняет операцию" },
+            { id: "response", code: "TaskRead задаёт ответ с status 201" },
           ]}
+          correctOrder={["route", "body", "service", "response"]}
+          explanation={"Сначала запрос соотносится с объявленным маршрутом и его входной схемой, затем обработчик вызывает сервис и возвращает публичный ответ."}
+          incorrectExplanation={"Проследим один POST по коду: объявление маршрута, входная схема, предметная операция, публичный ответ."}
         />
 
-        <Callout tone="info">
-          {"Если отладочный print в endpoint не сработал, сначала проверьте route, parsing, validation и dependencies."}
-        </Callout>
+        <p>
+          {"Два запроса помогают увидеть границу: FastAPI router разбирает HTTP-форму, а PlannerService отвечает за предметную операцию и общее состояние. JsonStorage и CLI остаются частью прежней сборки. Перемещённые файлы не запускают отдельный сервис на каждый запрос."}
+        </p>
       </Section>
 
-      <Section number="05" title={"Dependencies выполняются перед handler"}>
+      <Section number="07" title={"Рефакторинг проверяет сохранённое поведение"}>
         <Lead>
-          {"Dependency — callable, результат которого требуется endpoint или другой dependency. FastAPI сначала решает дерево зависимостей и только затем вызывает handler."}
+          {"Новая структура считается полезной, только если она остаётся понятной и не ломает клиентский договор. Поэтому мы рассматриваем diff вместе с проверками, а не оцениваем результат только по тому, что новые файлы существуют."}
         </Lead>
 
-        <div className="lesson-practice-steps">
-          <h3>{"Объявление потребности"}</h3>
-          <p>
-            {"Endpoint сообщает, какой callable нужен через Depends."}
-          </p>
+        <p>
+          {"Аналогия с переездом сюда подходит только наполовину. Мы меняем адрес нескольких комнат и исправляем указатели, но не меняем услугу мастерской: тот же POST создаёт задачу, тот же GET читает её, CLI продолжает пользоваться общим Planner. В отличие от бытового переезда, в программе нужно также удалить старый активный путь и пройти импорты, иначе приложение может читать не тот файл или загрузка оборвётся."}
+        </p>
 
-          <h3>{"Решение"}</h3>
-          <p>
-            {"FastAPI вызывает dependency с её собственными параметрами."}
-          </p>
+        <p>
+          {"На исторической точке A, коммите ad6782a после занятия 68, файлы ещё находятся в tasks.py и schemas.py. Целевое состояние B соответствует содержимому коммита 9298d10. Diff показывает переносы и исправленные импорты. Если наша копия ещё на A, мы выполняем узкий рефакторинг. Если работа уже находится на B, второй раз перемещать файлы не нужно: сравниваем до и после, объясняем каждое направление импорта и принимаем результат по поведению."}
+        </p>
 
-          <h3>{"Инъекция"}</h3>
-          <p>
-            {"Возвращённое значение передаётся в аргумент endpoint."}
-          </p>
+        <p>
+          {"Проверка должна отличать HTTP-результат от состояния. TestClient проходит через ASGI-приложение без запуска отдельного Uvicorn-процесса. Тестовая fixture временно устанавливает сервис с JsonStorage под tmp_path, поэтому чтение и создание не затрагивают рабочий data/tasks.json. Это знакомый способ проверки из прошлых занятий, а не новая storage-схема."}
+        </p>
 
-          <h3>{"Ранний выход"}</h3>
-          <p>
-            {"Dependency может создать HTTPException и не допустить handler."}
-          </p>
+        <p>
+          {"Короткая регрессия смотрит на тот же GET, создание через POST и отрицательный path-id. Затем мы проверяем важные сохранённые границы: /stats по-прежнему выдаёт прежние значения, PATCH различает пропущенное поле, null и явное False, DELETE отвечает 204 без body, а CLI продолжает работать с тем же сервисом и JSON. Git diff и поиск импортов подтверждают отсутствие старых активных файлов или лишних копий."}
+        </p>
 
-        </div>
-
-        <CodeBlock
-          caption={"минимальная dependency"}
-          code={
-            "from typing import Annotated\n" +
-            "from fastapi import Depends\n" +
-            "\n" +
-            "def get_api_mode() -> str:\n" +
-            "    return \"development\"\n" +
-            "\n" +
-            "ApiMode = Annotated[str, Depends(get_api_mode)]\n" +
-            "\n" +
-            "@router.get(\"/\")\n" +
-            "def get_tasks(api_mode: ApiMode):\n" +
-            "    return {\n" +
-            "        \"mode\": api_mode,\n" +
-            "        \"items\": tasks,\n" +
-            "    }"
-          }
-        />
-
-        <StepThrough
-          code={
-            "request\n" +
-            "→ validate input\n" +
-            "→ get_api_mode()\n" +
-            "→ get_tasks(api_mode)\n" +
-            "→ response"
-          }
-          steps={[
-            {
-              line: 0,
-              note: "Request сопоставлен route.",
-              vars: { "request": "GET /tasks" },
-            },
-            {
-              line: 1,
-              note: "FastAPI проверяет параметры.",
-              vars: { "validation": "ok" },
-            },
-            {
-              line: 2,
-              note: "Dependency возвращает значение.",
-              vars: { "api_mode": "development" },
-            },
-            {
-              line: 3,
-              note: "Handler получает готовый аргумент.",
-              vars: { "handler": "get_tasks" },
-            },
-            {
-              line: 4,
-              note: "Return превращается в response.",
-              vars: { "status": "200" },
-            },
-          ]}
-        />
-
-        <Callout tone="info">
-          {"В этом занятии важно место dependency в пути request. Синтаксис Depends подробно разбирается в занятиях 70–71."}
+        <Callout tone="warn">
+          {"Статус ручного запуска Planner collection в Postman Web через Desktop Agent: «проверить». Локальный запуск Uvicorn, проверка CLI и регрессионный тест tests/test_workflow.py выполнены отдельно; они не подтверждают импорт collection/environment и полный запуск её шагов в Postman. Для завершения приёмки запустите collection через Desktop Agent на чистой копии проекта, сверьте контрольные значения и убедитесь, что удаляется именно созданная задача."}
         </Callout>
-      </Section>
-
-      <Section number="06" title={"Endpoint связывает части, но не хранит всё"}>
-        <Lead>
-          {"Хороший endpoint похож на диспетчера: принимает уже проверенный вход, вызывает предметную функцию и выбирает HTTP-ответ. Он не должен одновременно вычислять id, фильтровать список, читать настройки и формировать все ошибки вручную."}
-        </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>{"HTTP-граница"}</h3>
-          <p>
-            {"Path, query, body, Depends, status_code и HTTPException остаются рядом с endpoint."}
-          </p>
-
-          <h3>{"Предметная операция"}</h3>
-          <p>
-            {"CRUD-функция получает обычные Python-значения и возвращает результат."}
-          </p>
-
-          <h3>{"Переиспользование"}</h3>
-          <p>
-            {"Ту же CRUD-функцию можно вызвать из теста без запуска HTTP-клиента."}
-          </p>
-
-          <h3>{"Читаемость"}</h3>
-          <p>
-            {"Сигнатура показывает контракт, тело — один сценарий."}
-          </p>
-
-        </div>
-
-        <CodeBlock
-          caption={"перегруженный endpoint"}
-          code={
-            "@router.post(\"/\")\n" +
-            "def create_task(task: TaskCreate):\n" +
-            "    # вычисление id\n" +
-            "    # поиск дубликата\n" +
-            "    # изменение storage\n" +
-            "    # формирование словаря ответа\n" +
-            "    # обработка всех исключений\n" +
-            "    ..."
-          }
-        />
-
-        <CodeBlock
-          caption={"endpoint-координатор"}
-          code={
-            "@router.post(\n" +
-            "    \"/\",\n" +
-            "    response_model=TaskRead,\n" +
-            "    status_code=201,\n" +
-            ")\n" +
-            "def create_task(task: TaskCreate):\n" +
-            "    return task_crud.create_task(\n" +
-            "        storage=tasks,\n" +
-            "        data=task,\n" +
-            "    )"
-          }
-        />
-
-        <CompareSolutions
-          question={"Какое тело endpoint легче объяснить?"}
-          left={{
-            title: "Вся логика внутри",
-            code: "def create_task(...):\n    # 45 строк разных обязанностей",
-            note: "HTTP и предметные правила смешаны.",
-          }}
-          right={{
-            title: "Координация",
-            code: "def create_task(task):\n    return task_crud.create_task(tasks, task)",
-            note: "Endpoint связывает готовые части.",
-          }}
-          preferred={"right"}
-          explanation={"Предметная операция получает проверенные данные, а endpoint сохраняет HTTP-контракт."}
-        />
-
-        <Callout tone="info">
-          {"Короткий endpoint не является целью сам по себе. Вынесенная функция должна иметь ясную ответственность, а не скрывать весь проект под именем process()."}
-        </Callout>
-      </Section>
-
-      <Section number="07" title={"Формирование response и путь ошибки"}>
-        <Lead>
-          {"После return FastAPI применяет response_model, сериализует данные и добавляет status и headers. Если код создаёт HTTPException, формируется error response; непредвиденная ошибка обычно приводит к 500 и traceback в серверном логе."}
-        </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>{"Response model"}</h3>
-          <p>
-            {"Проверяет и фильтрует публичную форму ответа."}
-          </p>
-
-          <h3>{"Serialization"}</h3>
-          <p>
-            {"Python-объекты превращаются в JSON-совместимое содержимое."}
-          </p>
-
-          <h3>{"Expected error"}</h3>
-          <p>
-            {"HTTPException описывает известный HTTP-результат."}
-          </p>
-
-          <h3>{"Unexpected error"}</h3>
-          <p>
-            {"Traceback нужен разработчику; внутренние детали не должны становиться публичным body."}
-          </p>
-
-        </div>
-
-        <CodeBlock
-          caption={"успех"}
-          code={
-            "return TaskRead(\n" +
-            "    id=3,\n" +
-            "    title=\"FastAPI pipeline\",\n" +
-            "    priority=4,\n" +
-            "    is_done=False,\n" +
-            ")\n" +
-            "\n" +
-            "→ 200/201 + JSON"
-          }
-        />
-
-        <CodeBlock
-          caption={"известная ошибка"}
-          code={
-            "if task is None:\n" +
-            "    raise HTTPException(\n" +
-            "        status_code=404,\n" +
-            "        detail=\"Task not found\",\n" +
-            "    )"
-          }
-        />
 
         <BugHunt
           code={
-            "@router.get(\"/{task_id}\")\n" +
-            "def get_task(task_id: int):\n" +
-            "    try:\n" +
-            "        return task_crud.get_task(tasks, task_id)\n" +
-            "    except Exception:\n" +
-            "        return {\"error\": \"something happened\"}"
+            "from app.routers.tasks import router as tasks_router\n" +
+            "\n" +
+            "app.include_router(tasks_router)\n" +
+            "\n" +
+            "from app.schemas import TaskCreate, TaskRead"
           }
-          question={"Что ломает HTTP-контракт?"}
+          question={"После переноса приложение не стартует ожидаемым путём. Что нужно проверить первым?"}
           options={[
-            "Все ошибки превращаются в успешный 200",
-            "FastAPI запрещает try",
-            "Return dict нельзя использовать",
+            "Новые файлы должны совпадать со старыми сразу в двух местах",
+            "Точки импорта api.py и router.py всё ещё указывают на прежнее дерево",
+            "Следует перенести PlannerService в schemas.py",
           ]}
-          correctIndex={0}
-          explanation={"Неизвестные ошибки скрываются, а клиент получает неправильную категорию результата."}
-          fix={"@router.get(\"/{task_id}\")\ndef get_task(task_id: int):\n    task = task_crud.get_task(tasks, task_id)\n\n    if task is None:\n        raise HTTPException(404, \"Task not found\")\n\n    return task"}
-        />
-
-        <Callout tone="info">
-          {"Не оборачивайте весь endpoint в except Exception с ответом 200. Это скрывает status, traceback и причину дефекта."}
-        </Callout>
-      </Section>
-
-      <Section number="08" title={"Практика: трассировка POST /tasks"}>
-        <Lead>
-          {"Закрепите блок не новым endpoint, а точным объяснением одного существующего request. Подпишите данные и ответственность на каждом переходе."}
-        </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>{"Request"}</h3>
-          <p>
-            {"POST /tasks, Content-Type и JSON body."}
-          </p>
-
-          <h3>{"Validation"}</h3>
-          <p>
-            {"TaskCreate проверяет title и priority."}
-          </p>
-
-          <h3>{"Dependencies"}</h3>
-          <p>
-            {"Получаются настройки или режим приложения."}
-          </p>
-
-          <h3>{"Endpoint"}</h3>
-          <p>
-            {"Вызывает create_task и не знает детали будущей базы."}
-          </p>
-
-          <h3>{"Response"}</h3>
-          <p>
-            {"TaskRead и status 201 возвращаются клиенту."}
-          </p>
-
-        </div>
-
-        <CodeBlock
-          caption={"карта для заполнения"}
-          code={
-            "POST /tasks\n" +
-            "→ route: __________________\n" +
-            "→ body schema: ____________\n" +
-            "→ dependency: _____________\n" +
-            "→ handler: _________________\n" +
-            "→ CRUD function: __________\n" +
-            "→ storage: _________________\n" +
-            "→ response model: _________\n" +
-            "→ status: _________________"
+          correctIndex={1}
+          explanation={"Сначала сверяем пути всех потребителей с новой структурой, затем убеждаемся, что старые активные копии не подключены."}
+          fix={
+            "from app.routers.tasks.router import router as tasks_router\n" +
+            "from app.routers.tasks.schemas import TaskCreate, TaskRead"
           }
         />
-
-        <Callout tone="info">
-          {"Если ученик может определить, на каком этапе появились 404, 422 и 500, главная модель занятия усвоена."}
-        </Callout>
-
-        <div className="lesson-check-group">
-          <QuizCard
-            question={"Что происходит раньше endpoint?"}
-            options={[
-              "validation и dependencies",
-              "response serialization",
-              "return клиента",
-            ]}
-            correctIndex={0}
-            explanation={"Handler получает уже подготовленные значения."}
-          />
-          <QuizCard
-            question={"Кто принимает сетевой request?"}
-            options={[
-              "Uvicorn",
-              "Pydantic model",
-              "CRUD function",
-            ]}
-            correctIndex={0}
-            explanation={"Uvicorn обслуживает сетевой процесс."}
-          />
-          <QuizCard
-            question={"Зачем endpoint оставлять координатором?"}
-            options={[
-              "разделить HTTP и предметные правила",
-              "запретить функции",
-              "уменьшить JSON",
-            ]}
-            correctIndex={0}
-            explanation={"Границы становятся видимыми и тестируемыми."}
-          />
-          <QuizCard
-            question={"Что обычно означает 422?"}
-            options={[
-              "вход не прошёл schema validation",
-              "объект не найден",
-              "сервер выключен",
-            ]}
-            correctIndex={0}
-            explanation={"Validation завершилась до handler."}
-          />
-        </div>
 
         <KeyTakeaways
           points={[
-            <>{"Request проходит последовательность границ."}</>,
-            <>{"Uvicorn и FastAPI выполняют разные роли."}</>,
-            <>{"Route выбирается по method и path."}</>,
-            <>{"Parsing и Pydantic validation происходят до endpoint."}</>,
-            <>{"Dependencies решаются до handler."}</>,
-            <>{"Endpoint связывает HTTP и предметную операцию."}</>,
-            <>{"Response model и serialization работают после return."}</>,
-            <>{"Status помогает определить этап и причину результата."}</>,
+            <>{"Модуль является отдельным файлом, пакет объединяет связанные модули."}</>,
+            <>{"Перенос требует обновить каждый импорт потребителя."}</>,
+            <>{"В этом checkpoint пакет tasks владеет HTTP-router и его схемами."}</>,
+            <>{"Service, storage, Task и CLI сохраняют прежние границы."}</>,
+            <>{"Проверки подтверждают поведение отдельно от структуры файлов."}</>,
           ]}
-        />
-
-        <PracticeCta
-          text={"Проследите POST /tasks в текущем Planner API, подпишите восемь этапов и сократите один перегруженный endpoint до функции-координатора."}
         />
       </Section>
 
+      <Section number="08" title={"Что мы будем делать в практике"}>
+        <Lead>
+          {"Мы начнём с реального Planner на точке A и превратим одну пару файлов ресурса в пакет. Готовая предметная логика уже существует; наша задача состоит в переносе, обновлении импортов и сохранении того, что клиент и CLI умеют делать сейчас."}
+        </Lead>
+
+        <LinkedNotes
+          variant="connected"
+          items={[
+            {
+              title: "Зафиксируем A",
+              description: "Найдём текущие router, схемы, точку подключения и сборку сервиса, затем проверим исходные API и CLI-сценарии на изолированных данных.",
+            },
+            {
+              title: "Сгруппируем ресурс",
+              description: "Перенесём router.py и schemas.py в app/routers/tasks/, удалим старые активные пути и добавим только предусмотренные пустые файлы.",
+            },
+            {
+              title: "Обновим связи",
+              description: "Исправим импорты в api.py и router.py, сохраним Annotated[int, Path(gt=0)], схемы, статусы и публичные ответы без нового CRUD или Depends.",
+            },
+            {
+              title: "Докажем B",
+              description: "Сверим структуру и diff, пройдём GET, POST и ошибочный ID, проверим PATCH, DELETE, stats и CLI с временными данными.",
+            },
+          ]}
+        />
+
+        <p>
+          {"Каждый шаг заканчивается наблюдаемым результатом: единственный активный пакет, понятное направление импортов и прежний договор клиента. Если текущая копия уже соответствует B, мы используем diff вместо повторного переноса. Тогда работа остаётся учебной: объясняем, почему структура устроена именно так, и проверяем, что она не добавила новую возможность и не потеряла старую."}
+        </p>
+
+        <p>
+          {"Следующий плановый этап начнёт читать JSON_PATH из окружения. Здесь мы лишь оставляем config.py на согласованном месте; переменные среды, .env, Depends и база данных не входят в это изменение."}
+        </p>
+
+        <PracticeCta text={"Перейдём к практике проекта и проверим сохранённый контракт на изолированных данных."} />
+      </Section>
     </RichLesson>
   );
 }

@@ -1,6 +1,28 @@
 import { FileText, KeyRound } from "lucide-react";
-import { BranchExplorer, Callout, CodeBlock, CodeSequence, CompareSolutions, FillBlank, KeyTakeaways, Lead, MatchPairs, PracticeCta, QuizCard, RichHero, RichLesson, Section, StepThrough, TrueFalse } from "../../shared";
-const BLOCK_TITLE = "Этап 4 · Блок 13 · FastAPI как цельное приложение";
+import {
+  BugHunt,
+  Callout,
+  CodeBlock,
+  CompareSolutions,
+  Diagram,
+  DiagramArrow,
+  DiagramFlow,
+  DiagramNode,
+  KeyTakeaways,
+  Lead,
+  LinkedNotes,
+  MatchPairs,
+  MethodGrid,
+  PredictOutput,
+  QuizCard,
+  RichHero,
+  RichLesson,
+  Section,
+  StepThrough,
+  TrueFalse,
+} from "../../shared";
+
+const BLOCK_TITLE = "Этап 4 · Блок 13 · Организация и зрелые механизмы FastAPI";
 
 export function Lesson73({ module }: { module?: string }) {
   return (
@@ -8,672 +30,491 @@ export function Lesson73({ module }: { module?: string }) {
       <RichHero
         variant="project"
         chip={module ?? BLOCK_TITLE}
-        title={"Заголовки, cookies и Response"}
-        intro={"Расширим HTTP-контракт за пределы JSON body: прочитаем X-Client-Version, добавим собственный response header, установим и удалим учебную cookie через объект Response."}
+        title={"Annotated и понятные параметры"}
+        intro={"Разберём, как записать рядом обычный тип значения и сведения для FastAPI. Затем подготовим переход существующих маршрутов Planner API на эту форму без изменения HTTP-контракта."}
         tags={[
-          { icon: <FileText size={14} />, label: "Header и Cookie" },
-          { icon: <KeyRound size={14} />, label: "управление Response" },
+          { icon: <FileText size={14} />, label: "typing.Annotated" },
+          { icon: <KeyRound size={14} />, label: "PlannerDep · Path · Query" },
         ]}
       />
 
-      <Section number="01" title={"Headers описывают request, body переносит данные"}>
+      <Section number="00" title={"Меняем запись, сохраняя смысл"}>
         <Lead>
-          {"JSON body содержит поля создаваемой задачи. Header сообщает метаданные обращения: версию клиента, формат, request id или будущий Authorization."}
+          В обработчике FastAPI мы уже встречали типы параметров и маркеры Path, Query или Depends.
+          Тип отвечает за значение, а маркер сообщает FastAPI, откуда его получить или как проверить.
+          Когда эти части записаны через default, их легко принять за одну настройку. Сейчас мы
+          разделим их роли, а затем применим это различие к прежним маршрутам Planner API.
         </Lead>
 
-        <div className="lesson-practice-steps">
-          <h3>{"Body"}</h3>
-          <p>
-            {"Предметные данные ресурса: title, priority, is_done."}
-          </p>
-
-          <h3>{"Header"}</h3>
-          <p>
-            {"Служебный контекст request, который не является полем Task."}
-          </p>
-
-          <h3>{"Стандартный"}</h3>
-          <p>
-            {"Content-Type и User-Agent имеют общеизвестный смысл."}
-          </p>
-
-          <h3>{"Custom"}</h3>
-          <p>
-            {"X-Client-Version создаётся для контракта конкретного приложения."}
-          </p>
-
-        </div>
-
-        <CodeBlock
-          caption={"request"}
-          code={
-            "POST /tasks HTTP/1.1\n" +
-            "Content-Type: application/json\n" +
-            "X-Client-Version: 1.4.0\n" +
-            "\n" +
-            "{\n" +
-            "  \"title\": \"Headers\",\n" +
-            "  \"priority\": 4\n" +
-            "}"
-          }
+        <LinkedNotes
+          variant="connected"
+          items={[
+            {
+              title: "Точка старта",
+              description: "В целевом маршруте перед этим занятием get_planner уже выдаёт готовый PlannerService через простой Depends. Path и Query сохраняют знакомые id, фильтры и limit.",
+            },
+            {
+              title: "Новый вопрос",
+              description: "Как записать тип и инструкции FastAPI рядом, не превращая service в поле запроса и не теряя default или ограничения?",
+            },
+            {
+              title: "Результат",
+              description: "Согласованные объявления через Annotated и общий PlannerDep при прежних маршрутах, схемах, значениях и ответах.",
+            },
+          ]}
         />
+
+        <p>
+          Мы продолжаем ту же линию: приложение получает тот же сервис, а клиент передаёт те же
+          path и query значения. Меняется только форма объявления параметров. Сначала разберём
+          независимый пример, затем прочитаем объявление зависимости и вернёмся к Planner.
+        </p>
+      </Section>
+
+      <Section number="01" title={"Тип и metadata отвечают на разные вопросы"}>
+        <Lead>
+          У параметра функции есть обычный Python-тип. Например, int означает целое значение, а
+          str | None допускает строку или None. FastAPI нужны дополнительные сведения: взять число
+          из query-строки, считать его path-id или получить объект через зависимость. Эти сведения
+          называются metadata, то есть сопровождающими данными об объявлении. Они не становятся
+          новым значением, которое прислал клиент.
+        </Lead>
+
+        <MethodGrid
+          rows={[
+            ["int", "какое значение ожидает обработчик"],
+            ["Query(ge=1, le=20)", "откуда взять значение и какие границы проверить"],
+            ["= 5", "какой Python default использовать, если аргумент не передан"],
+          ]}
+        />
+
+        <p>
+          Представим почтовую посылку. Тип похож на описание содержимого: внутри ожидаем книгу, а
+          не стакан воды. Metadata похожа на маршрутную наклейку: она помогает доставить посылку в
+          нужный пункт и проверить ограничения. Но наклейка не является самой книгой. Так же и
+          Query не превращает query-параметр в другое поле данных и не заменяет его значение.
+        </p>
+
+        <p>
+          Само слово Annotated не проверяет HTTP-запрос. Оно сохраняет базовый тип и прикрепляет
+          дополнительные сведения к объявлению. FastAPI понимает свои маркеры Query, Path и
+          Depends и применяет их при подготовке обработчика. Если прочитать такую функцию как
+          обычный Python-код без FastAPI, Query не извлечёт значение из URL и не вызовет проверку.
+          Именно интеграция FastAPI придаёт metadata её веб-смысл.
+        </p>
 
         <MatchPairs
-          prompt={"Разместите данные."}
-          leftTitle={"Данные"}
-          rightTitle={"Место"}
+          prompt={"Сопоставим фрагменты объявления с их ролью."}
+          leftTitle={"Фрагмент"}
+          rightTitle={"Роль"}
           pairs={[
-            { left: "title", right: "JSON body" },
-            { left: "priority", right: "JSON body" },
-            { left: "X-Client-Version", right: "request header" },
-            { left: "Content-Type", right: "request header" },
+            { left: "int", right: "тип значения" },
+            { left: "Query(ge=1)", right: "metadata FastAPI" },
+            { left: "= 5", right: "Python default" },
           ]}
-          explanation={"Предметные поля и служебные метаданные разделены."}
+          explanation={"Мы разделили ожидаемое значение, сведения для FastAPI и default функции."}
         />
 
         <Callout tone="info">
-          {"Не переносите title задачи в header. Выбор части request следует из роли данных."}
+          Metadata не приходит в HTTP-запросе. Клиент отправляет только данные, а FastAPI читает
+          объявление обработчика и применяет его при разборе запроса.
         </Callout>
       </Section>
 
-      <Section number="02" title={"Чтение Header через Annotated"}>
+      <Section number="02" title={"Annotated прикрепляет metadata к типу"}>
         <Lead>
-          {"FastAPI предоставляет функцию Header. Параметр x_client_version в Python соответствует HTTP-header X-Client-Version благодаря автоматической замене underscore на hyphen."}
+          Annotated берётся из модуля typing. Первым элементом в квадратных скобках идёт базовый
+          тип значения, после него можно указать metadata. FastAPI использует Query, Path или
+          Depends как такую инструкцию. Значение default пишется отдельно после объявления
+          параметра. Если мы читаем строку слева направо, то сначала видим ожидаемый Python-тип,
+          затем правила FastAPI, а в конце default, если он есть.
         </Lead>
 
-        <div className="lesson-practice-steps">
-          <h3>{"Annotated type"}</h3>
-          <p>
-            {"Итоговое значение — str или None."}
-          </p>
-
-          <h3>{"Header metadata"}</h3>
-          <p>
-            {"FastAPI читает значение из request headers."}
-          </p>
-
-          <h3>{"Default None"}</h3>
-          <p>
-            {"Header становится необязательным."}
-          </p>
-
-          <h3>{"Conversion"}</h3>
-          <p>
-            {"x_client_version ↔ X-Client-Version."}
-          </p>
-
-        </div>
-
         <CodeBlock
-          caption={"endpoint"}
+          caption={"фрагмент независимого GET /events"}
           code={
             "from typing import Annotated\n" +
-            "from fastapi import Header\n" +
+            "from fastapi import Query\n" +
             "\n" +
-            "@router.get(\"/info\")\n" +
-            "def get_info(\n" +
-            "    x_client_version: Annotated[\n" +
-            "        str | None,\n" +
-            "        Header(),\n" +
-            "    ] = None,\n" +
-            "):\n" +
-            "    return {\n" +
-            "        \"client_version\": x_client_version,\n" +
-            "    }"
+            "page_size: Annotated[\n" +
+            "    int,\n" +
+            "    Query(ge=1, le=20),\n" +
+            "] = 5"
           }
         />
+
+        <p>
+          Здесь page_size остаётся целым числом. Query говорит FastAPI читать его из query и
+          проверять значения от 1 до 20. Число 5 стоит после закрывающей скобки, поэтому это
+          default Python-параметра, а не metadata. Когда клиент передаст 8, обработчик получит 8.
+          Когда клиент ничего не передаст, обработчик получит 5. Когда он передаст 0, FastAPI
+          отклонит запрос до вызова обработчика.
+        </p>
+
+        <p>
+          Это можно читать как три независимых ответа. int отвечает на вопрос «какой тип увидит
+          тело функции?». Query отвечает «откуда взять данные и какие значения принять?». Default
+          отвечает «что использовать при отсутствии аргумента?». Вложенность Annotated объединяет
+          первые два ответа для FastAPI, но не склеивает их в одно значение. Поэтому при разборе
+          объявления мы каждый раз отдельно находим правую часть со знаком равенства. Annotated
+          не создаёт новый runtime-класс: базовым типом остаётся int, а FastAPI отдельно читает
+          прикреплённую metadata.
+        </p>
+
+        <StepThrough
+          code={
+            "page_size: Annotated[\n" +
+            "    int,\n" +
+            "    Query(ge=1, le=20),\n" +
+            "] = 5"
+          }
+          steps={[
+            {
+              line: 0,
+              note: "Мы видим имя параметра и оболочку Annotated: дальше будут тип и metadata.",
+              vars: { "page_size": "объявление параметра" },
+            },
+            {
+              line: 1,
+              note: "int описывает значение, которое получит Python-обработчик.",
+              vars: { "тип": "int" },
+            },
+            {
+              line: 2,
+              note: "Query задаёт источник и границы, но не содержит присланное клиентом число.",
+              vars: { "metadata": "Query(ge=1, le=20)" },
+            },
+            {
+              line: 3,
+              note: "Default 5 применяется, если query-параметр отсутствует.",
+              vars: { "default": "5" },
+            },
+          ]}
+        />
+
+        <PredictOutput
+          code={
+            "def next_size(page_size: int = 5) -> int:\n" +
+            "    return page_size + 1\n" +
+            "\n" +
+            "print(next_size())\n" +
+            "print(next_size(8))"
+          }
+          output={"6\n9"}
+          hint={"Сначала найдём вызов без аргумента, затем переданный аргумент."}
+        />
+
+        <p>
+          Этот небольшой прогноз отделяет правило Python от работы FastAPI: default действует,
+          когда аргумент не передан, а явно переданный аргумент заменяет его. В HTTP-маршруте
+          FastAPI сначала извлекает значение и проверяет metadata, а уже затем вызывает функцию.
+        </p>
+      </Section>
+
+      <Section number="03" title={"PlannerDep повторно использует provider"}>
+        <Lead>
+          Provider (поставщик зависимости): функция, которую FastAPI вызывает, чтобы подготовить
+          нужный объект. В предыдущем целевом шаге get_planner возвращает уже собранный
+          PlannerService. Простая запись связывает тип результата с provider через Depends. Она
+          понятна, но её приходится повторять в нескольких обработчиках и в stats.
+        </Lead>
 
         <CodeBlock
-          caption={"requests"}
+          caption={"прежняя форма одного параметра"}
           code={
-            "GET /info\n" +
-            "→ client_version = null\n" +
-            "\n" +
-            "GET /info\n" +
-            "X-Client-Version: 1.4.0\n" +
-            "→ client_version = \"1.4.0\""
+            "planner: PlannerService = Depends(get_planner)"
           }
         />
 
-        <FillBlank
-          prompt={"Какое имя header прочитает FastAPI?"}
-          before={"x_client_version → "}
-          after={""}
-          options={[
-            "X-Client-Version",
-            "x_client_version",
-            "client.version",
-          ]}
-          answer={"X-Client-Version"}
-          explanation={"Header автоматически преобразует underscores в hyphens."}
+        <p>
+          Теперь мы можем назвать повторяемую комбинацию один раз. Такой переиспользуемый alias,
+          то есть другое имя типа, объединит PlannerService и Depends-metadata:
+        </p>
+
+        <CodeBlock
+          caption={"фрагмент: общий alias"}
+          code={
+            "PlannerDep = Annotated[\n" +
+            "    PlannerService,\n" +
+            "    Depends(get_planner),\n" +
+            "]"
+          }
         />
 
-        <Callout tone="info">
-          {"Имена headers регистронезависимы на уровне HTTP. В документации принято писать слова через hyphen."}
+        <p>
+          В целевом API get_planner уже знает, где приложение хранит собранный объект. Depends
+          передаёт FastAPI ссылку на эту функцию, а FastAPI вызывает её при разрешении параметра
+          маршрута и передаёт обработчику результат. Мы не пишем get_planner() в сигнатуре:
+          обычный вызов выполнился бы раньше, чем FastAPI начнёт разбирать запрос. PlannerDep
+          сокращает повторяющееся описание, но не меняет этого пути.
+        </p>
+
+        <p>
+          Аналогия здесь похожа на карточку выдачи инструмента в мастерской. На карточке записано,
+          какой предмет нужен и по какому правилу его получить. PlannerDep становится коротким
+          общим названием такой карточки для обработчика. Граница аналогии важна: alias не создаёт
+          PlannerService и не вызывает get_planner при импорте. Он только описывает FastAPI
+          требуемый тип и provider, а сам provider остаётся прежней точкой получения сервиса.
+        </p>
+
+        <QuizCard
+          question={"Что означает PlannerDep в параметре обработчика?"}
+          options={[
+            "тип PlannerService вместе с Depends-metadata",
+            "новый класс PlannerService",
+            "уже выполненный вызов get_planner",
+          ]}
+          correctIndex={0}
+          explanation={"Мы переиспользуем описание зависимости. FastAPI по-прежнему разрешает её через прежний provider."}
+        />
+
+        <Callout tone="warn">
+          Alias не является вторым сервисом, фабрикой или контейнером зависимостей. Он не меняет
+          момент сборки приложения и не добавляет новую ветку хранения.
         </Callout>
       </Section>
 
-      <Section number="03" title={"Обязательный header и понятная ошибка"}>
+      <Section number="04" title={"Path, Query, optional и default"}>
         <Lead>
-          {"Если версия клиента действительно обязательна для operation, default можно не задавать. Тогда отсутствие header станет validation error 422 до endpoint."}
+          Path и Query тоже можно поместить в Annotated. Для path-id мы сохраняем положительную
+          границу gt=0. Для списка сохраняем limit от 1 до 50 с default 10, необязательный is_done
+          со значением None и sort_desc со значением False. Это четыре отдельные части договора:
+          тип, источник, ограничение и default. Запись можно улучшить, не меняя ни одну из них.
         </Lead>
 
-        <div className="lesson-practice-steps">
-          <h3>{"Optional"}</h3>
-          <p>
-            {"Подходит для аналитики или постепенного внедрения."}
-          </p>
+        <CodeBlock
+          caption={"независимые объявления Path и Query"}
+          code={
+            "entry_id: Annotated[int, Path(gt=0)]\n" +
+            "page_size: Annotated[int, Query(ge=1, le=20)] = 5\n" +
+            "include_archived: Annotated[bool | None, Query()] = None"
+          }
+        />
 
-          <h3>{"Required"}</h3>
-          <p>
-            {"Подходит, когда без metadata operation нельзя выполнить."}
-          </p>
+        <p>
+          Отсутствие default у entry_id означает, что параметр обязателен. Path указывает источник
+          и проверяет положительное число. У page_size тип int, metadata задаёт интервал, а
+          присвоенное 5 становится default. У include_archived тип допускает bool и None, а
+          default None говорит, какое значение получает обработчик, если query отсутствует.
+          Необязательность типа и отсутствие значения по умолчанию связаны, но не тождественны.
+        </p>
 
-          <h3>{"422"}</h3>
-          <p>
-            {"Сообщает о missing header в detail."}
-          </p>
+        <p>
+          В существующем списке Planner это различие важно для трёх query-параметров. Отсутствующий
+          is_done означает, что дополнительный фильтр не выбран. sort_desc без значения сохраняет
+          прежнее False. limit без значения сохраняет 10, а переданное число остаётся в диапазоне
+          1–50. Эти смыслы не возникают из Annotated: они уже являются частью API, и новая форма
+          должна только сделать их видимыми и согласованными.
+        </p>
 
-          <h3>{"Предметное правило"}</h3>
-          <p>
-            {"Неподдерживаемая версия может дать 400 или 426 по отдельной договорённости."}
-          </p>
+        <CompareSolutions
+          question={"Как прочитать проверку положительного path-id?"}
+          left={{
+            title: "Тип и default вместе",
+            code: "entry_id: int = Path(gt=0)",
+            note: "Знакомая форма, где metadata стоит на месте default.",
+          }}
+          right={{
+            title: "Тип и metadata рядом",
+            code: "entry_id: Annotated[int, Path(gt=0)]",
+            note: "Базовый тип виден первым, Path остаётся инструкцией FastAPI.",
+          }}
+          preferred={"both"}
+          explanation={"Обе формы описывают положительный path-id. В этой теме мы переходим ко второй, не меняя сам договор."}
+        />
 
-        </div>
+        <BugHunt
+          code={
+            "page_size: Annotated[\n" +
+            "    int,\n" +
+            "    Query(ge=1, le=20),\n" +
+            "] = 0"
+          }
+          question={"Какую часть объявления нужно согласовать?"}
+          options={[
+            "Default 0 лежит вне интервала Query",
+            "Annotated не может содержать int",
+            "Query превращает default в строку",
+          ]}
+          correctIndex={0}
+          explanation={"Мы заметили несогласованность: default 0 лежит за границами, объявленными для query. Согласуем default с интервалом и сохраним одну понятную область допустимых значений."}
+          fix={"page_size: Annotated[int, Query(ge=1, le=20)] = 5"}
+        />
+
+        <p>
+          Поэтому мы сверяем default и metadata как два отдельных источника правил. Не следует
+          прятать default внутрь Query и одновременно задавать другое значение справа: тогда
+          объявление становится противоречивым и его трудно читать. В проекте сохраняются прежние
+          значения, а не вводятся новые настройки query.
+        </p>
+      </Section>
+
+      <Section number="05" title={"Сигнатура остаётся правилом Python"}>
+        <Lead>
+          Annotated меняет способ присоединить metadata, но не отменяет обычные правила объявления
+          функции. Параметры без Python-default должны идти раньше параметров с default. Например,
+          PlannerDep обязателен для обработчика, а limit имеет default. Поэтому зависимость
+          располагается до необязательных query-параметров. Path-id также остаётся обязательным:
+          в Annotated нет знака равенства, который сделал бы его default.
+        </Lead>
 
         <CodeBlock
-          caption={"required"}
+          caption={"фрагмент сигнатуры: порядок аргументов"}
           code={
-            "@router.post(\"/\")\n" +
-            "def create_task(\n" +
-            "    task: TaskCreate,\n" +
-            "    x_client_version: Annotated[\n" +
-            "        str,\n" +
-            "        Header(),\n" +
-            "    ],\n" +
+            "def read_events(\n" +
+            "    source: str,\n" +
+            "    page_size: Annotated[int, Query(ge=1, le=20)] = 5,\n" +
             "):\n" +
             "    ..."
           }
         />
 
-        <CodeBlock
-          caption={"manual support check"}
-          code={
-            "SUPPORTED_CLIENT_VERSIONS = {\"1.3.0\", \"1.4.0\"}\n" +
-            "\n" +
-            "if x_client_version not in SUPPORTED_CLIENT_VERSIONS:\n" +
-            "    raise HTTPException(\n" +
-            "        status_code=400,\n" +
-            "        detail=\"Unsupported client version\",\n" +
-            "    )"
-          }
-        />
+        <p>
+          В этом фрагменте source обязателен, а page_size необязателен. Если сначала поставить
+          параметр без default после page_size, Python остановится с SyntaxError ещё до запуска
+          FastAPI. Это ошибка порядка аргументов, а не проблема HTTP или Annotated. Мы исправляем
+          расположение параметров, а не добавляем фиктивные значения к обязательному body.
+        </p>
 
-        <BranchExplorer
-          code={
-            "получить X-Client-Version\n" +
-            "if header отсутствует:\n" +
-            "    validation 422\n" +
-            "elif version не поддерживается:\n" +
-            "    HTTPException 400\n" +
-            "else:\n" +
-            "    вызвать endpoint"
-          }
-          scenarios={[
-            { label: "header missing", activeLine: 2, output: "422" },
-            { label: "version 0.1.0", activeLine: 4, output: "400" },
-            { label: "version 1.4.0", activeLine: 6, output: "handler called" },
+        <p>
+          Metadata сама по себе не делает аргумент необязательным. Например, Path описывает
+          проверку обязательного path-id, но не присваивает ему значение по умолчанию. И наоборот,
+          default не указывает источник данных: именно Path или Query связывает параметр функции с
+          частью HTTP-запроса. Когда объявление сохраняет эти границы, Python-сигнатура остаётся
+          корректной, а FastAPI продолжает собирать тот же внешний контракт.
+        </p>
+
+        <QuizCard
+          question={"Почему обязательный planner нельзя поставить после query с default?"}
+          options={[
+            "Python запрещает обязательный аргумент после аргумента с default",
+            "FastAPI всегда сортирует параметры по имени",
+            "Annotated автоматически превращает planner в query",
           ]}
+          correctIndex={0}
+          explanation={"Мы сохраняем корректную Python-сигнатуру: обязательные аргументы располагаются раньше аргументов с default."}
         />
 
         <Callout tone="info">
-          {"Не делайте header обязательным только ради демонстрации. Требование должно быть частью API-контракта."}
+          Мы не меняем порядок или состав HTTP-полей ради красоты объявления. Сигнатуру перестраиваем
+          так, чтобы Python и FastAPI одинаково понимали каждый параметр.
         </Callout>
       </Section>
 
-      <Section number="04" title={"Response parameter позволяет добавить header"}>
+      <Section number="06" title={"Проверяем прежний HTTP-контракт"}>
         <Lead>
-          {"FastAPI может предоставить временный объект Response. Endpoint изменяет его headers, а обычный return по-прежнему проходит через response_model и JSON serialization."}
+          Когда alias и metadata появятся в существующих маршрутах, клиент не должен заметить
+          перестройку записи. Task API по-прежнему принимает те же path и query, тело PUT и PATCH
+          остаётся прежним, а handlers вызывают методы того же PlannerService. Полученный через
+          Depends объект не становится новым полем body, query или path. Не добавляются фильтры,
+          заголовки, cookie и новые зависимости.
         </Lead>
 
-        <div className="lesson-practice-steps">
-          <h3>{"Parameter"}</h3>
-          <p>
-            {"response: Response не читается из request."}
-          </p>
+        <p>
+          Схема показывает один корректный query-параметр от запроса до обработчика. Она не
+          изображает все внутренние шаги FastAPI, а выделяет главное: metadata направляет разбор,
+          базовый тип описывает результат, а значение появляется только из запроса или default.
+        </p>
 
-          <h3>{"Temporary response"}</h3>
-          <p>
-            {"FastAPI использует его metadata при создании финального ответа."}
-          </p>
+        <Diagram caption={"От query-текста к типизированному значению"} orientation="horizontal">
+          <DiagramFlow label={"Запрос проходит проверку Query и попадает в обработчик"}>
+            <DiagramNode title={"Клиент"} shape="input-output">
+              <p><code>?page_size=8</code></p>
+            </DiagramNode>
+            <DiagramArrow label={"текст запроса"} />
+            <DiagramNode title={"FastAPI читает metadata"}>
+              <p><code>int</code></p>
+              <p><code>Query(ge=1, le=20)</code></p>
+            </DiagramNode>
+            <DiagramArrow label={"извлечение и проверка"} />
+            <DiagramNode title={"Обработчик"} shape="terminator">
+              <p><code>page_size == 8</code></p>
+            </DiagramNode>
+          </DiagramFlow>
+        </Diagram>
 
-          <h3>{"Custom header"}</h3>
-          <p>
-            {"Например X-API-Mode или X-Process-Source."}
-          </p>
-
-          <h3>{"Body"}</h3>
-          <p>
-            {"Можно продолжать возвращать Pydantic model или dict."}
-          </p>
-
-        </div>
-
-        <CodeBlock
-          caption={"response header"}
-          code={
-            "from fastapi import Response\n" +
-            "\n" +
-            "@router.get(\"/info\")\n" +
-            "def get_info(\n" +
-            "    response: Response,\n" +
-            "    settings: SettingsDep,\n" +
-            "):\n" +
-            "    response.headers[\"X-API-Mode\"] = settings.api_mode\n" +
-            "\n" +
-            "    return {\n" +
-            "        \"app_name\": settings.app_name,\n" +
-            "    }"
-          }
-        />
-
-        <CodeBlock
-          caption={"response"}
-          code={
-            "HTTP/1.1 200 OK\n" +
-            "X-API-Mode: development\n" +
-            "Content-Type: application/json\n" +
-            "\n" +
-            "{\"app_name\":\"StudyHub Database API\"}"
-          }
-        />
-
-        <CompareSolutions
-          question={"Как добавить X-API-Mode, сохранив обычный JSON return?"}
-          left={{
-            title: "Вернуть только Response",
-            code: "return Response(...)",
-            note: "Придётся вручную отвечать за serialization.",
-          }}
-          right={{
-            title: "Изменить parameter Response",
-            code: "response.headers[\"X-API-Mode\"] = ...\nreturn {\"app_name\": ...}",
-            note: "FastAPI сохранит обычную обработку body.",
-          }}
-          preferred={"right"}
-          explanation={"Temporary Response подходит для metadata вокруг обычного результата."}
-        />
-
-        <Callout tone="info">
-          {"Custom response header и JSON body решают разные задачи. Не дублируйте все поля body в headers."}
-        </Callout>
-      </Section>
-
-      <Section number="05" title={"Cookie читается как отдельный источник request"}>
-        <Lead>
-          {"Cookie приходит в header Cookie, но FastAPI предоставляет отдельную функцию Cookie. Это делает сигнатуру понятнее и отражает параметр в OpenAPI."}
-        </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>{"Имя"}</h3>
-          <p>
-            {"studyhub_visit_id — имя cookie в браузере."}
-          </p>
-
-          <h3>{"Optional"}</h3>
-          <p>
-            {"Первый request может прийти без cookie."}
-          </p>
-
-          <h3>{"Тип"}</h3>
-          <p>
-            {"На текущем этапе используется str | None."}
-          </p>
-
-          <h3>{"Не body"}</h3>
-          <p>
-            {"Cookie автоматически отправляется клиентом по правилам браузера."}
-          </p>
-
-        </div>
-
-        <CodeBlock
-          caption={"чтение"}
-          code={
-            "from fastapi import Cookie\n" +
-            "\n" +
-            "@router.get(\"/visits\")\n" +
-            "def get_visits(\n" +
-            "    studyhub_visit_id: Annotated[\n" +
-            "        str | None,\n" +
-            "        Cookie(),\n" +
-            "    ] = None,\n" +
-            "):\n" +
-            "    return {\n" +
-            "        \"visit_id\": studyhub_visit_id,\n" +
-            "    }"
-          }
-        />
-
-        <CodeBlock
-          caption={"request"}
-          code={
-            "GET /visits HTTP/1.1\n" +
-            "Cookie: studyhub_visit_id=demo-123"
-          }
-        />
+        <p>
+          Читаем схему слева направо. Клиент отправляет текст, FastAPI применяет источник и границы,
+          а функция получает целое число. Если вместо 8 придёт 0, проверка завершится ответом 422
+          до вызова обработчика. Если query отсутствует, сработает прежний default. Схема не
+          означает, что metadata отправляется клиентом.
+        </p>
 
         <TrueFalse
-          statement={
-            <>
-              {"Наличие cookie studyhub_visit_id автоматически означает, что пользователь аутентифицирован."}
-            </>
-          }
+          statement={"PlannerDep появится в OpenAPI как новый query-параметр клиента."}
           isTrue={false}
-          explanation={"Cookie — только переданное значение; доверие и session logic требуют отдельной реализации."}
+          explanation={"Depends описывает получение service на стороне приложения. Это не HTTP-поле запроса и не часть публичной схемы Task."}
         />
 
+        <p>
+          Для приёмки мы сравним OpenAPI и реальные запросы до и после перестройки. Сверим путь
+          параметров, default 10, границы limit 1 и 50, значения за границей, положительный id,
+          поведение is_done и sort_desc, тело PUT/PATCH, ответы и stats. Успешный запрос подтвердит
+          только обычный случай, поэтому отдельно проверим границы и ошибочные значения. Проверки
+          работают на изолированном JSON-хранилище и не должны менять рабочие задачи.
+        </p>
+
+        <p>
+          OpenAPI полезен для сравнения формы: в нём видны path, query, тело и ответы, которые
+          описывает FastAPI. Но одна схема не доказывает, что обработчик правильно вызывает сервис.
+          Поэтому мы также отправляем обычные и граничные запросы и проверяем результат. Так
+          различаем декларацию контракта и реальное поведение приложения. Ни один из этих шагов не
+          требует менять задачу, storage или CLI.
+        </p>
+
         <Callout tone="info">
-          {"Cookie является транспортом небольшого значения. Она ещё не создаёт server-side session, пользователя или права доступа."}
+          Цель проверки не в том, чтобы доказать «красивую запись». Мы подтверждаем, что прежний
+          контракт и результат вызова PlannerService остались прежними.
         </Callout>
       </Section>
 
-      <Section number="06" title={"Установка cookie через Response"}>
+      <Section number="07" title={"Что мы будем делать в практике"}>
         <Lead>
-          {"Метод response.set_cookie добавляет Set-Cookie в response. Браузер может сохранить значение и отправлять его в следующих подходящих requests."}
+          В практике мы продолжаем существующий Planner после шага с простым provider и меняем
+          объявления зависимостей и параметров. Сервис, задачи и JSON-хранилище остаются теми же.
+          Полученный результат подготовит следующий этап, где отдельная зависимость соберёт
+          знакомые параметры выборки в короткий граф.
         </Lead>
 
-        <div className="lesson-practice-steps">
-          <h3>{"key/value"}</h3>
-          <p>
-            {"Имя и значение cookie."}
-          </p>
-
-          <h3>{"httponly"}</h3>
-          <p>
-            {"Запрещает JavaScript читать cookie; полезно для будущих session cookies."}
-          </p>
-
-          <h3>{"samesite"}</h3>
-          <p>
-            {"Ограничивает cross-site отправку."}
-          </p>
-
-          <h3>{"secure"}</h3>
-          <p>
-            {"Требует HTTPS; для локального HTTP обычно False."}
-          </p>
-
-        </div>
-
-        <CodeBlock
-          caption={"установка"}
-          code={
-            "from uuid import uuid4\n" +
-            "\n" +
-            "@router.post(\"/visits\")\n" +
-            "def start_visit(response: Response):\n" +
-            "    visit_id = str(uuid4())\n" +
-            "\n" +
-            "    response.set_cookie(\n" +
-            "        key=\"studyhub_visit_id\",\n" +
-            "        value=visit_id,\n" +
-            "        httponly=True,\n" +
-            "        samesite=\"lax\",\n" +
-            "        secure=False,\n" +
-            "    )\n" +
-            "\n" +
-            "    return {\n" +
-            "        \"message\": \"Visit started\",\n" +
-            "    }"
-          }
-        />
-
-        <CodeBlock
-          caption={"header"}
-          code={
-            "Set-Cookie: studyhub_visit_id=...; HttpOnly; Path=/; SameSite=lax"
-          }
-        />
-
-        <StepThrough
-          code={
-            "POST /visits\n" +
-            "→ endpoint creates visit_id\n" +
-            "→ response.set_cookie\n" +
-            "→ Set-Cookie header\n" +
-            "→ browser stores value\n" +
-            "→ next request sends Cookie header"
-          }
-          steps={[
+        <LinkedNotes
+          variant="connected"
+          items={[
             {
-              line: 0,
-              note: "Клиент запускает operation.",
-              vars: { "request": "POST /visits" },
+              title: "Прочитаем текущие объявления",
+              description: "Различим типы, defaults и FastAPI metadata в task-маршрутах и stats.",
             },
             {
-              line: 1,
-              note: "Server создаёт идентификатор.",
-              vars: { "visit_id": "uuid" },
+              title: "Введём общий alias",
+              description: "Сошлёмся на прежний PlannerService и get_planner, сохранив один provider.",
             },
             {
-              line: 2,
-              note: "Response получает cookie metadata.",
-              vars: { "method": "set_cookie" },
+              title: "Согласуем параметры",
+              description: "Оставим положительный id, прежние фильтры, сортировку и диапазон limit.",
             },
             {
-              line: 3,
-              note: "Клиент получает Set-Cookie.",
-              vars: { "header": "present" },
-            },
-            {
-              line: 4,
-              note: "Браузер применяет свои правила хранения.",
-              vars: { "storage": "browser" },
-            },
-            {
-              line: 5,
-              note: "Следующий request может отправить cookie.",
-              vars: { "Cookie": "studyhub_visit_id=..." },
+              title: "Сверим контракт",
+              description: "Сравним OpenAPI и изолированные запросы, включая ошибочные границы.",
             },
           ]}
         />
 
-        <Callout tone="info">
-          {"В production значение secure обычно True при HTTPS. Не копируйте локальную настройку механически в развёрнутое приложение."}
-        </Callout>
-      </Section>
-
-      <Section number="07" title={"Удаление cookie и границы учебного примера"}>
-        <Lead>
-          {"Удаление выполняется response.delete_cookie с тем же key и совместимыми параметрами path/domain. Клиент получает Set-Cookie, который делает старое значение недействительным."}
-        </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>{"Не удаление на сервере"}</h3>
-          <p>
-            {"Браузеру отправляется инструкция изменить cookie."}
-          </p>
-
-          <h3>{"Совпадение key/path"}</h3>
-          <p>
-            {"Иначе можно удалить не ту область или оставить старую cookie."}
-          </p>
-
-          <h3>{"Logout позже"}</h3>
-          <p>
-            {"В server-side session потребуется также удалить запись session на сервере."}
-          </p>
-
-          <h3>{"Сейчас"}</h3>
-          <p>
-            {"Удаляем только учебный visit id."}
-          </p>
-
-        </div>
-
-        <CodeBlock
-          caption={"удаление"}
-          code={
-            "@router.delete(\"/visits\", status_code=204)\n" +
-            "def finish_visit(response: Response) -> None:\n" +
-            "    response.delete_cookie(\n" +
-            "        key=\"studyhub_visit_id\",\n" +
-            "    )"
-          }
-        />
-
-        <CodeBlock
-          caption={"сценарий"}
-          code={
-            "POST /visits\n" +
-            "→ Set-Cookie\n" +
-            "GET /visits\n" +
-            "→ cookie read\n" +
-            "DELETE /visits\n" +
-            "→ cookie expired"
-          }
-        />
-
-        <CodeSequence
-          title={"Жизненный цикл cookie"}
-          prompt={"Расположите действия."}
-          pieces={[
-            { id: "start", code: "server sends Set-Cookie" },
-            { id: "store", code: "client stores cookie" },
-            { id: "send", code: "client sends Cookie header" },
-            { id: "read", code: "FastAPI extracts value" },
-            { id: "delete", code: "server sends deletion Set-Cookie" },
-          ]}
-          correctOrder={[
-            "start",
-            "store",
-            "send",
-            "read",
-            "delete",
-          ]}
-          explanation={"Cookie живёт в обмене response и последующих requests."}
-        />
-
-        <Callout tone="info">
-          {"Cookie может оставаться в интерфейсе клиента до обновления, но последующие requests должны следовать новому Set-Cookie."}
-        </Callout>
-      </Section>
-
-      <Section number="08" title={"Практика: версия клиента и visit cookie"}>
-        <Lead>
-          {"Добавьте к StudyHub два независимых механизма: X-Client-Version как request metadata и studyhub_visit_id как учебную cookie. Не связывайте их с user authentication."}
-        </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>{"GET /info"}</h3>
-          <p>
-            {"Принимает optional X-Client-Version и добавляет X-API-Mode."}
-          </p>
-
-          <h3>{"POST /visits"}</h3>
-          <p>
-            {"Устанавливает HttpOnly visit cookie."}
-          </p>
-
-          <h3>{"GET /visits"}</h3>
-          <p>
-            {"Показывает наличие идентификатора."}
-          </p>
-
-          <h3>{"DELETE /visits"}</h3>
-          <p>
-            {"Удаляет cookie со status 204."}
-          </p>
-
-          <h3>{"Postman"}</h3>
-          <p>
-            {"Проверьте request headers и cookie jar."}
-          </p>
-
-        </div>
-
-        <CodeBlock
-          caption={"контрольная карта"}
-          code={
-            "request header\n" +
-            "X-Client-Version: 1.4.0\n" +
-            "→ endpoint argument\n" +
-            "\n" +
-            "response header\n" +
-            "X-API-Mode: development\n" +
-            "\n" +
-            "response Set-Cookie\n" +
-            "→ client cookie storage\n" +
-            "→ next request Cookie"
-          }
-        />
-
-        <Callout tone="info">
-          {"Итог занятия — ясное различие body, headers, cookies и response metadata."}
-        </Callout>
-
-        <div className="lesson-check-group">
-          <QuizCard
-            question={"Во что превращается x_client_version?"}
-            options={[
-              "X-Client-Version",
-              "x_client_version body field",
-              "query x-client-version",
-            ]}
-            correctIndex={0}
-            explanation={"Header конвертирует underscores в hyphens."}
-          />
-          <QuizCard
-            question={"Как добавить custom response header?"}
-            options={[
-              "через parameter Response",
-              "через TaskCreate",
-              "через path",
-            ]}
-            correctIndex={0}
-            explanation={"Temporary Response участвует в финальном ответе."}
-          />
-          <QuizCard
-            question={"Что делает set_cookie?"}
-            options={[
-              "добавляет Set-Cookie в response",
-              "создаёт server-side session автоматически",
-              "пишет JSON",
-            ]}
-            correctIndex={0}
-            explanation={"Клиент получает инструкцию сохранить cookie."}
-          />
-          <QuizCard
-            question={"Является ли cookie готовой аутентификацией?"}
-            options={[
-              "нет",
-              "да всегда",
-              "только в Swagger",
-            ]}
-            correctIndex={0}
-            explanation={"Нужна отдельная логика доверия и session/user data."}
-          />
-        </div>
+        <p>
+          Каждое действие опирается на объяснённое различие между типом, metadata и default.
+          Практика меняет настоящие объявления в одном проекте и не переносит правила Task в
+          роутер. Завершим короткой регрессией прежних операций и убедимся, что Planner получил
+          тот же сервис и те же входные данные.
+        </p>
 
         <KeyTakeaways
           points={[
-            <>{"Header читает request metadata."}</>,
-            <>{"Underscore в имени обычно становится hyphen."}</>,
-            <>{"Required header может дать 422 до endpoint."}</>,
-            <>{"Response parameter добавляет headers и cookies к обычному return."}</>,
-            <>{"Cookie извлекается отдельным маркером Cookie."}</>,
-            <>{"set_cookie отправляет Set-Cookie клиенту."}</>,
-            <>{"delete_cookie инструктирует клиента удалить значение."}</>,
-            <>{"Cookie является транспортом, а не готовой session."}</>,
+            <>Annotated связывает базовый тип со сведениями для FastAPI.</>,
+            <>PlannerDep называет прежнюю зависимость, но не создаёт новый service.</>,
+            <>Тип, metadata, обязательность и default отвечают на разные вопросы.</>,
+            <>Path и Query сохраняют значения и ограничения прежнего HTTP-контракта.</>,
+            <>Проверка сравнивает OpenAPI, ответы и граничные значения.</>,
           ]}
         />
-
-        <PracticeCta
-          text={"Добавьте X-Client-Version, X-API-Mode и полный жизненный цикл studyhub_visit_id, затем проверьте headers и cookies в Postman."}
-        />
       </Section>
-
     </RichLesson>
   );
 }

@@ -359,6 +359,20 @@ export function Lesson52({ module }: { module?: string }) {
         <p>
           {"В Postman настроим Local environment с base_url=http://127.0.0.1:8000 и сохраним GET /health отдельно от Echo-запросов. Затем проверим 404 и 405, импортируем app.main без запуска меню и запустим прежний CLI."}
         </p>
+        <Callout tone="info">
+          <strong>Если проверяем через Postman Web.</strong>{" Адрес "}
+          <code>127.0.0.1</code>{" указывает на компьютер, где запущен браузер и локальный Uvicorn. В нижней панели Postman выберем "}
+          <strong>Desktop Agent</strong>{" и убедимся, что агент установлен и запущен. "}
+          <strong>Cloud Agent</strong>{" отправляет запрос из облака Postman и не может обратиться к локальному адресу. Сообщение "}
+          <code>Cannot send requests to reserved address</code>{" в этом случае означает ограничение способа отправки, а не ошибку нашего FastAPI-маршрута. В самом Postman Desktop App отдельный агент выбирать не нужно."}
+          <ol>
+            <li>{"В разделе Environments создадим Local и выберем его активным."}</li>
+            <li>{"В строке переменной укажем Name (Variable) "}<code>base_url</code>{" и Value "}<code>http://127.0.0.1:8000</code>{". В значение не добавляем путь "}<code>/health</code>{"."}</li>
+            <li>{"Сохраним запрос "}<code>{"GET {{base_url}}/health"}</code>{" в Planner API и отправим его при запущенном Uvicorn."}</li>
+          </ol>
+          {"Если Desktop Agent недоступен или мы не устанавливаем Postman, откроем "}
+          <code>http://127.0.0.1:8000/docs</code>{" и выполним GET /health через Try it out и Execute. Swagger UI уже доступен в браузере и остаётся полноценной проверкой HTTP-статуса и JSON-ответа; достаточно запущенного Uvicorn."}
+        </Callout>
         <p>
           {"Мы не подключаем чтение списка задач, новые хранилища или CRUD. Следующая работа добавит GET-маршруты к PlannerService, собранному через тот же build_service и настроенный путь JsonStorage."}
         </p>

@@ -384,12 +384,8 @@ export function LearningRoadmap() {
         <MethodGrid
           rows={[
             [
-              <>{"75 · Зачем база"}</>,
-              <>{"Потеря данных, несколько процессов, уникальность и запросы формулируют требования."}</>,
-            ],
-            [
-              <>{"76 · Engine и URL"}</>,
-              <>{"sqlite:///./studyhub.db и connect_args становятся понятной конфигурацией."}</>,
+              <>{"75 · Headers и Response"}</>,
+              <>{"Входной X-Client-Version и контролируемый X-Planner-Version вводят HTTP-контекст без сохранения предпочтения."}</>,
             ],
             [
               <>{"77 · Declarative Base"}</>,

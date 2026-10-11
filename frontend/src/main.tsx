@@ -1078,7 +1078,7 @@ function Workspace({
 
             return (
               <div className="module-group" key={moduleName}>
-                <button className="module-toggle" type="button" onClick={() => toggleModule(moduleName)}>
+                <button className="module-toggle" type="button" title={moduleName} onClick={() => toggleModule(moduleName)}>
                   {isOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
                   <span>{moduleName}</span>
                 </button>

@@ -1,7 +1,20 @@
-import { GitFork, Save } from "lucide-react";
-import { BranchExplorer, BugHunt, Callout, CodeBlock, CodeSequence, CompareSolutions, FillBlank, KeyTakeaways, Lead, PracticeCta, QuizCard, RecallCard, RichHero, RichLesson, Section, StepThrough, TerminalDemo, TrueFalse, TypeCard, TypeCards } from "../../shared";
-import { TheoryBridge } from "../../shared";
-const BLOCK_TITLE = "Блок 14 · SQLite и основы SQLAlchemy";
+import { Database, FolderOpen, Settings } from "lucide-react";
+import {
+  BugHunt,
+  Callout,
+  CodeBlock,
+  Lead,
+  LinkedNotes,
+  MethodGrid,
+  QuizCard,
+  RichHero,
+  RichLesson,
+  Section,
+  StepThrough,
+  TrueFalse,
+} from "../../shared";
+
+const BLOCK_TITLE = "Этап 4 · Блок 14 · Подготовить базу и новую границу хранения";
 
 export function Lesson80({ module }: { module?: string }) {
   return (
@@ -9,449 +22,258 @@ export function Lesson80({ module }: { module?: string }) {
       <RichHero
         variant="project"
         chip={module ?? BLOCK_TITLE}
-        title={"get_db и первая запись из FastAPI"}
-        intro={"Свяжем FastAPI с SQLite через dependency injection: создадим Session на один запрос, преобразуем TaskCreate в TaskModel, выполним транзакцию и вернём TaskRead из ORM-атрибутов."}
+        title={"80. Engine и адрес базы"}
+        intro={"Добавим к существующему Planner понятное подключение SQLite. JSON останется рабочим хранилищем, а новая база пока понадобится только для отдельной проверки соединения."}
         tags={[
-          { icon: <GitFork size={14} />, label: "dependency lifecycle" },
-          { icon: <Save size={14} />, label: "POST → SQLite" },
+          { icon: <Settings size={14} />, label: "DATABASE_URL" },
+          { icon: <Database size={14} />, label: "SQLite и SQLAlchemy" },
+          { icon: <FolderOpen size={14} />, label: "устойчивый путь" },
         ]}
       />
-      <TheoryBridge link={"Мы уже умеем создать ORM-объект отдельным скриптом. Последний шаг блока — выдавать отдельную Session каждому HTTP-запросу через dependency get_db."} boundary={"Session не должна быть глобальной и общей для всех запросов. Dependency управляет временем жизни ресурса, а endpoint — предметным сценарием создания задачи."} />
 
-      <Section number="01" title="Соединяем HTTP-конвейер и database-конвейер">
+      <Section number="00" title={"От JSON к подключению SQLite"}>
         <Lead>
-          {"До этого задача создавалась отдельным Python-скриптом. Теперь вернёмся к FastAPI: request body проходит Pydantic-валидацию, dependency выдаёт Session, endpoint создаёт ORM-объект, а response model сериализует сохранённую строку."}
+          {"Planner уже сохраняет задачи в JSON и использует одну сборку сервиса для API и CLI. Теперь подготовим отдельный путь к SQLite, чтобы следующие занятия могли описать в ней таблицу. Журнал StudyHub подтверждает пройденное до занятия 77, поэтому нужный для проверки минимум SQL мы восстановим здесь коротко."}
         </Lead>
-
-        <div className="lesson-route">
-          <ol>
-            <li><strong>{"Открыть ресурс:"}</strong> {"get_db создаёт Session перед endpoint."}</li>
-            <li><strong>{"Проверить вход:"}</strong> {"TaskCreate принимает только разрешённые поля."}</li>
-            <li><strong>{"Преобразовать:"}</strong> {"Pydantic-данные превращаются в TaskModel."}</li>
-            <li><strong>{"Зафиксировать:"}</strong> {"Session выполняет add, commit и refresh."}</li>
-            <li><strong>{"Вернуть контракт:"}</strong> {"TaskRead читает ORM-атрибуты и формирует JSON."}</li>
-          </ol>
-          <p>{"Результат блока — POST /tasks, который сохраняет запись в SQLite и переживает перезапуск API."}</p>
-        </div>
-
-        <BranchExplorer
-          code={`POST /tasks JSON
-  ↓
-TaskCreate validation
-  ↓
-get_db → Session
-  ↓
-TaskModel
-  ↓
-INSERT + COMMIT
-  ↓
-TaskRead
-  ↓
-201 JSON response`}
-          scenarios={[
-            { label: "невалидный body", activeLine: 1, output: "422 до endpoint" },
-            { label: "валидный body", activeLine: 4, output: "строка сохранена" },
-            { label: "ответ", activeLine: 6, output: "клиент получает id и is_done" },
+        <LinkedNotes
+          variant="connected"
+          items={[
+            {
+              title: "Точка старта",
+              description: "У нас есть проверенные Settings, JSON_PATH и Planner на JsonStorage. Рабочие API и CLI продолжают читать и сохранять через этот JSON-файл.",
+            },
+            {
+              title: "Новый вопрос",
+              description: "Как задать один и тот же адрес файла SQLite при запуске из разных папок и получить ограниченное по времени соединение?",
+            },
+            {
+              title: "Результат",
+              description: "Мы добавим DATABASE_URL и фабрику Engine, проверим соединение запросом SELECT 1, а создание таблиц и переход Planner на БД оставим следующим занятиям.",
+            },
           ]}
         />
-
-        <Callout tone="info">
-          {"Endpoint остаётся orchestration layer: связывает контракты и инфраструктуру, но не создаёт Engine и не управляет глобальным состоянием."}
-        </Callout>
+        <p>
+          {"Сначала восстановим смысл простого SQL-запроса, затем различим адрес, Engine и Connection. После этого добавим настройку и проверим её на временной базе. Так мы подготовим следующую часть курса, не объявляя базу уже подключённым хранилищем задач."}
+        </p>
       </Section>
-      <Section number="02" title="Dependency с yield управляет временем жизни Session">
+
+      <Section number="01" title={"Минимальный SQL и два способа работы SQLAlchemy"}>
         <Lead>
-          {"FastAPI dependency может не только вернуть значение, но и выполнить завершающее действие после ответа. Код до yield подготавливает ресурс, значение yield передаётся endpoint, а выход из with закрывает Session."}
+          {"SQLite хранит базу в файле, а SQL описывает операцию над данными. Для этого занятия нам достаточно одной короткой команды, которая не зависит от таблиц."}
         </Lead>
-
-        <CodeBlock
-          caption="app/database.py"
-          code={`from collections.abc import Generator
-
-from sqlalchemy.orm import Session
-
-
-def get_db() -> Generator[Session, None, None]:
-    with SessionFactory() as session:
-        yield session`}
-        />
-
-        <StepThrough
-          code={`def get_db():
-    with SessionFactory() as session:
-        yield session
-
-
-def endpoint(session = Depends(get_db)):
-    return {"ok": True}`}
-          steps={[
-            { line: 1, note: "Dependency вызывается для запроса.", vars: { request: "started" } },
-            { line: 2, note: "Создаётся отдельная Session.", vars: { session: "open" } },
-            { line: 3, note: "Session передаётся endpoint.", vars: { ownership: "request" } },
-            { line: 6, note: "Endpoint формирует ответ.", vars: { response: "ready" } },
-            { line: 2, note: "После завершения with закрывает Session.", vars: { session: "closed" } },
+        <p>
+          {"Запрос SELECT 1 просит базу вернуть значение 1. В ответе есть одна строка и один столбец. Здесь нет названия таблицы и нет задачи Planner, поэтому пример проверяет, что соединение может выполнить команду и вернуть результат. Он не читает, не создаёт и не изменяет предметные данные."}
+        </p>
+        <p>
+          {"SQLAlchemy объединяет два уровня работы. Core даёт адрес базы, Engine, Connection и возможность отправить SQL-команду напрямую. ORM, то есть объектно-реляционное отображение, связывает Python-классы с таблицами и помогает работать с ними как с объектами. Сейчас используем только Core. Модель задачи, таблицу, ORM и Session мы добавим позже, когда адрес и подключение уже будут понятны."}
+        </p>
+        <p>
+          {"Представим мастерскую с диспетчерской и рабочим столом. Engine похож на диспетчерскую: он знает, к какой базе обращаться, и управляет выдачей подключений. Connection похож на временный рабочий стол, за которым выполняется конкретная операция. Граница сравнения важна: Engine может повторно использовать пул подключений, а Connection представляет ресурс одной ограниченной области работы. Engine не является таблицей или активной Session."}
+        </p>
+        <MethodGrid
+          rows={[
+            [<code>Engine</code>, "Настроенный вход к базе и управление подключениями."],
+            [<code>Connection</code>, "Временный ресурс для выполнения SQL-команды."],
+            [<code>ORM и Session</code>, "Будущая работа с объектами и записями, не текущий шаг."],
           ]}
         />
-
-        <CodeSequence
-          title="Соберите жизненный цикл dependency"
-          prompt="Расположите события одного HTTP-запроса."
-          pieces={[
-            { id: "call", code: "FastAPI вызывает get_db" },
-            { id: "open", code: "SessionFactory создаёт Session" },
-            { id: "yield", code: "yield передаёт Session endpoint" },
-            { id: "endpoint", code: "endpoint выполняет database operation" },
-            { id: "close", code: "контекстный менеджер закрывает Session" },
-          ]}
-          correctOrder={["call", "open", "yield", "endpoint", "close"]}
-          explanation="Dependency владеет ресурсом от подготовки до завершения запроса."
-        />
-
-        <Callout>
-          {"get_db не обязана выполнять commit автоматически. Транзакционная граница должна оставаться видимой в сценарии записи."}
-        </Callout>
-      </Section>
-      <Section number="03" title="Annotated создаёт читаемый тип SessionDep">
-        <Lead>
-          {"Сигнатура Session вместе с Depends повторяется во многих endpoint. Annotated позволяет сохранить и Python-тип, и инструкцию FastAPI в одном переиспользуемом alias."}
-        </Lead>
-
-        <CodeBlock
-          caption="app/dependencies.py"
-          code={`from typing import Annotated
-
-from fastapi import Depends
-from sqlalchemy.orm import Session
-
-from app.database import get_db
-
-SessionDep = Annotated[Session, Depends(get_db)]`}
-        />
-
-        <CompareSolutions
-          question="Какая сигнатура яснее отделяет dependency declaration?"
-          left={{
-            title: "Повтор в endpoint",
-            code: "session: Session = Depends(get_db)",
-            note: "Работает, но повторяет связку во многих функциях.",
-          }}
-          right={{
-            title: "Типизированный alias",
-            code: "session: SessionDep",
-            note: "Тип и источник зависимости определены один раз.",
-          }}
-          preferred="right"
-          explanation="Alias уменьшает шум, не скрывая реальный тип Session."
-        />
-
-        <FillBlank
-          prompt="Укажите функцию, которая создаёт Session для запроса."
-          before="SessionDep = Annotated[Session, Depends("
-          after=")]"
-          options={["get_db", "create_engine", "TaskModel"]}
-          answer="get_db"
-          explanation="Depends вызывает dependency provider get_db."
-        />
-
-        <TrueFalse
-          statement={<>SessionDep создаёт глобальную Session во время импорта модуля.</>}
-          isTrue={false}
-          explanation="Alias хранит метаданные dependency; реальная Session создаётся при обработке каждого запроса."
-        />
-      </Section>
-      <Section number="04" title="Pydantic → ORM: явное преобразование входа">
-        <Lead>
-          {"TaskCreate уже прошла HTTP-валидацию. Через model_dump получаем словарь разрешённых полей и распаковываем его в конструктор TaskModel. Служебные id и is_done клиент не контролирует."}
-        </Lead>
-
-        <CodeBlock
-          caption="создаём ORM-объект"
-          code={`def create_task(
-    payload: TaskCreate,
-    session: SessionDep,
-) -> TaskModel:
-    task_data = payload.model_dump()
-    task = TaskModel(**task_data)
-
-    session.add(task)
-    session.commit()
-    session.refresh(task)
-
-    return task`}
-        />
-
-        <StepThrough
-          code={`payload = TaskCreate(
-    title="SQLite из FastAPI",
-    priority=4,
-)
-task_data = payload.model_dump()
-task = TaskModel(**task_data)`}
-          steps={[
-            { line: 0, note: "Pydantic уже проверил значения.", vars: { payload: "TaskCreate" } },
-            { line: 4, note: "model_dump создаёт словарь публичных полей.", vars: { task_data: "{title, description, priority}" } },
-            { line: 5, note: "Распаковка передаёт поля ORM-конструктору.", vars: { task: "transient TaskModel" } },
-          ]}
-        />
-
-        <BugHunt
-          code={`task = TaskModel(
-    id=payload.id,
-    title=payload.title,
-    is_done=payload.is_done,
-)`}
-          question="Почему такой контракт создания опасен?"
-          options={[
-            "клиент получает контроль над служебными полями id и is_done",
-            "SQLAlchemy запрещает title",
-            "Pydantic не поддерживает числа",
-          ]}
+        <QuizCard
+          question={"Какой объект передаёт SQL-команду базе в текущем Core-примере?"}
+          options={["Connection", "Settings", "ORM-модель"]}
           correctIndex={0}
-          explanation="Create-schema должна разрешать только поля, которые пользователь вправе задавать."
-          fix={`task = TaskModel(**payload.model_dump())`}
+          explanation={"Connection выполняет команду в своей области. Engine помогает получить Connection, а Settings хранит адрес и другие параметры."}
         />
-
-        <Callout tone="info">
-          {"Явный mapper-функционал понадобится, когда имена и структура слоёв разойдутся. Пока model_dump и конструктор сохраняют минимальную прозрачную версию."}
-        </Callout>
       </Section>
-      <Section number="05" title="TaskRead читает ORM-атрибуты">
+
+      <Section number="02" title={"URL базы и путь к SQLite-файлу"}>
         <Lead>
-          {"После commit endpoint возвращает TaskModel. Pydantic должна уметь читать не словарь, а атрибуты ORM-объекта. В Pydantic v2 это включается через ConfigDict(from_attributes=True)."}
+          {"Обычный файловый путь сообщает, где расположен файл. Database URL дополнительно сообщает SQLAlchemy, с каким типом базы и драйвером нужно работать."}
         </Lead>
-
+        <p>
+          {"Общая форма адреса SQLAlchemy содержит диалект и, при необходимости, драйвер, а затем сведения о базе. Для SQLite адрес направляет библиотеку к локальному файлу. Например, sqlite:///data/probe.sqlite3 означает относительный путь. Его начало зависит от текущей рабочей папки процесса. Если приложение запустить из другой папки, такой же текст адреса может привести к другому файлу и новой пустой базе."}
+        </p>
+        <p>
+          {"Абсолютный путь задаёт файл без такой зависимости. На Windows адрес может выглядеть как sqlite:///C:/work/planner/data/probe.sqlite3. Слеши здесь являются частью формы URL, а не поводом вручную прибавлять их к любому Path. Надёжнее сначала разрешить путь относительно корня проекта, а затем собрать SQLite URL отдельными полями."}
+        </p>
+        <p>
+          {"Путь можно представить как указание «два квартала отсюда». Если точка старта сместилась, конечное место тоже меняется. Корень проекта играет роль зафиксированной точки старта, а абсолютный путь указывает один файл независимо от cwd. Аналогия касается только выбора места: URL дополнительно описывает SQLAlchemy диалект, поэтому Path и URL остаются разными значениями."}
+        </p>
         <CodeBlock
-          caption="app/schemas.py"
-          code={`from pydantic import BaseModel, ConfigDict, Field
+          caption={"Независимый пример сборки URL"}
+          code={`from pathlib import Path
+from sqlalchemy import URL
 
-
-class TaskCreate(BaseModel):
-    title: str = Field(min_length=1, max_length=120)
-    description: str | None = Field(
-        default=None,
-        max_length=500,
+def build_probe_url(project_root: Path) -> str:
+    database_path = (
+        project_root / "data" / "probe.sqlite3"
+    ).resolve()
+    url = URL.create(
+        "sqlite",
+        database=database_path.as_posix(),
     )
-    priority: int = Field(default=3, ge=1, le=5)
-
-
-class TaskRead(TaskCreate):
-    model_config = ConfigDict(from_attributes=True)
-
-    id: int
-    is_done: bool`}
+    return url.render_as_string(hide_password=False)`}
         />
-
-        <TypeCards>
-          <TypeCard badge="input" title="TaskCreate">
-            {"Проверяет JSON клиента до выполнения endpoint."}
-          </TypeCard>
-          <TypeCard badge="ORM" badgeTone="float" title="TaskModel">
-            {"Содержит mapped-атрибуты и связан со строкой SQLite."}
-          </TypeCard>
-          <TypeCard badge="output" badgeTone="str" title="TaskRead">
-            {"Фильтрует и сериализует ответ по публичному контракту."}
-          </TypeCard>
-        </TypeCards>
-
-        <TrueFalse
-          statement={<>from_attributes=True превращает Pydantic-схему в ORM-модель.</>}
-          isTrue={false}
-          explanation="Настройка только разрешает валидацию из атрибутов объекта; ответственности классов остаются разными."
-        />
-
-        <Callout>
-          {"Response model защищает границу API. Даже если в TaskModel позже появится внутреннее поле, оно не попадёт в JSON без объявления в TaskRead."}
-        </Callout>
-      </Section>
-      <Section number="06" title="Полный POST /tasks с кодом 201">
-        <Lead>
-          {"Соберём минимальный endpoint. Он принимает знакомую TaskCreate, получает Session через DI и возвращает сохранённую задачу по TaskRead."}
-        </Lead>
-
-        <CodeBlock
-          caption="app/routers/tasks.py"
-          code={`from fastapi import APIRouter, status
-
-from app.dependencies import SessionDep
-from app.models import TaskModel
-from app.schemas import TaskCreate, TaskRead
-
-router = APIRouter(
-    prefix="/tasks",
-    tags=["tasks"],
-)
-
-
-@router.post(
-    "",
-    response_model=TaskRead,
-    status_code=status.HTTP_201_CREATED,
-)
-def create_task(
-    payload: TaskCreate,
-    session: SessionDep,
-) -> TaskModel:
-    task = TaskModel(**payload.model_dump())
-
-    session.add(task)
-    session.commit()
-    session.refresh(task)
-
-    return task`}
-        />
-
-        <BranchExplorer
-          code={`request body
-  ↓
-TaskCreate
-  ↓
-TaskModel(**model_dump())
-  ↓
-session.add
-  ↓
-session.commit
-  ↓
-session.refresh
-  ↓
-TaskRead response`}
-          scenarios={[
-            { label: "title пустой", activeLine: 1, output: "422, INSERT не выполняется" },
-            { label: "валидная задача", activeLine: 4, output: "COMMIT фиксирует строку" },
-            { label: "успешный ответ", activeLine: 6, output: "201 с id" },
+        <p>
+          {"Функция получает уже известный корень проекта, строит абсолютный путь и передаёт его как database в URL.create. Последний вызов возвращает строковое представление адреса, которое можно хранить в настройках. Само создание URL не открывает файл. На Windows as_posix даёт форму с прямыми слешами, а URL сохраняет компонент sqlite отдельно от пути."}
+        </p>
+        <StepThrough
+          code={`project_root = Path("C:/work/planner").resolve()
+database_path = (project_root / "data" / "probe.sqlite3").resolve()
+url = URL.create("sqlite", database=database_path.as_posix())
+rendered = url.render_as_string(hide_password=False)`}
+          steps={[
+            { line: 0, note: "Корень задаёт абсолютное начало маршрута.", vars: { project_root: "C:/work/planner" } },
+            { line: 1, note: "Путь к файлу вычисляется от корня, а не от места запуска.", vars: { database_path: "C:/work/planner/data/probe.sqlite3" } },
+            { line: 2, note: "URL.create отделяет диалект sqlite от расположения файла.", vars: { url: "URL со значением database_path" } },
+            { line: 3, note: "На выходе получаем адрес SQLite, но соединение ещё не открыто.", vars: { rendered: "sqlite:///C:/work/planner/data/probe.sqlite3" } },
           ]}
         />
-
-        <Callout tone="info">
-          {"Мы намеренно не добавляем try/except вокруг каждого вызова. Конкретные database exceptions и единый rollback-сценарий подробно появятся в блоке 15."}
-        </Callout>
-      </Section>
-      <Section number="07" title="Доказываем постоянство и исключаем глобальную Session">
-        <Lead>
-          {"Готовность блока проверяется не только ответом 201. Нужно остановить API, запустить его снова и убедиться, что созданная строка осталась в SQLite. Для диагностики пока используем отдельный inspection-скрипт."}
-        </Lead>
-
-        <TerminalDemo
-          title="сквозной сценарий"
-          lines={[
-            { cmd: "uvicorn app.main:app --reload" },
-            { out: "POST /tasks → 201 {\"id\":1,\"title\":\"SQLite\",...}" },
-            { cmd: "Ctrl+C" },
-            { out: "процесс остановлен" },
-            { cmd: "python -m scripts.inspect_tasks" },
-            { out: "1 | SQLite | priority=4 | is_done=0" },
-            { cmd: "uvicorn app.main:app --reload" },
-            { out: "следующий POST /tasks получает id=2" },
-          ]}
-        />
-
         <BugHunt
-          code={`session = SessionFactory()
-
-
-@router.post("/tasks")
-def create_task(payload: TaskCreate):
-    # все запросы используют один session
-    ...`}
-          question="Какой архитектурный дефект показан?"
+          code={`database_url = "sqlite:///data/probe.sqlite3"
+first_cwd = "C:/work/planner"
+second_cwd = "C:/tmp"`}
+          question={"Почему этот адрес способен выбрать другой файл после смены cwd?"}
           options={[
-            "одна mutable Session разделяется между запросами",
-            "endpoint использует POST",
-            "TaskCreate содержит title",
+            "Путь data/probe.sqlite3 относительный и считается от папки запуска.",
+            "create_engine всегда заменяет имя файла на случайное.",
+            "SELECT 1 автоматически создаёт таблицу tasks.",
           ]}
           correctIndex={0}
-          explanation="Ошибки, транзакции и identity map разных запросов будут смешиваться."
-          fix={`def get_db():
-    with SessionFactory() as session:
-        yield session
-
-
-@router.post("/tasks")
-def create_task(payload: TaskCreate, session: SessionDep):
-    ...`}
+          explanation={"Относительный путь разрешается от текущей папки процесса. Корень проекта нужно применить до сборки URL. SELECT 1 не создаёт таблиц."}
+          fix={`database_path = (project_root / "data" / "probe.sqlite3").resolve()
+database_url = URL.create(
+    "sqlite",
+    database=database_path.as_posix(),
+)`}
         />
+      </Section>
 
-        <RecallCard
-          question="Как доказать, что API больше не использует временное in-memory storage?"
-          answer={<p>{"Создать запись через HTTP, полностью остановить процесс и прочитать ту же строку из файла SQLite после нового запуска."}</p>}
-        />
-
-        <Callout>
-          {"GET /tasks через ORM появится в следующем занятии блока 15. Сейчас inspection-скрипт помогает проверить хранение без преждевременного введения select."}
+      <Section number="03" title={"DATABASE_URL дополняет существующие Settings"}>
+        <Lead>
+          {"Адрес базы должен собираться в том же месте, что уже знакомые JSON_PATH, APP_NAME и COOKIE_SECURE. Тогда API, CLI и тесты получают предсказуемые параметры, а не читают окружение каждый по-своему."}
+        </Lead>
+        <p>
+          {"Settings уже создаётся при загрузке настроек. Если значение есть в окружении процесса, оно имеет приоритет над значением из .env, потому что load_dotenv вызывается с override=False. Новое DATABASE_URL следует разобрать по той же схеме: отсутствие имени выбирает заранее определённую SQLite-базу от PROJECT_ROOT, а переданный адрес проходит проверку до сборки приложения."}
+        </p>
+        <p>
+          {"Явно пустая строка отличается от отсутствующей настройки. Отсутствующее значение может включить default, но пустое или неподдерживаемое значение нужно отклонить понятной ошибкой. Если превратить такую ошибку в тихий возврат к default, опечатка незаметно направит код в другую базу. Для этого шага поддерживается файловая SQLite; сетевой адрес другой СУБД не должен приниматься как эквивалентный."}
+        </p>
+        <p>
+          {"Проверка может разобрать URL через make_url и посмотреть имя backend и поле database, не разрезая строку по слешам. Если путь в адресе относительный, его можно связать с корнем проекта и собрать обновлённый URL. Секреты из среды и полный объект настроек не печатаются в журнал. DATABASE_URL пока только готовит отдельный компонент: build_service, API и CLI всё ещё используют прежний JsonStorage."}
+        </p>
+        <Callout tone="info">
+          {"Проверка DATABASE_URL подтверждает конфигурацию будущего соединения. Она не меняет JSON_PATH, не выбирает backend для Planner и не запускает создание таблицы."}
         </Callout>
       </Section>
-      <Section number="08" title="Контрольная точка">
+
+      <Section number="04" title={"Engine управляет соединениями, но не открывает таблицы"}>
         <Lead>
-          {"Соберите модель занятия целиком: назовите назначение механизма, проследите путь данных, объясните границу применения и только затем переходите к практической проверке."}
+          {"Фабрика Engine получает готовый адрес явно. Так один и тот же код можно подключить к обычной конфигурации или к отдельной базе в тесте."}
         </Lead>
+        <p>
+          {"create_engine создаёт объект Engine с выбранным диалектом и правилами получения подключений. На этом вызове библиотека ещё не открывает DB-API соединение. Фактическое обращение начинается, когда мы вызываем engine.connect или другой объект впервые запрашивает подключение. Поэтому импорт app/DBase/engine.py не должен создавать открытую Connection или выполнять SQL."}
+        </p>
+        <p>
+          {"Engine удобно переиспользовать как долгоживущую настройку приложения, а Connection ограничивать одной операцией. Слово «пул» означает механизм, который повторно выдаёт уже подготовленное подключение, когда это подходит драйверу. Закрытие объекта Connection обычно возвращает ресурс пулу для повторного использования. Это не означает, что мы закрыли Engine или создали таблицу."}
+        </p>
+        <p>
+          {"В приложении будет небольшая функция make_engine(database_url), которая просто передаёт адрес в create_engine. Она не читает os.environ, не загружает .env и не соединяется с базой. Такой вход полезен в тестах: туда можно передать адрес из tmp_path и проверить изоляцию. Параметр echo по умолчанию оставляем выключенным; временный SQL-журнал полезен при диагностике, но не нужен в каждом запуске."}
+        </p>
+        <CodeBlock
+          caption={"Фабрика пока не соединяется с базой"}
+          code={`from sqlalchemy import create_engine
+from sqlalchemy.engine import Engine
 
-        <div className="lesson-check-group">
-          <QuizCard
-            question={"Что делает get_db?"}
-            options={[
-              "выдаёт Session на время запроса",
-              "создаёт ORM-модель",
-              "валидирует JSON",
-            ]}
-            correctIndex={0}
-            explanation={"Dependency управляет жизненным циклом database Session."}
-          />
-          <QuizCard
-            question={"Зачем используется yield?"}
-            options={[
-              "передать ресурс и затем завершить его",
-              "создать таблицу",
-              "вернуть HTTP 422",
-            ]}
-            correctIndex={0}
-            explanation={"Код после yield/выход из context manager выполняет cleanup."}
-          />
-          <QuizCard
-            question={"Что передаётся в TaskModel?"}
-            options={[
-              "payload.model_dump()",
-              "response.headers",
-              "Base.metadata",
-            ]}
-            correctIndex={0}
-            explanation={"Словарь проверенных create-полей распаковывается в ORM-конструктор."}
-          />
-          <QuizCard
-            question={"Зачем TaskRead from_attributes=True?"}
-            options={[
-              "читать атрибуты ORM-объекта",
-              "открывать SQLite-файл",
-              "выполнять commit",
-            ]}
-            correctIndex={0}
-            explanation={"Pydantic сериализует объект по его атрибутам."}
-          />
-        </div>
+def make_engine(database_url: str) -> Engine:
+    return create_engine(database_url)`}
+        />
+        <QuizCard
+          question={"Что происходит непосредственно при вызове create_engine(database_url)?"}
+          options={[
+            "Создаётся Engine, а первое подключение откладывается до запроса Connection.",
+            "Создаётся таблица задач и записывается первая строка.",
+            "PlannerService автоматически прекращает использовать JSON.",
+          ]}
+          correctIndex={0}
+          explanation={"Engine настраивает работу с выбранной базой. Подключение появляется при запросе Connection, а схема и рабочие операции Planner относятся к следующим занятиям."}
+        />
+      </Section>
 
-        <KeyTakeaways
-          points={[
-            <>{"get_db создаёт отдельную Session для одного HTTP-запроса."}</>,
-            <>{"Dependency с yield связывает выдачу ресурса и cleanup."}</>,
-            <>{"Annotated сохраняет тип Session и декларацию Depends."}</>,
-            <>{"TaskCreate ограничивает разрешённые входные поля."}</>,
-            <>{"model_dump передаёт проверенные данные ORM-модели."}</>,
-            <>{"TaskRead с from_attributes сериализует ORM-объект."}</>,
-            <>{"POST /tasks возвращает 201 только после успешного commit."}</>,
-            <>{"Постоянство доказывается повторным чтением после перезапуска."}</>,
+      <Section number="05" title={"SELECT 1 проверяет соединение на ограниченном участке"}>
+        <Lead>
+          {"Теперь соединяем знакомую идею SQL с Core API SQLAlchemy и читаем один результат до закрытия Connection."}
+        </Lead>
+        <p>
+          {"В SQLAlchemy 2.x обычную строку SQL передают как текстовое выражение через text. Connection.execute отправляет его базе и возвращает объект результата. Метод scalar_one читает единственное значение единственной ожидаемой строки. Здесь команда фиксирована, поэтому мы не собираем SQL из пользовательской строки и не затрагиваем задачи."}
+        </p>
+        <CodeBlock
+          caption={"Короткая проверка адреса"}
+          code={`from sqlalchemy import text
+
+with engine.connect() as connection:
+    result = connection.execute(text("SELECT 1"))
+    value = result.scalar_one()
+    print(value)  # 1`}
+        />
+        <p>
+          {"Контекст with задаёт границу ресурса: после успешного выполнения или исключения объект Connection закрывается для текущего кода и передаёт подключение обратно Engine. При этом сам Engine можно использовать ещё раз. Мы читаем результат внутри блока, пока ресурс доступен, и не храним открытый объект между запросами."}
+        </p>
+        <p>
+          {"Для файлового SQLite первое реальное подключение может создать пустой файл, если его ещё нет и родительская папка существует. Но в нём не появится таблица tasks: SELECT 1 не содержит CREATE TABLE. Такой smoke check подтверждает адрес, возможность выполнить запрос и чтение результата. Он не доказывает, что FastAPI использует базу, что ORM-модель существует или что запись задачи сохраняется."}
+        </p>
+        <TrueFalse
+          statement={<>Если SELECT 1 вернул значение 1, таблица задач уже создана и API читает из SQLite.</>}
+          isTrue={false}
+          explanation={"Запрос проверяет только соединение и выполнение простой команды. Он не называет таблицу и не проходит через PlannerService или API."}
+        />
+      </Section>
+
+      <Section number="06" title={"Тестовая база остаётся отдельной от JSON Planner"}>
+        <Lead>
+          {"Новая инфраструктура полезна только тогда, когда тест может безопасно выбрать свою базу, а старый путь Planner продолжает работать."}
+        </Lead>
+        <p>
+          {"Для проверки фабрики создаём файловую базу в tmp_path. Так тест не касается рабочей базы и не зависит от того, где она находится. Тестовый адрес передаётся явно в make_engine. После SELECT мы убеждаемся, что результат равен 1, а контекст Connection завершён; для полного завершения временного Engine тест может вызвать dispose в блоке очистки."}
+        </p>
+        <p>
+          {"Отдельно проверяем отсутствие DATABASE_URL, явный временный URL, пустую строку и неподдерживаемую схему. Для default используем project_root, заданный тестом, и сравниваем адрес до и после смены рабочей папки. В обоих случаях SQLite-файл остаётся привязанным к одному корню. Сам тестовый файл создаём только внутри временной папки."}
+        </p>
+        <p>
+          {"Затем запускаем подходящие проверки Settings и build_service на отдельном JSON. API и CLI пока не получают Engine и не читают новую SQLite-базу. Это ожидаемая граница: блок 14 подготовит модель и последующие операции, а переключение двух интерфейсов произойдёт заметно позже. Наличие DATABASE_URL рядом с JSON_PATH ещё не означает два активных источника данных."}
+        </p>
+        <Callout>
+          {"Если API или CLI внезапно начали создавать или выбирать новую базу, остановимся и проверим точку сборки. В этом занятии подключение запускается только явной проверкой."}
+        </Callout>
+      </Section>
+
+      <Section number="07" title={"Что мы будем делать в практике"}>
+        <Lead>
+          {"Подготовим воспроизводимое подключение SQLite в существующем StudyHub, сохранив JSON как штатный путь Planner."}
+        </Lead>
+        <LinkedNotes
+          variant="connected"
+          items={[
+            {
+              title: "Расширим Settings",
+              description: "Добавим SQLAlchemy 2.x в requirements.txt и DATABASE_URL с файловым SQLite default от корня проекта, проверим среду, .env, пустое и неподдерживаемое значение; прежние поля останутся на месте.",
+            },
+            {
+              title: "Создадим фабрику Engine",
+              description: "Добавим app/DBase/engine.py с функцией, принимающей URL явно; импорт модуля не будет открывать соединение или создавать таблицу.",
+            },
+            {
+              title: "Проверим отдельный файл",
+              description: "На временной файловой базе выполним SELECT 1 через Connection и прочитаем результат 1; ресурс завершится даже при ошибке.",
+            },
+            {
+              title: "Подтвердим прежнее поведение",
+              description: "Повторим проверку из другой cwd, сверим один и тот же default-путь и запустим узкие проверки настроек и JSON-сборки API/CLI.",
+            },
           ]}
         />
-
-        <div className="lesson-practice-steps">
-          <h3>{"Критерии готовности"}</h3>
-          <ul>
-            <li>{"объясняете lifecycle dependency с yield"}</li>
-            <li>{"получаете отдельную Session в endpoint"}</li>
-            <li>{"преобразуете TaskCreate в TaskModel"}</li>
-            <li>{"возвращаете TaskRead с id и is_done"}</li>
-            <li>{"доказываете сохранение после перезапуска процесса"}</li>
-          </ul>
-        </div>
-
-        <PracticeCta text={"Подключите get_db и SessionDep, реализуйте POST /tasks, создайте задачу через Swagger или Postman и подтвердите строку inspection-скриптом после полного перезапуска API. Зафиксируйте результат отдельным Git-коммитом."} />
+        <p>
+          {"Мы применим настройки и работу с путём до вызова фабрики, а затем используем Core Connection для независимого smoke check. Итогом станет готовый адрес и проверенное подключение, но не таблица и не ORM. Рабочий Planner продолжит хранить задачи в JSON до предусмотренного курсом перехода."}
+        </p>
       </Section>
     </RichLesson>
   );

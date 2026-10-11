@@ -1,6 +1,24 @@
-import { Cloud, Layers } from "lucide-react";
-import { BugHunt, Callout, CodeBlock, CodeSequence, CompareSolutions, KeyTakeaways, Lead, MatchPairs, PracticeCta, QuizCard, RecallCard, RichHero, RichLesson, Section, StepThrough } from "../../shared";
-const BLOCK_TITLE = "Этап 4 · Блок 13 · FastAPI как цельное приложение";
+import { Cloud, GitBranch } from "lucide-react";
+import {
+  BugHunt,
+  CodeBlock,
+  Diagram,
+  DiagramArrow,
+  DiagramFlow,
+  DiagramNode,
+  KeyTakeaways,
+  Lead,
+  LinkedNotes,
+  MatchPairs,
+  QuizCard,
+  RecallCard,
+  RichHero,
+  RichLesson,
+  Section,
+  StepThrough,
+} from "../../shared";
+
+const BLOCK_TITLE = "Глава 4 · Блок 13 · FastAPI как цельное приложение";
 
 export function Lesson74({ module }: { module?: string }) {
   return (
@@ -8,671 +26,420 @@ export function Lesson74({ module }: { module?: string }) {
       <RichHero
         variant="project"
         chip={module ?? BLOCK_TITLE}
-        title={"Middleware и CORS"}
-        intro={"Добавим поведение вокруг всех requests: измерим время, поставим общий response header и разрешим локальному браузерному frontend обращаться к API через точную CORS-конфигурацию."}
+        title={"Составные зависимости и тестовая подмена"}
+        intro={"Сгруппируем параметры существующего GET /tasks и передадим их вместе с Planner в provider только чтения: он вызывает выборку и не меняет задачи. Затем заменим provider в API-проверке, чтобы работать с отдельным JSON-файлом."}
         tags={[
-          { icon: <Layers size={14} />, label: "до и после endpoint" },
-          { icon: <Cloud size={14} />, label: "origin и CORS" },
+          { icon: <GitBranch size={14} />, label: "небольшой граф" },
+          { icon: <Cloud size={14} />, label: "изолированная проверка" },
         ]}
       />
 
-      <Section number="01" title={"Middleware окружает обработку request"}>
+      <Section number="00" title={"От готовой выборки к её входам"}>
         <Lead>
-          {"Некоторые действия нужны почти каждому endpoint: измерить время, добавить общий header или записать request в лог. Копировать эти строки в каждый handler неудобно."}
+          {"GET /tasks уже умеет отбирать задачи по статусу, менять порядок и ограничивать число результатов. Саму выборку выполняет существующий PlannerService. Теперь разберём, как отдельно подготовить входы запроса и не переписать прикладную операцию."}
         </Lead>
 
-        <div className="lesson-practice-steps">
-          <h3>{"До endpoint"}</h3>
-          <p>
-            {"Middleware получает Request и может выполнить подготовку."}
-          </p>
-
-          <h3>{"call_next"}</h3>
-          <p>
-            {"Передаёт request дальше по цепочке к route."}
-          </p>
-
-          <h3>{"После endpoint"}</h3>
-          <p>
-            {"Получает готовый Response и может изменить metadata."}
-          </p>
-
-          <h3>{"Общий охват"}</h3>
-          <p>
-            {"Один middleware применяется ко многим routes."}
-          </p>
-
-        </div>
-
-        <CodeBlock
-          caption={"схема"}
-          code={
-            "client\n" +
-            "→ middleware before\n" +
-            "→ dependencies and endpoint\n" +
-            "→ middleware after\n" +
-            "→ client"
-          }
-        />
-
-        <CodeBlock
-          caption={"минимальный middleware"}
-          code={
-            "from fastapi import Request\n" +
-            "\n" +
-            "@app.middleware(\"http\")\n" +
-            "async def add_common_header(\n" +
-            "    request: Request,\n" +
-            "    call_next,\n" +
-            "):\n" +
-            "    response = await call_next(request)\n" +
-            "    response.headers[\"X-App-Name\"] = \"StudyHub\"\n" +
-            "    return response"
-          }
-        />
-
-        <MatchPairs
-          prompt={"Соедините участок и действие."}
-          leftTitle={"Слева"}
-          rightTitle={"Справа"}
-          pairs={[
-            { left: "before call_next", right: "прочитать request и начать таймер" },
-            { left: "call_next(request)", right: "передать request дальше" },
-            { left: "after call_next", right: "получить и изменить response" },
-            { left: "return response", right: "отправить итог клиенту" },
+        <LinkedNotes
+          variant="connected"
+          items={[
+            {
+              title: "Точка старта",
+              description:
+                "У запроса есть знакомые is_done, sort_desc и limit; select_tasks применяет их к задачам.",
+            },
+            {
+              title: "Новый вопрос",
+              description:
+                "Как передать подготовленные параметры и тот же Planner одному provider, а в проверке подменить только нужную зависимость?",
+            },
+            {
+              title: "Результат",
+              description:
+                "GET сохраняет свой HTTP-контракт, а отдельный JSON-сервис можно подключить на время API-проверки.",
+            },
           ]}
-          explanation={"Middleware имеет симметричную часть до и после обработки."}
         />
 
-        <Callout tone="info">
-          {"Endpoints курса остаются обычными def. Функция decorator middleware в этом API использует async/await из-за интерфейса call_next; подробная асинхронность изучается позже."}
-        </Callout>
+        <p>
+          {"Сначала восстановим реальный путь данных, затем введём контейнер параметров и короткий граф. Мы также разберём, где заканчивается область одного запроса и как вернуть приложение в прежнее состояние после временной подмены."}
+        </p>
       </Section>
 
-      <Section number="02" title={"Измеряем время ответа"}>
+      <Section number="01" title={"Сохраняем знакомую операцию"}>
         <Lead>
-          {"perf_counter подходит для измерения коротких интервалов. Значение фиксируется до call_next, после response вычисляется разница и добавляется custom header."}
+          {"До рефакторинга обработчик получает query-параметры и передаёт их сервису. Query string остаётся частью HTTP-запроса; фильтрация, сортировка и limit остаются поведением PlannerService."}
         </Lead>
 
-        <div className="lesson-practice-steps">
-          <h3>{"Start"}</h3>
-          <p>
-            {"Сохраняется перед передачей request."}
-          </p>
-
-          <h3>{"Await call_next"}</h3>
-          <p>
-            {"Включает route, validation, dependencies и handler ниже по цепочке."}
-          </p>
-
-          <h3>{"Elapsed"}</h3>
-          <p>
-            {"Разница вычисляется после получения response."}
-          </p>
-
-          <h3>{"Header"}</h3>
-          <p>
-            {"X-Process-Time помогает увидеть результат в Postman."}
-          </p>
-
-        </div>
-
         <CodeBlock
-          caption={"timing middleware"}
-          code={
-            "from time import perf_counter\n" +
-            "from fastapi import Request\n" +
-            "\n" +
-            "@app.middleware(\"http\")\n" +
-            "async def add_process_time(\n" +
-            "    request: Request,\n" +
-            "    call_next,\n" +
-            "):\n" +
-            "    started_at = perf_counter()\n" +
-            "\n" +
-            "    response = await call_next(request)\n" +
-            "\n" +
-            "    elapsed = perf_counter() - started_at\n" +
-            "    response.headers[\"X-Process-Time\"] = f\"{elapsed:.6f}\"\n" +
-            "\n" +
-            "    return response"
-          }
+          caption={"схематичный фрагмент существующего GET"}
+          code={[
+            "tasks = request.app.state.planner.select_tasks(",
+            "    is_done=is_done,",
+            "    sort_desc=sort_desc,",
+            "    limit=limit,",
+            ")",
+            "return [_task_read_data(task) for task in tasks]",
+          ].join("\n")}
         />
 
-        <StepThrough
-          code={
-            "started_at = perf_counter()\n" +
-            "response = await call_next(request)\n" +
-            "elapsed = perf_counter() - started_at\n" +
-            "response.headers[\"X-Process-Time\"] = ...\n" +
-            "return response"
+        <p>
+          {"Здесь нет двух фильтров. Endpoint получает данные из FastAPI, вызывает один метод сервиса, а затем превращает каждую внутреннюю Task в прежнюю публичную форму. Новая зависимость изменит место подготовки аргументов, но не владельца операции. Поэтому POST, PUT, PATCH и DELETE продолжат обращаться к тому же Planner обычным путём."}
+        </p>
+
+        <p>
+          {"Параметры похожи на заполненную маршрутную карточку: отметка статуса, направление порядка и предел списка. Карточка помогает передать условия вместе, но не сама выбирает и не меняет задачи. В нашем проекте такую карточку назовём SelectionParams."}
+        </p>
+
+        <MatchPairs
+          prompt={"Сопоставим HTTP-вход, значение и владельца операции."}
+          leftTitle={"Что передали"}
+          rightTitle={"Как читаем"}
+          pairs={[
+            { left: "is_done отсутствует", right: "Не фильтруем по статусу" },
+            { left: "is_done=False", right: "Оставляем только открытые задачи" },
+            { left: "limit=10", right: "Сохраняем прежний предел по умолчанию" },
+            { left: "select_tasks", right: "Сервис применяет условия к задачам" },
+          ]}
+          explanation={
+            "None и False имеют разный смысл, а сама фильтрация остаётся внутри select_tasks."
           }
+        />
+      </Section>
+
+      <Section number="02" title={"Контейнер группирует, но не становится Task"}>
+        <Lead>
+          {"SelectionParams собирает только три значения, которые уже описывают GET-выборку. Он не представляет одну задачу, не приходит в JSON-body и не создаёт новое состояние Planner."}
+        </Lead>
+
+        <p>
+          {"Мы уже встречали dataclass как способ хранить связанные значения одного объекта. Здесь это обычный контейнер параметров. Его поля повторяют прежние имена и типы: is_done может быть bool или None, sort_desc остаётся bool, limit остаётся int. Контейнер не должен добавлять offset, поиск или ещё один фильтр, которого не было в публичном API."}
+        </p>
+
+        <CodeBlock
+          caption={"независимый пример контейнера"}
+          code={[
+            "from dataclasses import dataclass",
+            "",
+            "@dataclass",
+            "class DigestFilter:",
+            "    category: str",
+            "    max_items: int",
+          ].join("\n")}
+        />
+
+        <p>
+          {"В независимом DigestFilter поля category и max_items описывают выборку писем, но сам контейнер не читает почту. В Planner мы передаём одну карточку подготовки вместо трёх разрозненных значений, сохраняя прежнюю семантику. Если is_done равен None, фильтра по статусу нет. Если он равен False, остаются только открытые задачи. Значение sort_desc=False также явно означает прямой порядок. Контейнер не должен превратить False или None в отсутствие поля."}
+        </p>
+
+        <p>
+          {"FastAPI разбирает query-строки в bool и int, применяет default limit=10 и сохраняет прежний диапазон от 1 до 50. Значения вне него и неверный тип дают 422 до вызова select_tasks. Dataclass хранит готовые поля, но не выполняет HTTP-валидацию."}
+        </p>
+
+        <p>
+          {"Представим форму поиска свободных комнат. В ней можно собрать дату, требование к доступности и предел результатов; сама форма не является комнатой, а список комнат выбирает каталог. Так же SelectionParams описывает запрос, а PlannerService остаётся владельцем поиска задач."}
+        </p>
+
+        <StepThrough
+          code={[
+            "def make_options(day, limit):",
+            "    return {\"day\": day, \"limit\": limit}",
+            "",
+            "options = make_options(\"Sat\", 3)",
+            "print(options[\"limit\"])",
+          ].join("\n")}
           steps={[
             {
               line: 0,
-              note: "Таймер начинается до endpoint.",
-              vars: { "started_at": "number" },
+              note: "Функция получает два входа. Мы пока не меняем исходный список событий.",
+              vars: { day: "\"Sat\"", limit: "3" },
             },
             {
               line: 1,
-              note: "Request проходит остальную цепочку.",
-              vars: { "call_next": "awaited" },
-            },
-            {
-              line: 2,
-              note: "После response вычисляется интервал.",
-              vars: { "elapsed": "seconds" },
+              note: "Возвращается контейнер значений. Его можно передать следующей функции как один результат.",
+              vars: { options: "{'day': 'Sat', 'limit': 3}" },
             },
             {
               line: 3,
-              note: "Response получает header.",
-              vars: { "header": "X-Process-Time" },
+              note: "Вызов сохраняет возвращённый объект в options.",
+              vars: { options: "{'day': 'Sat', 'limit': 3}" },
             },
             {
               line: 4,
-              note: "Итог возвращается клиенту.",
-              vars: { "response": "sent" },
+              note: "Следующая строка читает поле контейнера. Сам контейнер ничего не выбирает и не изменяет.",
+              vars: { limit: "3", output: "3" },
             },
           ]}
         />
 
-        <Callout tone="info">
-          {"Это учебное измерение, а не полноценная observability. Оно не заменяет structured logs, metrics и tracing."}
-        </Callout>
+        <p>
+          {"Это независимый пример: функция собирает результат, а вызывающий код решает, как его применить. В API передачу выполнит FastAPI."}
+        </p>
       </Section>
 
-      <Section number="03" title={"Общий header и request id"}>
+      <Section number="03" title={"Provider возвращает значение для другого узла"}>
         <Lead>
-          {"Middleware может создать request id, добавить его к response и использовать в логах. Это помогает связать client error и серверную запись."}
+          {"Dependency, или зависимость FastAPI, нужна обработчику как готовое значение. Provider - вызываемая функция, которая это значение подготавливает или получает. Depends объявляет FastAPI, какую функцию связать с параметром; сам аргумент Depends(get_selection) не вызывает provider вручную."}
         </Lead>
 
-        <div className="lesson-practice-steps">
-          <h3>{"Генерация"}</h3>
-          <p>
-            {"UUID создаётся в начале request."}
-          </p>
-
-          <h3>{"Request state"}</h3>
-          <p>
-            {"Значение можно положить в request.state для кода ниже."}
-          </p>
-
-          <h3>{"Response header"}</h3>
-          <p>
-            {"Клиент получает X-Request-ID."}
-          </p>
-
-          <h3>{"Не безопасность"}</h3>
-          <p>
-            {"Случайный id не является access token."}
-          </p>
-
-        </div>
+        <p>
+          {"Перед чтением графа восстановим синтаксис на независимом примере. Annotated позволяет оставить тип и рядом добавить метаданные FastAPI. В параметре отчёта такая запись говорит: тип результата известен, а получить его нужно через get_filters. PlannerDep устроен по тому же принципу: это короткое имя для зависимости, которая возвращает уже созданный Planner."}
+        </p>
 
         <CodeBlock
-          caption={"request id"}
-          code={
-            "from uuid import uuid4\n" +
-            "\n" +
-            "@app.middleware(\"http\")\n" +
-            "async def add_request_id(\n" +
-            "    request: Request,\n" +
-            "    call_next,\n" +
-            "):\n" +
-            "    request_id = str(uuid4())\n" +
-            "    request.state.request_id = request_id\n" +
-            "\n" +
-            "    response = await call_next(request)\n" +
-            "    response.headers[\"X-Request-ID\"] = request_id\n" +
-            "\n" +
-            "    return response"
-          }
+          caption={"независимый пример, фрагмент сигнатуры"}
+          code={[
+            "def read_schedule(",
+            "    filters: Annotated[ScheduleFilters, Depends(get_filters)],",
+            "    calendar: CalendarDep,",
+            "):",
+            "    return calendar.find(filters)",
+          ].join("\n")}
         />
 
-        <CodeBlock
-          caption={"использование"}
-          code={
-            "@router.get(\"/info\")\n" +
-            "def get_info(request: Request):\n" +
-            "    return {\n" +
-            "        \"request_id\": request.state.request_id,\n" +
-            "    }"
+        <p>
+          {"В строке filters сначала указан тип результата, затем Depends с исходной функцией. FastAPI читает эту метаинформацию при разборе запроса и получает результат get_filters для аргумента filters. Это не вызов get_filters во время импорта модуля и не значение, которое клиент присылает в body. В нашем GET три query-поля будут входами get_selection, а возвращённый SelectionParams станет одним из двух входов общего provider. PlannerDep обозначает второй готовый результат и сохраняет имя функции, которую можно заменить в тесте."}
+        </p>
+
+        <p>
+          {"FastAPI видит объявленные зависимости и перед вызовом обработчика получает их результаты. В нашем проекте get_selection создаёт SelectionParams из прежних query-полей, а get_planner возвращает тот же сервис, который приложение уже хранит. Верхний read-only provider get_selected_tasks получает оба результата, вызывает знакомый select_tasks и возвращает список Task. Обработчик затем строит прежний HTTP-ответ."}
+        </p>
+
+        <p>
+          {"Сравним это с рабочим столом, где одна заявка требует двух справок. Один сотрудник готовит фильтр, другой находит нужный Planner, затем общий обработчик использует оба результата. Сотрудники не выполняют предметную операцию вместо PlannerService; они подготавливают входы, от которых зависит следующий шаг."}
+        </p>
+
+        <Diagram
+          caption={"Два входа, один read-only provider и прежний GET"}
+          orientation="vertical"
+        >
+          <DiagramFlow label={"Ветвь параметров запроса"}>
+            <DiagramNode title={"Query GET /tasks"}>
+              <p>{"is_done, sort_desc, limit"}</p>
+            </DiagramNode>
+            <DiagramArrow label={"FastAPI передаёт значения"} />
+            <DiagramNode title={"get_selection"} />
+            <DiagramArrow label={"возвращает"} />
+            <DiagramNode title={"SelectionParams"} />
+          </DiagramFlow>
+
+          <DiagramFlow label={"Ветвь готового сервиса"}>
+            <DiagramNode title={"Приложение"}>
+              <p>{"уже созданный Planner"}</p>
+            </DiagramNode>
+            <DiagramArrow label={"get_planner возвращает"} />
+            <DiagramNode title={"PlannerDep"} />
+          </DiagramFlow>
+
+          <DiagramFlow label={"Общий путь после подготовки"}>
+            <DiagramNode title={"SelectionParams + PlannerDep"}>
+              <p>{"оба значения доступны одному provider"}</p>
+            </DiagramNode>
+            <DiagramArrow label={"входы для"} />
+            <DiagramNode title={"get_selected_tasks"} />
+            <DiagramArrow label={"вызывает"} />
+            <DiagramNode title={"PlannerService.select_tasks"} />
+            <DiagramArrow label={"список идёт в"} />
+            <DiagramNode title={"GET handler"} />
+          </DiagramFlow>
+        </Diagram>
+
+        <p>
+          {"Первые две дорожки показывают независимые источники, третья объединяет результаты в одном узле. Схема не задаёт порядок ветвей: handler получает оба результата и не запускает повторную выборку."}
+        </p>
+
+        <QuizCard
+          question={"Что передаём в Depends, чтобы FastAPI подготовил значение?"}
+          options={[
+            "функцию-provider",
+            "готовый результат вызова функции",
+            "новую Task для каждого параметра",
+          ]}
+          correctIndex={0}
+          explanation={
+            "FastAPI получает результат provider на запросе. Ручной вызов при объявлении графа передал бы не ту границу."
           }
         />
+      </Section>
+
+      <Section number="04" title={"Один запрос не равен глобальному кэшу"}>
+        <Lead>
+          {"Одинаковая зависимость может понадобиться нескольким узлам одного запроса. FastAPI обычно переиспользует её результат внутри этого запроса, поэтому общий Planner не нужно создавать повторно для каждого параметра."}
+        </Lead>
+
+        <p>
+          {"Здесь полезно разделить три вещи: функцию-provider, возвращённый объект и время его использования. FastAPI строит граф для запроса, получает необходимые результаты и может использовать повторный результат той же зависимости в пределах этого запроса. Новый HTTP-запрос начинает новую обработку. Это не functools.lru_cache, не вечный singleton и не обещание одного вызова на все следующие запросы."}
+        </p>
+
+        <p>
+          {"Singleton здесь означает один общий экземпляр приложения, который переживает несколько запросов. Кэширование зависимости FastAPI такого срока не задаёт: оно повторно использует результат внутри запроса. functools.lru_cache отдельно хранит результаты функции между вызовами по её аргументам; в этом проекте такой механизм не включаем."}
+        </p>
+
+        <p>
+          {"Можно представить одну карту помещения, которую на время одной экскурсии используют два гида. Они обращаются к одному подготовленному экземпляру карты, но следующая экскурсия не обязана использовать ту же карту. Сравнение помогает понять границу запроса; реальное поведение всё равно определяется графом FastAPI, а не устройством экскурсии."}
+        </p>
+
+        <p>
+          {"Чтобы увидеть повторное использование, соберём отдельный граф с двумя потребителями и счётчиком. Это эксперимент на один запрос, без новых Planner-маршрутов и производственного счётчика."}
+        </p>
 
         <RecallCard
-          question={"Зачем request id возвращать в response?"}
+          question={"Почему результат get_planner нельзя считать одним глобальным экземпляром для всех запросов?"}
+          hint={"Сначала назовём границу, внутри которой FastAPI переиспользует зависимость."}
           answer={
             <p>
-              {"Клиент может сообщить идентификатор, а разработчик найти связанные серверные logs для конкретного request."}
+              {"Переиспользование по умолчанию ограничено обработкой одного запроса. Новый запрос получает свой цикл разрешения графа; это не глобальное хранилище и не lru_cache."}
             </p>
           }
         />
-
-        <Callout tone="info">
-          {"Если browser frontend должен читать custom response header, его понадобится добавить в CORS expose_headers."}
-        </Callout>
       </Section>
 
-      <Section number="04" title={"Что не помещать в middleware"}>
+      <Section number="05" title={"Override подменяет функцию, а не её результат"}>
         <Lead>
-          {"Middleware работает вокруг большого числа routes, поэтому скрытая предметная логика быстро становится опасной. CRUD задач, проверка конкретной schema и выбор task status должны оставаться ниже."}
+          {"API-проверке нужен отдельный Planner и собственный JSON-файл. FastAPI позволяет временно заменить provider, не меняя production-код обработчика и не читая рабочие задачи."}
         </Lead>
 
-        <div className="lesson-practice-steps">
-          <h3>{"Подходит"}</h3>
-          <p>
-            {"Общее timing, request id, logging, CORS и единая техническая metadata."}
-          </p>
+        <p>
+          {"Override - это тестовая подмена зависимости. В app.dependency_overrides ключом служит исходная функция-provider, которую FastAPI увидел в графе. Значением служит другая функция-provider. FastAPI вызывает замену и использует её результат в тестовом запросе. Если вместо функции положить готовый Planner, FastAPI не получит ожидаемую вызываемую границу."}
+        </p>
 
-          <h3>{"Не подходит"}</h3>
-          <p>
-            {"Создание Task, вычисление priority и изменение storage."}
-          </p>
+        <p>
+          {"Прежняя API-fixture подменяла app.state.planner, чтобы обычный get_planner вернул тестовый сервис. Теперь мы проверяем саму границу графа: заменяем исходный get_planner в dependency_overrides. Так в запросе меняется provider, а привычный PlannerService и его операции остаются прежними."}
+        </p>
 
-          <h3>{"Осторожно"}</h3>
-          <p>
-            {"Глобальный except в middleware может скрыть traceback и разные error handlers."}
-          </p>
-
-          <h3>{"Цена"}</h3>
-          <p>
-            {"Каждый middleware участвует во многих requests."}
-          </p>
-
-        </div>
+        <p>
+          {"Представим переключатель источника времени в небольшой проверке расписания. Обычное приложение берёт настоящее время, а тест задаёт фиксированное. Ключ переключателя указывает на исходный provider, значение - на заменяющую функцию. Сервис расписания и его правила при этом не переписываются. Так же override позволяет оставить настоящий GET и заменить только источник Planner."}
+        </p>
 
         <CodeBlock
-          caption={"опасный вариант"}
-          code={
-            "@app.middleware(\"http\")\n" +
-            "async def task_rules(request, call_next):\n" +
-            "    if request.url.path.startswith(\"/tasks\"):\n" +
-            "        # вручную читать JSON\n" +
-            "        # проверять title\n" +
-            "        # изменять storage\n" +
-            "        ...\n" +
-            "    return await call_next(request)"
-          }
+          caption={"независимый фрагмент подмены provider"}
+          code={[
+            "previous = app.dependency_overrides.copy()",
+            "app.dependency_overrides[get_clock] = fixed_clock",
+            "try:",
+            "    response = client.get(\"/schedule\")",
+            "finally:",
+            "    app.dependency_overrides.clear()",
+            "    app.dependency_overrides.update(previous)",
+          ].join("\n")}
         />
 
-        <CodeBlock
-          caption={"правильная граница"}
-          code={
-            "middleware: timing + request id\n" +
-            "router: HTTP contract\n" +
-            "schema: validation\n" +
-            "crud/service: task rules\n" +
-            "storage: state"
-          }
-        />
+        <p>
+          {"Снимите прежний словарь overrides и восстановите его в finally: так очистка не удалит чужие подмены и сработает при ошибке. Тестовый provider возвращает Planner из build_service с JsonStorage в tmp_path. app.state.planner и рабочий data/tasks.json остаются нетронутыми."}
+        </p>
 
-        <CompareSolutions
-          question={"Где проверять уникальность title?"}
-          left={{
-            title: "Middleware",
-            code: "перехватывать все /tasks requests",
-            note: "Скрывает правило и вручную разбирает body.",
-          }}
-          right={{
-            title: "CRUD/service",
-            code: "check before creating task",
-            note: "Правило вызывается только в нужной operation.",
-          }}
-          preferred={"right"}
-          explanation={"Middleware не заменяет предметный слой."}
-        />
-
-        <Callout tone="info">
-          {"Общее техническое поведение размещается глобально, предметное — рядом с предметной областью."}
-        </Callout>
-      </Section>
-
-      <Section number="05" title={"Origin — protocol, host и port"}>
-        <Lead>
-          {"Браузер сравнивает origin frontend и backend. Даже localhost с разными ports считается разными origins, поэтому JavaScript-request может потребовать разрешение CORS."}
-        </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>{"Protocol"}</h3>
-          <p>
-            {"http и https создают разные origins."}
-          </p>
-
-          <h3>{"Host"}</h3>
-          <p>
-            {"localhost и 127.0.0.1 считаются разными host names."}
-          </p>
-
-          <h3>{"Port"}</h3>
-          <p>
-            {"5173 и 8000 создают разные origins."}
-          </p>
-
-          <h3>{"Browser policy"}</h3>
-          <p>
-            {"CORS в первую очередь ограничивает JavaScript в браузере, а не Postman."}
-          </p>
-
-        </div>
-
-        <CodeBlock
-          caption={"локальная схема"}
-          code={
-            "frontend: http://localhost:5173\n" +
-            "backend:  http://127.0.0.1:8000\n" +
-            "\n" +
-            "protocol/host/port differ\n" +
-            "→ cross-origin browser request"
-          }
-        />
-
-        <CodeBlock
-          caption={"одинаковый origin"}
-          code={
-            "http://localhost:5173/page\n" +
-            "http://localhost:5173/api\n" +
-            "→ same protocol + host + port"
-          }
-        />
-
-        <MatchPairs
-          prompt={"Сравните origins."}
-          leftTitle={"Пара адресов"}
-          rightTitle={"Результат"}
-          pairs={[
-            { left: "http://localhost:5173 и http://localhost:8000", right: "different: port" },
-            { left: "http://localhost:5173 и https://localhost:5173", right: "different: protocol" },
-            { left: "http://localhost:5173/a и http://localhost:5173/b", right: "same origin" },
-            { left: "http://localhost и http://127.0.0.1", right: "different: host" },
-          ]}
-          explanation={"Origin определяется protocol, host и port, но не path."}
-        />
-
-        <Callout tone="info">
-          {"Postman может успешно вызвать API, пока browser frontend получает CORS error. Это не противоречие: ограничения применяет браузер."}
-        </Callout>
-      </Section>
-
-      <Section number="06" title={"CORSMiddleware разрешает точные origins"}>
-        <Lead>
-          {"FastAPI подключает готовый CORSMiddleware. Для локального frontend создаётся список допустимых origins; methods, headers и credentials задаются явно."}
-        </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>{"allow_origins"}</h3>
-          <p>
-            {"Какие browser origins могут обращаться."}
-          </p>
-
-          <h3>{"allow_methods"}</h3>
-          <p>
-            {"Какие methods разрешены cross-origin."}
-          </p>
-
-          <h3>{"allow_headers"}</h3>
-          <p>
-            {"Какие request headers может отправить frontend."}
-          </p>
-
-          <h3>{"allow_credentials"}</h3>
-          <p>
-            {"Разрешает cookies и authorization credentials."}
-          </p>
-
-        </div>
-
-        <CodeBlock
-          caption={"конфигурация"}
-          code={
-            "from fastapi.middleware.cors import CORSMiddleware\n" +
-            "\n" +
-            "origins = [\n" +
-            "    \"http://localhost:5173\",\n" +
-            "    \"http://127.0.0.1:5173\",\n" +
-            "]\n" +
-            "\n" +
-            "app.add_middleware(\n" +
-            "    CORSMiddleware,\n" +
-            "    allow_origins=origins,\n" +
-            "    allow_credentials=True,\n" +
-            "    allow_methods=[\n" +
-            "        \"GET\",\n" +
-            "        \"POST\",\n" +
-            "        \"PUT\",\n" +
-            "        \"PATCH\",\n" +
-            "        \"DELETE\",\n" +
-            "        \"OPTIONS\",\n" +
-            "    ],\n" +
-            "    allow_headers=[\n" +
-            "        \"Content-Type\",\n" +
-            "        \"X-Client-Version\",\n" +
-            "    ],\n" +
-            "    expose_headers=[\n" +
-            "        \"X-Request-ID\",\n" +
-            "        \"X-Process-Time\",\n" +
-            "    ],\n" +
-            ")"
-          }
-        />
+        <p>
+          {"Следующий поиск ошибки проверяет различие функции и готового объекта. Здесь показан независимый пример с часами, а не готовая настройка Planner."}
+        </p>
 
         <BugHunt
-          code={
-            "app.add_middleware(\n" +
-            "    CORSMiddleware,\n" +
-            "    allow_origins=[\"*\"],\n" +
-            "    allow_credentials=True,\n" +
-            "    allow_methods=[\"*\"],\n" +
-            "    allow_headers=[\"*\"],\n" +
-            ")"
-          }
-          question={"Почему настройка не подходит для cookie-based browser requests?"}
+          code={[
+            "app.dependency_overrides[get_clock] = fixed_time",
+            "response = client.get(\"/schedule\")",
+          ].join("\n")}
+          question={"Что не так с этой записью, если fixed_time уже является datetime?"}
           options={[
-            "Credentials требуют явных разрешённых origins/methods/headers",
-            "CORS не поддерживает GET",
-            "FastAPI запрещает middleware",
+            "В значение карты попал объект, а нужен вызываемый provider",
+            "Ключом должен быть результат get_clock()",
+            "Overrides нельзя использовать вместе с TestClient",
           ]}
           correctIndex={0}
-          explanation={"Wildcard не является универсальной настройкой при credentials."}
-          fix={"app.add_middleware(\n    CORSMiddleware,\n    allow_origins=[\"http://localhost:5173\"],\n    allow_credentials=True,\n    allow_methods=[\"GET\", \"POST\", \"OPTIONS\"],\n    allow_headers=[\"Content-Type\", \"X-Client-Version\"],\n)"}
+          explanation={
+            "FastAPI вызывает функцию-замену. Объект datetime не подменяет provider; исходная функция остаётся ключом."
+          }
+          fix={"app.dependency_overrides[get_clock] = fixed_clock"}
         />
-
-        <Callout tone="info">
-          {"При allow_credentials=True origins, methods и headers должны быть указаны явно, а не универсальным [\"*\"]."}
-        </Callout>
       </Section>
 
-      <Section number="07" title={"Preflight OPTIONS проверяет разрешение заранее"}>
+      <Section number="06" title={"Сравниваем контракт и границы отказа"}>
         <Lead>
-          {"Перед некоторыми cross-origin requests браузер отправляет OPTIONS с Origin и Access-Control-Request-Method. CORSMiddleware отвечает, разрешено ли настоящее обращение."}
+          {"Успешный ответ на тестовых данных сам по себе не подтверждает изоляцию. Мы сопоставим знакомую выборку, состояние JSON и восстановление обычного provider."}
         </Lead>
 
-        <div className="lesson-practice-steps">
-          <h3>{"Preflight"}</h3>
-          <p>
-            {"Предварительный вопрос браузера к backend."}
-          </p>
+        <p>
+          {"Сначала сравним GET без query: должны сохраниться тот же default limit и тот же порядок ответа. Затем проверим is_done, оба направления sort_desc, limit на границах и ошибочные значения за ними. Query-ошибка по-прежнему отклоняется до выполнения выборки. SelectionParams не отменяет валидацию FastAPI и не заменяет ограничение сервиса там, где оно уже предусмотрено."}
+        </p>
 
-          <h3>{"OPTIONS"}</h3>
-          <p>
-            {"Method служебного request."}
-          </p>
+        <p>
+          {"Для доказательства изоляции тест создаёт задачи через временный сервис, получает из GET только этот набор и после запроса сравнивает его состояние. Рабочий JSON не используется для подготовки или очистки данных. В конце мы удаляем override и повторно проверяем, что штатный get_planner снова доступен. Это отдельная проверка состояния приложения, а не вывод из того, что ответ теста выглядел правильным."}
+        </p>
 
-          <h3>{"CORS headers"}</h3>
-          <p>
-            {"Response сообщает разрешённый origin, methods и headers."}
-          </p>
+        <p>
+          {"Если временный provider намеренно сообщает о недоступности, API не должен возвращать ложный успешный список или менять задачи. Для такого контролируемого отказа подходит HTTP 503, то есть сервис запроса временно недоступен. Это не 403: речь не о правах клиента. После отказа прежний override также нужно восстановить."}
+        </p>
 
-          <h3>{"Endpoint обычно не вызывается"}</h3>
-          <p>
-            {"Middleware обрабатывает preflight до предметной operation."}
-          </p>
+        <p>
+          {"Наконец, проверим неизменность операций, которые меняют задачи. POST, PUT, PATCH и DELETE продолжают идти через тот же PlannerService, а GET использует только select_tasks. Мы не переносим CRUD в зависимости и не добавляем второй репозиторий или второе хранилище для приложения."}
+        </p>
 
-        </div>
-
-        <CodeBlock
-          caption={"упрощённый preflight"}
-          code={
-            "OPTIONS /tasks HTTP/1.1\n" +
-            "Origin: http://localhost:5173\n" +
-            "Access-Control-Request-Method: POST\n" +
-            "Access-Control-Request-Headers: content-type,x-client-version"
+        <MatchPairs
+          prompt={"Соединим проверку с тем, что она действительно подтверждает."}
+          leftTitle={"Проверка"}
+          rightTitle={"Что подтверждено"}
+          pairs={[
+            { left: "GET с отдельным сервисом", right: "Ответ пришёл из тестового набора" },
+            { left: "Проверка tmp_path JSON", right: "Рабочий файл не используется" },
+            { left: "Снимок overrides до и после", right: "Состояние приложения восстановлено" },
+            { left: "Проверки POST и PATCH", right: "Изменяющие операции сохранили старый путь" },
+          ]}
+          explanation={
+            "Каждая проверка отвечает на отдельный вопрос. Один корректный JSON-ответ не доказывает восстановление provider."
           }
         />
-
-        <CodeBlock
-          caption={"после разрешения"}
-          code={
-            "POST /tasks HTTP/1.1\n" +
-            "Origin: http://localhost:5173\n" +
-            "Content-Type: application/json\n" +
-            "X-Client-Version: 1.4.0"
-          }
-        />
-
-        <CodeSequence
-          title={"Browser cross-origin flow"}
-          prompt={"Расположите этапы."}
-          pieces={[
-            { id: "frontend", code: "JavaScript готовит POST" },
-            { id: "preflight", code: "browser отправляет OPTIONS" },
-            { id: "cors", code: "CORSMiddleware проверяет origin/method/headers" },
-            { id: "actual", code: "browser отправляет POST" },
-            { id: "endpoint", code: "FastAPI выполняет operation" },
-          ]}
-          correctOrder={[
-            "frontend",
-            "preflight",
-            "cors",
-            "actual",
-            "endpoint",
-          ]}
-          explanation={"Preflight может завершить взаимодействие раньше, если origin не разрешён."}
-        />
-
-        <Callout tone="info">
-          {"CORS не проверяет пользователя и не заменяет authentication. Он сообщает браузеру, разрешено ли frontend-коду читать cross-origin response."}
-        </Callout>
       </Section>
 
-      <Section number="08" title={"Практика: local frontend и контрольная точка блока"}>
+      <Section number="07" title={"Что мы будем делать в практике"}>
         <Lead>
-          {"Закройте блок общей конфигурацией StudyHub: request id и timing применяются ко всем requests, CORS разрешает только локальный frontend, headers доступны браузеру."}
+          {"Мы меняем только подготовку уже существующей GET-выборки и тестовую точку подмены. Предметный Planner, его JSON-хранилище и публичный HTTP-договор остаются нашей опорой."}
         </Lead>
 
-        <div className="lesson-practice-steps">
-          <h3>{"Шаг 1"}</h3>
-          <p>
-            {"Добавьте timing middleware и X-Process-Time."}
-          </p>
-
-          <h3>{"Шаг 2"}</h3>
-          <p>
-            {"Добавьте request id и X-Request-ID."}
-          </p>
-
-          <h3>{"Шаг 3"}</h3>
-          <p>
-            {"Создайте список frontend_origins в Settings."}
-          </p>
-
-          <h3>{"Шаг 4"}</h3>
-          <p>
-            {"Подключите CORSMiddleware с явными значениями."}
-          </p>
-
-          <h3>{"Шаг 5"}</h3>
-          <p>
-            {"Проверьте Postman и browser fetch."}
-          </p>
-
-          <h3>{"Шаг 6"}</h3>
-          <p>
-            {"Убедитесь, что CRUD остаётся вне middleware."}
-          </p>
-
-        </div>
-
-        <CodeBlock
-          caption={"финальный путь"}
-          code={
-            "browser frontend\n" +
-            "→ CORS preflight when needed\n" +
-            "→ request-id middleware before\n" +
-            "→ timing middleware before\n" +
-            "→ route + validation + dependencies\n" +
-            "→ endpoint + CRUD\n" +
-            "→ middleware after\n" +
-            "→ CORS response headers\n" +
-            "→ browser reads allowed response"
-          }
+        <LinkedNotes
+          variant="connected"
+          items={[
+            {
+              title: "Соберём входы",
+              description:
+                "Вынесем is_done, sort_desc и limit в SelectionParams и get_selection без изменения defaults и ограничений.",
+            },
+            {
+              title: "Соединим граф",
+              description:
+                "Подадим прежний Planner и подготовленные параметры в read-only get_selected_tasks, сохранив select_tasks источником выборки.",
+            },
+            {
+              title: "Изолируем запрос",
+              description:
+                "Подменим get_planner provider на сервис с JsonStorage во временном каталоге и восстановим прежние overrides после проверки.",
+            },
+            {
+              title: "Подтвердим старое поведение",
+              description:
+                "Сравним GET, фильтры и limit, проверим контролируемый отказ, состояние данных и прежние изменяющие операции.",
+            },
+          ]}
         />
 
-        <Callout tone="info">
-          {"Результат блока 13: FastAPI-проект имеет объяснимый request pipeline, dependencies, settings, headers/cookies и общее middleware-поведение."}
-        </Callout>
+        <p>
+          {"Маршрут идёт от контейнера параметров к графу, затем к управляемой тестовой границе. До первого запроса мы подготовим отдельные данные; после него сверим не только ответ, но и JSON, зависимости и прежний контракт. Небольшой эксперимент со счётчиком можно выполнить отдельно, не добавляя его в само приложение."}
+        </p>
 
-        <div className="lesson-check-group">
-          <QuizCard
-            question={"Что делает call_next?"}
-            options={[
-              "передаёт request дальше и возвращает response",
-              "создаёт database session",
-              "читает .env",
-            ]}
-            correctIndex={0}
-            explanation={"Middleware окружает остальную цепочку."}
-          />
-          <QuizCard
-            question={"Из чего состоит origin?"}
-            options={[
-              "protocol + host + port",
-              "method + body",
-              "status + header",
-            ]}
-            correctIndex={0}
-            explanation={"Path не входит в origin."}
-          />
-          <QuizCard
-            question={"Кого обычно ограничивает CORS?"}
-            options={[
-              "JavaScript в браузере",
-              "Postman всегда",
-              "Python function",
-            ]}
-            correctIndex={0}
-            explanation={"Browser применяет CORS policy."}
-          />
-          <QuizCard
-            question={"Можно ли использовать wildcard с credentials как универсальную настройку?"}
-            options={[
-              "нет, нужны явные значения",
-              "да всегда",
-              "только для DELETE",
-            ]}
-            correctIndex={0}
-            explanation={"Credentialed requests требуют точной конфигурации."}
-          />
-        </div>
+        <p>
+          {"Итогом будет один понятный GET-путь поверх того же Planner, без новых предметных операций. Следующий материал сможет опереться на читаемый граф и изолированную fixture, чтобы изучать Headers и Response на настоящем ресурсе."}
+        </p>
+      </Section>
 
+      <Section number="08" title={"Коротко зафиксируем границы"}>
         <KeyTakeaways
           points={[
-            <>{"Middleware выполняет действия до и после endpoint."}</>,
-            <>{"call_next передаёт request остальной цепочке."}</>,
-            <>{"Timing и request id подходят для общего технического поведения."}</>,
-            <>{"Предметный CRUD не помещается в middleware."}</>,
-            <>{"Origin состоит из protocol, host и port."}</>,
-            <>{"CORS важен для browser frontend на другом origin."}</>,
-            <>{"CORSMiddleware задаёт allowed origins, methods и headers."}</>,
-            <>{"Credentials требуют явной, а не wildcard-конфигурации."}</>,
+            <>{"SelectionParams объединяет query-значения и не становится Task."}</>,
+            <>{"get_selection подготавливает параметры; select_tasks остаётся операцией PlannerService."}</>,
+            <>{"get_selected_tasks получает сервис и параметры как два результата графа."}</>,
+            <>{"FastAPI может использовать результат одной зависимости внутри запроса, но не создаёт глобальный кэш."}</>,
+            <>{"Overrides связывают исходный provider с заменяющей функцией."}</>,
+            <>{"Временный сервис и JSON изолируют проверку от рабочего файла."}</>,
+            <>{"HTTP-контракт и пути CRUD продолжают работать как прежде."}</>,
           ]}
         />
-
-        <PracticeCta
-          text={"Добавьте X-Process-Time, X-Request-ID и точный CORSMiddleware для frontend на 5173, затем проверьте preflight и обычный request."}
-        />
       </Section>
-
     </RichLesson>
   );
 }
