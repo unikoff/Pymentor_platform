@@ -36,7 +36,7 @@ class PracticeCatalogMigrationTests(unittest.TestCase):
             ("chapter_01", "FOUNDATIONS", foundations, ((1, 5, "block_01"), (6, 10, "block_02"), (11, 15, "block_03"), (16, 20, "block_04"))),
             ("chapter_02", "DEEPER", deeper, ((21, 27, "block_05"), (28, 35, "block_06"), (36, 38, "block_07"), (39, 44, "block_08"))),
             ("chapter_03", "PLANNER_API", planner_api, ((45, 50, "block_09"), (51, 56, "block_10"), (57, 62, "block_11"), (63, 68, "block_12"))),
-            ("chapter_04", "DATABASE_API", database_api, ((69, 74, "block_13"), (75, 80, "block_14"), (81, 86, "block_15"), (87, 92, "block_16"))),
+            ("chapter_04", "DATABASE_API", database_api, ((69, 77, "block_13"), (78, 89, "block_14"), (90, 99, "block_15"), (100, 105, "block_16"))),
             ("chapter_05", "PERSONAL_API", personal_api, ((93, 98, "block_17"), (99, 104, "block_18"), (105, 110, "block_19"), (111, 116, "block_20"))),
             ("chapter_06", "POSTGRESQL", postgresql, ((117, 122, "block_21"), (123, 128, "block_22"), (129, 134, "block_23"), (135, 140, "block_24"))),
             ("chapter_07", "ASYNC", async_api, ((141, 146, "block_25"), (147, 152, "block_26"), (153, 158, "block_27"), (159, 164, "block_28"))),
@@ -84,10 +84,15 @@ class PracticeCatalogMigrationTests(unittest.TestCase):
                 identity_source = content._lesson_identity_source(source)
                 layout = content.LEGACY_COURSE_LAYOUTS[Path(source).parts[0]]
                 legacy_module = layout["source_dirs"][Path(source).parts[1]]
+                identity_filename = content.PLANNER_API_IDENTITY_FILENAMES.get(
+                    Path(source).name, Path(source).name
+                ) if source.startswith("chapter_03/block_12/") else Path(source).name
                 expected_source = "/".join(
-                    part for part in (layout["track_id"], legacy_module, Path(source).name) if part
+                    part for part in (layout["track_id"], legacy_module, identity_filename) if part
                 )
-                expected_module = legacy_module or content.RICH_TRACK_MODULE_LABELS[track["id"]][Path(source).name]
+                if source.startswith("chapter_03/block_12/"):
+                    expected_source = f"{layout['track_id']}/{identity_filename}"
+                expected_module = layout.get("module_labels", {}).get(Path(source).parts[1]) or legacy_module or content.RICH_TRACK_MODULE_LABELS[track["id"]][Path(source).name]
                 expected_id = "lesson-" + hashlib.sha256(identity_source.encode("utf-8")).hexdigest()[:24]
                 with self.subTest(track=track["id"], source=source):
                     self.assertEqual(layout["track_id"], track["id"])
@@ -187,7 +192,8 @@ class PracticeCatalogMigrationTests(unittest.TestCase):
         for lesson in track["lessons"]:
             source = lesson["source_file"]
             filename = Path(source).name
-            old_source = f"{planner_api.TRACK_ID}/{filename}"
+            identity_filename = content.PLANNER_API_IDENTITY_FILENAMES.get(filename, filename)
+            old_source = f"{planner_api.TRACK_ID}/{identity_filename}"
             expected_id = "lesson-" + hashlib.sha256(old_source.encode("utf-8")).hexdigest()[:24]
             with self.subTest(filename=filename):
                 self.assertEqual(3, len(Path(source).parts))

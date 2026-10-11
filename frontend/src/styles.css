@@ -678,6 +678,13 @@ code,
   font-weight: 800;
 }
 
+.module-toggle span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .module-lessons {
   max-height: 0;
   overflow: hidden;
@@ -696,7 +703,7 @@ code,
   min-height: 52px;
   display: grid;
   grid-template-columns: 20px minmax(0, 1fr) auto;
-  align-items: start;
+  align-items: center;
   gap: var(--space-2);
   padding: var(--space-2) var(--space-2) var(--space-2) var(--space-5);
   border-radius: var(--radius-md);
@@ -736,8 +743,11 @@ code,
 }
 
 .lesson-row span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   line-height: 1.34;
-  overflow-wrap: anywhere;
 }
 
 .lesson-row small {
@@ -2450,6 +2460,12 @@ pre {
   flex-direction: column;
 }
 
+@container lesson-diagram (min-width: 721px) {
+  .lesson79-sqlite-flow {
+    justify-content: center;
+  }
+}
+
 .lesson-diagram-node {
   position: relative;
   display: flex;
@@ -2606,6 +2622,10 @@ pre {
   padding-inline: 10px;
 }
 
+.lesson85-reading-flow .lesson85-service-node {
+  flex: 1.45 1 0;
+}
+
 .testclient-lifecycle .lesson-diagram-node h3 {
   font-size: 0.9rem;
 }
@@ -2638,6 +2658,32 @@ pre {
   height: 12px;
   background: #8fe4ad;
   clip-path: polygon(0 40%, calc(100% - 10px) 40%, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, calc(100% - 10px) 60%, 0 60%);
+}
+
+.lesson-json-snapshot-flow .lesson-diagram-connector {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  flex: 0 0 auto;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 6px 0;
+}
+
+.lesson-json-snapshot-flow .lesson-diagram-connector > span:first-child {
+  position: static;
+  padding: 0;
+  background: transparent;
+}
+
+.lesson-json-snapshot-flow .lesson-diagram-arrow {
+  width: 12px;
+  height: 30px;
+  min-height: 30px;
+  flex: 0 0 30px;
+  clip-path: polygon(40% 0, 60% 0, 60% calc(100% - 9px), 100% calc(100% - 9px), 50% 100%, 0 calc(100% - 9px), 40% calc(100% - 9px));
 }
 
 .lesson-diagram-arrow--both {
@@ -2791,6 +2837,10 @@ pre {
   .lesson-diagram-node {
     flex: auto;
     padding: 16px;
+  }
+
+  .lesson85-reading-flow .lesson85-service-node {
+    flex: auto;
   }
 
   .lesson-diagram-connector {
@@ -4144,6 +4194,7 @@ pre {
   .rich-lesson--lesson33 .method-row {
     gap: var(--space-2);
   }
+
 }
 
 .tracer-note {

@@ -1,6 +1,26 @@
-import { Braces, GitBranch } from "lucide-react";
-import { BugHunt, Callout, CodeBlock, CodeSequence, CompareSolutions, FillBlank, KeyTakeaways, Lead, PracticeCta, QuizCard, RecallCard, RichHero, RichLesson, Section, TrueFalse } from "../../shared";
-const BLOCK_TITLE = "Этап 4 · Блок 13 · FastAPI как цельное приложение";
+import { GitBranch, Settings2 } from "lucide-react";
+import {
+  BugHunt,
+  Callout,
+  CodeBlock,
+  CompareSolutions,
+  Diagram,
+  DiagramArrow,
+  DiagramFlow,
+  DiagramNode,
+  KeyTakeaways,
+  Lead,
+  LinkedNotes,
+  MatchPairs,
+  PracticeCta,
+  QuizCard,
+  RichHero,
+  RichLesson,
+  Section,
+  StepThrough,
+} from "../../shared";
+
+const BLOCK_TITLE = "Глава 4 · Блок 13 · Организация и зрелые механизмы FastAPI";
 
 export function Lesson71({ module }: { module?: string }) {
   return (
@@ -8,642 +28,332 @@ export function Lesson71({ module }: { module?: string }) {
       <RichHero
         variant="project"
         chip={module ?? BLOCK_TITLE}
-        title={"Annotated и цепочки зависимостей"}
-        intro={"Сделаем сигнатуры читаемее через Annotated, создадим повторно используемые aliases и соберём короткую цепочку get_settings → require_api_mode → endpoint."}
+        title={"Централизованные настройки"}
+        intro={
+          "Соберём параметры запуска в одном проверенном объекте. API получит из него имя FastAPI и путь к данным, а CLI применит те же правила выбора JSON и сохранит привычный заголовок меню."
+        }
         tags={[
-          { icon: <Braces size={14} />, label: "Annotated aliases" },
-          { icon: <GitBranch size={14} />, label: "sub-dependencies" },
+          { icon: <Settings2 size={14} />, label: "Settings как данные" },
+          { icon: <GitBranch size={14} />, label: "одна граница сборки" },
         ]}
       />
 
-      <Section number="01" title={"Почему старая сигнатура становится шумной"}>
+      <Section number="00" title={"Точка старта → Новый вопрос → Результат"}>
         <Lead>
-          {"Форма parameter: Type = Depends(provider) работает, но смешивает Python-тип и механизм FastAPI в default. При нескольких dependencies сигнатура становится труднее читать."}
+          {"В нашем Planner есть API и CLI, а задачи уже сохраняются через один JsonStorage. JSON_PATH и APP_NAME приходят в программу как строки окружения. Файл .env становится источником только после явной загрузки; значение процесса имеет приоритет. Теперь соберём эти значения в общую проверенную конфигурацию."}
         </Lead>
 
-        <div className="lesson-practice-steps">
-          <h3>{"Python type"}</h3>
-          <p>
-            {"Разработчику важно видеть, какое значение получит функция."}
-          </p>
-
-          <h3>{"FastAPI metadata"}</h3>
-          <p>
-            {"Depends сообщает, как получить это значение."}
-          </p>
-
-          <h3>{"Проблема повторения"}</h3>
-          <p>
-            {"Одинаковая длинная запись встречается в нескольких endpoints."}
-          </p>
-
-          <h3>{"Решение"}</h3>
-          <p>
-            {"Annotated связывает основной тип и дополнительную метаинформацию."}
-          </p>
-
-        </div>
-
-        <CodeBlock
-          caption={"до Annotated"}
-          code={
-            "@router.get(\"/\")\n" +
-            "def get_tasks(\n" +
-            "    settings: Settings = Depends(get_settings),\n" +
-            "    pagination: Pagination = Depends(get_pagination),\n" +
-            "):\n" +
-            "    ..."
-          }
-        />
-
-        <CodeBlock
-          caption={"после"}
-          code={
-            "@router.get(\"/\")\n" +
-            "def get_tasks(\n" +
-            "    settings: SettingsDep,\n" +
-            "    pagination: PaginationDep,\n" +
-            "):\n" +
-            "    ..."
-          }
-        />
-
-        <CompareSolutions
-          question={"Какая сигнатура лучше показывает итоговые типы?"}
-          left={{
-            title: "Defaults",
-            code: "settings: Settings = Depends(get_settings)",
-            note: "Работает, но FastAPI-механизм занимает default.",
-          }}
-          right={{
-            title: "Aliases",
-            code: "settings: SettingsDep",
-            note: "Короткое имя можно раскрыть в одном месте.",
-          }}
-          preferred={"right"}
-          explanation={"Alias полезен, когда dependency действительно переиспользуется."}
-        />
-
-        <Callout tone="info">
-          {"Annotated не запускает dependency сам по себе. Он хранит тип и метаданные, которые читает FastAPI."}
-        </Callout>
-      </Section>
-
-      <Section number="02" title={"Как читать Annotated слева направо"}>
-        <Lead>
-          {"Запись Annotated[Settings, Depends(get_settings)] читается как: значение имеет тип Settings, а FastAPI должен получить его через get_settings."}
-        </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>{"Первый элемент"}</h3>
-          <p>
-            {"Основной Python-тип значения."}
-          </p>
-
-          <h3>{"Второй элемент"}</h3>
-          <p>
-            {"Метаданные для FastAPI."}
-          </p>
-
-          <h3>{"Имя аргумента"}</h3>
-          <p>
-            {"Обычная локальная переменная endpoint."}
-          </p>
-
-          <h3>{"Результат"}</h3>
-          <p>
-            {"IDE и человек видят тип, FastAPI — provider."}
-          </p>
-
-        </div>
-
-        <CodeBlock
-          caption={"минимальная запись"}
-          code={
-            "from typing import Annotated\n" +
-            "from fastapi import Depends\n" +
-            "\n" +
-            "SettingsDep = Annotated[\n" +
-            "    Settings,\n" +
-            "    Depends(get_settings),\n" +
-            "]"
-          }
-        />
-
-        <CodeBlock
-          caption={"использование"}
-          code={
-            "@router.get(\"/info\")\n" +
-            "def get_info(settings: SettingsDep):\n" +
-            "    return {\n" +
-            "        \"app_name\": settings.app_name,\n" +
-            "        \"api_mode\": settings.api_mode,\n" +
-            "    }"
-          }
-        />
-
-        <FillBlank
-          prompt={"Что является основным типом?"}
-          before={"Annotated["}
-          after={", Depends(get_settings)]"}
-          options={[
-            "Settings",
-            "Depends",
-            "get_settings()",
+        <LinkedNotes
+          variant="connected"
+          items={[
+            {
+              title: "Точка старта",
+              description: "API и CLI уже работают с одним Planner; теперь мы согласуем путь к JSON для обоих запусков, а имя зададим приложению FastAPI.",
+            },
+            {
+              title: "Новый вопрос",
+              description: "Как проверить настройки обоих запусков и при этом сохранить привычное имя в меню CLI?",
+            },
+            {
+              title: "Результат",
+              description: "Мы проверим общие правила JSON_PATH; FastAPI использует app_name, а меню CLI оставит фиксированную подпись.",
+            },
           ]}
-          answer={"Settings"}
-          explanation={"Первый аргумент Annotated описывает итоговое значение."}
         />
 
+        <p>
+          {"Маршрут идёт от двух значений к их явной проверке, затем к использованию на границе запуска и к изолированной регрессии. Мы не меняем формат задачи, HTTP-контракт или само хранилище."}
+        </p>
+      </Section>
+
+      <Section number="01" title={"Два запуска не должны по-разному понимать конфигурацию"}>
+        <Lead>
+          {"API и CLI остаются двумя входами в один Planner. Если каждый сам читает JSON_PATH и придумывает собственные правила, одна команда может открыть один файл, а другая другой."}
+        </Lead>
+
+        <p>
+          {"Представим две кассы одного магазина. Им не нужно копировать каталог товаров и независимо решать, какая цена действует: им нужна одна согласованная карточка правил. Так же API и CLI получают общий путь к JSON, а FastAPI дополнительно использует проверенное имя приложения."}
+        </p>
+
+        <Diagram caption={"Внутри каждого запуска настройки проверяются до создания приложения и сервиса"}>
+          <DiagramFlow label={"Путь от строк окружения к точке запуска"}>
+            <DiagramNode title={"Среда процесса"} shape="input-output">
+              <p>{"JSON_PATH и APP_NAME приходят строками"}</p>
+            </DiagramNode>
+            <DiagramArrow label={"прочитать и проверить"} />
+            <DiagramNode title={"load_settings"}>
+              <p>{"Различает default, пустое значение и ошибку"}</p>
+            </DiagramNode>
+            <DiagramArrow label={"собранные значения"} />
+            <DiagramNode title={"Settings"}>
+              <p>{"json_path: Path и app_name: str"}</p>
+            </DiagramNode>
+            <DiagramArrow label={"передать при запуске"} />
+            <DiagramNode title={"API или CLI"} shape="terminator">
+              <p>{"Общий путь к JSON; app_name использует API"}</p>
+            </DiagramNode>
+          </DiagramFlow>
+        </Diagram>
+
+        <p>
+          {"Схема показывает один процесс за раз. API и CLI не делят объект между процессами: каждый запуск создаёт свой Settings и проверяет значения по общим правилам. Оба используют json_path для выбора файла, а app_name меняет заголовок FastAPI."}
+        </p>
+
+        <p>
+          {"Общий объект не означает, что обе точки запуска используют каждое поле. API передаёт app_name в FastAPI при создании приложения, а API и CLI используют json_path при выборе JSON-storage. CLI проверяет app_name вместе с остальными полями Settings, но не выводит его в меню. Если передать готовый Settings на границе, обработчики и команды не читают os.environ сами; тесты тоже могут задать значения явно."}
+        </p>
+
         <Callout tone="info">
-          {"Имя alias должно сообщать смысл результата: SettingsDep, PaginationDep, ActiveModeDep. Сокращение SD экономит символы, но ухудшает обучение."}
+          {"Настройки описывают запуск приложения. Они не являются полями Task, параметрами HTTP-запроса или отдельным сервисом."}
         </Callout>
       </Section>
 
-      <Section number="03" title={"Alias объявляется один раз и переиспользуется"}>
+      <Section number="02" title={"Settings хранит значения, а не проверяет их автоматически"}>
         <Lead>
-          {"Повторяемую dependency удобно назвать рядом с provider. Тогда изменение способа получения не требует переписывать сигнатуры всех endpoints."}
+          {"Знакомая dataclass подходит как небольшой контейнер. Она задаёт, какие значения собраны вместе, но сама не читает окружение и не решает, допустима ли пустая строка или путь к каталогу."}
         </Lead>
 
-        <div className="lesson-practice-steps">
-          <h3>{"Один источник"}</h3>
-          <p>
-            {"Provider и alias находятся в одном модуле dependencies.py."}
-          </p>
-
-          <h3>{"Переиспользование"}</h3>
-          <p>
-            {"Endpoints импортируют SettingsDep."}
-          </p>
-
-          <h3>{"Явность"}</h3>
-          <p>
-            {"Alias всё ещё показывает, что значение является dependency."}
-          </p>
-
-          <h3>{"Не для единичной строки"}</h3>
-          <p>
-            {"Если dependency используется один раз, отдельный alias может не окупиться."}
-          </p>
-
-        </div>
-
         <CodeBlock
-          caption={"dependencies.py"}
-          code={
-            "from typing import Annotated\n" +
-            "from fastapi import Depends\n" +
-            "\n" +
-            "\n" +
-            "def get_pagination(...) -> Pagination:\n" +
-            "    ...\n" +
-            "\n" +
-            "PaginationDep = Annotated[\n" +
-            "    Pagination,\n" +
-            "    Depends(get_pagination),\n" +
-            "]"
-          }
+          caption={"форма объекта"}
+          code={"from dataclasses import dataclass\nfrom pathlib import Path\n\n@dataclass\nclass Settings:\n    json_path: Path\n    app_name: str"}
         />
 
-        <CodeBlock
-          caption={"router"}
-          code={
-            "from app.dependencies import PaginationDep\n" +
-            "\n" +
-            "@router.get(\"/\")\n" +
-            "def get_tasks(pagination: PaginationDep):\n" +
-            "    ..."
-          }
-        />
+        <p>
+          {"Аннотация json_path: Path не превращает строку из окружения в Path и не проверяет, указывает ли путь на файл. Мы делаем эти шаги явно до создания Settings. Это похоже на карточку поездки: карточка хранит пункт назначения и имя пассажира, но сама не сверяет адрес и не выбирает маршрут. Граница аналогии проста: карточка помогает увидеть набор данных, а реальная проверка всё равно принадлежит отдельной функции."}
+        </p>
 
-        <RecallCard
-          question={"Когда dependency alias оправдан?"}
-          answer={
-            <p>
-              {"Когда одна и та же комбинация итогового типа и Depends используется в нескольких endpoints или sub-dependencies."}
-            </p>
-          }
-        />
+        <p>
+          {"load_settings отвечает за переход от исходных строк к готовым значениям. Сначала функция получает строки, затем отличает отсутствие от пустого ввода, выполняет преобразования и проверяет правила. Только после этого она возвращает Settings. Такая граница позволяет тестировать правила отдельно от FastAPI."}
+        </p>
 
-        <Callout tone="info">
-          {"Не создавайте один файл aliases.py без ответственности. Dependency alias логично хранить рядом с соответствующей функцией."}
-        </Callout>
-      </Section>
-
-      <Section number="04" title={"Dependency может зависеть от другой dependency"}>
-        <Lead>
-          {"FastAPI строит дерево: require_api_mode требует Settings, а endpoint требует результат require_api_mode. Сначала решается нижняя потребность."}
-        </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>{"Sub-dependency"}</h3>
-          <p>
-            {"Одна dependency объявляет аргумент, который тоже получается через Depends."}
-          </p>
-
-          <h3>{"Порядок"}</h3>
-          <p>
-            {"get_settings выполняется раньше require_api_mode."}
-          </p>
-
-          <h3>{"Результат"}</h3>
-          <p>
-            {"Проверенные settings передаются дальше."}
-          </p>
-
-          <h3>{"Ранний error"}</h3>
-          <p>
-            {"Если режим запрещён, endpoint не запускается."}
-          </p>
-
-        </div>
-
-        <CodeBlock
-          caption={"цепочка"}
-          code={
-            "SettingsDep = Annotated[\n" +
-            "    Settings,\n" +
-            "    Depends(get_settings),\n" +
-            "]\n" +
-            "\n" +
-            "\n" +
-            "def require_api_mode(\n" +
-            "    settings: SettingsDep,\n" +
-            ") -> Settings:\n" +
-            "    if settings.api_mode == \"maintenance\":\n" +
-            "        raise HTTPException(\n" +
-            "            status_code=503,\n" +
-            "            detail=\"API is under maintenance\",\n" +
-            "        )\n" +
-            "\n" +
-            "    return settings\n" +
-            "\n" +
-            "ActiveSettingsDep = Annotated[\n" +
-            "    Settings,\n" +
-            "    Depends(require_api_mode),\n" +
-            "]"
-          }
-        />
-
-        <CodeBlock
-          caption={"endpoint"}
-          code={
-            "@router.get(\"/\")\n" +
-            "def get_tasks(settings: ActiveSettingsDep):\n" +
-            "    return tasks"
-          }
-        />
-
-        <CodeSequence
-          title={"Решите dependency graph"}
-          prompt={"Расположите фактические вызовы."}
-          pieces={[
-            { id: "settings", code: "get_settings()" },
-            { id: "mode", code: "require_api_mode(settings)" },
-            { id: "endpoint", code: "get_tasks(settings)" },
+        <MatchPairs
+          prompt={"Сопоставим каждую часть с её настоящей ролью. Ошибка здесь обычно возникает, когда мы ждём от контейнера автоматической проверки."}
+          leftTitle={"Часть"}
+          rightTitle={"Ответственность"}
+          pairs={[
+            { left: "dataclass Settings", right: "Форма собранных значений" },
+            { left: "load_settings()", right: "Читает, преобразует и проверяет" },
+            { left: "FastAPI", right: "Использует готовую конфигурацию при запуске" },
+            { left: "HTTP schema", right: "Проверяет данные отдельного запроса" },
           ]}
-          correctOrder={[
-            "settings",
-            "mode",
-            "endpoint",
+          explanation={"Settings хранит уже подготовленные значения. Проверки выполняются до его использования, а HTTP-схема отвечает за другой слой данных."}
+        />
+
+        <Callout tone="info">
+          {"Обычная dataclass не является BaseSettings и не загружает .env. Источник строки и проверка значения остаются явными частями нашей программы."}
+        </Callout>
+      </Section>
+
+      <Section number="03" title={"Отсутствие, пустое значение и путь означают разное"}>
+        <Lead>
+          {"Если переменной нет, мы можем применить прежний default. Если переменная есть, но содержит пустую строку, это уже явный ввод с ошибкой. Нельзя склеивать эти ситуации одной проверкой truthiness."}
+        </Lead>
+
+        <CodeBlock
+          caption={"Фрагмент: сначала различаем None и пустую строку"}
+          code={"raw_name = environment.get(\"APP_NAME\")\n\nif raw_name is None:\n    app_name = \"StudyHub Planner\"\nelif not raw_name.strip():\n    raise ValueError(\"APP_NAME must not be empty\")\nelse:\n    app_name = raw_name"}
+        />
+
+        <p>
+          {"При отсутствии APP_NAME мы сохраняем прежнее имя StudyHub Planner. Явно заданная пустая строка не означает «вернуться к default»: запуск должен остановиться с понятной ошибкой. То же правило относится к пустому JSON_PATH. Это как различие между незаполненной графой, для которой действует правило по умолчанию, и заполненной графой, значение которой оказалось неверным."}
+        </p>
+
+        <p>
+          {"Путь тоже требует правила. Path(\"data/tasks.json\") остаётся относительным к текущей рабочей папке. Если API запущено из корня, а CLI из другой папки, одинаковая строка может привести к разным файлам. Мы связываем относительный путь с корнем проекта; абсолютный путь сохраняет своё значение."}
+        </p>
+
+        <p>
+          {"Корнем здесь служит корень проекта, а не папка, из которой вызвана команда. После привязки относительный путь становится устойчивым между запусками. Отсутствующий файл допустим: JsonStorage создаст его при успешной записи. Папка вместо файла означает другую ситуацию: её мы отклоняем до сборки storage."}
+        </p>
+
+        <p>
+          {"Следующий код сокращён до нужного шага: environment уже содержит прочитанные строки, а project_root указывает на корень StudyHub. По строкам видно, когда выбирается default и почему относительный путь привязывается к проекту."}
+        </p>
+
+        <StepThrough
+          code={"raw_path = environment.get(\"JSON_PATH\")\nif raw_path is None:\n    raw_path = \"data/tasks.json\"\npath = Path(raw_path)\nif not path.is_absolute():\n    path = project_root / path"}
+          steps={[
+            { line: 0, note: "Получаем строку. В этом примере переменная отсутствует.", vars: { raw_path: "None" } },
+            { line: 1, note: "Проверяем именно отсутствие, а не любое ложное значение.", vars: { raw_path: "None" } },
+            { line: 2, note: "Подставляем прежний путь только для отсутствующей переменной.", vars: { raw_path: "\"data/tasks.json\"" } },
+            { line: 3, note: "Строим объект Path. Пока он относительный.", vars: { path: "Path(\"data/tasks.json\")" } },
+            { line: 4, note: "Условие подтверждает, что у пути ещё нет корня диска или файловой системы.", vars: { "absolute?": "False" } },
+            { line: 5, note: "Прикрепляем путь к корню проекта, а не к случайному cwd.", vars: { path: "project_root / data/tasks.json" } },
           ]}
-          explanation={"Сначала создаётся Settings, затем проверяется режим, после этого вызывается endpoint."}
         />
 
+        <p>
+          {"После разрешения пути мы проверяем, не указывает ли уже существующий путь на каталог. Каталог нельзя передать JsonStorage как файл задач. При этом отсутствие самого файла допустимо: хранилище может создать его при первой записи. Ошибка конфигурации должна возникнуть до записи и не переключать приложение на другой JSON."}
+        </p>
+
         <Callout tone="info">
-          {"Цепочка выражает зависимость значений, а не порядок строк в файле. FastAPI строит граф по сигнатурам."}
+          {"Новый процесс читает окружение заново. Внутри одного запуска настройки готовятся один раз; автоматическое обновление и кэширование в этом занятии не вводятся."}
         </Callout>
       </Section>
 
-      <Section number="05" title={"Одна общая sub-dependency вызывается один раз на request"}>
+      <Section number="04" title={"Ошибка конфигурации не является HTTP 422"}>
         <Lead>
-          {"Если несколько dependencies внутри одного request используют get_settings, FastAPI по умолчанию переиспользует полученный результат в рамках этого request."}
+          {"Неверный JSON_PATH мешает собрать приложение. HTTP 422 появляется, когда уже работающий API получил запрос с неподходящими данными. Это разные моменты и разные причины отказа."}
         </Lead>
 
-        <div className="lesson-practice-steps">
-          <h3>{"Request cache"}</h3>
-          <p>
-            {"Значение сохраняется только для решения текущего dependency graph."}
-          </p>
+        <p>
+          {"Если API не удалось настроить, мы не должны создавать новый файл задач в случайном месте или отвечать 422 как будто пользователь прислал неверное поле. Сборка должна завершиться до старта обработчиков. Когда приложение уже работает, прежняя проверка тела запроса продолжает возвращать свой статус и сохраняет контракт."}
+        </p>
 
-          <h3>{"Не глобальный cache"}</h3>
-          <p>
-            {"Следующий request может решить dependency заново."}
-          </p>
-
-          <h3>{"use_cache=False"}</h3>
-          <p>
-            {"Существует для особых случаев, но пока не нужен."}
-          </p>
-
-          <h3>{"Настройки"}</h3>
-          <p>
-            {"Для settings позже дополнительно используется lru_cache на уровне Python."}
-          </p>
-
-        </div>
-
-        <CodeBlock
-          caption={"общая dependency"}
-          code={
-            "def require_api_mode(settings: SettingsDep) -> Settings:\n" +
-            "    ...\n" +
-            "\n" +
-            "def build_response_meta(settings: SettingsDep) -> dict:\n" +
-            "    ...\n" +
-            "\n" +
-            "@router.get(\"/\")\n" +
-            "def get_tasks(\n" +
-            "    active: Annotated[Settings, Depends(require_api_mode)],\n" +
-            "    meta: Annotated[dict, Depends(build_response_meta)],\n" +
-            "):\n" +
-            "    ..."
-          }
-        />
-
-        <CodeBlock
-          caption={"схема"}
-          code={
-            "        get_settings\n" +
-            "        /          require_api_mode  build_response_meta\n" +
-            "        \\          /\n" +
-            "           endpoint"
-          }
-        />
-
-        <TrueFalse
-          statement={
-            <>
-              {"Если get_settings нужна двум sub-dependencies одного endpoint, FastAPI обычно решит её один раз для этого request."}
-            </>
-          }
-          isTrue={true}
-          explanation={"По умолчанию результат dependency переиспользуется внутри текущего request graph."}
-        />
-
-        <Callout tone="info">
-          {"Не используйте cache как причину строить сложное дерево. Сначала дерево должно быть понятным по ответственности."}
-        </Callout>
-      </Section>
-
-      <Section number="06" title={"Dependency может преобразовать или проверить результат"}>
-        <Lead>
-          {"Цепочка полезна, когда каждый уровень добавляет одну понятную гарантию: получить settings, проверить mode, затем передать разрешённую конфигурацию."}
-        </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>{"Provider"}</h3>
-          <p>
-            {"Создаёт или получает значение."}
-          </p>
-
-          <h3>{"Validator dependency"}</h3>
-          <p>
-            {"Проверяет условие и возвращает то же либо новое значение."}
-          </p>
-
-          <h3>{"Endpoint"}</h3>
-          <p>
-            {"Использует уже гарантированный результат."}
-          </p>
-
-          <h3>{"Ошибка"}</h3>
-          <p>
-            {"HTTPException остаётся на HTTP-границе."}
-          </p>
-
-        </div>
-
-        <CodeBlock
-          caption={"три уровня"}
-          code={
-            "def get_settings() -> Settings:\n" +
-            "    return Settings()\n" +
-            "\n" +
-            "\n" +
-            "def require_api_mode(\n" +
-            "    settings: SettingsDep,\n" +
-            ") -> Settings:\n" +
-            "    if settings.api_mode not in {\"development\", \"test\"}:\n" +
-            "        raise HTTPException(503, \"API is unavailable\")\n" +
-            "    return settings\n" +
-            "\n" +
-            "\n" +
-            "@router.post(\"/\")\n" +
-            "def create_task(\n" +
-            "    task: TaskCreate,\n" +
-            "    settings: ActiveSettingsDep,\n" +
-            "):\n" +
-            "    ..."
-          }
-        />
+        <p>
+          {"Порядок помогает найти место сбоя: сначала читаем значения, затем создаём Settings, затем storage и сервис, и только потом запускаем API. Невалидный HTTP-body появляется позже, уже внутри работающего приложения. Мы не смешиваем две ошибки общим fallback и не отправляем пользователю конфигурационную проблему как будто он неверно заполнил задачу."}
+        </p>
 
         <BugHunt
-          code={
-            "def get_settings() -> Settings:\n" +
-            "    settings = Settings()\n" +
-            "    tasks.append({\"title\": \"hidden side effect\"})\n" +
-            "    return settings"
-          }
-          question={"Что делает dependency опасной?"}
+          code={"raw_path = environment.get(\"JSON_PATH\") or \"data/tasks.json\"\nstorage = JsonStorage(Path(raw_path))"}
+          question={"Какой ввод эта запись ошибочно превращает в default?"}
           options={[
-            "Она неожиданно меняет предметное состояние",
-            "Settings нельзя возвращать",
-            "Depends запрещает списки",
+            "Только отсутствующий JSON_PATH",
+            "И отсутствующий, и явно пустой JSON_PATH",
+            "Ни один: or проверяет только None",
           ]}
-          correctIndex={0}
-          explanation={"Получение конфигурации должно быть предсказуемым и не выполнять скрытый CRUD."}
-          fix={"def get_settings() -> Settings:\n    return Settings()"}
+          correctIndex={1}
+          explanation={"Пустая строка тоже ложная, поэтому or скрывает явную ошибку конфигурации. Мы выбираем default только при raw_path is None, а пустое значение отклоняем до создания JsonStorage."}
+          fix={"raw_path = environment.get(\"JSON_PATH\")\nif raw_path is None:\n    raw_path = DEFAULT_JSON_PATH\nelif not raw_path.strip():\n    raise ValueError(\"JSON_PATH must not be empty\")"}
         />
 
-        <Callout tone="info">
-          {"Если dependency начинает изменять tasks или выполнять основной CRUD, граница смещена: предметная операция должна остаться в crud/service."}
-        </Callout>
+        <QuizCard
+          question={"Приложение уже собрано. Запрос содержит неверное поле Task. Какой слой отвечает за отказ?"}
+          options={[
+            "Конфигурация запуска должна завершить процесс",
+            "Схема запроса проверяет вход и API сохраняет прежний HTTP-ответ",
+            "CLI выбирает новый JSON-файл",
+          ]}
+          correctIndex={1}
+          explanation={"Настройки проверяются на старте. Ошибка конкретного HTTP-ввода остаётся валидацией запроса и не меняет путь к хранилищу."}
+        />
       </Section>
 
-      <Section number="07" title={"Граница чрезмерной вложенности"}>
+      <Section number="05" title={"Одна проверенная конфигурация входит в сборку"}>
         <Lead>
-          {"FastAPI допускает глубокие dependency trees, но возможность не равна необходимости. Новичку и команде легче поддерживать короткую цепочку с говорящими именами."}
+          {"Когда настройки готовы, их передают точке запуска. Мы не читаем окружение в каждом endpoint и не создаём вторую копию Planner для CLI."}
         </Lead>
 
-        <div className="lesson-practice-steps">
-          <h3>{"Хорошая глубина"}</h3>
-          <p>
-            {"Один provider и одна проверка перед endpoint."}
-          </p>
+        <p>
+          {"В API собранные настройки доступны рядом с уже созданным сервисом: app.state.settings хранит конфигурацию, а app.state.planner продолжает хранить готовый PlannerService. Эти значения отвечают за разные вещи. Настройки не заменяют сервис, а сервис не должен повторно угадывать путь."}
+        </p>
 
-          <h3>{"Сигнал перегруза"}</h3>
-          <p>
-            {"Чтобы понять значение, нужно открыть пять functions в четырёх файлах."}
-          </p>
-
-          <h3>{"Скрытая логика"}</h3>
-          <p>
-            {"Dependency tree не должна заменять service layer."}
-          </p>
-
-          <h3>{"Диагностика"}</h3>
-          <p>
-            {"Каждый уровень отвечает на один вопрос и имеет отдельный тест."}
-          </p>
-
-        </div>
-
-        <CodeBlock
-          caption={"понятная цепочка"}
-          code={
-            "get_settings\n" +
-            "→ require_api_mode\n" +
-            "→ endpoint"
-          }
-        />
-
-        <CodeBlock
-          caption={"перегруженная"}
-          code={
-            "get_environment\n" +
-            "→ get_flags\n" +
-            "→ get_policy\n" +
-            "→ get_context\n" +
-            "→ get_actor\n" +
-            "→ get_workspace\n" +
-            "→ endpoint"
-          }
-        />
+        <p>
+          {"CLI использует тот же загрузчик Settings и те же проверки, но остаётся обычным интерфейсом командной строки. Он берёт json_path для хранилища, не обращается к app.state и не использует FastAPI Depends. Функция show_menu по-прежнему выводит фиксированную подпись StudyHub Planner: APP_NAME влияет на заголовок FastAPI, а не на меню CLI."}
+        </p>
 
         <CompareSolutions
-          question={"Какой graph подходит текущему проекту?"}
+          question={"Какой вариант не даёт обработчикам и интерфейсам расходиться?"}
           left={{
-            title: "Глубокий",
-            code: "6 providers до любого endpoint",
-            note: "Скрывает простой режим приложения.",
+            title: "Проверить при запуске",
+            code: "settings = load_settings()\nservice = build_service(settings=settings)",
+            note: "Обе точки запуска получают значения после одних проверок.",
           }}
           right={{
-            title: "Короткий",
-            code: "get_settings → require_api_mode → endpoint",
-            note: "Каждый шаг легко объяснить и проверить.",
+            title: "Читать в каждой точке",
+            code: "# Фрагмент app/api.py\napi_path = os.environ.get(\"JSON_PATH\")\n# Фрагмент app/main.py\ncli_path = os.environ.get(\"JSON_PATH\")",
+            note: "Правила и default могут незаметно разойтись.",
           }}
-          preferred={"right"}
-          explanation={"Сложность dependency graph должна расти вместе с реальной потребностью."}
+          preferred={"left"}
+          explanation={"Мы готовим объект на границе запуска, затем передаём его туда, где он нужен. Это не создаёт нового пути хранения и не вмешивается в работу запроса."}
         />
 
+        <p>
+          {"Представим диспетчера, который перед сменой выдаёт проверенный маршрутный лист. Водитель не вычисляет адрес заново на каждой остановке. Так и приложение получает конфигурацию при запуске, а обработчик использует готовое состояние. Следующий процесс снова прочитает свои значения, поэтому это не глобальный вечный объект."}
+        </p>
+
         <Callout tone="info">
-          {"До появления реальной аутентификации и DB-session блоку достаточно 1–2 уровней sub-dependencies."}
+          {"build_service остаётся единственной точкой создания Planner и JsonStorage. Если тест передал собственный storage, сборка сохраняет именно этот объект, а не подменяет его путём из рабочей среды."}
         </Callout>
+
+        <p>
+          {"Обычный API-run собирает Settings один раз, передаёт app_name в FastAPI и сохраняет объект в app.state.settings. Готовый PlannerService остаётся в app.state.planner, поэтому существующие роуты и /stats продолжают обращаться к тому же сервису. CLI вызывает ту же загрузку на старте и использует json_path, сохраняя фиксированную подпись show_menu."}
+        </p>
       </Section>
 
-      <Section number="08" title={"Практика: get_settings → require_api_mode → endpoint"}>
+      <Section number="06" title={"Проверяем настройки отдельно и сохраняем прежнее поведение"}>
         <Lead>
-          {"Соберите цепочку и добавьте её только к write-endpoints. GET /health может работать даже в maintenance, а POST/PATCH/DELETE должны вернуть 503."}
+          {"Конфигурацию легко случайно проверить на настоящем data/tasks.json или наследовать значение из локального окружения. Для тестов мы задаём входы явно и направляем storage во временную папку."}
         </Lead>
 
-        <div className="lesson-practice-steps">
-          <h3>{"Шаг 1"}</h3>
-          <p>
-            {"Создайте Settings с api_mode."}
-          </p>
+        <p>
+          {"В изолированной проверке мы подменяем среду и восстанавливаем её после сценария. Отдельный временный JSON показывает, что настройки выбраны как ожидается, а привычный файл не затронут. Если API хранит значения в app.state, fixture возвращает прежние settings и planner после завершения."}
+        </p>
 
-          <h3>{"Шаг 2"}</h3>
-          <p>
-            {"Объявите SettingsDep."}
-          </p>
+        <p>
+          {"Мы проверяем не только счастливый путь. Default должен сохранить прежний путь; явные Settings должны пережить сборку; пустое имя и пустой путь должны вызвать понятную ошибку; существующий каталог вместо файла должен быть отклонён до записи. Один и тот же относительный JSON_PATH из корня проекта и из другой cwd должен разрешиться одинаково."}
+        </p>
 
-          <h3>{"Шаг 3"}</h3>
-          <p>
-            {"Создайте require_api_mode и ActiveSettingsDep."}
-          </p>
+        <p>
+          {"Каждый сценарий получает отдельные входы и временный путь. После теста мы возвращаем изменённую среду и состояние API, а затем проверяем выбранный путь повторным чтением через сервис. Так тест доказывает не только значение в Settings, но и то, что рабочие данные не были открыты случайно."}
+        </p>
 
-          <h3>{"Шаг 4"}</h3>
-          <p>
-            {"Подключите alias к POST, PATCH и DELETE."}
-          </p>
+        <p>
+          {"Переданный тестовый storage особенно важен: он является явной опорой вызова. Если в build_service передали пустой или временный объект, настройки окружающего процесса не должны заменить его рабочим JsonStorage. Это сохраняет изоляцию и делает результат теста воспроизводимым."}
+        </p>
 
-          <h3>{"Шаг 5"}</h3>
-          <p>
-            {"Проверьте development и maintenance."}
-          </p>
-
-        </div>
-
-        <CodeBlock
-          caption={"матрица"}
-          code={
-            "api_mode=development\n" +
-            "GET /tasks    → 200\n" +
-            "POST /tasks   → 201\n" +
-            "\n" +
-            "api_mode=maintenance\n" +
-            "GET /health   → 200\n" +
-            "GET /tasks    → 200\n" +
-            "POST /tasks   → 503"
-          }
+        <QuizCard
+          question={"В тест передали временный storage. Что должна выбрать сборка?"}
+          options={[
+            "Переданный объект, потому что его явно указал тест",
+            "Всегда data/tasks.json из окружения",
+            "Новый storage на каждый HTTP-запрос",
+          ]}
+          correctIndex={0}
+          explanation={"Явный объект является выбранной опорой теста. Настройки не должны незаметно заменить его и открыть рабочие данные."}
         />
 
-        <Callout tone="info">
-          {"Итог занятия — не максимальное число aliases, а читаемая сигнатура и объяснимый порядок выполнения."}
-        </Callout>
+        <p>
+          {"После проверки конфигурации мы кратко подтверждаем прежние возможности: API по-прежнему читает и изменяет те же задачи, CLI видит то же состояние, а неправильное тело запроса не записывается. Это регрессия существующего Planner, а не новая реализация CRUD."}
+        </p>
+      </Section>
 
-        <div className="lesson-check-group">
-          <QuizCard
-            question={"Что хранит Annotated?"}
-            options={[
-              "основной тип и metadata",
-              "только return",
-              "HTTP body",
-            ]}
-            correctIndex={0}
-            explanation={"FastAPI читает Depends из metadata."}
-          />
-          <QuizCard
-            question={"Что выполняется первым в цепочке?"}
-            options={[
-              "нижняя sub-dependency",
-              "endpoint",
-              "response model",
-            ]}
-            correctIndex={0}
-            explanation={"Значение должно быть подготовлено до зависимого callable."}
-          />
-          <QuizCard
-            question={"Сколько раз общая dependency обычно вызывается в одном request?"}
-            options={[
-              "один раз с cache",
-              "обязательно для каждой ветки",
-              "никогда",
-            ]}
-            correctIndex={0}
-            explanation={"FastAPI переиспользует результат в request graph."}
-          />
-          <QuizCard
-            question={"Когда graph слишком глубокий?"}
-            options={[
-              "когда скрывает простую логику и трудно проследить значение",
-              "после двух функций всегда",
-              "только при async",
-            ]}
-            correctIndex={0}
-            explanation={"Глубина должна оправдываться ответственностями."}
-          />
-        </div>
+      <Section number="07" title={"Что мы будем делать в практике"}>
+        <Lead>
+          {"Мы продолжим существующий Planner: соберём Settings с json_path и app_name, загрузим и проверим значения до использования, затем подключим общую конфигурацию в API и CLI."}
+        </Lead>
+
+        <LinkedNotes
+          variant="connected"
+          items={[
+            {
+              title: "Подготовим Settings",
+              description: "Мы соберём json_path и app_name; отсутствующие значения получат прежние defaults, а пустые остановят загрузку с понятной ошибкой.",
+            },
+            {
+              title: "Подключим API и CLI",
+              description: "Мы передадим проверенные настройки точкам запуска; API сохранит app.state.settings и прежний app.state.planner.",
+            },
+            {
+              title: "Проверим изоляцию и регрессию",
+              description: "Мы подтвердим один путь из разных cwd, отказ на пути-каталоге и прежние CRUD, stats и CLI на временных данных.",
+            },
+          ]}
+        />
+
+        <p>
+          {"Мы применим уже изученную разницу между отсутствием и пустой строкой, а готовыми опорами будут Settings, load_settings, build_service и текущий PlannerService. Проверки направим в отдельные файлы и восстановим переменные окружения и состояние приложения."}
+        </p>
+
+        <p>
+          {"Результат виден в одном абсолютном пути и успешной работе API и CLI. Неверные значения остановят сборку до записи, переданный тестовый storage останется прежним, а прежние задачи и HTTP-ответы сохранят поведение. Следующий шаг сможет получить уже готовые app.state.settings и app.state.planner через FastAPI-зависимость."}
+        </p>
 
         <KeyTakeaways
           points={[
-            <>{"Annotated отделяет итоговый type от FastAPI metadata."}</>,
-            <>{"Dependency alias сокращает повторяемые сигнатуры."}</>,
-            <>{"Sub-dependency получает результат другой dependency."}</>,
-            <>{"FastAPI строит граф по сигнатурам."}</>,
-            <>{"Нижние providers выполняются раньше endpoint."}</>,
-            <>{"Общая dependency обычно кэшируется внутри request."}</>,
-            <>{"Каждый уровень должен добавлять одну понятную гарантию."}</>,
-            <>{"Короткий граф лучше преждевременно глубокой вложенности."}</>,
+            <>{"Settings хранит проверенные json_path и app_name, а не загружает их сам."}</>,
+            <>{"Отсутствие переменной включает default; пустое значение остаётся ошибкой."}</>,
+            <>{"Относительный путь привязывается к корню проекта, абсолютный не меняется."}</>,
+            <>{"Конфигурацию собираем на запуске, HTTP 422 оставляем ошибке запроса."}</>,
+            <>{"API и CLI используют общие правила, один Planner и тот же JSON-контракт."}</>,
+            <>{"В тесте явно переданный storage не уступает настройкам рабочей среды."}</>,
           ]}
         />
 
         <PracticeCta
-          text={"Создайте SettingsDep и ActiveSettingsDep, подключите maintenance-check к write-endpoints и нарисуйте фактический порядок вызовов."}
+          text={"Соберём проверенный Settings, подключим его при запуске API и CLI и подтвердим единый путь к JSON на изолированных данных."}
         />
       </Section>
-
     </RichLesson>
   );
 }

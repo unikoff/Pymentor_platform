@@ -42,7 +42,7 @@ export function Lesson68({ module }: { module?: string }) {
         </Lead>
 
         <p>
-          {"Unit-тест проверяет правило PlannerService или JsonStorage обычным вызовом Python. TestClient вызывает настоящее FastAPI-приложение через ASGI (Asynchronous Server Gateway Interface), интерфейс между приложением и веб-сервером. Он проверяет HTTP-ответ без запуска Uvicorn и открытия TCP-порта. HTTPX обеспечивает клиентский транспорт, который использует TestClient. Это удобно для повторяемых проверок, но такой тест не подтверждает, что сервер доступен через сеть."}
+          {"Unit-тест проверяет правило PlannerService или JsonStorage обычным вызовом Python. TestClient вызывает настоящее FastAPI-приложение через ASGI (Asynchronous Server Gateway Interface), интерфейс между приложением и веб-сервером. Он проверяет HTTP-ответ без запуска Uvicorn и открытия TCP-порта. В нашей связке Starlette 1.7.0 TestClient использует httpx2 как внутренний клиент. Если установлен только httpx, Starlette временно продолжает работу через резервный путь и выдаёт StarletteDeprecationWarning; поэтому requirements-dev.txt закрепляет httpx2. Такой тест удобен для повторяемых проверок, но не подтверждает, что сервер доступен через сеть."}
         </p>
         <p>
           {"Postman отправляет запросы работающему Uvicorn и проверяет внешний путь клиента: адрес, метод, body, status, ответ и изменение общего JSON. Успешный ответ 201 сам по себе не доказывает сохранение: следующий GET и повторное чтение после перезапуска подтверждают разные части результата. В collection удобно хранить запросы и переменную base_url, корень адреса сервера, к которому добавляется путь операции; ожидаемые id берём из фактических ответов."}
@@ -110,7 +110,7 @@ export function Lesson68({ module }: { module?: string }) {
         </Lead>
 
         <p>
-          {"requirements.txt содержит пакеты, нужные запущенному приложению. requirements-dev.txt подключает этот набор и инструменты проверки, включая pytest и httpx для TestClient. HTTPX отправляет запросы к приложению в процессе теста. Команда python -m запускает пакет тем же интерпретатором, куда эти зависимости установлены."}
+          {"requirements.txt содержит закреплённые runtime-зависимости: FastAPI 0.142.2, Starlette 1.7.0 и Uvicorn 0.54.0. requirements-dev.txt подключает этот набор и инструменты проверки: pytest 8.4.2 и httpx2 2.13.1 для TestClient. Мы устанавливаем полный набор одной командой из README, не добавляя HTTPX вручную. Команда python -m запускает пакет тем же интерпретатором, куда эти зависимости установлены."}
         </p>
         <CodeBlock
           caption={"Установка из корня чистого checkout в Windows PowerShell"}
@@ -191,6 +191,12 @@ export function Lesson68({ module }: { module?: string }) {
           {"В Postman мы импортируем существующую collection и environment, задаём base_url с адресом работающего Uvicorn и проходим сохранённый сценарий. Перед изменениями записываем текущую статистику из CLI. Создаём контрольную и основную задачи, берём id из ответов, меняем основную через полный PUT и частичный PATCH, проверяем отказ, удаляем её и читаем снова."}
         </p>
         <p>
+          {"В collection уже встроены post-response scripts. После ответа они проверяют ожидаемые status и выбранные поля, а pm.collectionVariables.set сохраняет baseline stats и фактические id для следующих URL: в сценарии 67 это workflow_total_before, workflow_open_before, workflow_done_before, workflow_control_id и workflow_target_id. Скрипты помогают пройти последовательность, но не являются обязательным JavaScript-заданием и не откатывают действие сервера при неудачной проверке."}
+        </p>
+        <p>
+          {"Если id-переменная пуста, устарела после прошлого запуска или script завершился ошибкой, смотрим Body последнего POST, копируем актуальный id и перезаписываем им соответствующую переменную коллекции вручную. Для одного следующего чтения можно заменить {{workflow_target_id}} самим числом, например открыть GET {{base_url}}/tasks/123. Ответ GET подтвердит, что мы продолжаем с тем ресурсом, который создал сервер."}
+        </p>
+        <p>
           {"Соседняя задача остаётся неизменной, а stats совпадает с данными после каждого действия. DELETE возвращает пустой 204. Повторное чтение основной задачи подтверждает 404. Рабочий JSON не очищается между запросами, поэтому ручные изменения остаются частью реального состояния и проверяются последовательно."}
         </p>
 
@@ -217,29 +223,36 @@ export function Lesson68({ module }: { module?: string }) {
         </Lead>
 
         <p>
-          {"Сначала мы завершаем изменения и сохраняем их в commit, снимок подготовленного состояния файлов проекта. Hash служит его идентификатором. Затем проверяем этот commit в чистой копии. После успешного запуска тестов, API и сохранённых запросов сверяем hash и используем различимый тег planner-api-v1.0.0. Это имя не перезаписывает прежний CLI-тег v1.0.0."}
+          {"До фиксации кандидата мы превращаем docs/release-notes-draft.md в окончательные заметки docs/release-notes-v1.0.0.md: убираем статус draft и устаревшие сведения, оставляем фактические возможности и ограничения Planner API. В тот же commit входят README, зависимости, код, тесты и экспортированные Postman collection/environment. Заметки не утверждают, что проверки уже пройдены. После commit проверяем git status --porcelain в исходной копии: вывод должен быть пустым, иначе в кандидате могут отсутствовать незакоммиченные материалы. Затем git rev-parse HEAD даёт полный SHA кандидата."}
         </p>
         <p>
-          {"Тег похож на ярлык, прикреплённый к конкретному экземпляру проекта. Он помогает найти commit, но сам не запускает тесты и не удостоверяет содержимое. Например, запуск тестов, затем исправление README и создание commit оставят README вне того тестового запуска. Поэтому мы сначала включаем все правки в commit, проверяем именно его из чистой копии и только потом создаём тег. Если README или код изменились после проверки, появляется новый commit; затронутые проверки выполняются снова, а тег указывает на новое подтверждённое состояние."}
+          {"Открываем именно этот SHA в отдельном чистом checkout с detached HEAD и сравниваем полный SHA checkout с сохранённым SHA кандидата. Если они различаются или git status --porcelain показывает изменения, проверки не начинаем. Detached HEAD удерживает checkout на выбранном commit, не передвигая именованную ветку. По README в этой копии создаём новое окружение, запускаем полный pytest-набор и отдельный workflow."}
         </p>
         <p>
-          {"GitHub Release создаётся из проверенного тега, если доступен соответствующий репозиторий. В заметке к версии перечисляются возможности и ограничения; при необходимости прикладываются экспортированная collection и инструкция. Локальный тег остаётся локальным, пока публикация действительно не произошла. Учебный release передаёт версию, но не означает production deployment."}
+          {"Затем запускаем Uvicorn и именно в приложении Postman импортируем файлы postman/planner-api.postman_collection.json и postman/local.postman_environment.json, выбираем Local и задаём фактический base_url. До запросов записываем total/open/done как baseline, исходную статистику. После каждого запроса сверяем статусы, id, контрольную задачу и новые значения; после перезапуска сервера повторяем чтение."}
         </p>
 
         <p>
-          {"Свяжем выпуск с одной проверяемой версией: каждый переход добавляет доказательство, а тег появляется только после успешных проверок."}
+          {"В отдельном протоколе приёмки сохраняем SHA кандидата, версию Python, команды и результаты тестов, имена импортированных Postman-файлов, baseline, ответы, итоговую статистику и чтение после restart. Протокол привязан к SHA и хранится вне проверяемого checkout, поэтому не меняет проверенный commit. Если любая правка нужна после проверки, создаём новый commit и повторяем чистую установку, тесты и живой workflow для нового SHA."}
         </p>
         <LinkedNotes
           variant="connected"
           items={[
-            { title: "Зафиксируем изменения", description: "Код, README и зависимости входят в один commit; записываем его hash." },
-            { title: "Поднимем чистую копию", description: "Новый checkout устанавливается и запускается только по сохранённой инструкции." },
-            { title: "Проверим договор", description: "Тесты через TestClient используют отдельный tmp_path и подтверждают ожидаемые ответы." },
-            { title: "Пройдём живой HTTP-путь", description: "Postman обращается к Uvicorn, а задачи и stats сверяются с общим JSON." },
-            { title: "Пометим проверенную версию", description: "Тег planner-api-v1.0.0 указывает на тот же commit; GitHub Release публикуется отдельно." },
+            { title: "Подготовим выпуск", description: "Финальные release notes, README, зависимости и Postman-экспорты входят в кандидатный commit." },
+            { title: "Зафиксируем SHA", description: "Открываем именно его в чистом detached checkout и сверяем hash до проверок." },
+            { title: "Повторим проверки", description: "README, полный pytest и workflow выполняются в checkout с проверяемым SHA." },
+            { title: "Импортируем Postman", description: "На Uvicorn пройдём сохранённый сценарий с baseline и проверим данные после restart." },
+            { title: "Свяжем результат с версией", description: "Протокол содержит SHA и результаты; тег сверяется с ним, GitHub Release создаётся отдельно." },
           ]}
         />
 
+        <CodeBlock
+          caption={"Проверим точный SHA и пометим ту же версию в Windows PowerShell"}
+          code={"if (git status --porcelain) { throw \"Исходная копия содержит незакоммиченные изменения\" }\n$verifiedSha = (git rev-parse HEAD).Trim()\ngit worktree add --detach ..\\planner-api-v1.0.0-check $verifiedSha\n$checkoutSha = (git -C ..\\planner-api-v1.0.0-check rev-parse HEAD).Trim()\nif ($checkoutSha -ne $verifiedSha) { throw \"Checkout указывает на другой commit\" }\nif (git -C ..\\planner-api-v1.0.0-check status --porcelain) { throw \"Проверочный checkout не чистый\" }\nPush-Location ..\\planner-api-v1.0.0-check\n# Здесь выполняем README, полный pytest и workflow\n# Во втором терминале запускаем Uvicorn из этого worktree и импортируем Postman\n# После проверки возвращаемся в исходную копию\nPop-Location\n# Записываем протокол с baseline и SHA вне worktree\ngit tag -a planner-api-v1.0.0 $verifiedSha -m \"Planner API v1.0.0\"\n$tagSha = (git rev-parse \"planner-api-v1.0.0^{commit}\").Trim()\nif ($tagSha -ne $verifiedSha) { throw \"Тег указывает на другой commit\" }"}
+        />
+        <p>
+          {"После всех успешных проверок создаём planner-api-v1.0.0 для сохранённого SHA и сверяем, что тег разрешается ровно в него. GitHub Release публикуем из этого тега отдельно; локальный тег не является опубликованным выпуском, а выпуск не означает production deployment."}
+        </p>
         <BugHunt
           code={"python -m pytest -q\n# после тестов исправлен README\ngit commit -am \"release: Planner API 1.0.0\"\ngit tag -a planner-api-v1.0.0 -m \"Planner API v1.0.0\""}
           question={"Какое состояние попадёт под тег в этом примере?"}
@@ -250,7 +263,7 @@ export function Lesson68({ module }: { module?: string }) {
           ]}
           correctIndex={1}
           explanation={"Tag указывает на commit, а не на незакоммиченные файлы и не на результат запуска pytest. Здесь README исправлен уже после тестов, поэтому проверка не относится к содержимому тега."}
-          fix={"# Сначала сохранить все изменения в commit\ngit add README.md requirements-dev.txt\ngit commit -m \"release: Planner API 1.0.0\"\n# Затем проверить этот commit в чистой копии\npython -m pytest -q\n# После проверки пометить текущий commit\ngit tag -a planner-api-v1.0.0 -m \"Planner API v1.0.0\""}
+          fix={"# После исправления README включаем его в кандидатный commit\ngit add -- README.md\ngit commit -m \"release: Planner API 1.0.0\"\nif (git status --porcelain) { throw \"Исходная копия содержит незакоммиченные изменения\" }\n$verifiedSha = (git rev-parse HEAD).Trim()\ngit worktree add --detach ..\\planner-api-v1.0.0-check $verifiedSha\n$checkoutSha = (git -C ..\\planner-api-v1.0.0-check rev-parse HEAD).Trim()\nif ($checkoutSha -ne $verifiedSha) { throw \"Checkout указывает на другой commit\" }\nif (git -C ..\\planner-api-v1.0.0-check status --porcelain) { throw \"Проверочный checkout не чистый\" }\nPush-Location ..\\planner-api-v1.0.0-check\n# Здесь выполнить README, pytest и workflow; во втором терминале запустить Uvicorn и Postman\nPop-Location\n# После успешных проверок создать тег для сохранённого SHA\ngit tag -a planner-api-v1.0.0 $verifiedSha -m \"Planner API v1.0.0\"\n$tagSha = (git rev-parse \"planner-api-v1.0.0^{commit}\").Trim()\nif ($tagSha -ne $verifiedSha) { throw \"Тег указывает на другой commit\" }"}
         />
 
         <RecallCard
@@ -267,10 +280,10 @@ export function Lesson68({ module }: { module?: string }) {
         <LinkedNotes
           variant="connected"
           items={[
-            { title: "Подготовим чистый запуск", description: "Команды README установят зависимости и запустят приложение из нового окружения." },
-            { title: "Проверим API автоматически", description: "TestClient выполнит независимые сценарии на отдельных JSON-файлах." },
-            { title: "Пройдём внешний путь", description: "Postman отправит запросы настоящему серверу и подтвердит сохранение общего состояния." },
-            { title: "Сверим передачу", description: "README совпадёт с фактическими командами, а версия укажет на проверенный commit." },
+            { title: "Завершим материалы", description: "README и финальные release notes совпадут с кодом; collection и environment войдут в commit." },
+            { title: "Проверим точный commit", description: "Чистый checkout по SHA воспроизведёт README, установку, тесты и workflow." },
+            { title: "Импортируем и запустим Postman", description: "На Uvicorn выполним сценарий с baseline и проверим данные после restart." },
+            { title: "Подтвердим выпуск", description: "Протокол свяжет результаты с SHA; тег укажет на него, GitHub Release опубликуется отдельно." },
           ]}
         />
 

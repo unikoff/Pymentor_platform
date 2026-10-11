@@ -1,6 +1,24 @@
-import { FileText, Wrench } from "lucide-react";
-import { BugHunt, Callout, CodeBlock, CompareSolutions, FillBlank, KeyTakeaways, Lead, MatchPairs, PracticeCta, QuizCard, RichHero, RichLesson, Section, StepThrough, TerminalDemo } from "../../shared";
-const BLOCK_TITLE = "Этап 4 · Блок 13 · FastAPI как цельное приложение";
+import { Braces, GitBranch } from "lucide-react";
+import {
+  BugHunt,
+  Callout,
+  CodeBlock,
+  CompareSolutions,
+  Diagram,
+  DiagramArrow,
+  DiagramFlow,
+  DiagramNode,
+  KeyTakeaways,
+  Lead,
+  LinkedNotes,
+  MatchPairs,
+  RichHero,
+  RichLesson,
+  Section,
+  StepThrough,
+} from "../../shared";
+
+const BLOCK_TITLE = "Этап 4 · Блок 13 · Организация и зрелые механизмы FastAPI";
 
 export function Lesson72({ module }: { module?: string }) {
   return (
@@ -8,671 +26,393 @@ export function Lesson72({ module }: { module?: string }) {
       <RichHero
         variant="project"
         chip={module ?? BLOCK_TITLE}
-        title={"Настройки и переменные окружения"}
-        intro={"Вынесем изменяемые значения из кода: начнём с environment variables, создадим Settings через pydantic-settings, подключим .env и .env.example и получим настройки через dependency."}
+        title={"Получаем готовый сервис"}
+        intro={"HTTP-обработчики перестанут сами искать PlannerService в состоянии приложения. Мы вынесем получение уже собранного объекта в короткую функцию и подключим её к существующим маршрутам FastAPI."}
         tags={[
-          { icon: <Wrench size={14} />, label: "pydantic-settings" },
-          { icon: <FileText size={14} />, label: "dev · test · secrets" },
+          { icon: <GitBranch size={14} />, label: "provider" },
+          { icon: <Braces size={14} />, label: "Depends(get_planner)" },
         ]}
       />
 
-      <Section number="01" title={"Настройка — значение, которое меняется между окружениями"}>
+      <Section number="00" title={"От общей ссылки к аргументу обработчика"}>
         <Lead>
-          {"Название приложения, режим API и будущий DATABASE_URL могут отличаться на компьютере разработчика, в тестах и при запуске сервиса. Если они зашиты в код, каждое изменение требует редактирования файла."}
+          {"В прошлых занятиях приложение собрало PlannerService и сохранило его в app.state.planner. Task-обработчики читают эту ссылку через Request, а маршрут статистики обращается к тому же сервису из app.api. Теперь мы посмотрим, как передавать готовый объект параметру маршрута."}
         </Lead>
 
-        <div className="lesson-practice-steps">
-          <h3>{"Code"}</h3>
-          <p>
-            {"Описывает стабильное поведение приложения."}
-          </p>
+        <LinkedNotes
+          variant="connected"
+          items={[
+            {
+              title: "Точка старта",
+              description: "Сервис уже создан на границе запуска приложения; HTTP-код знает, где хранится ссылка на него.",
+            },
+            {
+              title: "Новый вопрос",
+              description: "Как получить тот же PlannerService в обработчике, не повторяя request.app.state.planner в каждой операции?",
+            },
+            {
+              title: "Результат",
+              description: "Обычная функция вернёт готовый объект, а Depends попросит FastAPI передать его параметру HTTP-обработчика.",
+            },
+          ]}
+        />
 
-          <h3>{"Configuration"}</h3>
-          <p>
-            {"Выбирает значение для конкретного окружения."}
-          </p>
+        <p>
+          {"Так знакомый путь от Request и app.state приводит к новому способу получения аргумента. Мы отделим чтение готовой ссылки от создания PlannerService, затем разберём, как FastAPI вызывает функцию и передаёт её результат обработчику."}
+        </p>
+      </Section>
 
-          <h3>{"Secret"}</h3>
-          <p>
-            {"Конфигурация, которую нельзя публиковать: ключ, пароль, token."}
-          </p>
-
-          <h3>{"Пример"}</h3>
-          <p>
-            {"SQLite URL в development и отдельный URL тестовой базы."}
-          </p>
-
-        </div>
+      <Section number="01" title={"Получить готовый объект не значит создать новый"}>
+        <Lead>
+          {"build_service собирает PlannerService вместе с хранилищем при запуске приложения. Ссылка на этот объект помещается в app.state.planner. Позже обработчик берёт ссылку и вызывает метод сервиса; повторное чтение ссылки само по себе не создаёт ни Planner, ни JsonStorage."}
+        </Lead>
 
         <CodeBlock
-          caption={"жёстко в коде"}
+          caption={"фрагменты прежнего пути"}
           code={
-            "APP_NAME = \"StudyHub Database API\"\n" +
-            "API_MODE = \"development\"\n" +
-            "DATABASE_URL = \"sqlite:///./studyhub.db\""
+            "# при сборке приложения\n" +
+            "app.state.planner = build_service()\n" +
+            "\n" +
+            "# внутри task-обработчика\n" +
+            "planner = request.app.state.planner\n" +
+            "return planner.select_tasks()"
           }
         />
 
-        <CodeBlock
-          caption={"ожидаемая идея"}
-          code={
-            "код приложения\n" +
-            "+ значения окружения\n" +
-            "→ готовая конфигурация запуска"
-          }
-        />
+        <p>
+          {"Представим общую библиотеку, где есть один экземпляр каталога. Запись в карточке указывает на этот каталог, а не содержит его копию. Когда несколько библиотекарей обращаются к той же карточке, они получают доступ к одному набору книг. В приложении роль карточки выполняет ссылка в app.state, а роль каталога - готовый PlannerService. Аналогия заканчивается на получении объекта: сервис ещё выполняет методы и меняет данные, библиотечная карточка этого не делает."}
+        </p>
+
+        <p>
+          {"Provider нужен именно на границе выдачи ссылки. Если он каждый раз вызывает build_service или создаёт JsonStorage, то API может получить новый сервис с другой внутренней памятью. Такой код перестанет означать «возьми подготовленный Planner этого приложения». Для нашей задачи функция должна вернуть существующий объект из текущего Request, не выбирать путь к файлу и не открывать собственное хранилище."}
+        </p>
 
         <MatchPairs
-          prompt={"Разделите примеры по смыслу."}
-          leftTitle={"Значение"}
-          rightTitle={"Категория"}
+          prompt={"Сопоставим части прежнего пути с их ролью."}
+          leftTitle={"Часть"}
+          rightTitle={"Роль"}
           pairs={[
-            { left: "DATABASE_URL", right: "environment setting" },
-            { left: "SECRET_KEY", right: "secret setting" },
-            { left: "MAX_PRIORITY = 5", right: "business constant" },
-            { left: "APP_NAME", right: "display/config setting" },
+            { left: "build_service()", right: "собирает сервис на границе запуска" },
+            { left: "app.state.planner", right: "хранит ссылку приложения на готовый объект" },
+            { left: "метод PlannerService", right: "выполняет операцию над задачами" },
+            { left: "JsonStorage", right: "сохраняет состояние Planner в JSON" },
           ]}
-          explanation={"Настройки выбирают окружение, предметные константы определяют правило."}
+          explanation={"Мы разделили создание сервиса, хранение ссылки, предметную операцию и сохранение данных. Provider добавит единый способ получить сервис, но не заменит ни один из этих четырёх элементов."}
         />
 
         <Callout tone="info">
-          {"Не каждое число является setting. Константа предметного правила, например MAX_PRIORITY=5, не обязана меняться между окружениями."}
+          {"Сервис может создаваться один раз, хотя provider участвует в разрешении аргументов разных HTTP-запросов. Частота получения ссылки и время жизни объекта - разные вопросы."}
         </Callout>
       </Section>
 
-      <Section number="02" title={"Environment variable приходит в Python как текст"}>
+      <Section number="02" title={"Provider остаётся обычной функцией"}>
         <Lead>
-          {"Операционная система хранит пары имя–значение. Python может получить их через os.getenv, но преобразование типов и обязательность придётся контролировать вручную."}
+          {"Provider - это функция приложения, которая возвращает объект, нужный следующему коду. Для FastAPI не требуется особый класс provider: важны её вход, возвращаемое значение и то, как endpoint объявляет источник аргумента."}
         </Lead>
 
-        <div className="lesson-practice-steps">
-          <h3>{"Имя"}</h3>
-          <p>
-            {"Обычно используется uppercase: APP_NAME, API_MODE, DATABASE_URL."}
-          </p>
-
-          <h3>{"Строка"}</h3>
-          <p>
-            {"Внешнее значение поступает как str."}
-          </p>
-
-          <h3>{"Default"}</h3>
-          <p>
-            {"os.getenv может вернуть запасное значение."}
-          </p>
-
-          <h3>{"Ограничение"}</h3>
-          <p>
-            {"Ручные conversions быстро повторяются."}
-          </p>
-
-        </div>
-
-        <CodeBlock
-          caption={"первый шаг"}
-          code={
-            "import os\n" +
-            "\n" +
-            "app_name = os.getenv(\n" +
-            "    \"APP_NAME\",\n" +
-            "    \"StudyHub Database API\",\n" +
-            ")\n" +
-            "\n" +
-            "api_mode = os.getenv(\n" +
-            "    \"API_MODE\",\n" +
-            "    \"development\",\n" +
-            ")"
-          }
-        />
-
-        <CodeBlock
-          caption={"PowerShell"}
-          code={
-            "$env:APP_NAME = \"StudyHub Local API\"\n" +
-            "$env:API_MODE = \"test\"\n" +
-            "python -m uvicorn app.main:app --reload"
-          }
-        />
-
-        <TerminalDemo
-          title={"проверка environment"}
-          lines={[
-            { cmd: "python -c \"import os; print(os.getenv('API_MODE'))\"" },
-            { out: "development" },
+        <LinkedNotes
+          items={[
+            {
+              title: "Request",
+              description: "FastAPI передаёт функции текущий HTTP-запрос; через него доступно именно текущее приложение.",
+            },
+            {
+              title: "Provider",
+              description: "Обычная функция читает подготовленное значение из app.state и возвращает его.",
+            },
+            {
+              title: "Тип результата",
+              description: "Аннотация PlannerService объясняет ожидаемый объект и помогает читать сигнатуру; она не создаёт экземпляр.",
+            },
           ]}
         />
 
-        <Callout tone="info">
-          {"os.getenv полезен для понимания механизма, но объект Settings даст типы, defaults и единое место конфигурации."}
-        </Callout>
-      </Section>
-
-      <Section number="03" title={"Pydantic Settings собирает и проверяет конфигурацию"}>
-        <Lead>
-          {"Пакет pydantic-settings использует знакомую модель полей. При создании Settings он читает environment variables, преобразует типы и применяет defaults."}
-        </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>{"Отдельный пакет"}</h3>
-          <p>
-            {"BaseSettings импортируется из pydantic_settings."}
-          </p>
-
-          <h3>{"Type hints"}</h3>
-          <p>
-            {"Поля получают ожидаемые Python-типы."}
-          </p>
-
-          <h3>{"Defaults"}</h3>
-          <p>
-            {"Локальный запуск возможен без полного набора variables."}
-          </p>
-
-          <h3>{"Required secret"}</h3>
-          <p>
-            {"Поле без default потребует внешнее значение."}
-          </p>
-
-        </div>
+        <p>
+          {"Имя get_planner подсказывает действие, но Python не придаёт слову get специальный смысл. Функция становится provider по своей роли: её вызывают, чтобы получить значение для другой части программы. Она не обязана быть глобальной переменной и не должна импортировать созданный где-то ещё объект приложения. Через Request функция получает контекст текущего приложения, а значит может работать и с тестовой сборкой."}
+        </p>
 
         <CodeBlock
-          caption={"установка"}
+          caption={"завершённый независимый пример"}
           code={
-            "python -m pip install pydantic-settings"
+            "def get_label() -> str:\n" +
+            "    return \"Палитра\"\n" +
+            "\n" +
+            "provider = get_label\n" +
+            "value = get_label()\n" +
+            "\n" +
+            "print(callable(provider))\n" +
+            "print(value)"
           }
         />
 
-        <CodeBlock
-          caption={"config.py"}
-          code={
-            "from pydantic_settings import BaseSettings\n" +
-            "\n" +
-            "\n" +
-            "class Settings(BaseSettings):\n" +
-            "    app_name: str = \"StudyHub Database API\"\n" +
-            "    api_mode: str = \"development\"\n" +
-            "    database_url: str = \"sqlite:///./studyhub.db\"\n" +
-            "    debug: bool = False"
-          }
-        />
+        <p>
+          {"В строке provider = get_label мы передали функцию как значение: такой объект Python можно вызвать скобками, поэтому он называется вызываемым объектом (callable). Здесь скобок нет, значит вызова ещё не было. В строке value = get_label() мы вызвали функцию, поэтому в value попала строка. При запуске первый print показывает True, второй - Палитра. Это знакомое различие становится важным для Depends."}
+        </p>
 
-        <CodeBlock
-          caption={"создание"}
-          code={
-            "settings = Settings()\n" +
-            "\n" +
-            "print(settings.app_name)\n" +
-            "print(type(settings.debug))"
-          }
-        />
-
-        <FillBlank
-          prompt={"Выберите актуальный импорт."}
-          before={"from "}
-          after={" import BaseSettings"}
-          options={[
-            "pydantic_settings",
-            "pydantic",
-            "fastapi",
-          ]}
-          answer={"pydantic_settings"}
-          explanation={"Settings вынесены в отдельный пакет."}
-        />
-
-        <Callout tone="info">
-          {"В новом коде BaseSettings не импортируется из pydantic. Для Pydantic v2 используется пакет pydantic-settings."}
-        </Callout>
-      </Section>
-
-      <Section number="04" title={".env удобен для локального запуска"}>
-        <Lead>
-          {"Файл .env хранит пары KEY=VALUE рядом с проектом. SettingsConfigDict сообщает модели, какой dotenv-файл прочитать и в какой кодировке."}
-        </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>{"Локальная конфигурация"}</h3>
-          <p>
-            {"Не нужно каждый раз вводить несколько variables в терминале."}
-          </p>
-
-          <h3>{"Приоритет"}</h3>
-          <p>
-            {"Реальные environment variables могут переопределять значения dotenv."}
-          </p>
-
-          <h3>{"Кодировка"}</h3>
-          <p>
-            {"UTF-8 делает поведение предсказуемым."}
-          </p>
-
-          <h3>{"Не публикация"}</h3>
-          <p>
-            {"Рабочий .env обычно исключается из Git."}
-          </p>
-
-        </div>
-
-        <CodeBlock
-          caption={"SettingsConfigDict"}
-          code={
-            "from pydantic_settings import (\n" +
-            "    BaseSettings,\n" +
-            "    SettingsConfigDict,\n" +
-            ")\n" +
-            "\n" +
-            "\n" +
-            "class Settings(BaseSettings):\n" +
-            "    app_name: str = \"StudyHub Database API\"\n" +
-            "    api_mode: str = \"development\"\n" +
-            "    database_url: str = \"sqlite:///./studyhub.db\"\n" +
-            "\n" +
-            "    model_config = SettingsConfigDict(\n" +
-            "        env_file=\".env\",\n" +
-            "        env_file_encoding=\"utf-8\",\n" +
-            "    )"
-          }
-        />
-
-        <CodeBlock
-          caption={".env"}
-          code={
-            "APP_NAME=StudyHub Local API\n" +
-            "API_MODE=development\n" +
-            "DATABASE_URL=sqlite:///./studyhub.db"
-          }
-        />
-
-        <CompareSolutions
-          question={"Где хранить локальный DATABASE_URL?"}
-          left={{
-            title: "В router",
-            code: "DATABASE_URL = \"...\"",
-            note: "HTTP-модуль становится источником конфигурации.",
-          }}
-          right={{
-            title: "В .env + Settings",
-            code: "DATABASE_URL=sqlite:///./studyhub.db",
-            note: "Значение выбирается окружением и проверяется моделью.",
-          }}
-          preferred={"right"}
-          explanation={"Router получает готовые settings через dependency."}
-        />
-
-        <Callout tone="info">
-          {".env не является Python-файлом: кавычки, пробелы и синтаксис должны соответствовать dotenv-формату."}
-        </Callout>
-      </Section>
-
-      <Section number="05" title={".env.example документирует обязательные имена"}>
-        <Lead>
-          {"Рабочий .env не коммитится, но новый разработчик должен знать, какие variables требуются. Для этого создаётся безопасный .env.example без настоящих secrets."}
-        </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>{"Шаблон"}</h3>
-          <p>
-            {"Содержит имена и безопасные демонстрационные значения."}
-          </p>
-
-          <h3>{"README"}</h3>
-          <p>
-            {"Объясняет копирование .env.example → .env."}
-          </p>
-
-          <h3>{"Без secrets"}</h3>
-          <p>
-            {"Настоящий SECRET_KEY или пароль не попадает в repository."}
-          </p>
-
-          <h3>{"Синхронизация"}</h3>
-          <p>
-            {"При добавлении новой setting обновляются model, example и README."}
-          </p>
-
-        </div>
-
-        <CodeBlock
-          caption={".env.example"}
-          code={
-            "APP_NAME=StudyHub Database API\n" +
-            "API_MODE=development\n" +
-            "DATABASE_URL=sqlite:///./studyhub.db\n" +
-            "SECRET_KEY=replace-me-locally"
-          }
-        />
-
-        <CodeBlock
-          caption={".gitignore"}
-          code={
-            ".env\n" +
-            ".venv/\n" +
-            "__pycache__/\n" +
-            ".pytest_cache/\n" +
-            "*.pyc"
-          }
-        />
-
-        <BugHunt
-          code={
-            ".env\n" +
-            "SECRET_KEY=real-production-secret\n" +
-            "\n" +
-            "# затем\n" +
-            "git add .env\n" +
-            "git commit -m \"add config\""
-          }
-          question={"В чём риск?"}
-          options={[
-            "Секрет попадает в историю Git",
-            "dotenv не поддерживает строки",
-            "FastAPI удалит файл",
-          ]}
-          correctIndex={0}
-          explanation={"Даже удалённый следующим commit secret останется в истории и должен считаться раскрытым."}
-          fix={".gitignore\n.env\n\n.env.example\nSECRET_KEY=replace-me"}
-        />
-
-        <Callout tone="info">
-          {"Само имя SECRET_KEY можно публиковать. Нельзя публиковать реальное значение, которое используется сервисом."}
-        </Callout>
-      </Section>
-
-      <Section number="06" title={"get_settings и lru_cache"}>
-        <Lead>
-          {"Создание Settings может читать dotenv. Для одного процесса достаточно создать объект один раз и возвращать его через dependency. lru_cache хранит результат обычной Python-функции между requests."}
-        </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>{"get_settings"}</h3>
-          <p>
-            {"Единая функция-provider для FastAPI."}
-          </p>
-
-          <h3>{"lru_cache"}</h3>
-          <p>
-            {"После первого вызова возвращает тот же объект для одинаковых аргументов."}
-          </p>
-
-          <h3>{"Dependency"}</h3>
-          <p>
-            {"Endpoints объявляют SettingsDep."}
-          </p>
-
-          <h3>{"Тест"}</h3>
-          <p>
-            {"Provider можно override, не изменяя рабочий endpoint."}
-          </p>
-
-        </div>
-
-        <CodeBlock
-          caption={"provider"}
-          code={
-            "from functools import lru_cache\n" +
-            "from typing import Annotated\n" +
-            "\n" +
-            "from fastapi import Depends\n" +
-            "\n" +
-            "\n" +
-            "@lru_cache\n" +
-            "def get_settings() -> Settings:\n" +
-            "    return Settings()\n" +
-            "\n" +
-            "\n" +
-            "SettingsDep = Annotated[\n" +
-            "    Settings,\n" +
-            "    Depends(get_settings),\n" +
-            "]"
-          }
-        />
-
-        <CodeBlock
-          caption={"endpoint"}
-          code={
-            "@router.get(\"/info\")\n" +
-            "def get_info(settings: SettingsDep):\n" +
-            "    return {\n" +
-            "        \"app_name\": settings.app_name,\n" +
-            "        \"api_mode\": settings.api_mode,\n" +
-            "    }"
-          }
-        />
-
-        <CompareSolutions
-          question={"Почему не создать Settings() прямо в каждом endpoint?"}
-          left={{
-            title: "В каждом handler",
-            code: "settings = Settings()",
-            note: "Повторное чтение конфигурации и жёсткое создание внутри route.",
-          }}
-          right={{
-            title: "Provider + cache",
-            code: "settings: SettingsDep",
-            note: "Получение централизовано и заменяется в тестах.",
-          }}
-          preferred={"right"}
-          explanation={"FastAPI dependency и lru_cache дают ясную точку получения settings."}
-        />
-
-        <Callout tone="info">
-          {"lru_cache и request dependency cache — разные уровни. Первый живёт в Python-процессе, второй действует при решении одного request graph."}
-        </Callout>
-      </Section>
-
-      <Section number="07" title={"Development и test используют разные значения"}>
-        <Lead>
-          {"Тесты не должны случайно использовать рабочий database_url или режим. Dependency override позволяет передать TestSettings либо отдельный Settings с тестовыми значениями."}
-        </Lead>
-
-        <div className="lesson-practice-steps">
-          <h3>{"Development"}</h3>
-          <p>
-            {"Локальный SQLite-файл и debug-настройки."}
-          </p>
-
-          <h3>{"Test"}</h3>
-          <p>
-            {"Отдельный временный URL и api_mode=test."}
-          </p>
-
-          <h3>{"Override"}</h3>
-          <p>
-            {"app.dependency_overrides связывает рабочий provider с тестовым."}
-          </p>
-
-          <h3>{"Очистка"}</h3>
-          <p>
-            {"Override удаляется после теста, чтобы сценарии не влияли друг на друга."}
-          </p>
-
-        </div>
-
-        <CodeBlock
-          caption={"test provider"}
-          code={
-            "def get_test_settings() -> Settings:\n" +
-            "    return Settings(\n" +
-            "        api_mode=\"test\",\n" +
-            "        database_url=\"sqlite:///./test.db\",\n" +
-            "    )\n" +
-            "\n" +
-            "app.dependency_overrides[get_settings] = get_test_settings"
-          }
-        />
-
-        <CodeBlock
-          caption={"cleanup"}
-          code={
-            "app.dependency_overrides.clear()"
-          }
-        />
+        <p>
+          {"Представим пункт выдачи, где сотрудник может передать оператору номер ячейки или уже вынутую посылку. Callable - это передаваемая функция, то есть инструкция, как получить результат; вызов функции выполняет эту инструкцию и даёт результат. FastAPI получает callable provider, чтобы вызвать его в контексте запроса. Это сравнение не означает, что Python хранит функцию как текстовую инструкцию: функция остаётся объектом, который можно передать."}
+        </p>
 
         <StepThrough
           code={
-            "test starts\n" +
-            "→ override get_settings\n" +
-            "→ request\n" +
-            "→ endpoint receives test settings\n" +
-            "→ assertions\n" +
-            "→ clear overrides"
+            "def get_palette(request: Request) -> Palette:\n" +
+            "    return request.app.state.palette\n" +
+            "\n" +
+            "@router.get(\"/palette\")\n" +
+            "def read_palette(palette: Palette = Depends(get_palette)):\n" +
+            "    return {\"name\": palette.name}"
           }
           steps={[
             {
+              line: 4,
+              note: "FastAPI видит callable get_palette в объявлении параметра и готовит его разрешение для запроса.",
+              vars: { "provider": "get_palette", "call": "ещё не выполнен" },
+            },
+            {
               line: 0,
-              note: "Тест подготавливает окружение.",
-              vars: { "mode": "test" },
+              note: "При разборе запроса FastAPI вызывает provider и передаёт ему текущий Request.",
+              vars: { "request": "текущее приложение" },
             },
             {
               line: 1,
-              note: "Рабочий provider заменяется.",
-              vars: { "override": "active" },
-            },
-            {
-              line: 2,
-              note: "TestClient отправляет request.",
-              vars: { "request": "GET /info" },
-            },
-            {
-              line: 3,
-              note: "Endpoint получает test Settings.",
-              vars: { "database_url": "test.db" },
+              note: "Функция читает уже сохранённую ссылку на Palette и возвращает тот же объект.",
+              vars: { "result": "request.app.state.palette" },
             },
             {
               line: 4,
-              note: "Проверяется response.",
-              vars: { "status": "200" },
+              note: "FastAPI подставляет результат в аргумент palette и только затем вызывает endpoint.",
+              vars: { "palette": "готовый объект" },
             },
             {
               line: 5,
-              note: "Override очищается.",
-              vars: { "isolation": "restored" },
+              note: "Обработчик использует полученный объект; он не отвечает за его создание.",
+              vars: { "response": "имя палитры" },
             },
           ]}
         />
 
-        <Callout tone="info">
-          {"В блоке 14 DATABASE_URL начнёт реально управлять SQLAlchemy engine. Сейчас важно подготовить безопасную конфигурационную границу."}
-        </Callout>
+        <p>
+          {"Мы проследили фрагмент приложения, где типы Palette, router и Request объявлены в другом месте; это не самостоятельный запускаемый файл и не запись реального запуска. Маршрут данных виден по шагам: передаваемая функция, запрос, ссылка из state, аргумент обработчика."}
+        </p>
       </Section>
 
-      <Section number="08" title={"Практика: конфигурация перед SQLite"}>
+      <Section number="03" title={"Depends принимает функцию, а не её результат"}>
         <Lead>
-          {"Создайте config.py до подключения SQLAlchemy. Блок должен закончиться settings, которые уже содержат будущий DATABASE_URL, но ещё не открывают соединение."}
+          {"В параметре endpoint простая запись выглядит как значение по умолчанию: palette: Palette = Depends(get_palette). Но FastAPI читает этот маркер при подключении маршрута и понимает, что значение нужно получить через функцию. Сам get_palette не вызывается в момент объявления обработчика."}
         </Lead>
 
-        <div className="lesson-practice-steps">
-          <h3>{"Шаг 1"}</h3>
-          <p>
-            {"Установите pydantic-settings."}
-          </p>
-
-          <h3>{"Шаг 2"}</h3>
-          <p>
-            {"Создайте Settings и SettingsConfigDict."}
-          </p>
-
-          <h3>{"Шаг 3"}</h3>
-          <p>
-            {"Добавьте .env, .env.example и .gitignore."}
-          </p>
-
-          <h3>{"Шаг 4"}</h3>
-          <p>
-            {"Подключите get_settings и SettingsDep."}
-          </p>
-
-          <h3>{"Шаг 5"}</h3>
-          <p>
-            {"Сделайте /info без выдачи secrets."}
-          </p>
-
-          <h3>{"Шаг 6"}</h3>
-          <p>
-            {"Проверьте test override."}
-          </p>
-
-        </div>
+        <p>
+          {"Можно представить театральную постановку. В тексте роли указано, кто должен принести реквизит; запись не приносит его на сцену во время печати сценария. Перед выходом актёра координатор собирает нужные предметы и передаёт их исполнителю. Здесь сигнатура endpoint описывает источник аргумента, FastAPI координирует получение, а provider возвращает предметный объект. Граница аналогии в том, что FastAPI реально вызывает Python-функцию и проверяет её параметры, а координатор в театре не выполняет код."}
+        </p>
 
         <CodeBlock
-          caption={"структура"}
+          caption={"верная форма объявления"}
           code={
-            "app/\n" +
-            "├── main.py\n" +
-            "├── config.py\n" +
-            "├── dependencies.py\n" +
-            "└── routers/\n" +
-            "\n" +
-            ".env\n" +
-            ".env.example\n" +
-            ".gitignore"
+            "@router.get(\"/palette\")\n" +
+            "def read_palette(\n" +
+            "    palette: Palette = Depends(get_palette),\n" +
+            "):\n" +
+            "    return {\"name\": palette.name}"
           }
         />
 
-        <Callout tone="info">
-          {"Endpoint /info может возвращать app_name и api_mode, но не должен раскрывать SECRET_KEY или пароль базы."}
-        </Callout>
+        <p>
+          {"Здесь get_palette без скобок остаётся callable. Выражение Depends(get_palette) сообщает FastAPI, как получить аргумент. При каждом запросе framework разрешает параметры зависимости в контексте приложения и передаёт возвращённый объект функции read_palette. Значение palette появляется уже при вызове endpoint, поэтому обычная Python-функция не должна подставлять его сама."}
+        </p>
 
-        <div className="lesson-check-group">
-          <QuizCard
-            question={"Откуда импортируется BaseSettings в Pydantic v2?"}
-            options={[
-              "pydantic_settings",
-              "fastapi",
-              "sqlite3",
-            ]}
-            correctIndex={0}
-            explanation={"Settings находятся в отдельном пакете."}
-          />
-          <QuizCard
-            question={"Зачем .env.example?"}
-            options={[
-              "документировать имена без настоящих secrets",
-              "хранить production secret",
-              "заменить .gitignore",
-            ]}
-            correctIndex={0}
-            explanation={"Новый разработчик видит шаблон конфигурации."}
-          />
-          <QuizCard
-            question={"Что делает lru_cache для get_settings?"}
-            options={[
-              "переиспользует созданный объект в процессе",
-              "кэширует HTTP body",
-              "создаёт cookie",
-            ]}
-            correctIndex={0}
-            explanation={"Settings не читается заново на каждый request."}
-          />
-          <QuizCard
-            question={"Что нельзя возвращать из /info?"}
-            options={[
-              "SECRET_KEY",
-              "app_name",
-              "api_mode",
-            ]}
-            correctIndex={0}
-            explanation={"Секреты не становятся публичным response."}
-          />
-        </div>
+        <BugHunt
+          code={
+            "@router.get(\"/palette\")\n" +
+            "def read_palette(\n" +
+            "    palette: Palette = Depends(get_palette()),\n" +
+            "):\n" +
+            "    return {\"name\": palette.name}"
+          }
+          question={"Найдём ошибку в момент передачи зависимости."}
+          options={[
+            "Provider вызывается сразу, когда объявляется маршрут",
+            "Тип Palette запрещает FastAPI читать объект",
+            "HTTP-обработчик не может возвращать словарь",
+          ]}
+          correctIndex={0}
+          explanation={"Вызов со скобками выполняет get_palette при построении аргумента, когда текущий Request ещё не передан. Depends должен получить функцию, чтобы FastAPI вызвал её позднее при разрешении запроса."}
+          fix={"Depends(get_palette)"}
+        />
 
-        <KeyTakeaways
-          points={[
-            <>{"Configuration отделяется от стабильного кода."}</>,
-            <>{"Environment variables поступают как текст."}</>,
-            <>{"Pydantic Settings преобразует и проверяет значения."}</>,
-            <>{"SettingsConfigDict подключает .env."}</>,
-            <>{".env обычно не коммитится."}</>,
-            <>{".env.example документирует безопасный шаблон."}</>,
-            <>{"get_settings используется как dependency provider."}</>,
-            <>{"lru_cache и dependency override упрощают запуск и тесты."}</>,
+        <CompareSolutions
+          question={"Какой вариант сохраняет один подготовленный каталог для маршрутов?"}
+          left={{
+            title: "Создать заново",
+            code: "return Catalog.open(\"books.json\")",
+            note: "Каждое разрешение создаёт новый объект и новый владелец состояния.",
+          }}
+          right={{
+            title: "Вернуть ссылку",
+            code: "return request.app.state.catalog",
+            note: "Provider получает объект, который уже собрала текущая сборка приложения.",
+          }}
+          preferred={"right"}
+          explanation={"Мы выбираем второй вариант только потому, что здесь договор требует общий уже подготовленный каталог. В других задачах создание объекта внутри функции может быть правильным; сначала определяем его время жизни и владельца."}
+        />
+
+        <p>
+          {"Так же устроен планируемый get_planner: источник уже задан в state текущего приложения, а endpoint получает результат через Depends. Тип PlannerService помогает читать контракт, но ни аннотация, ни Depends не вызывают build_service и не создают новую JsonStorage."}
+        </p>
+      </Section>
+
+      <Section number="04" title={"Один путь получения для task-операций и stats"}>
+        <Lead>
+          {"После подготовки функции-provider мы можем заменить прямое чтение состояния в HTTP-обработчиках. Тело операции остаётся тем же: endpoint получает PlannerService, вызывает прежний метод, преобразует результат в прежний HTTP-ответ."}
+        </Lead>
+
+        <Diagram caption={"Как FastAPI передаёт готовый Planner обработчику"}>
+          <DiagramFlow label={"Путь одного HTTP-запроса: от клиента через provider к обработчику"}>
+            <DiagramNode title={"HTTP-запрос"}>
+              <p>{"FastAPI начинает разбор аргументов маршрута"}</p>
+            </DiagramNode>
+            <DiagramArrow label={"разрешить Depends"} />
+            <DiagramNode title={"get_planner"}>
+              <p>{"Получает Request текущего приложения"}</p>
+            </DiagramNode>
+            <DiagramArrow label={"прочитать ссылку"} />
+            <DiagramNode title={"app.state.planner"}>
+              <p>{"Уже собранный PlannerService"}</p>
+            </DiagramNode>
+            <DiagramArrow label={"вернуть тот же объект"} />
+            <DiagramNode title={"task-handler или stats"}>
+              <p>{"Вызывает прежний метод сервиса"}</p>
+            </DiagramNode>
+          </DiagramFlow>
+        </Diagram>
+
+        <p>
+          {"Текстовый маршрут схемы такой: запрос приводит FastAPI к параметру с Depends; framework вызывает get_planner с Request; provider читает ссылку из app.state и возвращает объект; endpoint получает его в параметре. Схема показывает последовательность получения значения, а не полный внутренний алгоритм FastAPI. Ответ клиенту формируется прежним обработчиком."}
+        </p>
+
+        <p>
+          {"Task-router может использовать простую форму Depends(get_planner), а /stats получает тот же provider, хотя находится в app.api. Это убирает повторяющееся знание о месте хранения сервиса из бизнес-операций. Сам app.state остаётся частью сборки и источником ссылки; он не исчезает и не превращается в глобальный импорт для каждого router."}
+        </p>
+
+        <LinkedNotes
+          variant="connected"
+          items={[
+            {
+              title: "Параметр",
+              description: "Тип PlannerService говорит, какой объект будет доступен внутри обработчика.",
+            },
+            {
+              title: "Источник",
+              description: "Depends(get_planner) просит FastAPI получить этот объект через provider.",
+            },
+            {
+              title: "Операция",
+              description: "Тело endpoint продолжает вызывать прежний метод и сохраняет HTTP-контракт.",
+            },
           ]}
         />
 
-        <PracticeCta
-          text={"Создайте config.py, .env и .env.example, подключите SettingsDep к /info и проверьте отдельные development/test значения."}
-        />
+        <p>
+          {"Это не новый CRUD-слой. Provider не принимает task_id, не проверяет title, не ловит TaskNotFoundError и не записывает JSON. Его работа заканчивается на выдаче сервиса. Если ошибка возникает в предметной операции или хранилище, её прежняя обработка остаётся на своих местах."}
+        </p>
       </Section>
 
+      <Section number="05" title={"FastAPI и CLI получают сервис разными путями"}>
+        <Lead>
+          {"Depends относится к разрешению параметров FastAPI endpoint. CLI не отправляет HTTP-запрос, поэтому ему не нужны Request, Depends или искусственный вызов get_planner."}
+        </Lead>
+
+        <p>
+          {"При запуске CLI остаётся прежний путь через build_service: команда получает PlannerService и вызывает его методы напрямую. В HTTP-пути FastAPI берёт уже подготовленную ссылку из текущего приложения через provider. Оба интерфейса могут пользоваться совместимыми операциями и одним настроенным JSON-файлом, хотя получают объект разными способами."}
+        </p>
+
+        <p>
+          {"Такое разделение сохраняет границы слоёв. CLI не импортирует app или endpoint, provider не становится доменным сервисом, а PlannerService не начинает зависеть от FastAPI. Знакомый прямой вызов метода в тесте сервиса тоже не нуждается в Depends. Для HTTP-проверки тестовый клиент TestClient проходит через FastAPI и тем самым проверяет реальное разрешение аргумента."}
+        </p>
+
+        <Callout tone="info">
+          {"В этой задаче не нужны dependency_overrides, кэширование, yield и управление закрываемым ресурсом. Они решают другие вопросы и появятся только там, где маршрут блока их действительно вводит."}
+        </Callout>
+      </Section>
+
+      <Section number="06" title={"Проверим общий объект и прежний контракт"}>
+        <Lead>
+          {"Правильный provider должен вернуть именно сервис, установленный в изолированном тестовом приложении. Несколько запросов одного TestClient-сценария покажут, что созданная задача видна дальше, а stats и ответы CRUD остались прежними."}
+        </Lead>
+
+        <p>
+          {"Тестовая fixture, то есть подготовительная функция проверки, создаёт сервис с временным JsonStorage, устанавливает его в app.state и после сценария восстанавливает прежнее состояние. Provider не должен обходить эту настройку или обращаться к рабочему JSON. Через последовательный HTTP-сценарий мы проверим создание и чтение, /stats, ожидаемый 404, PATCH с is_done=False и DELETE с пустым ответом 204."}
+        </p>
+
+        <p>
+          {"Это проверяет два разных результата. Во-первых, provider возвращает объект из текущего приложения, а не из захардкоженного глобального app. Во-вторых, замена способа получения не меняет работу сервиса и HTTP-ответы. Проверка одного успешного GET не заметила бы случайно созданный второй Planner; связанный сценарий с повторным чтением и статистикой это обнаруживает."}
+        </p>
+
+        <p>
+          {"Если fixture напрямую подменяет app.state.planner, это пока не dependency override. Мы проверяем известную точку состояния и то, что новый provider читает её. Отдельный механизм FastAPI для замены callable появится в другом шаге; смешивать два способа сейчас не нужно."}
+        </p>
+
+        <CompareSolutions
+          question={"Что подтверждает цепочка POST → GET → stats на временном JSON?"}
+          left={{
+            title: "Только форму ответа",
+            code: "response.status_code == 200",
+            note: "Один статус не показывает, откуда endpoint получил сервис.",
+          }}
+          right={{
+            title: "Общий путь состояния",
+            code: "POST → GET → stats",
+            note: "Повторное чтение и статистика показывают, что запросы видят одну запись.",
+          }}
+          preferred={"right"}
+          explanation={"Мы проверяем связанный HTTP-результат и изолированное состояние. Пустой статусный чек может пройти даже при ошибочном источнике сервиса."}
+        />
+
+        <p>
+          {"После изменений task-endpoints и /stats получают сервис через provider, а CLI продолжает работать через build_service. JSON, схема задачи, пути, коды ответов и обработчики ошибок остаются прежними. Если проверка выявила новый файл данных или отдельный Planner, сначала ищем ошибку границы получения, а не переписываем CRUD."}
+        </p>
+      </Section>
+
+      <Section number="07" title={"Практика: подключим уже собранный Planner"}>
+        <Lead>
+          {"В готовом проекте task-обработчики и /stats получают один собранный PlannerService через простую запись Depends. Мы сохраним прежние методы, HTTP-контракт и API-fixture с временным JSON."}
+        </Lead>
+
+        <LinkedNotes
+          variant="connected"
+          items={[
+            {
+              title: "Подключим источник",
+              description: "Provider вернёт PlannerService из текущего приложения; в HTTP-параметре окажется уже собранный объект.",
+            },
+            {
+              title: "Переведём обработчики",
+              description: "Task-маршруты и /stats получат сервис через Depends, а их методы и ответы останутся прежними.",
+            },
+            {
+              title: "Проверим поведение",
+              description: "Связанный сценарий на временном JSON подтвердит чтение созданной задачи, статистику, 404, PATCH false и DELETE 204.",
+            },
+          ]}
+        />
+
+        <p>
+          {"Наблюдаемый итог: повторный запрос читает созданную задачу, а /stats видит то же состояние. Fixture оставляет данные в отдельном временном JSON и восстанавливает прежнюю ссылку на сервис после сценария."}
+        </p>
+
+        <p>
+          {"Мы используем уже изученные Request, app.state, методы PlannerService и тестовый клиент. Изменение касается только получения сервиса в HTTP-слое: CLI по-прежнему собирает его через build_service, а правила CRUD, файл данных и публичные ответы не меняются."}
+        </p>
+
+        <KeyTakeaways
+          points={[
+            <>{"build_service создаёт PlannerService; provider возвращает уже готовый объект."}</>,
+            <>{"Depends получает callable, а FastAPI подставляет результат в аргумент endpoint."}</>,
+            <>{"Task-router и /stats используют единый HTTP-provider."}</>,
+            <>{"CLI продолжает получать сервис через build_service."}</>,
+            <>{"Тестовая fixture проверяет provider на временном JSON и восстанавливает состояние."}</>,
+          ]}
+        />
+      </Section>
     </RichLesson>
   );
 }

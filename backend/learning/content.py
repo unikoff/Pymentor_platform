@@ -183,10 +183,10 @@ PLANNER_API_MODULE_LABELS = {
     "62 - DELETE, 204 и HTTPException.md": "Блок 11. Схемы, CRUD и организация приложения",
     "63 - Тесты FastAPI через TestClient и независимое состояние.md": "Блок 12. Роутеры, архитектура, тестирование и финальный проект",
     "64 - APIRouter, prefix, tags и include_router.md": "Блок 12. Роутеры, архитектура, тестирование и финальный проект",
-    "65 - Финальный проект 1, контракт и архитектура Planner API.md": "Блок 12. Роутеры, архитектура, тестирование и финальный проект",
-    "66 - Финальный проект 2, schemas, storage, crud и routers.md": "Блок 12. Роутеры, архитектура, тестирование и финальный проект",
-    "67 - Финальный проект 3, полная CRUD-логика.md": "Блок 12. Роутеры, архитектура, тестирование и финальный проект",
-    "68 - Финальный проект 4, Postman, тесты, README и GitHub Release.md": "Блок 12. Роутеры, архитектура, тестирование и финальный проект",
+    "65 - Контракт API, границы, ошибки и регрессия.md": "Блок 12. Роутеры, архитектура, тестирование и финальный проект",
+    "66 - Границы слоёв и тесты прикладного ядра.md": "Блок 12. Роутеры, архитектура, тестирование и финальный проект",
+    "67 - Сквозная приёмка, один ресурс через весь API.md": "Блок 12. Роутеры, архитектура, тестирование и финальный проект",
+    "68 - Воспроизводимость, README и выпуск Planner API.md": "Блок 12. Роутеры, архитектура, тестирование и финальный проект",
 }
 
 RICH_TRACK_MODULE_LABELS = {
@@ -203,7 +203,8 @@ LEGACY_COURSE_LAYOUTS = {
     "chapter_03": {"track_id": PLANNER_API_TRACK_NAME, "source_dirs": {"block_00": None, "block_09": None, "block_10": None, "block_11": None, "block_12": None}},
     "chapter_04": {
         "track_id": "FastAPI, SQLite и SQLAlchemy - StudyHub Database API",
-        "source_dirs": {"block_00": "00 Обзор", "block_13": "Блок 13 - FastAPI как цельное приложение (6 занятий)", "block_14": "Блок 14 - SQLite и основы SQLAlchemy (6 занятий)", "block_15": "Блок 15 - CRUD и запросы SQLAlchemy (6 занятий)", "block_16": "Блок 16 - Связи, Alembic и Database API (6 занятий)"},
+        "source_dirs": {"block_00": "00 Обзор", "block_13": "Блок 13 - FastAPI как цельное приложение (6 занятий)", "block_14": "Блок 14 - Подготовка базы и новой границы хранения (12 занятий)", "block_15": "Блок 15 - Полный SQL-путь и единое переключение (10 занятий)", "block_16": "Блок 16 - Надёжность, запросы и передача (6 занятий)"},
+        "module_labels": {"block_13": "Блок 13 - Организация и зрелые механизмы FastAPI", "block_14": "Блок 14 - Подготовка базы и новой границы хранения", "block_15": "Блок 15 - Полный SQL-путь и единое переключение", "block_16": "Блок 16 - Надёжность, запросы и передача"},
     },
     "chapter_05": {
         "track_id": "Аутентификация, сессии, токены и завершение FastAPI - Personal StudyHub API",
@@ -344,7 +345,7 @@ def _module_label(path: Path, track_dir: Path, track_id: str | None = None) -> s
         return rich_module_labels[path.name]
     migrated = MIGRATED_TRACKS_BY_ID.get(track_id)
     if migrated is not None:
-        return migrated[1]["source_dirs"].get(path.parent.name) or path.parent.name
+        return migrated[1].get("module_labels", {}).get(path.parent.name) or migrated[1]["source_dirs"].get(path.parent.name) or path.parent.name
     if path.parent == track_dir:
         return MODULE_LABELS.get(path.name, "00 Обзор")
     return MODULE_LABELS.get(path.parent.name, path.parent.name)
@@ -721,9 +722,16 @@ PLANNER_API_BLOCK_FOLDERS = {
 
 # Явные алиасы Planner API. Для других перенесённых курсов прежний путь
 # восстанавливается из LEGACY_COURSE_LAYOUTS. source_file остаётся физическим.
+PLANNER_API_IDENTITY_FILENAMES = {
+    "65 - Контракт API, границы, ошибки и регрессия.md": "65 - Финальный проект 1, контракт и архитектура Planner API.md",
+    "66 - Границы слоёв и тесты прикладного ядра.md": "66 - Финальный проект 2, schemas, storage, crud и routers.md",
+    "67 - Сквозная приёмка, один ресурс через весь API.md": "67 - Финальный проект 3, полная CRUD-логика.md",
+    "68 - Воспроизводимость, README и выпуск Planner API.md": "68 - Финальный проект 4, Postman, тесты, README и GitHub Release.md",
+}
+
 LESSON_SOURCE_ALIASES = {
     f"chapter_03/{PLANNER_API_BLOCK_FOLDERS[module]}/{filename}":
-    f"{PLANNER_API_TRACK_NAME}/{filename}"
+    f"{PLANNER_API_TRACK_NAME}/{PLANNER_API_IDENTITY_FILENAMES.get(filename, filename)}"
     for filename, module in PLANNER_API_MODULE_LABELS.items()
 }
 
@@ -777,7 +785,8 @@ def _build_lesson(
     title = "Карта обучения" if path.name == "План обучения.md" else _extract_title(path, text)
     access = _lesson_access(path, track_dir, track_id)
     number_parts = _lesson_number_parts(path.name)
-    if track_id in {NEW_PYTHON_TRACK_NAME, PYTHON_DEEPER_TRACK_NAME} and number_parts and not re.match(r"^\d+(?:\.\d+)*\.", title):
+    numbered_rich_course = track_id == LEGACY_COURSE_LAYOUTS["chapter_04"]["track_id"] and path.parent.name in {"block_13", "block_14"}
+    if (track_id in {NEW_PYTHON_TRACK_NAME, PYTHON_DEEPER_TRACK_NAME} or numbered_rich_course) and number_parts and not re.match(r"^\d+(?:\.\d+)*\.", title):
         display_number = ".".join(str(part) for part in number_parts)
         title = f"{display_number}. {title}"
     tasks = _tasks_for_lesson(identity_source, text, lesson_id, legacy_lesson_id, track_id, path.name)

@@ -1,549 +1,82 @@
-# 74. Middleware и CORS
-
-## Паспорт занятия
-
-- Этап: 4 — FastAPI, SQLite и SQLAlchemy.
-- Блок: 13 — FastAPI как цельное приложение.
-- Длительность: 90–115 минут.
-- Предварительные знания: полный путь request, Response, headers, settings, browser/frontend и HTTP OPTIONS на уровне идеи.
-- Результат: ученик пишет синхронно понятный HTTP middleware, измеряет request time, объясняет origin и настраивает CORSMiddleware без универсального wildcard при credentials.
-
-## Введение
-
-Добавим поведение вокруг всех requests: измерим время, поставим общий response header и разрешим локальному браузерному frontend обращаться к API через точную CORS-конфигурацию.
-
-## 1. Middleware окружает обработку request
-
-Некоторые действия нужны почти каждому endpoint: измерить время, добавить общий header или записать request в лог. Копировать эти строки в каждый handler неудобно.
-
-### До endpoint
-
-Middleware получает Request и может выполнить подготовку.
-
-### call_next
-
-Передаёт request дальше по цепочке к route.
-
-### После endpoint
-
-Получает готовый Response и может изменить metadata.
-
-### Общий охват
-
-Один middleware применяется ко многим routes.
-
-### Схема
-
-```python
-client
-→ middleware before
-→ dependencies and endpoint
-→ middleware after
-→ client
-```
-
-### Минимальный middleware
-
-```python
-from fastapi import Request
-
-@app.middleware("http")
-async def add_common_header(
-    request: Request,
-    call_next,
-):
-    response = await call_next(request)
-    response.headers["X-App-Name"] = "StudyHub"
-    return response
-```
-
-
-### Активная проверка
-
-Соедините участок и действие.
-
-- `before call_next` → прочитать request и начать таймер
-- `call_next(request)` → передать request дальше
-- `after call_next` → получить и изменить response
-- `return response` → отправить итог клиенту
-
-Middleware имеет симметричную часть до и после обработки.
-
-> Endpoints курса остаются обычными def. Функция decorator middleware в этом API использует async/await из-за интерфейса call_next; подробная асинхронность изучается позже.
-
-## 2. Измеряем время ответа
-
-perf_counter подходит для измерения коротких интервалов. Значение фиксируется до call_next, после response вычисляется разница и добавляется custom header.
-
-### Start
-
-Сохраняется перед передачей request.
-
-### Await call_next
-
-Включает route, validation, dependencies и handler ниже по цепочке.
-
-### Elapsed
-
-Разница вычисляется после получения response.
-
-### Header
-
-X-Process-Time помогает увидеть результат в Postman.
-
-### Timing middleware
-
-```python
-from time import perf_counter
-from fastapi import Request
-
-@app.middleware("http")
-async def add_process_time(
-    request: Request,
-    call_next,
-):
-    started_at = perf_counter()
-
-    response = await call_next(request)
-
-    elapsed = perf_counter() - started_at
-    response.headers["X-Process-Time"] = f"{elapsed:.6f}"
-
-    return response
-```
-
-
-### Активная проверка
-
-```text
-started_at = perf_counter()
-response = await call_next(request)
-elapsed = perf_counter() - started_at
-response.headers["X-Process-Time"] = ...
-return response
-```
-
-1. Строка 1: Таймер начинается до endpoint. — started_at=number
-2. Строка 2: Request проходит остальную цепочку. — call_next=awaited
-3. Строка 3: После response вычисляется интервал. — elapsed=seconds
-4. Строка 4: Response получает header. — header=X-Process-Time
-5. Строка 5: Итог возвращается клиенту. — response=sent
-
-> Это учебное измерение, а не полноценная observability. Оно не заменяет structured logs, metrics и tracing.
-
-## 3. Общий header и request id
-
-Middleware может создать request id, добавить его к response и использовать в логах. Это помогает связать client error и серверную запись.
-
-### Генерация
-
-UUID создаётся в начале request.
-
-### Request state
-
-Значение можно положить в request.state для кода ниже.
-
-### Response header
-
-Клиент получает X-Request-ID.
-
-### Не безопасность
-
-Случайный id не является access token.
-
-### Request id
-
-```python
-from uuid import uuid4
-
-@app.middleware("http")
-async def add_request_id(
-    request: Request,
-    call_next,
-):
-    request_id = str(uuid4())
-    request.state.request_id = request_id
-
-    response = await call_next(request)
-    response.headers["X-Request-ID"] = request_id
-
-    return response
-```
-
-### Использование
-
-```python
-@router.get("/info")
-def get_info(request: Request):
-    return {
-        "request_id": request.state.request_id,
-    }
-```
-
-
-### Активная проверка
-
-**Вопрос:** Зачем request id возвращать в response?
-
-**Ориентир ответа:** Клиент может сообщить идентификатор, а разработчик найти связанные серверные logs для конкретного request.
-
-> Если browser frontend должен читать custom response header, его понадобится добавить в CORS expose_headers.
-
-## 4. Что не помещать в middleware
-
-Middleware работает вокруг большого числа routes, поэтому скрытая предметная логика быстро становится опасной. CRUD задач, проверка конкретной schema и выбор task status должны оставаться ниже.
-
-### Подходит
-
-Общее timing, request id, logging, CORS и единая техническая metadata.
-
-### Не подходит
-
-Создание Task, вычисление priority и изменение storage.
-
-### Осторожно
-
-Глобальный except в middleware может скрыть traceback и разные error handlers.
-
-### Цена
-
-Каждый middleware участвует во многих requests.
-
-### Опасный вариант
-
-```python
-@app.middleware("http")
-async def task_rules(request, call_next):
-    if request.url.path.startswith("/tasks"):
-        # вручную читать JSON
-        # проверять title
-        # изменять storage
-        ...
-    return await call_next(request)
-```
-
-### Правильная граница
-
-```python
-middleware: timing + request id
-router: HTTP contract
-schema: validation
-crud/service: task rules
-storage: state
-```
-
-
-### Активная проверка
-
-Где проверять уникальность title?
-
-**Вариант A — Middleware**
-
-```text
-перехватывать все /tasks requests
-```
-
-Скрывает правило и вручную разбирает body.
-
-**Вариант B — CRUD/service**
-
-```text
-check before creating task
-```
-
-Правило вызывается только в нужной operation.
-
-**Разбор:** Middleware не заменяет предметный слой.
-
-> Общее техническое поведение размещается глобально, предметное — рядом с предметной областью.
-
-## 5. Origin — protocol, host и port
-
-Браузер сравнивает origin frontend и backend. Даже localhost с разными ports считается разными origins, поэтому JavaScript-request может потребовать разрешение CORS.
-
-### Protocol
-
-http и https создают разные origins.
-
-### Host
-
-localhost и 127.0.0.1 считаются разными host names.
-
-### Port
-
-5173 и 8000 создают разные origins.
-
-### Browser policy
-
-CORS в первую очередь ограничивает JavaScript в браузере, а не Postman.
-
-### Локальная схема
-
-```python
-frontend: http://localhost:5173
-backend:  http://127.0.0.1:8000
-
-protocol/host/port differ
-→ cross-origin browser request
-```
-
-### Одинаковый origin
-
-```python
-http://localhost:5173/page
-http://localhost:5173/api
-→ same protocol + host + port
-```
-
-
-### Активная проверка
-
-Сравните origins.
-
-- `http://localhost:5173 и http://localhost:8000` → different: port
-- `http://localhost:5173 и https://localhost:5173` → different: protocol
-- `http://localhost:5173/a и http://localhost:5173/b` → same origin
-- `http://localhost и http://127.0.0.1` → different: host
-
-Origin определяется protocol, host и port, но не path.
-
-> Postman может успешно вызвать API, пока browser frontend получает CORS error. Это не противоречие: ограничения применяет браузер.
-
-## 6. CORSMiddleware разрешает точные origins
-
-FastAPI подключает готовый CORSMiddleware. Для локального frontend создаётся список допустимых origins; methods, headers и credentials задаются явно.
-
-### allow_origins
-
-Какие browser origins могут обращаться.
-
-### allow_methods
-
-Какие methods разрешены cross-origin.
-
-### allow_headers
-
-Какие request headers может отправить frontend.
-
-### allow_credentials
-
-Разрешает cookies и authorization credentials.
-
-### Конфигурация
-
-```python
-from fastapi.middleware.cors import CORSMiddleware
-
-origins = [
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-]
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=[
-        "GET",
-        "POST",
-        "PUT",
-        "PATCH",
-        "DELETE",
-        "OPTIONS",
-    ],
-    allow_headers=[
-        "Content-Type",
-        "X-Client-Version",
-    ],
-    expose_headers=[
-        "X-Request-ID",
-        "X-Process-Time",
-    ],
-)
-```
-
-
-### Активная проверка
-
-```python
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-```
-
-Почему настройка не подходит для cookie-based browser requests?
-
-1. Credentials требуют явных разрешённых origins/methods/headers
-2. CORS не поддерживает GET
-3. FastAPI запрещает middleware
-
-**Ответ:** 1. Wildcard не является универсальной настройкой при credentials.
-
-Исправление:
-
-```python
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
-    allow_credentials=True,
-    allow_methods=["GET", "POST", "OPTIONS"],
-    allow_headers=["Content-Type", "X-Client-Version"],
-)
-```
-
-> При allow_credentials=True origins, methods и headers должны быть указаны явно, а не универсальным ["*"].
-
-## 7. Preflight OPTIONS проверяет разрешение заранее
-
-Перед некоторыми cross-origin requests браузер отправляет OPTIONS с Origin и Access-Control-Request-Method. CORSMiddleware отвечает, разрешено ли настоящее обращение.
-
-### Preflight
-
-Предварительный вопрос браузера к backend.
-
-### OPTIONS
-
-Method служебного request.
-
-### CORS headers
-
-Response сообщает разрешённый origin, methods и headers.
-
-### Endpoint обычно не вызывается
-
-Middleware обрабатывает preflight до предметной operation.
-
-### Упрощённый preflight
-
-```python
-OPTIONS /tasks HTTP/1.1
-Origin: http://localhost:5173
-Access-Control-Request-Method: POST
-Access-Control-Request-Headers: content-type,x-client-version
-```
-
-### После разрешения
-
-```python
-POST /tasks HTTP/1.1
-Origin: http://localhost:5173
-Content-Type: application/json
-X-Client-Version: 1.4.0
-```
-
-
-### Активная проверка
-
-Расположите этапы.
-
-Правильный порядок:
-1. `JavaScript готовит POST`
-2. `browser отправляет OPTIONS`
-3. `CORSMiddleware проверяет origin/method/headers`
-4. `browser отправляет POST`
-5. `FastAPI выполняет operation`
-
-Preflight может завершить взаимодействие раньше, если origin не разрешён.
-
-> CORS не проверяет пользователя и не заменяет authentication. Он сообщает браузеру, разрешено ли frontend-коду читать cross-origin response.
-
-## 8. Практика: local frontend и контрольная точка блока
-
-Закройте блок общей конфигурацией StudyHub: request id и timing применяются ко всем requests, CORS разрешает только локальный frontend, headers доступны браузеру.
-
-### Шаг 1
-
-Добавьте timing middleware и X-Process-Time.
-
-### Шаг 2
-
-Добавьте request id и X-Request-ID.
-
-### Шаг 3
-
-Создайте список frontend_origins в Settings.
-
-### Шаг 4
-
-Подключите CORSMiddleware с явными значениями.
-
-### Шаг 5
-
-Проверьте Postman и browser fetch.
-
-### Шаг 6
-
-Убедитесь, что CRUD остаётся вне middleware.
-
-### Финальный путь
-
-```python
-browser frontend
-→ CORS preflight when needed
-→ request-id middleware before
-→ timing middleware before
-→ route + validation + dependencies
-→ endpoint + CRUD
-→ middleware after
-→ CORS response headers
-→ browser reads allowed response
-```
-
-
-> Результат блока 13: FastAPI-проект имеет объяснимый request pipeline, dependencies, settings, headers/cookies и общее middleware-поведение.
-
-## Итоговый квиз
-
-1. **Что делает call_next?**
-   - A. `передаёт request дальше и возвращает response`
-   - B. `создаёт database session`
-   - C. `читает .env`
-   - **Ответ: A.** Middleware окружает остальную цепочку.
-
-2. **Из чего состоит origin?**
-   - A. `protocol + host + port`
-   - B. `method + body`
-   - C. `status + header`
-   - **Ответ: A.** Path не входит в origin.
-
-3. **Кого обычно ограничивает CORS?**
-   - A. `JavaScript в браузере`
-   - B. `Postman всегда`
-   - C. `Python function`
-   - **Ответ: A.** Browser применяет CORS policy.
-
-4. **Можно ли использовать wildcard с credentials как универсальную настройку?**
-   - A. `нет, нужны явные значения`
-   - B. `да всегда`
-   - C. `только для DELETE`
-   - **Ответ: A.** Credentialed requests требуют точной конфигурации.
-
-## Главное из занятия
-
-- Middleware выполняет действия до и после endpoint.
-- call_next передаёт request остальной цепочке.
-- Timing и request id подходят для общего технического поведения.
-- Предметный CRUD не помещается в middleware.
-- Origin состоит из protocol, host и port.
-- CORS важен для browser frontend на другом origin.
-- CORSMiddleware задаёт allowed origins, methods и headers.
-- Credentials требуют явной, а не wildcard-конфигурации.
-
-## Практика
-
-Добавьте X-Process-Time, X-Request-ID и точный CORSMiddleware для frontend на 5173, затем проверьте preflight и обычный request.
-
-### Критерии готовности
-
-- Обычный успешный request проходит.
-- Один ожидаемый error response проверен.
-- Путь значений объясняется своими словами.
-- Код не использует будущую тему без подготовки.
-- Postman или Swagger показывает контракт.
-- Сделан отдельный Git-коммит.
+# 74. Составные зависимости и тестовая подмена
+
+> Тип документа: внутренний план занятия, этап 2
+> Курс и блок: Глава 4 «FastAPI, SQLite и SQLAlchemy», блок 13 «FastAPI как цельное приложение»
+> Концепт блока: ../../../../../docs/concept/fastapi-sqlalchemy/BLOCK_13.md
+
+## Место в маршруте
+
+Занятие выносит подготовку уже существующей GET-выборки в небольшой граф FastAPI-зависимостей и показывает, как заменить provider в тесте. Оно не вводит новую предметную операцию: `PlannerService.select_tasks` остаётся владельцем фильтрации и сортировки, а HTTP-ответ сохраняет прежнюю форму. После B73 ученик уже умеет читать `Depends`, `Annotated` и `PlannerDep`; B74 передаёт занятию 75 небольшой граф, опыт подмены и проверки ошибок. Headers, Response и cookie в A74 ещё не предполагаются изученными.
+
+## Точка A: подтверждённая опора
+- Уже изучено: по `STUDYHUB_LEARNINGS.md` подтверждены завершённые занятия по Planner API до 68: общий `PlannerService`, `JsonStorage`, HTTP CRUD, фильтрация/сортировка/limit, `TestClient`, изолированные данные через `tmp_path`, различие API и сервиса. Из курса уже известны dataclass, возвращаемые значения, список `Task` и обычные FastAPI-зависимости, но не составной граф и не `app.dependency_overrides`.
+- Состояние проекта: паспорт принимает за A74 целевой результат B73: `get_planner`/`PlannerDep` и Annotated-параметры; существующий GET `/tasks` по-прежнему передаёт `is_done`, `sort_desc`, `limit` в `select_tasks`. Текущий StudyHub checkout на `9298d10a5d380fd3304109f9b3f29cf025e6f071` соответствует контрольной точке занятия 69. В нём route находится в `app/routers/tasks/router.py`, читает `request.app.state.planner` напрямую и пока не содержит provider из B72–73. История ученика заканчивается занятием 68. Поэтому B73 здесь является запланированной предпосылкой, а не подтверждённым состоянием текущего HEAD или завершённого обучения. Перед реализацией нужно начинать с реально подготовленного результата 73, не повторяя его.
+- Неясность концепта: для самого маршрута A → B препятствия нет. Расхождение между будущей A74 и текущим HEAD отмечено выше; оно влияет на будущую реализацию и приёмку, но не требует менять концепт.
+
+## Точка B: результат занятия
+- Ученик сможет объяснить: чем HTTP-параметры выборки отличаются от задачи и операции сервиса; как `SelectionParams`, `get_selection` и `get_selected_tasks` образуют небольшой граф; что FastAPI переиспользует один результат зависимости в рамках запроса по своему механизму cache, но это не глобальный singleton; как `app.dependency_overrides` выбирает provider по исходной функции.
+- Ученик сможет сделать: вынести получение прежних query-параметров в `get_selection`, соединить результат с уже существующим `get_planner` через read-only provider и временно подменить `get_planner` для изолированной проверки.
+- Результат в проекте: GET `/tasks` использует подготовленную выборку и короткий dependency graph. `PlannerService.select_tasks`, контракт фильтрации и ответа, остальные CRUD-маршруты, API и CLI сохраняют прежнее поведение. Тестовый provider получает отдельный сервис и JSON-файл во временном каталоге.
+- Как подтвердим: сравним прежние параметры и ответы GET, сохраним прежние границы limit и работу фильтров; проверим изолированный набор подменённого сервиса, отсутствие влияния на рабочее состояние и восстановление исходной зависимости после теста. Ошибка query остаётся ошибкой валидации, а отказ provider не даёт ложного успешного ответа.
+
+## 00. Вступление
+
+Мы уже умеем получать из Planner ограниченную выборку задач. Теперь отделим сбор параметров запроса от вызова сервиса и посмотрим, как FastAPI связывает готовые части. Та же точка подмены позволит проверять API на собственных данных, не затрагивая рабочий JSON.
+1. **Точка старта:** GET `/tasks` передаёт фильтр, порядок и limit в существующий `PlannerService.select_tasks`.
+2. **Новый вопрос:** как представить подготовку выборки и её сервисные входы небольшим графом, а в тесте заменить только нужный provider?
+3. **Результат:** GET сохраняет контракт, но опирается на `get_selection` и `get_selected_tasks`; тесты получают собственный сервис через override.
+Вопрос и результат связаны: мы не меняем саму выборку, а делаем её входы и тестовую границу понятными.
+
+## 01. От знакомой выборки к подготовке параметров
+- Что и зачем объяснить: напомнить, что GET `/tasks` проходит через query-параметры, выборку сервиса и прежнее представление ответа. Показать, что параметры описывают запрос, а не поля `Task`; изменение точки подготовки не переносит предметную фильтрацию из сервиса.
+- Механизм и порядок: начать с существующих `is_done`, `sort_desc`, `limit`; проследить их до `select_tasks`; затем обозначить, что будет вынесено в provider, а что останется в сервисе и handler.
+- Пример или типичная путаница: считать любое вынесение кода в dependency новой бизнес-операцией или переносить туда CRUD.
+- Переход к следующему шагу: набор связанных значений удобно представить одним результатом подготовки.
+
+## 02. Контейнер параметров без нового HTTP-контракта
+- Что и зачем объяснить: `SelectionParams` собирает только `is_done`, `sort_desc` и `limit`, чтобы передавать подготовленные параметры вместе. Это не доменная `Task`, не request body и не новое состояние Planner.
+- Механизм и порядок: сопоставить каждое поле с прежним query-параметром и объяснить сохранение `None`, `False`, default `10` и допустимого диапазона `1–50`. Не добавлять offset, поиск или новые фильтры.
+- Пример или типичная путаница: `is_done=None` означает отсутствие фильтра; `sort_desc=False` является значением, а не отсутствующим параметром. Сборка в контейнер не должна менять их значения.
+- Переход к следующему шагу: отдельный provider сможет получить параметры средствами уже знакомого FastAPI.
+
+## 03. `get_selection` получает и проверяет Query
+- Что и зачем объяснить: provider представляет собой функцию подготовки, которая принимает те же HTTP query-параметры и возвращает `SelectionParams`. Клиент по-прежнему передаёт значения в query string, не отправляет контейнер в body.
+- Механизм и порядок: показать связь объявлений query/defaults/ограничений с provider; затем проследить, как FastAPI создаёт его результат и передаёт потребителю через `Depends`. Использовать знакомые `Annotated` и `Query`, не превращая урок в повтор занятия 73.
+- Пример или типичная путаница: provider не вызывается заранее вручную при описании графа; зависимость передаётся как функция, а её результат FastAPI получает для запроса.
+- Переход к следующему шагу: одной этой ветви недостаточно для ответа, поэтому к ней нужно подключить существующий сервис.
+
+## 04. `get_selected_tasks` соединяет две нужные зависимости
+- Что и зачем объяснить: верхний read-only provider получает готовый Planner через `get_planner` и `SelectionParams` через `get_selection`, затем вызывает существующий `select_tasks` и возвращает список задач.
+- Механизм и порядок: читать граф как отношения потребности: верхний узел использует оба результата, а обработчик GET получает итоговый список и формирует прежний публичный ответ. Ветви параметров и сервиса могут готовиться независимо; не выдавать граф за гарантированный линейный порядок всех проверок FastAPI.
+- Пример или типичная путаница: передать `Depends(get_planner)`, а не результат вызова; не дублировать `select_tasks` внутри dependency и не переносить туда POST/PUT/PATCH/DELETE.
+- Переход к следующему шагу: когда несколько узлов одного запроса нуждаются в общей зависимости, важен её срок повторного использования.
+
+## 05. Cache зависимости ограничен запросом
+- Что и зачем объяснить: FastAPI может повторно использовать результат одинаковой зависимости в одном запросе; это помогает понять короткий граф с общим `get_planner`.
+- Механизм и порядок: различить описание dependency, её результат, повторное использование внутри одного запроса и новый запрос. Уточнить границу: это не `functools.lru_cache`, не singleton на всё приложение и не обещание единственного вызова между разными запросами.
+- Пример или типичная путаница: наблюдать повторное использование можно в ограниченном тестовом графе со счётчиком и двумя потребителями; не добавлять в Planner лишние ветви или routes ради демонстрации.
+- Переход к следующему шагу: для проверки графа нужно уметь заменить исходный provider контролируемым тестовым.
+
+## 06. Override подменяет provider, а не готовый результат
+- Что и зачем объяснить: `app.dependency_overrides` связывает исходный callable зависимости с функцией-provider для теста. Ключом служит исходный `get_planner`, а значением выступает функция, которая создаёт или возвращает тестовый сервис.
+- Механизм и порядок: сохранить состояние подмен, установить override на время проверки, выполнить запрос и в `finally` восстановить прежнее состояние. Тестовый сервис строится существующим `build_service` с отдельным `JsonStorage` на `tmp_path`, а данные задаются через уже знакомый сервис.
+- Пример или типичная путаница: не помещать готовый объект Planner вместо provider-функции и не оставлять override активным для других тестов.
+- Переход к следующему шагу: изоляция убедительна только если проверены результат запроса, состояние данных и границы отказа.
+
+## 07. Проверка контракта и границы графа
+- Что и зачем объяснить: HTTP-результат сверяется с прежним контрактом; тестовая изоляция подтверждает независимость данных и восстановление штатного provider.
+- Механизм и порядок: сопоставить GET без query и с фильтрами/сортировкой, проверить сохранение default и границ limit, затем проверить ошибочный query и контролируемый отказ provider. После запроса убедиться, что данные не изменились; отдельно подтвердить прежний путь изменяющих операций через PlannerService.
+- Пример или типичная путаница: `HTTPException(503)` в контролируемом тесте означает недоступность provider, а не запрет прав `403`; успешный ответ на отдельном наборе ещё не доказывает, что override очищен.
+- Переход к следующему шагу: теперь можно выполнить ограниченный рефакторинг и проверить его в существующем проекте, не расширяя его архитектуру.
+
+## 08. Что мы будем делать в практике
+**Формат и исходная опора:** изменение существующего StudyHub Planner и его API-fixture; начинаем с результата занятия 73 и текущего GET `/tasks`, используем существующие сервис и JSON storage.
+
+Итог: подготовить прежнюю выборку небольшим dependency graph и проверить её через отдельный сервис без обращения к рабочему JSON.
+1. **Сгруппируем подготовку query:** введём `SelectionParams` и `get_selection`, сохранив текущие поля, defaults, ограничения и HTTP-форму запроса.
+2. **Подключим read-only граф к GET:** `get_selected_tasks` получит существующий Planner и параметры выборки, а handler продолжит отдавать прежний ответ через знакомое представление задачи.
+3. **Изолируем API-проверку:** заменим `get_planner` на provider с отдельным временным JSON, проверим выборку на подготовленном наборе и вернём исходные overrides после запроса.
+4. **Подтвердим границы:** проверим прежние ошибки query, отсутствие изменений данных при отказе provider и неизменность изменяющих маршрутов; короткий эксперимент со счётчиком покажет повторное использование только в одном запросе.
+Такой порядок сначала делает параметры и граф явными, затем учит управлять точкой подмены и завершает проверкой прежних гарантий. Практика не создаёт токены, роли, авторизацию, новый CRUD или второй сервисный путь.
 
 <!-- youtube: -->

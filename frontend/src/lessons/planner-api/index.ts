@@ -62,8 +62,8 @@ export const pages: Record<string, ComponentType<{ module?: string }>> = {
   [source("62 - DELETE, 204 и HTTPException.md")]: Lesson62,
   [source("63 - Тесты FastAPI через TestClient и независимое состояние.md")]: Lesson63,
   [source("64 - APIRouter, prefix, tags и include_router.md")]: Lesson64,
-  [source("65 - Финальный проект 1, контракт и архитектура Planner API.md")]: Lesson65,
-  [source("66 - Финальный проект 2, schemas, storage, crud и routers.md")]: Lesson66,
-  [source("67 - Финальный проект 3, полная CRUD-логика.md")]: Lesson67,
-  [source("68 - Финальный проект 4, Postman, тесты, README и GitHub Release.md")]: Lesson68,
+  [source("65 - Контракт API, границы, ошибки и регрессия.md")]: Lesson65,
+  [source("66 - Границы слоёв и тесты прикладного ядра.md")]: Lesson66,
+  [source("67 - Сквозная приёмка, один ресурс через весь API.md")]: Lesson67,
+  [source("68 - Воспроизводимость, README и выпуск Planner API.md")]: Lesson68,
 };

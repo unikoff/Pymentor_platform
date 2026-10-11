@@ -1,537 +1,83 @@
-# 73. Заголовки, cookies и Response
-
-## Паспорт занятия
-
-- Этап: 4 — FastAPI, SQLite и SQLAlchemy.
-- Блок: 13 — FastAPI как цельное приложение.
-- Длительность: 80–105 минут.
-- Предварительные знания: HTTP headers, request/response, Annotated, dependencies и settings.
-- Результат: ученик получает headers и cookies через FastAPI, изменяет временный Response, понимает hyphen conversion и не называет cookie готовой server-side session.
-
-## Введение
-
-Расширим HTTP-контракт за пределы JSON body: прочитаем X-Client-Version, добавим собственный response header, установим и удалим учебную cookie через объект Response.
-
-## 1. Headers описывают request, body переносит данные
-
-JSON body содержит поля создаваемой задачи. Header сообщает метаданные обращения: версию клиента, формат, request id или будущий Authorization.
-
-### Body
-
-Предметные данные ресурса: title, priority, is_done.
-
-### Header
-
-Служебный контекст request, который не является полем Task.
-
-### Стандартный
-
-Content-Type и User-Agent имеют общеизвестный смысл.
-
-### Custom
-
-X-Client-Version создаётся для контракта конкретного приложения.
-
-### Request
-
-```python
-POST /tasks HTTP/1.1
-Content-Type: application/json
-X-Client-Version: 1.4.0
-
-{
-  "title": "Headers",
-  "priority": 4
-}
-```
-
-
-### Активная проверка
-
-Разместите данные.
-
-- `title` → JSON body
-- `priority` → JSON body
-- `X-Client-Version` → request header
-- `Content-Type` → request header
-
-Предметные поля и служебные метаданные разделены.
-
-> Не переносите title задачи в header. Выбор части request следует из роли данных.
-
-## 2. Чтение Header через Annotated
-
-FastAPI предоставляет функцию Header. Параметр x_client_version в Python соответствует HTTP-header X-Client-Version благодаря автоматической замене underscore на hyphen.
-
-### Annotated type
-
-Итоговое значение — str или None.
-
-### Header metadata
-
-FastAPI читает значение из request headers.
-
-### Default None
-
-Header становится необязательным.
-
-### Conversion
-
-x_client_version ↔ X-Client-Version.
-
-### Endpoint
-
-```python
-from typing import Annotated
-from fastapi import Header
-
-@router.get("/info")
-def get_info(
-    x_client_version: Annotated[
-        str | None,
-        Header(),
-    ] = None,
-):
-    return {
-        "client_version": x_client_version,
-    }
-```
-
-### Requests
-
-```python
-GET /info
-→ client_version = null
-
-GET /info
-X-Client-Version: 1.4.0
-→ client_version = "1.4.0"
-```
-
-
-### Активная проверка
-
-Какое имя header прочитает FastAPI?
-
-```text
-x_client_version → ____
-```
-
-Варианты: `X-Client-Version`, `x_client_version`, `client.version`
-
-**Ответ:** `X-Client-Version`. Header автоматически преобразует underscores в hyphens.
-
-> Имена headers регистронезависимы на уровне HTTP. В документации принято писать слова через hyphen.
-
-## 3. Обязательный header и понятная ошибка
-
-Если версия клиента действительно обязательна для operation, default можно не задавать. Тогда отсутствие header станет validation error 422 до endpoint.
-
-### Optional
-
-Подходит для аналитики или постепенного внедрения.
-
-### Required
-
-Подходит, когда без metadata operation нельзя выполнить.
-
-### 422
-
-Сообщает о missing header в detail.
-
-### Предметное правило
-
-Неподдерживаемая версия может дать 400 или 426 по отдельной договорённости.
-
-### Required
-
-```python
-@router.post("/")
-def create_task(
-    task: TaskCreate,
-    x_client_version: Annotated[
-        str,
-        Header(),
-    ],
-):
-    ...
-```
-
-### Manual support check
-
-```python
-SUPPORTED_CLIENT_VERSIONS = {"1.3.0", "1.4.0"}
-
-if x_client_version not in SUPPORTED_CLIENT_VERSIONS:
-    raise HTTPException(
-        status_code=400,
-        detail="Unsupported client version",
-    )
-```
-
-
-### Активная проверка
-
-```text
-получить X-Client-Version
-if header отсутствует:
-    validation 422
-elif version не поддерживается:
-    HTTPException 400
-else:
-    вызвать endpoint
-```
-
-- `header missing` → строка 3 → `422`
-- `version 0.1.0` → строка 5 → `400`
-- `version 1.4.0` → строка 7 → `handler called`
-
-> Не делайте header обязательным только ради демонстрации. Требование должно быть частью API-контракта.
-
-## 4. Response parameter позволяет добавить header
-
-FastAPI может предоставить временный объект Response. Endpoint изменяет его headers, а обычный return по-прежнему проходит через response_model и JSON serialization.
-
-### Parameter
-
-response: Response не читается из request.
-
-### Temporary response
-
-FastAPI использует его metadata при создании финального ответа.
-
-### Custom header
-
-Например X-API-Mode или X-Process-Source.
-
-### Body
-
-Можно продолжать возвращать Pydantic model или dict.
-
-### Response header
-
-```python
-from fastapi import Response
-
-@router.get("/info")
-def get_info(
-    response: Response,
-    settings: SettingsDep,
-):
-    response.headers["X-API-Mode"] = settings.api_mode
-
-    return {
-        "app_name": settings.app_name,
-    }
-```
-
-### Response
-
-```python
-HTTP/1.1 200 OK
-X-API-Mode: development
-Content-Type: application/json
-
-{"app_name":"StudyHub Database API"}
-```
-
-
-### Активная проверка
-
-Как добавить X-API-Mode, сохранив обычный JSON return?
-
-**Вариант A — Вернуть только Response**
-
-```text
-return Response(...)
-```
-
-Придётся вручную отвечать за serialization.
-
-**Вариант B — Изменить parameter Response**
-
-```text
-response.headers["X-API-Mode"] = ...
-return {"app_name": ...}
-```
-
-FastAPI сохранит обычную обработку body.
-
-**Разбор:** Temporary Response подходит для metadata вокруг обычного результата.
-
-> Custom response header и JSON body решают разные задачи. Не дублируйте все поля body в headers.
-
-## 5. Cookie читается как отдельный источник request
-
-Cookie приходит в header Cookie, но FastAPI предоставляет отдельную функцию Cookie. Это делает сигнатуру понятнее и отражает параметр в OpenAPI.
-
-### Имя
-
-studyhub_visit_id — имя cookie в браузере.
-
-### Optional
-
-Первый request может прийти без cookie.
-
-### Тип
-
-На текущем этапе используется str | None.
-
-### Не body
-
-Cookie автоматически отправляется клиентом по правилам браузера.
-
-### Чтение
-
-```python
-from fastapi import Cookie
-
-@router.get("/visits")
-def get_visits(
-    studyhub_visit_id: Annotated[
-        str | None,
-        Cookie(),
-    ] = None,
-):
-    return {
-        "visit_id": studyhub_visit_id,
-    }
-```
-
-### Request
-
-```python
-GET /visits HTTP/1.1
-Cookie: studyhub_visit_id=demo-123
-```
-
-
-### Активная проверка
-
-**Утверждение:** Наличие cookie studyhub_visit_id автоматически означает, что пользователь аутентифицирован.
-
-**Ответ:** ложь.
-
-Cookie — только переданное значение; доверие и session logic требуют отдельной реализации.
-
-> Cookie является транспортом небольшого значения. Она ещё не создаёт server-side session, пользователя или права доступа.
-
-## 6. Установка cookie через Response
-
-Метод response.set_cookie добавляет Set-Cookie в response. Браузер может сохранить значение и отправлять его в следующих подходящих requests.
-
-### key/value
-
-Имя и значение cookie.
-
-### httponly
-
-Запрещает JavaScript читать cookie; полезно для будущих session cookies.
-
-### samesite
-
-Ограничивает cross-site отправку.
-
-### secure
-
-Требует HTTPS; для локального HTTP обычно False.
-
-### Установка
-
-```python
-from uuid import uuid4
-
-@router.post("/visits")
-def start_visit(response: Response):
-    visit_id = str(uuid4())
-
-    response.set_cookie(
-        key="studyhub_visit_id",
-        value=visit_id,
-        httponly=True,
-        samesite="lax",
-        secure=False,
-    )
-
-    return {
-        "message": "Visit started",
-    }
-```
-
-### Header
-
-```python
-Set-Cookie: studyhub_visit_id=...; HttpOnly; Path=/; SameSite=lax
-```
-
-
-### Активная проверка
-
-```text
-POST /visits
-→ endpoint creates visit_id
-→ response.set_cookie
-→ Set-Cookie header
-→ browser stores value
-→ next request sends Cookie header
-```
-
-1. Строка 1: Клиент запускает operation. — request=POST /visits
-2. Строка 2: Server создаёт идентификатор. — visit_id=uuid
-3. Строка 3: Response получает cookie metadata. — method=set_cookie
-4. Строка 4: Клиент получает Set-Cookie. — header=present
-5. Строка 5: Браузер применяет свои правила хранения. — storage=browser
-6. Строка 6: Следующий request может отправить cookie. — Cookie=studyhub_visit_id=...
-
-> В production значение secure обычно True при HTTPS. Не копируйте локальную настройку механически в развёрнутое приложение.
-
-## 7. Удаление cookie и границы учебного примера
-
-Удаление выполняется response.delete_cookie с тем же key и совместимыми параметрами path/domain. Клиент получает Set-Cookie, который делает старое значение недействительным.
-
-### Не удаление на сервере
-
-Браузеру отправляется инструкция изменить cookie.
-
-### Совпадение key/path
-
-Иначе можно удалить не ту область или оставить старую cookie.
-
-### Logout позже
-
-В server-side session потребуется также удалить запись session на сервере.
-
-### Сейчас
-
-Удаляем только учебный visit id.
-
-### Удаление
-
-```python
-@router.delete("/visits", status_code=204)
-def finish_visit(response: Response) -> None:
-    response.delete_cookie(
-        key="studyhub_visit_id",
-    )
-```
-
-### Сценарий
-
-```python
-POST /visits
-→ Set-Cookie
-GET /visits
-→ cookie read
-DELETE /visits
-→ cookie expired
-```
-
-
-### Активная проверка
-
-Расположите действия.
-
-Правильный порядок:
-1. `server sends Set-Cookie`
-2. `client stores cookie`
-3. `client sends Cookie header`
-4. `FastAPI extracts value`
-5. `server sends deletion Set-Cookie`
-
-Cookie живёт в обмене response и последующих requests.
-
-> Cookie может оставаться в интерфейсе клиента до обновления, но последующие requests должны следовать новому Set-Cookie.
-
-## 8. Практика: версия клиента и visit cookie
-
-Добавьте к StudyHub два независимых механизма: X-Client-Version как request metadata и studyhub_visit_id как учебную cookie. Не связывайте их с user authentication.
-
-### GET /info
-
-Принимает optional X-Client-Version и добавляет X-API-Mode.
-
-### POST /visits
-
-Устанавливает HttpOnly visit cookie.
-
-### GET /visits
-
-Показывает наличие идентификатора.
-
-### DELETE /visits
-
-Удаляет cookie со status 204.
-
-### Postman
-
-Проверьте request headers и cookie jar.
-
-### Контрольная карта
-
-```python
-request header
-X-Client-Version: 1.4.0
-→ endpoint argument
-
-response header
-X-API-Mode: development
-
-response Set-Cookie
-→ client cookie storage
-→ next request Cookie
-```
-
-
-> Итог занятия — ясное различие body, headers, cookies и response metadata.
-
-## Итоговый квиз
-
-1. **Во что превращается x_client_version?**
-   - A. `X-Client-Version`
-   - B. `x_client_version body field`
-   - C. `query x-client-version`
-   - **Ответ: A.** Header конвертирует underscores в hyphens.
-
-2. **Как добавить custom response header?**
-   - A. `через parameter Response`
-   - B. `через TaskCreate`
-   - C. `через path`
-   - **Ответ: A.** Temporary Response участвует в финальном ответе.
-
-3. **Что делает set_cookie?**
-   - A. `добавляет Set-Cookie в response`
-   - B. `создаёт server-side session автоматически`
-   - C. `пишет JSON`
-   - **Ответ: A.** Клиент получает инструкцию сохранить cookie.
-
-4. **Является ли cookie готовой аутентификацией?**
-   - A. `нет`
-   - B. `да всегда`
-   - C. `только в Swagger`
-   - **Ответ: A.** Нужна отдельная логика доверия и session/user data.
-
-## Главное из занятия
-
-- Header читает request metadata.
-- Underscore в имени обычно становится hyphen.
-- Required header может дать 422 до endpoint.
-- Response parameter добавляет headers и cookies к обычному return.
-- Cookie извлекается отдельным маркером Cookie.
-- set_cookie отправляет Set-Cookie клиенту.
-- delete_cookie инструктирует клиента удалить значение.
-- Cookie является транспортом, а не готовой session.
-
-## Практика
-
-Добавьте X-Client-Version, X-API-Mode и полный жизненный цикл studyhub_visit_id, затем проверьте headers и cookies в Postman.
-
-### Критерии готовности
-
-- Обычный успешный request проходит.
-- Один ожидаемый error response проверен.
-- Путь значений объясняется своими словами.
-- Код не использует будущую тему без подготовки.
-- Postman или Swagger показывает контракт.
-- Сделан отдельный Git-коммит.
+# Annotated и читаемые параметры
+
+> Тип документа: внутренний план занятия, этап 2
+> Курс и блок: FastAPI, SQLite и SQLAlchemy; глава 4, блок 13 «Организация и зрелые механизмы FastAPI»
+> Концепт блока: [BLOCK_13.md](../../../../../docs/concept/fastapi-sqlalchemy/BLOCK_13.md)
+
+## Место в маршруте
+
+Занятие продолжает получение готового PlannerService через простой Depends-provider из занятия 72. Мы уточняем, как читаются тип и metadata в объявлениях зависимостей и HTTP-параметров, сохраняя внешний договор Planner API. Результат нужен занятию 74, где параметры GET будут собраны в отдельную зависимость и появится короткий граф. Здесь ещё не вводятся составные зависимости, overrides, Header, cookies или SQL.
+
+## Точка A: подтверждённая опора
+- Уже изучено: по завершённым занятиям до 68 ученик работал с типами и значениями по умолчанию, функциями и параметрами, HTTP-контрактом, FastAPI-маршрутами, Path/Query, CRUD, ошибками и изолированными API-проверками. Annotated, простой Depends-provider и настройки относятся к новому блоку и не считаются освоенными только потому, что встречались в старых материалах.
+- Состояние проекта: целевой A73 по концепту опирается на B72: `get_planner` возвращает существующий PlannerService через простой `Depends(get_planner)`; `Path(gt=0)` и Query с прежними defaults и ограничениями уже работают. В локальном StudyHub на HEAD `9298d10` этот A ещё не достигнут: `app/routers/tasks/router.py` обращается к `request.app.state.planner`, `app/api.py` так же получает сервис для `/stats`, а `app/core/dependencies.py` пуст. Журнал `STUDYHUB_LEARNINGS.md` заканчивается занятием 68. Этот план рассчитан на последовательность после выполнения занятий 69–72; перед практикой фактическую готовность B72 нужно подтвердить.
+- Соседние сохранённые материалы: Markdown 72 по-прежнему описывает старую тему настроек, Markdown 74 описывает middleware/CORS; текущий TSX Lesson73 и запись MANUAL_PRACTICE[73] ещё посвящены headers/cookies. Они не подтверждают новый A73 или переход к B74 и остаются вне плана этапа 2; при реализации новых занятий их нужно согласовать с новой картой.
+- Неясность концепта: нет. Целевой A и B заданы паспортом; отличие текущего checkpoint StudyHub от будущего A73 отмечено выше.
+
+## Точка B: результат занятия
+- Ученик сможет объяснить: Annotated соединяет обычный тип значения с metadata для FastAPI; alias зависимости не создаёт новый runtime-класс и не вызывает provider сам по себе. Он различает тип, обязательность параметра, его default и ограничения Path/Query.
+- Ученик сможет сделать: согласованно записать через Annotated существующую зависимость PlannerDep и параметры task-маршрутов, сохранив допустимый порядок аргументов функций.
+- Результат в проекте: существующие task-маршруты и `/stats` используют alias PlannerDep для прежнего `get_planner`; тело операций, сервис, Task и storage не меняются.
+- Как подтвердим: сравним OpenAPI и поведение прежних маршрутов до и после изменения, включая defaults, границы и ошибки параметров, тело PUT/PATCH и статистику. Проверки используют изолированное JSON-хранилище и подтверждают, что сервис не стал входным параметром клиента.
+
+## 00. Вступление
+
+После настройки и подключения общего сервиса API уже получает нужный объект. Теперь рассмотрим, как записать рядом с типом значения сведения, которые нужны FastAPI, не меняя сам сервис и поведение маршрута.
+1. **Точка старта:** знакомые типы и параметры API, ограничения Path/Query, а после занятия 72: существующий PlannerService, который выдаёт прежний Depends-provider.
+2. **Новый вопрос:** как прочитать объявление, где тип значения и инструкции FastAPI записаны вместе, и чем эта форма отличается от обычного default?
+3. **Результат:** единая читаемая форма для зависимости и HTTP-параметров с прежними запросами и ответами.
+Эти шаги связывают уже знакомый HTTP-договор с новым способом описывать его параметры. Сначала разберём тип и metadata, затем применим различие к настоящим маршрутам.
+
+## 01. Значение и сведения для FastAPI
+- Что и зачем объяснить: тип Python отвечает на вопрос о значении параметра; FastAPI дополнительно нужны сведения о том, откуда его получить и как проверить. Это две разные роли одной декларации.
+- Механизм и порядок: начать с обычного типа параметра, затем показать, где рядом располагается metadata Path, Query или Depends. Связать её с обработчиком без повторного объяснения всей обработки запроса.
+- Пример или типичная путаница: существующие `task_id` и `limit`; не смешивать metadata с новым полем запроса и не считать её значением параметра.
+- Переход: разделение этих ролей подготавливает чтение Annotated.
+
+## 02. Как читать Annotated
+- Что и зачем объяснить: Annotated сохраняет базовый тип и прикрепляет metadata, которую может использовать FastAPI.
+- Механизм и порядок: разобрать объявление слева направо по элементам: имя, обычный тип, Annotated и сведения для соответствующего механизма. Показать эквивалентность старой и новой формы по смыслу, не превращая блок в справочник синтаксиса.
+- Пример или типичная путаница: alias не является новым классом значения и не меняет возвращаемый объект; Annotated само по себе не вызывает зависимость.
+- Переход: тот же способ чтения применим к повторяющейся зависимости PlannerService.
+
+## 03. PlannerDep как общий alias зависимости
+- Что и зачем объяснить: одинаковая зависимость сервиса в маршрутах и статистике должна иметь ясное повторно используемое объявление.
+- Механизм и порядок: опереться на готовый `get_planner` занятия 72; показать, как PlannerDep объединяет тип PlannerService и Depends-metadata, а обработчик получает результат provider.
+- Пример или типичная путаница: передаётся callable provider, не его вызов; alias не создаёт новый сервис, storage или зависимости.
+- Переход: после разбора service-параметра можно тем же способом прочитать Path и Query.
+
+## 04. Path и Query как metadata существующего контракта
+- Что и зачем объяснить: Path и Query сообщают FastAPI источник и ограничения значения, сохраняя тип параметра.
+- Механизм и порядок: рассмотреть положительный `task_id`, а затем параметры списка `is_done`, `sort_desc` и `limit`; связать тип, default и диапазон с уже знакомой формой HTTP-запроса.
+- Пример или типичная путаница: ограничение не является дополнительным полем; новый вид декларации не расширяет список query-параметров.
+- Переход: чтобы корректно записать metadata, отдельно различим отсутствие значения, None и default.
+
+## 05. Обязательный параметр, None и default
+- Что и зачем объяснить: optional-тип и default отвечают на разные вопросы: какие значения допустимы и обязан ли клиент передать значение.
+- Механизм и порядок: на существующих параметрах сопоставить необязательный `is_done`, `sort_desc` с прежним default и `limit` с default и диапазоном; показать, что внешние значения остаются такими же.
+- Пример или типичная путаница: `None` не означает автоматически отсутствие default, а границы Query не заменяют default. Metadata и значение по умолчанию не должны противоречить друг другу.
+- Переход: после параметров можно проверить, как их defaults сочетаются с правилами объявления функций Python.
+
+## 06. Порядок параметров в сигнатуре
+- Что и зачем объяснить: FastAPI-декларация остаётся сигнатурой функции Python, поэтому обязательность аргумента и default влияют на допустимый порядок.
+- Механизм и порядок: сопоставить обязательный payload PUT/PATCH с параметром пути, у которого есть metadata/default; сохранить корректный порядок и объяснить уже встречавшуюся причину ошибки сигнатуры.
+- Пример или типичная путаница: не устранять синтаксическую ошибку сменой HTTP-схемы или добавлением default к обязательному body.
+- Переход: корректная сигнатура завершает преобразование записи; теперь нужно доказать, что runtime-контракт не изменился.
+
+## 07. Читаемость без изменения поведения
+- Что и зачем объяснить: новая форма оценивается по точному контракту и фактическим результатам, а не по субъективной красоте.
+- Механизм и порядок: сопоставить OpenAPI до и после; проверить путь параметров, query-defaults и ограничения, ответы маршрутов и использование того же сервиса в `/stats`.
+- Пример или типичная путаница: OpenAPI показывает описанную форму, но сам по себе не доказывает выполнение запросов; успешный запрос не подтверждает граничную валидацию.
+- Переход: практика применит те же сравнения к существующим маршрутам и оставит подготовленный provider занятию 74.
+
+## 08. Что мы будем делать в практике
+**Формат и исходная опора:** работа в существующем проекте StudyHub после подтверждённой B72; сохраняем один PlannerService, API, CLI и JSON-хранилище.
+Общий результат: объявления зависимостей и параметров становятся согласованными и читаемыми, а клиентский HTTP-договор и работа сервиса остаются прежними.
+1. **Разберём текущие объявления:** отделим типы, значения по умолчанию и metadata в task-маршрутах и `/stats` → определим, какие части относятся к клиентскому запросу, а какая получает готовый сервис.
+2. **Применим общий alias зависимости:** используем PlannerDep с существующим `get_planner` → маршруты получают тот же PlannerService без новой ветки сборки.
+3. **Согласуем Path и Query:** приведём параметры к форме с Annotated, сохранив типы, обязательность, defaults и ограничения → клиентские параметры остаются прежними.
+4. **Сверим контракт и поведение:** сравним OpenAPI и изолированные API-проверки граничных и обычных значений → подтвердим неизменность маршрутов, PUT/PATCH и `/stats` без доступа к рабочему JSON.
+5. **Объясним две формы объявления:** сопоставим тип и metadata в старой и новой записи, включая допустимый порядок аргументов → ученик может обосновать, что изменилось в записи и что осталось тем же во время выполнения.
+Занятия про Annotated, alias, defaults и сигнатуру подготовят каждое изменение; проверка OpenAPI и реальных API-ответов подтвердит точку B и передаст занятию 74 готовые декларации и прежний provider.
 
 <!-- youtube: -->
