@@ -4,9 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite --host 127.0.0.1 --port 5173 --configLoader runner",
-    "build": "tsc --noEmit && vite build --configLoader bundle",
-    "preview": "vite preview --host 127.0.0.1 --port 4173 --configLoader runner"
+    "dev": "vite --config config/vite.config.ts --host 127.0.0.1 --port 5173 --configLoader bundle",
+    "build": "tsc --noEmit -p config/tsconfig.json && vite build --config config/vite.config.ts --configLoader bundle",
+    "preview": "vite preview --config config/vite.config.ts --host 127.0.0.1 --port 4173 --configLoader bundle"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",

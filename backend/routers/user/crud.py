@@ -426,7 +426,7 @@ def cancel_booking(slot_id: int, user_id: int, db: Session) -> models.BookingSlo
     return slot
 
 
-async def register_user(user: UserCreate, db: Session):
+def register_user(user: UserCreate, db: Session):
     existing_user = db.query(models.User).filter(models.User.email == user.email).first()
     if existing_user:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already exists")
@@ -439,7 +439,7 @@ async def register_user(user: UserCreate, db: Session):
     return new_user
 
 
-async def login_user(response: Response, user: UserLogin, db: Session):
+def login_user(response: Response, user: UserLogin, db: Session):
     user_db = db.query(models.User).filter(models.User.email == user.email).first()
 
     if user_db is None or user_db.verify_password(user.password) is False:
@@ -473,7 +473,7 @@ async def login_user(response: Response, user: UserLogin, db: Session):
     return user_db
 
 
-async def get_current_user(request: Request, db: Session):
+def get_current_user(request: Request, db: Session):
     session_token = request.cookies.get("session")
     if not session_token:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="No session token found")
@@ -489,7 +489,7 @@ async def get_current_user(request: Request, db: Session):
     return user_db
 
 
-async def logout_user(request: Request, response: Response, db: Session):
+def logout_user(request: Request, response: Response, db: Session):
     session_token = request.cookies.get("session")
     if not session_token:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="No session token found")

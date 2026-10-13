@@ -1,0 +1,232 @@
+.boot-screen,
+.auth-layout {
+  min-height: 100vh;
+}
+
+.workspace {
+  height: 100vh;
+  min-height: 0;
+}
+
+.boot-screen {
+  display: grid;
+  place-items: center;
+  background: var(--bg);
+  color: var(--green);
+  font-weight: 800;
+}
+
+.auth-layout {
+  display: grid;
+  place-items: center;
+  padding: var(--space-12);
+  background:
+    radial-gradient(circle at 20% 15%, var(--green-soft), transparent 28%),
+    radial-gradient(circle at 80% 85%, rgba(231, 183, 95, 0.13), transparent 32%),
+    var(--bg);
+}
+
+:root[data-theme="light"] .auth-layout {
+  background:
+    radial-gradient(circle at 18% 14%, rgba(95, 169, 122, 0.16), transparent 30%),
+    radial-gradient(circle at 82% 78%, rgba(211, 154, 82, 0.16), transparent 34%),
+    linear-gradient(145deg, #fbf6ee 0%, #f4eddf 100%);
+}
+
+.auth-panel {
+  width: min(clamp(430px, 28vw, 540px), 100%);
+  padding: var(--space-8);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--card);
+  box-shadow: var(--shadow);
+  animation: panel-in 240ms ease both;
+  backdrop-filter: blur(18px);
+}
+
+.auth-header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+.auth-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+.auth-brand {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.auth-brand span {
+  width: fit-content;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid rgba(99, 210, 151, 0.36);
+  border-radius: var(--radius-pill);
+  color: var(--green);
+  font-weight: 800;
+}
+
+.auth-brand strong {
+  font-size: clamp(1.5rem, 1.8vw, 1.9rem);
+}
+
+.auth-tabs {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-1);
+  margin-bottom: var(--space-5);
+  padding: var(--space-1);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+}
+
+.auth-tabs button,
+.primary-action,
+.secondary-action,
+.profile-button,
+.theme-switch,
+.run-button {
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: background 160ms ease, border-color 160ms ease, transform 160ms ease, color 160ms ease;
+}
+
+.auth-tabs button {
+  position: relative;
+  z-index: 1;
+  min-height: 38px;
+  background: transparent;
+  color: var(--muted);
+}
+
+.auth-tabs button.is-active {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+:root[data-theme="light"] .auth-tabs,
+:root[data-theme="light"] .auth-tabs button.is-active {
+  background: rgba(255, 253, 248, 0.66);
+  border-color: rgba(80, 70, 54, 0.09);
+}
+
+.auth-form {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.auth-form label {
+  display: grid;
+  gap: var(--space-2);
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.auth-form input {
+  height: 44px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  outline: 0;
+  background: var(--input);
+  color: var(--text);
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+:root[data-theme="light"] .auth-form input {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.64);
+}
+
+.auth-form input:focus {
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px rgba(99, 210, 151, 0.14);
+}
+
+.form-error {
+  padding: var(--space-3) var(--space-3);
+  border: 1px solid rgba(255, 122, 122, 0.34);
+  border-radius: var(--radius-sm);
+  color: var(--red);
+  background: rgba(255, 122, 122, 0.08);
+}
+
+.primary-action,
+.secondary-action {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: 0 var(--space-4);
+}
+
+.primary-action {
+  background: var(--green);
+  color: var(--brand-contrast);
+  font-weight: 900;
+}
+
+:root[data-theme="light"] .primary-action {
+  box-shadow: 0 10px 26px rgba(63, 159, 114, 0.18);
+}
+
+:root[data-theme="light"] .secondary-action,
+:root[data-theme="light"] .theme-switch,
+:root[data-theme="light"] .profile-button {
+  background: rgba(255, 253, 248, 0.66);
+  border-color: rgba(80, 70, 54, 0.09);
+}
+
+.primary-action:hover,
+.secondary-action:hover,
+.profile-button:hover,
+.theme-switch:hover,
+.run-button:hover {
+  transform: translateY(-1px);
+}
+
+.primary-action:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+.secondary-action {
+  width: 100%;
+  background: var(--surface-2);
+  border-color: var(--line);
+}
+
+.secondary-action--compact {
+  width: auto;
+  min-height: 36px;
+  padding: 0 var(--space-3);
+  white-space: nowrap;
+}
+
+.theme-switch {
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: 0 var(--space-3);
+  background: var(--surface-2);
+  border-color: var(--line);
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.theme-switch:hover {
+  color: var(--text);
+}
+

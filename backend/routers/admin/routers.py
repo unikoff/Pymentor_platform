@@ -22,9 +22,9 @@ def get_db():
         db.close()
 
 
-async def require_admin(request: Request, db: Session) -> models.User:
+def require_admin(request: Request, db: Session) -> models.User:
     """Доступ только для залогиненного пользователя с флагом is_admin."""
-    user = await user_crud.get_current_user(request=request, db=db)
+    user = user_crud.get_current_user(request=request, db=db)
     if not user.is_admin:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Требуются права администратора")
     return user
@@ -142,12 +142,12 @@ def _build_learning_progress(user_id: int, db: Session) -> tuple[list[dict], int
 
 
 @admin_router.get("/users")
-async def list_users(
+def list_users(
     request: Request,
     search: str = Query(default="", max_length=100),
     db: Session = Depends(get_db),
 ):
-    await require_admin(request, db)
+    require_admin(request, db)
 
     # Фильтруем в Python: LOWER() в SQLite не понижает кириллицу, поэтому
     # ilike по русским именам не находит ничего. На наших объёмах это дёшево.
@@ -171,8 +171,8 @@ async def list_users(
 
 
 @admin_router.delete("/users/{user_id}")
-async def delete_user(user_id: int, request: Request, db: Session = Depends(get_db)):
-    admin = await require_admin(request, db)
+def delete_user(user_id: int, request: Request, db: Session = Depends(get_db)):
+    admin = require_admin(request, db)
 
     if admin.id == user_id:
         raise HTTPException(
@@ -207,13 +207,13 @@ async def delete_user(user_id: int, request: Request, db: Session = Depends(get_
 
 
 @admin_router.patch("/users/{user_id}/subscription")
-async def change_subscription(
+def change_subscription(
     user_id: int,
     payload: SubscriptionChange,
     request: Request,
     db: Session = Depends(get_db),
 ):
-    await require_admin(request, db)
+    require_admin(request, db)
 
     user_db = db.query(models.User).filter(models.User.id == user_id).first()
     if user_db is None:
@@ -237,19 +237,19 @@ async def change_subscription(
 
 
 @admin_router.get("/slots")
-async def admin_list_slots(
+def admin_list_slots(
     request: Request,
     year: int = Query(..., ge=2000, le=2100),
     month: int = Query(..., ge=1, le=12),
     db: Session = Depends(get_db),
 ):
-    await require_admin(request, db)
+    require_admin(request, db)
     return {"slots": user_crud.list_slots_for_month_admin(year=year, month=month, db=db)}
 
 
 @admin_router.post("/slots")
-async def admin_create_slot(payload: SlotCreate, request: Request, db: Session = Depends(get_db)):
-    await require_admin(request, db)
+def admin_create_slot(payload: SlotCreate, request: Request, db: Session = Depends(get_db)):
+    require_admin(request, db)
     slot = user_crud.create_slot(
         slot_date=payload.slot_date,
         start_time=payload.start_time,
@@ -260,8 +260,8 @@ async def admin_create_slot(payload: SlotCreate, request: Request, db: Session =
 
 
 @admin_router.delete("/slots/{slot_id}")
-async def admin_delete_slot(slot_id: int, request: Request, db: Session = Depends(get_db)):
-    await require_admin(request, db)
+def admin_delete_slot(slot_id: int, request: Request, db: Session = Depends(get_db)):
+    require_admin(request, db)
     user_crud.delete_slot(slot_id=slot_id, db=db)
     return {"deleted": slot_id}
 
@@ -304,14 +304,14 @@ def _build_student_profile(user: models.User, year: int, month: int, db: Session
 
 
 @admin_router.get("/users/{user_id}/profile")
-async def student_profile(
+def student_profile(
     user_id: int,
     request: Request,
     year: int = Query(..., ge=2000, le=2100),
     month: int = Query(..., ge=1, le=12),
     db: Session = Depends(get_db),
 ):
-    await require_admin(request, db)
+    require_admin(request, db)
     user_db = db.query(models.User).filter(models.User.id == user_id).first()
     if user_db is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
@@ -319,13 +319,13 @@ async def student_profile(
 
 
 @admin_router.post("/users/{user_id}/quota")
-async def change_quota(
+def change_quota(
     user_id: int,
     payload: QuotaChange,
     request: Request,
     db: Session = Depends(get_db),
 ):
-    await require_admin(request, db)
+    require_admin(request, db)
     user_db = db.query(models.User).filter(models.User.id == user_id).first()
     if user_db is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")

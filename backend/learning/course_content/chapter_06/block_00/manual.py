@@ -38,45 +38,4 @@ OVERVIEW_PRACTICE: dict[str, list[dict[str, Any]]] = {
                             'result': 'Готово, если baseline содержит HTTP-контракт, тестовые данные, database '
                                       'dialect и зелёный test suite, по которым после переноса можно провести '
                                       'регрессионное сравнение.'}],
-    'Теория месяца.md': [{'title': 'Нарисуйте карту данных PostgreSQL StudyHub',
-                       'task': 'До SQL-лабораторий свяжите ORM, SQL, PostgreSQL server, transactions, indexes и '
-                               'дополнительные хранилища в одну карту с явными границами ответственности.',
-                       'steps': ['Создайте docs/stage6-data-map.md.',
-                                 'Нарисуйте путь одного request: endpoint → service → Session → SQLAlchemy statement '
-                                 '→ driver → PostgreSQL server → database → public schema → table.',
-                                 'Для каждого шага подпишите конкретный вход и выход, например ORM Task → INSERT '
-                                 'statement → generated id.',
-                                 'Нарисуйте отдельный lifecycle schema: ORM model → Alembic revision → upgrade → '
-                                 'PostgreSQL catalog.',
-                                 'Добавьте transaction boundary для операции complete task + progress event и '
-                                 'покажите rollback обоих изменений.',
-                                 'Добавьте storage matrix для PostgreSQL, MongoDB и Redis: единица хранения, source '
-                                 'of truth, TTL, relations и подходящий StudyHub-сценарий.',
-                                 'Отдельно отметьте, что migrations не являются backup, а Redis cache не является '
-                                 'основным хранилищем продуктовых данных.',
-                                 'Добавьте один ошибочный путь connection refused и один ошибочный путь constraint '
-                                 'violation.'],
-                       'result': 'Готово, если по карте можно проследить данные от HTTP request до row и обратно, '
-                                 'объяснить изменение schema, transaction rollback и выбор каждого storage.'}],
-    '00 - Теория месяца.md': [{'title': 'Нарисуйте карту данных PostgreSQL StudyHub',
-                            'task': 'До SQL-лабораторий свяжите ORM, SQL, PostgreSQL server, transactions, indexes и '
-                                    'дополнительные хранилища в одну карту с явными границами ответственности.',
-                            'steps': ['Создайте docs/stage6-data-map.md.',
-                                      'Нарисуйте путь одного request: endpoint → service → Session → SQLAlchemy '
-                                      'statement → driver → PostgreSQL server → database → public schema → table.',
-                                      'Для каждого шага подпишите конкретный вход и выход, например ORM Task → '
-                                      'INSERT statement → generated id.',
-                                      'Нарисуйте отдельный lifecycle schema: ORM model → Alembic revision → upgrade '
-                                      '→ PostgreSQL catalog.',
-                                      'Добавьте transaction boundary для операции complete task + progress event и '
-                                      'покажите rollback обоих изменений.',
-                                      'Добавьте storage matrix для PostgreSQL, MongoDB и Redis: единица хранения, '
-                                      'source of truth, TTL, relations и подходящий StudyHub-сценарий.',
-                                      'Отдельно отметьте, что migrations не являются backup, а Redis cache не '
-                                      'является основным хранилищем продуктовых данных.',
-                                      'Добавьте один ошибочный путь connection refused и один ошибочный путь '
-                                      'constraint violation.'],
-                            'result': 'Готово, если по карте можно проследить данные от HTTP request до row и '
-                                      'обратно, объяснить изменение schema, transaction rollback и выбор каждого '
-                                      'storage.'}]
 }

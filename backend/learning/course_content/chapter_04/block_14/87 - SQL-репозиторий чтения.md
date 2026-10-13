@@ -1,8 +1,8 @@
-# 87. SQL-репозиторий чтения
+# Чтение через SQL-репо
 
 > Тип документа: внутренний план занятия, этап 2
 > Курс и блок: глава 4 «FastAPI, SQLite и SQLAlchemy», блок 14
-> Концепт блока: [BLOCK_14.md](../../../../../docs/concept/fastapi-sqlalchemy/BLOCK_14.md)
+> Концепт блока: [BLOCK_14.md](../../../../../docs/concept/chapter_04/BLOCK_14.md)
 
 ## Место в маршруте
 

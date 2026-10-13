@@ -7,6 +7,8 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
+from learning.runner_runtime import RunnerLimits, bootstrap_source, failure, logger, run_bounded_process
+
 
 MAX_CODE_LENGTH = 8_000
 RUN_TIMEOUT_SECONDS = 3
@@ -178,37 +180,30 @@ def _normalize_runner_result(result: dict[str, Any]) -> dict[str, Any]:
 
 def _run_runner_source(source: str) -> dict[str, Any] | subprocess.CompletedProcess[bytes]:
     """Запускает runner-скрипт в изолированном процессе. Возвращает dict с ошибкой или процесс."""
-    with tempfile.TemporaryDirectory(prefix="pymentor-run-") as temp_dir:
-        runner_path = Path(temp_dir) / "runner.py"
-        runner_path.write_text(source, encoding="utf-8")
-
-        try:
+    try:
+        limits = RunnerLimits.configured(RUN_TIMEOUT_SECONDS)
+    except (ValueError, OverflowError):
+        logger.error("runner_invalid_limits")
+        return failure("Некорректная настройка ограничений проверки.")
+    try:
+        with tempfile.TemporaryDirectory(prefix="pymentor-run-") as temp_dir:
+            runner_path = Path(temp_dir) / "runner.py"
+            runner_path.write_text(bootstrap_source(source, limits), encoding="utf-8")
             runner_env = os.environ.copy()
             runner_env["PYTHONIOENCODING"] = "utf-8"
             runner_env.pop("PYTHONPATH", None)
 
             # -X utf8 обязателен: -I игнорирует PYTHONIOENCODING, и на Windows
             # stdout ребёнка уходил в cp1251 → кракозябры в русских именах тестов.
-            return subprocess.run(
+            return run_bounded_process(
                 [sys.executable, "-I", "-X", "utf8", str(runner_path)],
                 cwd=temp_dir,
                 env=runner_env,
-                capture_output=True,
-                text=False,
-                timeout=RUN_TIMEOUT_SECONDS,
-                check=False,
+                limits=limits,
             )
-        except subprocess.TimeoutExpired:
-            return {
-                "ok": False,
-                "score": 0,
-                "error": (
-                    f"Код выполнялся дольше {RUN_TIMEOUT_SECONDS} секунд. "
-                    "Проверьте, нет ли бесконечного цикла."
-                ),
-                "tests": [],
-                "stdout": "",
-            }
+    except OSError as exc:
+        logger.error("runner_io_failed errno=%s", exc.errno)
+        return failure("Не удалось запустить проверку. Повторите попытку позже.")
 
 
 def run_python_task(code: str, task: dict[str, Any]) -> dict[str, Any]:
@@ -345,24 +340,26 @@ INITIAL_NAMESPACE = {(initial_namespace or {})!r}
 
 SAFE_BUILTINS = {_SAFE_BUILTINS_SOURCE}
 
-stdout = io.StringIO()
+stdout = LimitedStringIO()
 namespace = {{"__builtins__": SAFE_BUILTINS, "__name__": "__student__"}}
 namespace.update(INITIAL_NAMESPACE)
 
 try:
     with contextlib.redirect_stdout(stdout):
         exec(USER_CODE, namespace)
-    print(json.dumps({{
+    emit_result({{
         "ok": True,
         "stdout": stdout.getvalue()[-2400:],
-    }}, ensure_ascii=False))
+    }})
+except MemoryError:
+    raise
 except Exception as exc:
-    print(json.dumps({{
+    emit_result({{
         "ok": False,
         "error": f"{{type(exc).__name__}}: {{exc}}",
         "traceback": traceback.format_exc(limit=3),
         "stdout": stdout.getvalue()[-2400:],
-    }}, ensure_ascii=False))
+    }})
 """
 
 
@@ -461,14 +458,14 @@ def test_result(name, expected, actual, error=None, assertion=None, float_tolera
     return result
 
 
-stdout = io.StringIO()
+stdout = LimitedStringIO()
 
 try:
     if MODE == "script":
         results = []
         output_chunks = []
         for index, test in enumerate(TESTS, start=1):
-            test_stdout = io.StringIO()
+            test_stdout = LimitedStringIO()
             namespace = {{"__builtins__": SAFE_BUILTINS, "__name__": "__student__"}}
             namespace.update(test.get("namespace", {{}}))
             try:
@@ -485,6 +482,8 @@ try:
                         float_tolerance=test.get("float_tolerance"),
                     )
                 )
+            except MemoryError:
+                raise
             except Exception as exc:
                 output_chunks.append(test_stdout.getvalue())
                 results.append(
@@ -498,12 +497,12 @@ try:
 
         passed_count = sum(1 for item in results if item["passed"])
         score = 100 if not results else round((passed_count / len(results)) * 100)
-        print(json.dumps({{
+        emit_result({{
             "ok": passed_count == len(results),
             "score": score,
             "tests": results,
             "stdout": "".join(output_chunks)[-1200:],
-        }}, ensure_ascii=False))
+        }})
     else:
         namespace = {{"__builtins__": SAFE_BUILTINS, "__name__": "__student__"}}
         with contextlib.redirect_stdout(stdout):
@@ -516,12 +515,12 @@ try:
         if not TESTS:
             with contextlib.redirect_stdout(stdout):
                 solve()
-            print(json.dumps({{
+            emit_result({{
                 "ok": True,
                 "score": 100,
                 "tests": [],
                 "stdout": stdout.getvalue()[-1200:],
-            }}, ensure_ascii=False))
+            }})
         else:
             setup_output = stdout.getvalue()
             results = []
@@ -571,6 +570,8 @@ try:
                             float_tolerance=test.get("float_tolerance"),
                         )
                     )
+                except MemoryError:
+                    raise
                 except Exception as exc:
                     results.append(
                         test_result(
@@ -583,21 +584,23 @@ try:
 
             passed_count = sum(1 for item in results if item["passed"])
             score = round((passed_count / len(results)) * 100)
-            print(json.dumps({{
+            emit_result({{
                 "ok": passed_count == len(results),
                 "score": score,
                 "tests": results,
                 "stdout": stdout.getvalue()[-1200:],
-            }}, ensure_ascii=False))
+            }})
+except MemoryError:
+    raise
 except Exception as exc:
-    print(json.dumps({{
+    emit_result({{
         "ok": False,
         "score": 0,
         "error": str(exc),
         "traceback": traceback.format_exc(limit=3),
         "tests": [],
         "stdout": stdout.getvalue()[-1200:],
-    }}, ensure_ascii=False))
+    }})
 """
 
 

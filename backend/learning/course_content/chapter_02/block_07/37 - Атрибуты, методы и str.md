@@ -4,8 +4,8 @@
 
 > Тип документа: внутренний план занятия, этап 2
 > Курс и блок: Python глубже, файлы и структура небольшого проекта — блок 7. Обычные классы, состояние и подготовка Task, затем dataclass
-> Концепт блока: [BLOCK_7.md](../../../../../docs/concept/python-deeper/BLOCK_7.md)
-> Общая карта курса: [COURSE.md](../../../../../docs/concept/python-deeper/COURSE.md)
+> Концепт блока: [BLOCK_7.md](../../../../../docs/concept/chapter_02/BLOCK_7.md)
+> Общая карта курса: [COURSE.md](../../../../../docs/concept/chapter_02/COURSE.md)
 
 ## Место в маршруте
 

@@ -36,37 +36,4 @@ OVERVIEW_PRACTICE: dict[str, list[dict[str, Any]]] = {
                             'result': 'Готово, если baseline содержит одинаковый input, HTTP contract, measurements, '
                                       'SQL count и зелёные tests, по которым можно честно сравнить sync и async '
                                       'версии.'}],
-    'Теория месяца.md': [{'title': 'Нарисуйте timeline одного async request',
-                       'task': 'Опишите один request Async StudyHub до написания кода. Нужно отделить Python work, '
-                               'I/O wait, Task scheduling, resource lifecycle и transaction boundary.',
-                       'steps': ['Создайте docs/stage7-async-model.md.',
-                                 'Нарисуйте timeline: router → service → database await → external HTTP await → '
-                                 'serialization.',
-                                 'Для каждого участка отметьте состояние running, waiting или ready.',
-                                 'Отдельно нарисуйте последовательные await и два независимых requests через '
-                                 'Task/gather.',
-                                 'Добавьте timeout path, cancellation path и database rollback path.',
-                                 'Покажите lifespan AsyncClient и request-scoped AsyncSession как разные lifecycles.',
-                                 'Зафиксируйте четыре границы: async не ускоряет CPU, одна AsyncSession не делится '
-                                 'между concurrent tasks, N+1 не исчезает, pool остаётся ограниченным.'],
-                       'result': 'Готово, если по timeline можно объяснить, кто выполняется, кто ждёт, где loop '
-                                 'получает управление и какой ресурс должен закрыться при success, timeout и '
-                                 'cancellation.'}],
-    '00 - Теория месяца.md': [{'title': 'Нарисуйте timeline одного async request',
-                            'task': 'Опишите один request Async StudyHub до написания кода. Нужно отделить Python '
-                                    'work, I/O wait, Task scheduling, resource lifecycle и transaction boundary.',
-                            'steps': ['Создайте docs/stage7-async-model.md.',
-                                      'Нарисуйте timeline: router → service → database await → external HTTP await → '
-                                      'serialization.',
-                                      'Для каждого участка отметьте состояние running, waiting или ready.',
-                                      'Отдельно нарисуйте последовательные await и два независимых requests через '
-                                      'Task/gather.',
-                                      'Добавьте timeout path, cancellation path и database rollback path.',
-                                      'Покажите lifespan AsyncClient и request-scoped AsyncSession как разные '
-                                      'lifecycles.',
-                                      'Зафиксируйте четыре границы: async не ускоряет CPU, одна AsyncSession не '
-                                      'делится между concurrent tasks, N+1 не исчезает, pool остаётся ограниченным.'],
-                            'result': 'Готово, если по timeline можно объяснить, кто выполняется, кто ждёт, где loop '
-                                      'получает управление и какой ресурс должен закрыться при success, timeout и '
-                                      'cancellation.'}]
 }

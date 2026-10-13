@@ -23,8 +23,8 @@ import {
   Terminal,
   X,
 } from "lucide-react";
-import { CodeBlock } from "../CodeEditor";
-import { highlightPython } from "../highlight";
+import { CodeBlock } from "../shared/ui/code-editor/CodeEditor";
+import { highlightPython } from "../shared/lib/python-highlight";
 
 export { CodeBlock };
 
