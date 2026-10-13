@@ -1,24 +1,22 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { CalendarClock, CalendarPlus, Clock, LogOut, Moon, Search, Sun, Trash2 } from "lucide-react";
-import { getTracks, getLessons } from "../features/learning/api";
+import { useLearningCourse } from "../features/learning/useLearningCourse";
 import { useAccountSchedule } from "../features/account/useAccountSchedule";
 import { logoutUser } from "../features/auth/api";
 import { getInitialCalendarMonth } from "../shared/lib/dates";
-import { getDisplayModule, lessons, PYTHON_MODULE_ORDER, PYTHON_TRACK_NAME } from "../features/learning/course";
+import { PYTHON_TRACK_NAME } from "../features/learning/course";
 import { AdminScreen } from "../features/admin/AdminScreen";
 import { AccountDrawer } from "../features/account/AccountDrawer";
 import { WorkspaceActivityBar } from "./workspace/WorkspaceActivityBar";
 import { LessonExplorer } from "./workspace/LessonExplorer";
 import { DEFAULT_OPEN_VIEWS, WorkspaceWorkbench } from "./workspace/WorkspaceWorkbench";
 import type { UserProfile, CalendarMonth } from "../shared/api/contracts";
-import type { Track, Lesson, WorkspaceView } from "../features/learning/types";
+import type { WorkspaceView } from "../features/learning/types";
 import type { ThemeMode } from "../shared/ui/theme-toggle/types";
 
 const EXPLORER_MIN_WIDTH = 220;
 const EXPLORER_MAX_WIDTH = 480;
 const EXPLORER_DEFAULT_WIDTH = 320;
-
-
 
 function clampNumber(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
@@ -37,29 +35,6 @@ function getInitialExplorerWidth(): number {
   return EXPLORER_DEFAULT_WIDTH;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// Префикс, под которым смонтирована платформа: "/platform" на проде, "" в dev.
-// Vite подставляет сюда значение base из vite.config.ts.
-
-
-
-
-
 export function Workspace({
   user,
   theme,
@@ -73,18 +48,16 @@ export function Workspace({
   onLogout: () => void;
   onRequireAuth: () => void;
 }) {
-  const [courseLessons, setCourseLessons] = useState<Lesson[]>(lessons);
-  const [tracks, setTracks] = useState<Track[]>([]);
-  const [activeTrackId, setActiveTrackId] = useState<string>(() => {
-    try {
-      return window.localStorage.getItem("pymentor-track") ?? "";
-    } catch {
-      return "";
-    }
-  });
-  const [loadedTrackId, setLoadedTrackId] = useState(PYTHON_TRACK_NAME);
-  const [isLessonsLoading, setIsLessonsLoading] = useState(false);
-  const lessonsRequestId = useRef(0);
+  const {
+    tracks,
+    activeTrackId,
+    setActiveTrackId,
+    isLessonsLoading,
+    displayLessons,
+    lessonModules,
+    progress,
+    handleLessonCompleted,
+  } = useLearningCourse(user);
   const [isTrackMenuOpen, setIsTrackMenuOpen] = useState(false);
   const [activeLessonId, setActiveLessonId] = useState(`${PYTHON_TRACK_NAME}-lesson-01`);
   const [activeView, setActiveView] = useState<WorkspaceView>("theory");
@@ -97,105 +70,12 @@ export function Workspace({
   const [calendarMonth, setCalendarMonth] = useState<CalendarMonth>(getInitialCalendarMonth);
   const { activityDays, bookingSlots, bookingQuota, bookSlot, cancelSlotBooking } = useAccountSchedule(user?.id ?? null, calendarMonth);
   const [openModules, setOpenModules] = useState<Set<string>>(() => new Set());
-  const isCurrentTrackLoaded = loadedTrackId === activeTrackId;
-  const displayLessons = useMemo(
-    () => (isCurrentTrackLoaded ? courseLessons : []).map((lesson) => ({ ...lesson, module: getDisplayModule(lesson, activeTrackId) })),
-    [activeTrackId, courseLessons, isCurrentTrackLoaded],
-  );
-  const lessonModules = useMemo(() => {
-    const available = new Set(displayLessons.map((lesson) => lesson.module));
-    return [
-      ...PYTHON_MODULE_ORDER.filter((moduleName) => available.has(moduleName)),
-      ...Array.from(available).filter((moduleName) => !PYTHON_MODULE_ORDER.includes(moduleName)),
-    ];
-  }, [displayLessons]);
-  const moduleKey = lessonModules.join("|");
   const activeLesson = displayLessons.find((lesson) => lesson.id === activeLessonId) ?? displayLessons[0];
   const nextLesson = useMemo(() => {
     const currentIndex = displayLessons.findIndex((lesson) => lesson.id === activeLesson?.id);
     return currentIndex >= 0 ? displayLessons[currentIndex + 1] : undefined;
   }, [activeLesson?.id, displayLessons]);
   const workspaceStyle = { "--explorer": `${explorerWidth}px` } as React.CSSProperties;
-
-  const progress = useMemo(() => {
-    // Прогресс считаем только по «зачётным» урокам: с практикой или self_check.
-    // Обзорные страницы вроде «Карты обучения» зачесть нельзя: они не в счёте.
-    const countable = courseLessons.filter((lesson) => (lesson.tasks?.length ?? 0) > 0 || lesson.self_check);
-    if (countable.length === 0) {
-      return 0;
-    }
-    const done = countable.filter((lesson) => lesson.completed).length;
-    return Math.round((done / countable.length) * 100);
-  }, [courseLessons]);
-
-  const loadTracks = useCallback(() => {
-    getTracks()
-      .then((data) => {
-        setTracks(data.tracks);
-        setActiveTrackId((current) =>
-          current && data.tracks.some((track) => track.id === current) ? current : data.default_track ?? "",
-        );
-      })
-      .catch(() => undefined);
-  }, []);
-
-  const loadLessons = useCallback(() => {
-    if (!activeTrackId) {
-      setCourseLessons([]);
-      setLoadedTrackId("");
-      return;
-    }
-
-    const requestedTrackId = activeTrackId;
-    const requestId = lessonsRequestId.current + 1;
-    lessonsRequestId.current = requestId;
-    setIsLessonsLoading(true);
-    setLoadedTrackId((loadedTrack) => (loadedTrack === requestedTrackId ? loadedTrack : ""));
-
-    getLessons(requestedTrackId)
-      .then((data) => {
-        if (requestId !== lessonsRequestId.current || data.track !== requestedTrackId) {
-          return;
-        }
-        setCourseLessons(data.lessons);
-        setLoadedTrackId(data.track);
-      })
-      .catch(() => {
-        if (requestId !== lessonsRequestId.current) {
-          return;
-        }
-        setCourseLessons([]);
-        setLoadedTrackId(requestedTrackId);
-      })
-      .finally(() => {
-        if (requestId === lessonsRequestId.current) {
-          setIsLessonsLoading(false);
-        }
-      });
-  }, [activeTrackId]);
-  const handleLessonCompleted = useCallback(() => {
-    loadLessons();
-    loadTracks();
-  }, [loadLessons, loadTracks]);
-
-  useEffect(() => {
-    loadTracks();
-  }, [loadTracks, user?.id]);
-
-  useEffect(() => {
-    loadLessons();
-  }, [loadLessons, user?.id, user?.has_active_subscription, user?.subscription_until]);
-
-  useEffect(() => {
-    if (!activeTrackId) {
-      return;
-    }
-    try {
-      window.localStorage.setItem("pymentor-track", activeTrackId);
-    } catch {
-      // localStorage может быть недоступен в приватных режимах браузера.
-    }
-  }, [activeTrackId]);
 
   useEffect(() => {
     try {
@@ -239,7 +119,7 @@ export function Workspace({
     if (!displayLessons.some((lesson) => lesson.id === activeLessonId) && displayLessons[0]) {
       setActiveLessonId(displayLessons[0].id);
     }
-  }, [activeLessonId, displayLessons, lessonModules, moduleKey]);
+  }, [activeLessonId, displayLessons, lessonModules]);
 
   function toggleModule(moduleName: string) {
     setOpenModules((current) => {
