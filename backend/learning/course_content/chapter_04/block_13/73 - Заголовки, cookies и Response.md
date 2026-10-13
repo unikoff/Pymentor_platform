@@ -1,8 +1,8 @@
-# Annotated и читаемые параметры
+# Annotated: параметры
 
 > Тип документа: внутренний план занятия, этап 2
 > Курс и блок: FastAPI, SQLite и SQLAlchemy; глава 4, блок 13 «Организация и зрелые механизмы FastAPI»
-> Концепт блока: [BLOCK_13.md](../../../../../docs/concept/fastapi-sqlalchemy/BLOCK_13.md)
+> Концепт блока: [BLOCK_13.md](../../../../../docs/concept/chapter_04/BLOCK_13.md)
 
 ## Место в маршруте
 

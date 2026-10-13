@@ -1,8 +1,8 @@
-# 72. Depends: получение готового сервиса
+# Сервис через Depends
 
 > Тип документа: внутренний план занятия, этап 2
 > Курс: FastAPI, SQLite и SQLAlchemy. Блок 13: «Организация и зрелые механизмы FastAPI»
-> Концепт блока: [BLOCK_13.md](../../../../../docs/concept/fastapi-sqlalchemy/BLOCK_13.md)
+> Концепт блока: [BLOCK_13.md](../../../../../docs/concept/chapter_04/BLOCK_13.md)
 
 ## Место в маршруте
 

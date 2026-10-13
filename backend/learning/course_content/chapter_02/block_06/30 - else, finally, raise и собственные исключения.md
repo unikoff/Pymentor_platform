@@ -4,8 +4,8 @@
 
 > Тип документа: внутренний план занятия, этап 2<br>
 > Курс и блок: Python Deeper, блок 6 — ошибки, модули и рабочее JSON-хранение<br>
-> Общая концепция курса: [COURSE.md](../../../../../docs/concept/python-deeper/COURSE.md)<br>
-> Концепт блока: [BLOCK_6.md](../../../../../docs/concept/python-deeper/BLOCK_6.md)
+> Общая концепция курса: [COURSE.md](../../../../../docs/concept/chapter_02/COURSE.md)<br>
+> Концепт блока: [BLOCK_6.md](../../../../../docs/concept/chapter_02/BLOCK_6.md)
 
 ## Место в маршруте
 

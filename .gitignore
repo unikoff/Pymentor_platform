@@ -5,6 +5,7 @@ __pycache__/
 backend/test.db
 test.db
 backend/*.log
+backend/.runner.lock
 backend/.env
 
 frontend/node_modules/

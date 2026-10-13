@@ -8,7 +8,6 @@
         track.json
         block_00/              <- обзор и карта обучения
           План обучения.md
-          Теория месяца.md
         block_01/              <- занятия и их практика
           01 - ...md
           manual.py
@@ -77,7 +76,6 @@ PLANNER_API_TRACK_NAME = "HTTP, API и FastAPI - Planner API"
 
 NEW_PYTHON_MODULE_LABELS = {
     "План обучения.md": "00 Обзор месяца",
-    "Теория месяца.md": "00 Обзор месяца",
     "01 - Как Python выполняет программу.md": "Блок 1. Старт и работа с данными",
     "02 - Терминал, файлы и запуск скрипта.md": "Блок 1. Старт и работа с данными",
     "03 - Git, GitHub и история изменений.md": "Блок 1. Старт и работа с данными",
@@ -115,7 +113,6 @@ NEW_PYTHON_MODULE_LABELS = {
 
 PYTHON_DEEPER_MODULE_LABELS = {
     "План обучения.md": "00 Обзор месяца",
-    "Теория месяца.md": "00 Обзор месяца",
     "21 - Переход от первого месяца, разбираем Console Planner.md": "Блок 5. Функции как строительный материал",
     "22 - Функция как контракт, вход, правило, результат.md": "Блок 5. Функции как строительный материал",
     "23 - Позиционные, именованные аргументы и значения по умолчанию.md": "Блок 5. Функции как строительный материал",
@@ -162,7 +159,6 @@ PYTHON_DEEPER_MODULE_LABELS = {
 
 PLANNER_API_MODULE_LABELS = {
     "План обучения.md": "00 Обзор месяца",
-    "Теория месяца.md": "00 Обзор месяца",
     "45 - Почему CLI недостаточно, клиент и сервер.md": "Блок 9. От консольной команды к HTTP",
     "46 - HTTP request, адрес, метод, headers и body.md": "Блок 9. От консольной команды к HTTP",
     "47 - HTTP response, status, headers, body и Content-Type.md": "Блок 9. От консольной команды к HTTP",
@@ -235,11 +231,8 @@ SELF_CHECK_LESSONS = {
     "sql-basics/01 Основы баз данных/01 Знакомство с SQL.md",
     "sql-basics/01 Основы баз данных/02 SELECT и фильтрация.md",
     "Основы Python и мышление программиста/План обучения.md",
-    "Основы Python и мышление программиста/Теория месяца.md",
     "Python глубже, файлы и структура небольшого проекта/План обучения.md",
-    "Python глубже, файлы и структура небольшого проекта/Теория месяца.md",
     "HTTP, API и FastAPI - Planner API/План обучения.md",
-    "HTTP, API и FastAPI - Planner API/Теория месяца.md",
 }
 
 
@@ -360,7 +353,7 @@ def _lesson_number_parts(filename: str) -> tuple[int, ...] | None:
 
 def _sort_key(path: Path, track_id: str | None = None) -> tuple[int, bool, tuple[int, ...], str]:
     relative = path.relative_to(COURSE_ROOT).as_posix()
-    overview_order = {"План обучения.md": -2, "Теория месяца.md": -1}
+    overview_order = {"План обучения.md": -2}
     if path.name in overview_order:
         return (overview_order[path.name], False, (), relative)
     number_parts = _lesson_number_parts(path.name)
@@ -682,9 +675,6 @@ def _lesson_access(path: Path, track_dir: Path, track_id: str | None = None) -> 
 
     if (track_id or track_dir.name) != NEW_PYTHON_TRACK_NAME:
         return "subscription"
-
-    if path.name == "Теория месяца.md":
-        return "free"
 
     lesson_match = re.match(r"^(\d+)", path.name)
     lesson_number = int(lesson_match.group(1)) if lesson_match else None

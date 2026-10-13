@@ -1,8 +1,8 @@
-# 102. Какие SQL-запросы делает Planner
+# 102. SQL-запросы Planner
 
 > Тип документа: внутренний план занятия, этап 2
 > Курс и блок: глава 4 «FastAPI, SQLite и SQLAlchemy», блок 16 «Надёжность, наблюдение SQL и передача работающего Planner»
-> Концепт блока: [BLOCK_16.md](../../../../../docs/concept/fastapi-sqlalchemy/BLOCK_16.md)
+> Концепт блока: [BLOCK_16.md](../../../../../docs/concept/chapter_04/BLOCK_16.md)
 
 ## Место в маршруте
 

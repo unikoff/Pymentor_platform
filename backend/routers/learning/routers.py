@@ -1,7 +1,13 @@
+import logging
+from copy import deepcopy
+from time import perf_counter
+
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy.orm import Session
+from starlette.concurrency import run_in_threadpool
 
 from learning.code_runner import run_python_preview, run_python_task
+from learning.runner_executor import RunnerBusy, RunnerUnavailable, get_runner_executor
 from DataBase import model as models
 from learning.content import (
     default_track_id,
@@ -18,6 +24,7 @@ from .schemas import CodeRunResponse, CodeSubmitRequest, CodeSubmitResponse, Les
 
 
 learning_router = APIRouter()
+logger = logging.getLogger("pymentor.runner")
 
 
 def _uses_persisted_task_progress(lesson: dict) -> bool:
@@ -63,9 +70,9 @@ def get_db():
         db.close()
 
 
-async def get_optional_user(request: Request, db: Session) -> models.User | None:
+def get_optional_user(request: Request, db: Session) -> models.User | None:
     try:
-        return await user_crud.get_current_user(request=request, db=db)
+        return user_crud.get_current_user(request=request, db=db)
     except HTTPException as exc:
         if exc.status_code == status.HTTP_401_UNAUTHORIZED:
             return None
@@ -135,9 +142,9 @@ def build_lessons_payload(track_id: str, user: models.User | None, db: Session) 
 
 
 @learning_router.get("/tracks")
-async def list_tracks(request: Request, db: Session = Depends(get_db)):
+def list_tracks(request: Request, db: Session = Depends(get_db)):
     """Треки с прогрессом пользователя — для переключателя курса."""
-    user = await get_optional_user(request=request, db=db)
+    user = get_optional_user(request=request, db=db)
     completed_ids = user_crud.get_completed_lesson_ids(user.id, db) if user else set()
 
     tracks = []
@@ -176,7 +183,7 @@ async def list_tracks(request: Request, db: Session = Depends(get_db)):
 
 
 @learning_router.get("/lessons")
-async def list_lessons(
+def list_lessons(
     request: Request,
     track: str | None = Query(default=None, max_length=160),
     db: Session = Depends(get_db),
@@ -185,7 +192,7 @@ async def list_lessons(
     if track_id is None or find_track(track_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Track not found")
 
-    user = await get_optional_user(request=request, db=db)
+    user = get_optional_user(request=request, db=db)
     return {
         "track": track_id,
         "lessons": build_lessons_payload(track_id, user, db),
@@ -197,9 +204,9 @@ async def list_lessons(
 
 
 @learning_router.post("/lessons/{lesson_id}/complete")
-async def complete_lesson(lesson_id: str, request: Request, db: Session = Depends(get_db)):
+def complete_lesson(lesson_id: str, request: Request, db: Session = Depends(get_db)):
     """Ручная отметка «Выполнено» — только для уроков с self_check."""
-    user = await user_crud.get_current_user(request=request, db=db)
+    user = user_crud.get_current_user(request=request, db=db)
 
     lesson = find_lesson(lesson_id)
     if lesson is None:
@@ -228,8 +235,8 @@ async def complete_lesson(lesson_id: str, request: Request, db: Session = Depend
 
 
 @learning_router.get("/lessons/{lesson_id}/theory", response_model=LessonTheoryResponse)
-async def lesson_theory(lesson_id: str, request: Request, db: Session = Depends(get_db)):
-    user = await get_optional_user(request=request, db=db)
+def lesson_theory(lesson_id: str, request: Request, db: Session = Depends(get_db)):
+    user = get_optional_user(request=request, db=db)
 
     lesson = find_lesson(lesson_id)
     if lesson is None:
@@ -275,37 +282,72 @@ def _require_current_task_revision(task: dict, submitted_revision: str | None) -
         )
 
 
-@learning_router.post("/tasks/{task_id}/submit", response_model=CodeSubmitResponse)
-async def submit_task(task_id: str, payload: CodeSubmitRequest, request: Request, db: Session = Depends(get_db)):
-    user = await get_optional_user(request=request, db=db)
-    task = _get_available_task(task_id, user)
-    _require_current_task_revision(task, payload.task_revision)
-    result = run_python_task(code=payload.code, task=task)
+def _prepare_task(task_id: str, revision: str | None, request: Request) -> dict:
+    with user_crud.get_db() as db:
+        user = get_optional_user(request=request, db=db)
+        task = _get_available_task(task_id, user)
+        _require_current_task_revision(task, revision)
+        lesson = find_lesson_by_task(task_id)
+        return {
+            "user_id": user.id if user is not None else None,
+            "task": deepcopy(task),
+            "lesson": deepcopy(lesson),
+        }
 
+
+def _save_task_progress(context: dict) -> None:
+    user_id = context["user_id"]
+    task = context["task"]
+    lesson = context["lesson"]
+    if user_id is None or lesson is None:
+        return
+    start = perf_counter()
     # Обычное редакторское задание засчитывает урок после успешной проверки.
     # Для практики блока 3 сохраняем результат каждой карточки отдельно.
-    if user is not None and result.get("ok"):
-        lesson = find_lesson_by_task(task_id)
-        has_mixed_practice = bool(lesson and lesson.get("tasks") and lesson.get("manual_practice"))
-        if lesson is not None and _uses_persisted_task_progress(lesson):
-            user_crud.mark_task_completed(
-                user_id=user.id,
-                task_id=task["id"],
-                task_revision=task["revision"],
-                db=db,
-            )
-            if not has_mixed_practice and _lesson_tasks_are_complete(lesson, user.id, db):
-                user_crud.mark_lesson_completed(user_id=user.id, lesson_id=lesson["id"], db=db)
-        elif lesson is not None and not has_mixed_practice:
-            user_crud.mark_lesson_completed(user_id=user.id, lesson_id=lesson["id"], db=db)
+    try:
+        with user_crud.get_db() as db:
+            has_mixed_practice = bool(lesson.get("tasks") and lesson.get("manual_practice"))
+            if _uses_persisted_task_progress(lesson):
+                user_crud.mark_task_completed(
+                    user_id=user_id, task_id=task["id"], task_revision=task["revision"], db=db,
+                )
+                if not has_mixed_practice and _lesson_tasks_are_complete(lesson, user_id, db):
+                    user_crud.mark_lesson_completed(user_id=user_id, lesson_id=lesson["id"], db=db)
+            elif not has_mixed_practice:
+                user_crud.mark_lesson_completed(user_id=user_id, lesson_id=lesson["id"], db=db)
+    finally:
+        logger.info("runner_progress_save_finished duration_ms=%.1f", (perf_counter() - start) * 1000)
+
+
+async def _execute_task(function, code: str, task: dict) -> dict:
+    try:
+        return await get_runner_executor().run(function, code=code, task=task)
+    except RunnerBusy:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Проверка занята. Повторите отправку через несколько секунд",
+            headers={"Retry-After": "2"},
+        ) from None
+    except RunnerUnavailable:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Проверка временно недоступна. Повторите попытку позже.",
+            headers={"Retry-After": "2"},
+        ) from None
+
+
+@learning_router.post("/tasks/{task_id}/submit", response_model=CodeSubmitResponse)
+async def submit_task(task_id: str, payload: CodeSubmitRequest, request: Request):
+    context = await run_in_threadpool(_prepare_task, task_id, payload.task_revision, request)
+    result = await _execute_task(run_python_task, payload.code, context["task"])
+    if result.get("ok"):
+        await run_in_threadpool(_save_task_progress, context)
 
     return result
 
 
 @learning_router.post("/tasks/{task_id}/run", response_model=CodeRunResponse)
-async def run_task_code(task_id: str, payload: CodeSubmitRequest, request: Request, db: Session = Depends(get_db)):
+async def run_task_code(task_id: str, payload: CodeSubmitRequest, request: Request):
     """Запускает одну демонстрационную проверку без зачёта урока."""
-    user = await get_optional_user(request=request, db=db)
-    task = _get_available_task(task_id, user)
-    _require_current_task_revision(task, payload.task_revision)
-    return run_python_preview(code=payload.code, task=task)
+    context = await run_in_threadpool(_prepare_task, task_id, payload.task_revision, request)
+    return await _execute_task(run_python_preview, payload.code, context["task"])

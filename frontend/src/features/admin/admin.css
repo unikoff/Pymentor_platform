@@ -1,0 +1,909 @@
+/* ==================== Админ-панель ==================== */
+
+.admin-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  padding: var(--space-10);
+  background: var(--overlay);
+}
+
+.admin-panel {
+  width: min(860px, 100%);
+  max-height: calc(100vh - 80px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-6);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.admin-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.admin-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.admin-title svg {
+  color: var(--green);
+}
+
+.admin-title strong {
+  display: block;
+  font-size: 1.1rem;
+}
+
+.admin-title small {
+  color: var(--muted);
+}
+
+.admin-search {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+  color: var(--muted);
+}
+
+.admin-search input {
+  flex: 1;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--text);
+}
+
+.admin-list {
+  display: grid;
+  gap: var(--space-3);
+  overflow-y: auto;
+  padding-right: var(--space-1);
+}
+
+.admin-note {
+  margin: var(--space-2) var(--space-1);
+  color: var(--muted);
+}
+
+.admin-row {
+  display: grid;
+  grid-template-columns: minmax(180px, 1.2fr) minmax(170px, 1fr) auto;
+  gap: var(--space-4);
+  align-items: center;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-md);
+  background: var(--card);
+}
+
+.admin-row-user strong {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.admin-row-user small,
+.admin-row-meta small {
+  color: var(--faint);
+}
+
+.admin-badge {
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--green-soft);
+  color: var(--green);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.admin-row-meta {
+  display: grid;
+  gap: 3px;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+
+.admin-row-meta .is-active-subscription {
+  color: var(--green);
+  font-weight: 600;
+}
+
+.admin-row-actions {
+  display: inline-flex;
+  gap: 6px;
+}
+
+.admin-row-actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: border-color 140ms ease, background 140ms ease;
+}
+
+.admin-row-actions button:hover:not(:disabled) {
+  border-color: var(--green);
+}
+
+.admin-row-actions button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.admin-row-actions .is-danger:hover:not(:disabled) {
+  border-color: #e5534b;
+  color: #e5534b;
+}
+
+/* ==================== Слоты записи (админ) ==================== */
+
+.admin-tabs {
+  display: flex;
+  gap: var(--space-1);
+  padding: var(--space-1);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+}
+
+.admin-tabs button {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 36px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 140ms ease, color 140ms ease;
+}
+
+.admin-tabs button.is-active {
+  background: var(--surface);
+  border-color: var(--line);
+  color: var(--text);
+}
+
+.admin-slots {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-height: 0;
+}
+
+.slot-form {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.slot-form label {
+  display: grid;
+  gap: var(--space-2);
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.slot-form input {
+  height: 40px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--input);
+  color: var(--text);
+  outline: 0;
+}
+
+.slot-form select {
+  height: 40px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--input);
+  color: var(--text);
+  outline: 0;
+  cursor: pointer;
+}
+
+/* ==================== Профиль студента (админ) ==================== */
+
+.admin-row--clickable {
+  width: 100%;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 140ms ease, background 140ms ease;
+}
+
+.admin-row--clickable:hover {
+  border-color: var(--green);
+  background: var(--surface-2);
+}
+
+.admin-row-chevron {
+  color: var(--faint);
+  align-self: center;
+}
+
+.admin-profile {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.admin-back {
+  align-self: flex-start;
+  padding: 6px var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  background: var(--surface-2);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.admin-back:hover {
+  border-color: var(--green);
+}
+
+.profile-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.profile-head .avatar {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--green-soft);
+  color: var(--green);
+  font-weight: 800;
+}
+
+.profile-head strong {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.profile-head small {
+  color: var(--faint);
+}
+
+.profile-metric {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  padding: var(--space-4) var(--space-4);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-md);
+  background: var(--card);
+}
+
+.profile-metric span {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.profile-metric strong {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.95rem;
+}
+
+.profile-metric strong.is-active-subscription {
+  color: var(--green);
+}
+
+.profile-overview-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 306px) minmax(0, 1fr);
+  gap: var(--space-3);
+  align-items: stretch;
+  width: 100%;
+  min-width: 0;
+}
+
+.profile-overview-grid > * {
+  min-width: 0;
+  min-height: 316px;
+  box-sizing: border-box;
+}
+
+.profile-activity-calendar {
+  display: grid;
+  width: 100%;
+  gap: var(--space-3);
+  justify-self: start;
+  padding: var(--space-3);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-md);
+  background: var(--card);
+}
+
+.profile-activity-calendar .calendar-weekdays,
+.profile-activity-calendar .calendar-grid {
+  gap: var(--space-1);
+}
+
+.profile-activity-calendar .calendar-weekdays span {
+  font-size: 0.62rem;
+}
+
+.profile-activity-calendar .calendar-day {
+  font-size: 0.72rem;
+}
+
+.profile-activity-calendar .calendar-day.is-active {
+  box-shadow: 0 0 0 3px var(--green-soft);
+}
+
+.profile-activity-calendar-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.profile-activity-calendar-head > div {
+  display: grid;
+  gap: 2px;
+}
+
+.profile-activity-calendar-head span {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.profile-activity-calendar-head strong {
+  font-size: 0.95rem;
+}
+
+.profile-activity-legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.profile-activity-legend::before {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 0 3px var(--green-soft);
+  content: "";
+}
+
+.profile-learning-progress {
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  gap: var(--space-3);
+  min-width: 0;
+  max-height: 350px;
+  overflow: hidden;
+  padding: var(--space-3);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-md);
+  background: var(--card);
+}
+
+.profile-learning-progress-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.profile-learning-progress-head > div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.profile-learning-progress-head span {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.profile-learning-progress-head strong {
+  font-size: 0.95rem;
+}
+
+.profile-learning-progress-head > svg {
+  flex: 0 0 auto;
+  color: var(--green);
+}
+
+.admin-progress-levels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.admin-progress-level {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-width: 0;
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-pill);
+  color: var(--muted);
+  font-size: 0.68rem;
+}
+
+.admin-progress-level i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.admin-progress-level strong {
+  color: inherit;
+  font-size: inherit;
+  font-weight: 700;
+}
+
+.admin-progress-level small {
+  color: var(--faint);
+  font-size: inherit;
+  font-variant-numeric: tabular-nums;
+}
+
+.admin-progress-level--easy {
+  color: var(--green);
+}
+
+.admin-progress-level--medium {
+  color: var(--amber);
+}
+
+.admin-progress-level--hard {
+  color: var(--red);
+}
+
+.admin-progress-tree {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.admin-progress-track,
+.admin-progress-module,
+.admin-progress-lesson {
+  min-width: 0;
+}
+
+.admin-progress-toggle {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-2);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  transition: border-color 140ms ease, background 140ms ease;
+}
+
+.admin-progress-toggle:hover {
+  border-color: var(--line);
+  background: var(--surface-2);
+}
+
+.admin-progress-toggle > svg:first-child {
+  flex: 0 0 auto;
+  color: var(--faint);
+  transition: transform 140ms ease;
+}
+
+.admin-progress-toggle.is-expanded > svg:first-child {
+  transform: rotate(90deg);
+}
+
+.admin-progress-track-toggle {
+  border-color: var(--line-soft);
+  background: var(--surface-2);
+}
+
+.admin-progress-module-toggle {
+  padding-block: 6px;
+}
+
+.admin-progress-lesson-toggle {
+  padding-block: var(--space-1);
+  padding-left: var(--space-1);
+}
+
+.admin-progress-toggle-copy {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+  gap: 1px;
+}
+
+.admin-progress-toggle-copy strong,
+.admin-progress-toggle-copy small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-progress-toggle-copy strong {
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.admin-progress-toggle-copy small {
+  color: var(--faint);
+  font-size: 0.68rem;
+}
+
+.admin-progress-count {
+  flex: 0 0 auto;
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.admin-progress-modules,
+.admin-progress-lessons {
+  display: grid;
+  gap: 2px;
+  margin: var(--space-1) 0 0 var(--space-2);
+  padding-left: var(--space-2);
+  border-left: 1px solid var(--line-soft);
+}
+
+.admin-progress-lessons {
+  margin-top: 2px;
+  padding-left: var(--space-2);
+}
+
+.admin-progress-status {
+  flex: 0 0 auto;
+  width: 8px;
+  height: 8px;
+  border: 1px solid var(--faint);
+  border-radius: 50%;
+}
+
+.admin-progress-status.is-done {
+  border-color: var(--green);
+  background: var(--green);
+}
+
+.admin-progress-status.is-pending {
+  border-color: var(--green);
+  background: transparent;
+}
+
+.admin-progress-status.is-neutral {
+  border-color: var(--line);
+  background: var(--line);
+}
+
+.admin-progress-tasks {
+  display: grid;
+  gap: var(--space-1);
+  margin: 1px 0 var(--space-1) var(--space-6);
+  padding: var(--space-1) var(--space-2);
+  border-left: 1px solid var(--line-soft);
+}
+
+.admin-progress-task {
+  display: flex;
+  align-items: flex-start;
+  min-width: 0;
+  gap: var(--space-2);
+  color: var(--muted);
+  font-size: 0.7rem;
+  line-height: 1.35;
+}
+
+.admin-progress-task > svg {
+  flex: 0 0 auto;
+  margin-top: 1px;
+}
+
+.admin-progress-task > svg.is-done {
+  color: var(--green);
+}
+
+.admin-progress-task-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-progress-task-level {
+  flex: 0 0 auto;
+  padding: 2px var(--space-1);
+  border: 1px solid currentColor;
+  border-radius: var(--radius-pill);
+  font-size: 0.62rem;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.admin-progress-task-level.is-easy {
+  color: var(--green);
+}
+
+.admin-progress-task-level.is-medium {
+  color: var(--amber);
+}
+
+.admin-progress-task-level.is-hard {
+  color: var(--red);
+}
+
+.admin-progress-task-level.is-manual {
+  color: var(--faint);
+}
+
+.admin-progress-task-dot {
+  flex: 0 0 auto;
+  width: 7px;
+  height: 7px;
+  margin-top: var(--space-1);
+  border: 1px solid var(--faint);
+  border-radius: 50%;
+}
+
+.profile-actions {
+  display: inline-flex;
+  gap: 6px;
+}
+
+.profile-actions button {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.84rem;
+  transition: border-color 140ms ease;
+}
+
+.profile-actions button:hover:not(:disabled) {
+  border-color: var(--green);
+}
+
+.profile-actions button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.profile-actions .is-danger:hover:not(:disabled) {
+  border-color: var(--red);
+  color: var(--red);
+}
+
+.profile-bookings {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.profile-bookings-title {
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.profile-booking-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+
+.profile-booking-row svg {
+  color: var(--green);
+}
+
+.profile-booking-row strong {
+  text-transform: capitalize;
+  font-size: 0.88rem;
+}
+
+.profile-booking-row span {
+  color: var(--muted);
+  font-size: 0.84rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Удаление аккаунта: отделено от остальных действий и требует ввода слова */
+.profile-danger {
+  display: grid;
+  gap: var(--space-2);
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--line-soft);
+}
+
+.profile-danger .profile-bookings-title {
+  color: var(--danger, #ef4444);
+}
+
+.profile-danger-input {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: inherit;
+  font: inherit;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.profile-danger-input:focus {
+  outline: none;
+  border-color: var(--danger, #ef4444);
+}
+
+@media (max-width: 760px) {
+  .profile-overview-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .profile-activity-calendar {
+    width: min(100%, 306px);
+  }
+
+  .profile-learning-progress {
+    max-height: 350px;
+  }
+}
+
+/* Плашка остатка занятий у студента */
+.quota-badge {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--green);
+  border-radius: var(--radius-sm);
+  background: var(--green-soft);
+  color: var(--text);
+  font-size: 0.84rem;
+}
+
+.quota-badge svg {
+  flex-shrink: 0;
+  color: var(--green);
+}
+
+.quota-badge.is-empty {
+  border-color: var(--line);
+  background: var(--surface-2);
+  color: var(--muted);
+}
+
+.quota-badge.is-empty svg {
+  color: var(--muted);
+}
+
+.slot-form .primary-action {
+  height: 40px;
+}
+
+.slots-month-head {
+  padding-bottom: var(--space-1);
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.slot-row {
+  display: grid;
+  grid-template-columns: minmax(150px, 1fr) minmax(120px, 1fr) auto;
+  gap: var(--space-3);
+  align-items: center;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-md);
+  background: var(--card);
+}
+
+.slot-row.is-past {
+  opacity: 0.5;
+}
+
+.slot-row-when {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.slot-row-when svg {
+  color: var(--green);
+  flex-shrink: 0;
+}
+
+.slot-row-when strong {
+  display: block;
+  font-size: 0.9rem;
+}
+
+.slot-row-when small {
+  display: block;
+  color: var(--faint);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.35;
+  white-space: nowrap;
+}
+
+.slot-free {
+  color: var(--green);
+  font-weight: 600;
+  font-size: 0.86rem;
+}
+
+.slot-booked {
+  display: grid;
+  font-size: 0.86rem;
+  color: var(--text);
+}
+
+.slot-booked small {
+  color: var(--faint);
+}
+
+.slot-delete:hover {
+  color: var(--red);
+}
+

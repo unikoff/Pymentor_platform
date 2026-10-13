@@ -1,8 +1,8 @@
-# 92. PATCH: только переданные изменения
+# 92. PATCH: выбор полей
 
 > Тип документа: внутренний план занятия, этап 2
 > Курс и блок: Глава 4. FastAPI, SQLite и SQLAlchemy — блок 15
-> Концепт блока: [BLOCK_15.md](../../../../../docs/concept/fastapi-sqlalchemy/BLOCK_15.md)
+> Концепт блока: [BLOCK_15.md](../../../../../docs/concept/chapter_04/BLOCK_15.md)
 
 ## Место в маршруте
 

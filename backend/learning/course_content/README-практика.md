@@ -13,7 +13,6 @@ planner_api/
 ├── block_00/
 │   ├── __init__.py
 │   ├── План обучения.md
-│   ├── Теория месяца.md
 │   └── manual.py            # OVERVIEW_PRACTICE: имена обзорных Markdown
 └── block_09/                # остальные блоки устроены так же
     ├── 45 - ...md           # теория занятия

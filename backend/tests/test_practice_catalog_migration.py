@@ -7,7 +7,7 @@ import unittest
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from types import SimpleNamespace
-from unittest.mock import AsyncMock, patch
+from unittest.mock import Mock, patch
 from urllib.parse import urlencode
 
 from fastapi import FastAPI
@@ -188,7 +188,7 @@ class PracticeCatalogMigrationTests(unittest.TestCase):
     def test_moved_markdown_keeps_lesson_ids_and_module_labels(self):
         track = content.find_track(planner_api.TRACK_ID)
         self.assertIsNotNone(track)
-        self.assertEqual(26, len(track["lessons"]))
+        self.assertEqual(25, len(track["lessons"]))
         for lesson in track["lessons"]:
             source = lesson["source_file"]
             filename = Path(source).name
@@ -255,7 +255,7 @@ class PracticeMigrationAPITests(unittest.TestCase):
         self.track = content.find_track(planner_api.TRACK_ID)
 
     def test_first_course_keeps_free_overview_and_first_block(self):
-        with patch.object(routers, "get_optional_user", AsyncMock(return_value=None)):
+        with patch.object(routers, "get_optional_user", Mock(return_value=None)):
             status, response = self.request(
                 "/learning/lessons", params={"track": foundations.TRACK_ID}
             )
@@ -300,12 +300,12 @@ class PracticeMigrationAPITests(unittest.TestCase):
 
     def test_api_returns_all_blocks_and_preserves_subscription_checks(self):
         user = SimpleNamespace(id=1, subscription_until=datetime.now(timezone.utc) + timedelta(days=1))
-        with patch.object(routers, "get_optional_user", AsyncMock(return_value=user)), \
+        with patch.object(routers, "get_optional_user", Mock(return_value=user)), \
                 patch.object(routers.user_crud, "get_completed_lesson_ids", return_value=set()):
             status, response = self.request("/learning/lessons", params={"track": planner_api.TRACK_ID})
         self.assertEqual(200, status)
         lessons = response["lessons"]
-        self.assertEqual(26, len(lessons))
+        self.assertEqual(25, len(lessons))
         self.assertTrue(all(lesson["is_available"] for lesson in lessons))
         for actual, original in zip(lessons, self.track["lessons"]):
             self.assertEqual(original["id"], actual["id"])
@@ -313,7 +313,7 @@ class PracticeMigrationAPITests(unittest.TestCase):
             for task in actual["tasks"]:
                 self.assertNotIn("tests", task)
                 self.assertNotIn("reference_code", task)
-        with patch.object(routers, "get_optional_user", AsyncMock(return_value=None)):
+        with patch.object(routers, "get_optional_user", Mock(return_value=None)):
             status, guest = self.request("/learning/lessons", params={"track": planner_api.TRACK_ID})
         self.assertEqual(200, status)
         self.assertEqual(["Карта обучения"], [lesson["title"] for lesson in guest["lessons"]
@@ -327,11 +327,11 @@ class PracticeMigrationAPITests(unittest.TestCase):
         lesson = next(lesson for lesson in self.track["lessons"] if Path(lesson["source_file"]).name.startswith("45 - "))
         user = SimpleNamespace(id=1, subscription_until=datetime.now(timezone.utc) + timedelta(days=1))
         endpoint = f"/learning/lessons/{lesson['id']}/theory"
-        with patch.object(routers, "get_optional_user", AsyncMock(return_value=user)):
+        with patch.object(routers, "get_optional_user", Mock(return_value=user)):
             status, response = self.request(endpoint)
         self.assertEqual(200, status)
         self.assertEqual(lesson["theory_markdown"], response["theory_markdown"])
-        with patch.object(routers, "get_optional_user", AsyncMock(return_value=None)):
+        with patch.object(routers, "get_optional_user", Mock(return_value=None)):
             self.assertEqual(403, self.request(endpoint)[0])
 
 

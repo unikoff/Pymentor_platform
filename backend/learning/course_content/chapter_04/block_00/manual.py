@@ -32,41 +32,4 @@ OVERVIEW_PRACTICE: dict[str, list[dict[str, Any]]] = {
                             'result': 'Готово, если один документ фиксирует HTTP-контракт, ограничения хранения и '
                                       'зелёный baseline tests. После этапа этот документ позволит доказать, что '
                                       'внешний API сохранился.'}],
-    'Теория месяца.md': [{'title': 'Нарисуйте два жизненных цикла StudyHub',
-                       'task': 'До написания SQLAlchemy-кода свяжите HTTP request и изменение schema в две '
-                               'последовательные схемы. Не используйте абстрактные слова без конкретного результата '
-                               'каждого шага.',
-                       'steps': ['Создайте docs/stage4-data-path.md.',
-                                 'Первая схема должна содержать: client, middleware before, router, validation, '
-                                 'dependency get_db, Session, statement, transaction, response model, middleware '
-                                 'after, client.',
-                                 'Для каждого шага подпишите один конкретный результат, например Session создана или '
-                                 'statement выполнен.',
-                                 'Вторая схема должна содержать: ORM model, Base.metadata, Alembic revision, '
-                                 'upgrade, database schema, следующая revision.',
-                                 'Отдельно запишите три границы: Pydantic проверяет HTTP-данные, SQLAlchemy '
-                                 'описывает ORM и запросы, Alembic изменяет schema во времени.',
-                                 'Добавьте один ошибочный путь: commit завершился IntegrityError, затем требуется '
-                                 'rollback перед следующим запросом.'],
-                       'result': 'Готово, если по первой схеме можно проследить один POST request, а по второй — '
-                                 'объяснить, почему изменение Python-модели само не меняет существующую database.'}],
-    '00 - Теория месяца.md': [{'title': 'Нарисуйте два жизненных цикла StudyHub',
-                            'task': 'До написания SQLAlchemy-кода свяжите HTTP request и изменение schema в две '
-                                    'последовательные схемы. Не используйте абстрактные слова без конкретного '
-                                    'результата каждого шага.',
-                            'steps': ['Создайте docs/stage4-data-path.md.',
-                                      'Первая схема должна содержать: client, middleware before, router, validation, '
-                                      'dependency get_db, Session, statement, transaction, response model, '
-                                      'middleware after, client.',
-                                      'Для каждого шага подпишите один конкретный результат, например Session '
-                                      'создана или statement выполнен.',
-                                      'Вторая схема должна содержать: ORM model, Base.metadata, Alembic revision, '
-                                      'upgrade, database schema, следующая revision.',
-                                      'Отдельно запишите три границы: Pydantic проверяет HTTP-данные, SQLAlchemy '
-                                      'описывает ORM и запросы, Alembic изменяет schema во времени.',
-                                      'Добавьте один ошибочный путь: commit завершился IntegrityError, затем '
-                                      'требуется rollback перед следующим запросом.'],
-                            'result': 'Готово, если по первой схеме можно проследить один POST request, а по второй '
-                                      '— объяснить, почему изменение Python-модели само не меняет существующую '
-                                      'database.'}]
 }

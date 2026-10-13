@@ -1,0 +1,63 @@
+import type { ComponentType } from "react";
+import { Lesson141 } from "./block_25/Lesson141";
+import { Lesson142 } from "./block_25/Lesson142";
+import { Lesson143 } from "./block_25/Lesson143";
+import { Lesson144 } from "./block_25/Lesson144";
+import { Lesson145 } from "./block_25/Lesson145";
+import { Lesson146 } from "./block_25/Lesson146";
+import { Lesson147 } from "./block_26/Lesson147";
+import { Lesson148 } from "./block_26/Lesson148";
+import { Lesson149 } from "./block_26/Lesson149";
+import { Lesson150 } from "./block_26/Lesson150";
+import { Lesson151 } from "./block_26/Lesson151";
+import { Lesson152 } from "./block_26/Lesson152";
+import { Lesson153 } from "./block_27/Lesson153";
+import { Lesson154 } from "./block_27/Lesson154";
+import { Lesson155 } from "./block_27/Lesson155";
+import { Lesson156 } from "./block_27/Lesson156";
+import { Lesson157 } from "./block_27/Lesson157";
+import { Lesson158 } from "./block_27/Lesson158";
+import { Lesson159 } from "./block_28/Lesson159";
+import { Lesson160 } from "./block_28/Lesson160";
+import { Lesson161 } from "./block_28/Lesson161";
+import { Lesson162 } from "./block_28/Lesson162";
+import { Lesson163 } from "./block_28/Lesson163";
+import { Lesson164 } from "./block_28/Lesson164";
+import { LearningRoadmap } from "./block_00/LearningRoadmap";
+
+const COURSE_FOLDER = "chapter_07";
+const LESSON_BLOCKS = [[141, 146, "block_25"], [147, 152, "block_26"], [153, 158, "block_27"], [159, 164, "block_28"]] as const;
+const source = (file: string) => {
+  const filename = file.split("/").pop() ?? file;
+  const lessonNumber = Number(filename.match(/^\d+/)?.[0] ?? 0);
+  const block = LESSON_BLOCKS.find(([first, last]) => lessonNumber >= first && lessonNumber <= last)?.[2] ?? "block_00";
+  return `${COURSE_FOLDER}/${block}/${filename}`;
+};
+
+export const pages: Record<string, ComponentType<{ module?: string }>> = {
+  [source("00 Обзор/План обучения.md")]: LearningRoadmap,
+  [source("Блок 25 - Coroutine, event loop и async,await (6 занятий)/141 - Блокирующее выполнение, CPU и I,O.md")]: Lesson141,
+  [source("Блок 25 - Coroutine, event loop и async,await (6 занятий)/142 - async def и coroutine object.md")]: Lesson142,
+  [source("Блок 25 - Coroutine, event loop и async,await (6 занятий)/143 - asyncio.run, event loop и первый await.md")]: Lesson143,
+  [source("Блок 25 - Coroutine, event loop и async,await (6 занятий)/144 - Последовательные await и иллюзия асинхронности.md")]: Lesson144,
+  [source("Блок 25 - Coroutine, event loop и async,await (6 занятий)/145 - Ошибки async-кода, забытый await и блокировка loop.md")]: Lesson145,
+  [source("Блок 25 - Coroutine, event loop и async,await (6 занятий)/146 - Мини-проект, трассировка асинхронного загрузчика.md")]: Lesson146,
+  [source("Блок 26 - Конкурентные задачи, timeout и cancellation (6 занятий)/147 - asyncio.create_task и жизненный цикл Task.md")]: Lesson147,
+  [source("Блок 26 - Конкурентные задачи, timeout и cancellation (6 занятий)/148 - asyncio.gather и сбор результатов.md")]: Lesson148,
+  [source("Блок 26 - Конкурентные задачи, timeout и cancellation (6 занятий)/149 - Timeout через asyncio.wait_for.md")]: Lesson149,
+  [source("Блок 26 - Конкурентные задачи, timeout и cancellation (6 занятий)/150 - Cancellation и обязательная очистка.md")]: Lesson150,
+  [source("Блок 26 - Конкурентные задачи, timeout и cancellation (6 занятий)/151 - Semaphore и ограничение concurrency.md")]: Lesson151,
+  [source("Блок 26 - Конкурентные задачи, timeout и cancellation (6 занятий)/152 - Частичные ошибки и итоговый async-агрегатор.md")]: Lesson152,
+  [source("Блок 27 - Асинхронный FastAPI и внешние HTTP-сервисы (6 занятий)/153 - def и async def внутри FastAPI.md")]: Lesson153,
+  [source("Блок 27 - Асинхронный FastAPI и внешние HTTP-сервисы (6 занятий)/154 - Первый запрос через httpx.AsyncClient.md")]: Lesson154,
+  [source("Блок 27 - Асинхронный FastAPI и внешние HTTP-сервисы (6 занятий)/155 - HTTP timeout, network errors и безопасный response.md")]: Lesson155,
+  [source("Блок 27 - Асинхронный FastAPI и внешние HTTP-сервисы (6 занятий)/156 - Dependency для внешнего клиента.md")]: Lesson156,
+  [source("Блок 27 - Асинхронный FastAPI и внешние HTTP-сервисы (6 занятий)/157 - Lifespan и переиспользование AsyncClient.md")]: Lesson157,
+  [source("Блок 27 - Асинхронный FastAPI и внешние HTTP-сервисы (6 занятий)/158 - Агрегирующий endpoint и mock внешнего API.md")]: Lesson158,
+  [source("Блок 28 - Async SQLAlchemy, нагрузка и наблюдаемость (6 занятий)/159 - AsyncEngine и async driver PostgreSQL.md")]: Lesson159,
+  [source("Блок 28 - Async SQLAlchemy, нагрузка и наблюдаемость (6 занятий)/160 - async_sessionmaker и get_db.md")]: Lesson160,
+  [source("Блок 28 - Async SQLAlchemy, нагрузка и наблюдаемость (6 занятий)/161 - Асинхронный SELECT и CRUD.md")]: Lesson161,
+  [source("Блок 28 - Async SQLAlchemy, нагрузка и наблюдаемость (6 занятий)/162 - Асинхронные транзакции и rollback.md")]: Lesson162,
+  [source("Блок 28 - Async SQLAlchemy, нагрузка и наблюдаемость (6 занятий)/163 - Связи, N+1 и connection pool.md")]: Lesson163,
+  [source("Блок 28 - Async SQLAlchemy, нагрузка и наблюдаемость (6 занятий)/164 - Нагрузочная проверка и финальный Async StudyHub.md")]: Lesson164,
+};

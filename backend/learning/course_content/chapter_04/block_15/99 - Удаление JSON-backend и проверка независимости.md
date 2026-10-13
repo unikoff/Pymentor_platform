@@ -1,8 +1,8 @@
-# 99. Удаление JSON-backend и проверка независимости
+# 99. Убираем JSON-backend
 
 > Тип документа: внутренний план занятия, этап 2  
 > Курс и блок: Глава 4. FastAPI, SQLite и SQLAlchemy — блок 15 «Полный SQL-путь и единое переключение»  
-> Концепт блока: [BLOCK_15.md](../../../../../docs/concept/fastapi-sqlalchemy/BLOCK_15.md)
+> Концепт блока: [BLOCK_15.md](../../../../../docs/concept/chapter_04/BLOCK_15.md)
 
 ## Место в маршруте
 

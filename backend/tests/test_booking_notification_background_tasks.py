@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import date
 from types import SimpleNamespace
-from unittest import IsolatedAsyncioTestCase
+from unittest import TestCase
 from unittest.mock import patch
 
 from fastapi import BackgroundTasks
@@ -11,8 +11,8 @@ from routers.user.routers import book_slot, cancel_slot
 from services.telegram import notify_booking_cancelled, notify_booking_created
 
 
-class BookingNotificationBackgroundTaskTests(IsolatedAsyncioTestCase):
-    async def test_booking_response_queues_notification_without_waiting_for_telegram(self) -> None:
+class BookingNotificationBackgroundTaskTests(TestCase):
+    def test_booking_response_queues_notification_without_waiting_for_telegram(self) -> None:
         user = SimpleNamespace(id=7, username="Никита", email="student@example.com")
         slot = SimpleNamespace(
             id=12,
@@ -26,7 +26,7 @@ class BookingNotificationBackgroundTaskTests(IsolatedAsyncioTestCase):
         with patch("routers.user.routers.crud.get_current_user", return_value=user), patch(
             "routers.user.routers.crud.book_slot", return_value=slot
         ):
-            await book_slot(slot_id=12, request=object(), background_tasks=background_tasks, db=object())
+            book_slot(slot_id=12, request=object(), background_tasks=background_tasks, db=object())
 
         self.assertEqual(len(background_tasks.tasks), 1)
         task = background_tasks.tasks[0]
@@ -41,7 +41,7 @@ class BookingNotificationBackgroundTaskTests(IsolatedAsyncioTestCase):
             },
         )
 
-    async def test_cancellation_response_queues_notification_without_waiting_for_telegram(self) -> None:
+    def test_cancellation_response_queues_notification_without_waiting_for_telegram(self) -> None:
         user = SimpleNamespace(id=7, username="Никита", email="student@example.com")
         slot = SimpleNamespace(
             id=12,
@@ -55,7 +55,7 @@ class BookingNotificationBackgroundTaskTests(IsolatedAsyncioTestCase):
         with patch("routers.user.routers.crud.get_current_user", return_value=user), patch(
             "routers.user.routers.crud.cancel_booking", return_value=slot
         ):
-            await cancel_slot(slot_id=12, request=object(), background_tasks=background_tasks, db=object())
+            cancel_slot(slot_id=12, request=object(), background_tasks=background_tasks, db=object())
 
         self.assertEqual(len(background_tasks.tasks), 1)
         task = background_tasks.tasks[0]

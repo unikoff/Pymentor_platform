@@ -1,8 +1,8 @@
-# 98. Единое переключение JSON → SQLite
+# 98. Переход на SQLite
 
 > Тип документа: внутренний план занятия, этап 2  
 > Курс и блок: глава 4 «FastAPI, SQLite и SQLAlchemy», блок 15  
-> Концепт блока: [BLOCK_15.md](../../../../../docs/concept/fastapi-sqlalchemy/BLOCK_15.md)
+> Концепт блока: [BLOCK_15.md](../../../../../docs/concept/chapter_04/BLOCK_15.md)
 
 ## Место в маршруте
 
