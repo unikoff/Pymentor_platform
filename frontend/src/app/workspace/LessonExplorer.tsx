@@ -1,6 +1,5 @@
 import { CheckCircle2, ChevronDown, ChevronRight, Lock, PanelLeftClose, Play } from "lucide-react";
-import type { Lesson, Track } from "../../features/learning/types";
-import { getLessonAccessLabel, isLessonUnavailable } from "../../features/learning/access";
+import { getLessonAccessLabel, isLessonUnavailable, type Lesson, type Track } from "../../features/learning";
 
 export function LessonExplorer({
   tracks,

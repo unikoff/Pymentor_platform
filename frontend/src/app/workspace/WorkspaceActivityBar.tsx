@@ -1,5 +1,5 @@
 import { BookOpen, Code2, ShieldCheck, User } from "lucide-react";
-import type { WorkspaceView } from "../../features/learning/types";
+import type { WorkspaceView } from "../../features/learning";
 
 export function WorkspaceActivityBar({
   isExplorerOpen,
