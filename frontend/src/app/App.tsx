@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-import { getCurrentUser } from "../features/auth/api";
-import { AuthScreen } from "../features/auth/AuthScreen";
+import { AuthScreen, getCurrentUser } from "../features/auth";
 import { Workspace } from "./Workspace";
 import { getInitialTheme } from "./theme";
 import type { UserProfile } from "../shared/api/contracts";

@@ -1,17 +1,14 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { CalendarClock, CalendarPlus, Clock, LogOut, Moon, Search, Sun, Trash2 } from "lucide-react";
-import { useLearningCourse } from "../features/learning/useLearningCourse";
-import { useAccountSchedule } from "../features/account/useAccountSchedule";
-import { logoutUser } from "../features/auth/api";
+import { AccountDrawer, useAccountSchedule } from "../features/account";
+import { logoutUser } from "../features/auth";
 import { getInitialCalendarMonth } from "../shared/lib/dates";
-import { PYTHON_TRACK_NAME } from "../features/learning/course";
-import { AdminScreen } from "../features/admin/AdminScreen";
-import { AccountDrawer } from "../features/account/AccountDrawer";
+import { AdminScreen } from "../features/admin";
+import { PYTHON_TRACK_NAME, useLearningCourse, type WorkspaceView } from "../features/learning";
 import { WorkspaceActivityBar } from "./workspace/WorkspaceActivityBar";
 import { LessonExplorer } from "./workspace/LessonExplorer";
 import { DEFAULT_OPEN_VIEWS, WorkspaceWorkbench } from "./workspace/WorkspaceWorkbench";
 import type { UserProfile, CalendarMonth } from "../shared/api/contracts";
-import type { WorkspaceView } from "../features/learning/types";
 import type { ThemeMode } from "../shared/ui/theme-toggle/types";
 
 const EXPLORER_MIN_WIDTH = 220;

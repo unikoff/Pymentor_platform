@@ -1,10 +1,14 @@
 import { ChevronRight, FileText, PanelLeftOpen, Terminal, User, X } from "lucide-react";
 import { ThemeToggle } from "../../shared/ui/theme-toggle/ThemeToggle";
-import { LessonNavigationProvider } from "../../features/learning/navigation/LessonNavigation";
-import { LearningPracticeView } from "../../features/learning/practice/LearningPracticeView";
-import { LearningTheoryView, LockedLessonView } from "../../features/learning/theory/MarkdownView";
-import { isLessonUnavailable } from "../../features/learning/access";
-import type { Lesson, WorkspaceView } from "../../features/learning/types";
+import {
+  isLessonUnavailable,
+  LearningPracticeView,
+  LearningTheoryView,
+  LessonNavigationProvider,
+  LockedLessonView,
+  type Lesson,
+  type WorkspaceView,
+} from "../../features/learning";
 import type { UserProfile } from "../../shared/api/contracts";
 import type { ThemeMode } from "../../shared/ui/theme-toggle/types";
 
