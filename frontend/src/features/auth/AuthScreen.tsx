@@ -1,19 +1,15 @@
+import "./auth.css";
 import { useState, type FormEvent } from "react";
 import { loginUser, registerUser } from "./api";
 import { ThemeToggle } from "../../shared/ui/theme-toggle/ThemeToggle";
 import type { UserProfile } from "../../shared/api/contracts";
-import type { ThemeMode } from "../../shared/ui/theme-toggle/types";
 type AuthMode = "login" | "register";
 
 export function AuthScreen({
   onAuth,
-  theme,
-  onToggleTheme,
   onBack,
 }: {
   onAuth: (user: UserProfile) => void;
-  theme: ThemeMode;
-  onToggleTheme: () => void;
   onBack?: () => void;
 }) {
   const [mode, setMode] = useState<AuthMode>("login");
@@ -64,7 +60,7 @@ export function AuthScreen({
                 Вернуться к урокам
               </button>
             )}
-            <ThemeToggle theme={theme} onToggleTheme={onToggleTheme} />
+            <ThemeToggle />
           </div>
         </div>
 

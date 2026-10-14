@@ -1,7 +1,12 @@
-import React, { useCallback, useEffect, useState } from "react";
-import { CalendarClock, ChevronDown, ChevronRight, Clock, Search, Trash2, X } from "lucide-react";
+import "../../account/calendar-base.css";
+import "../../account/calendar.css";
+import "./profile.css";
+import "./profile-actions.css";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { CalendarDays, ChevronLeft, ChevronRight, Clock, Trash2 } from "lucide-react";
 import { getStudentProfile, changeStudentSubscription, addStudentQuota, deleteStudent } from "../api";
-import { buildMonthCells, formatSlotDate, formatSlotTimeRange, getInitialCalendarMonth, getMonthTitle, shiftCalendarMonth, formatSubscriptionDate } from "../../../shared/lib/dates";
+import { formatSlotDate, formatSlotTimeRange, getInitialCalendarMonth, getMonthTitle, shiftCalendarMonth, formatSubscriptionDate } from "../../../shared/lib/dates";
+import { CalendarMonthGrid } from "../../../shared/ui/calendar/CalendarMonthGrid";
 import { AdminLearningProgress } from "../progress/AdminLearningProgress";
 import type { StudentProfile as StudentProfileData } from "../../../shared/api/contracts";
 import type { CalendarMonth } from "../../../shared/api/contracts/account";
@@ -19,12 +24,15 @@ export function AdminStudentProfile({
   onDeleted: () => void;
 }) {
   const [month, setMonth] = useState<CalendarMonth>(getInitialCalendarMonth);
+  const [selectedDay, setSelectedDay] = useState<string | null>(null);
   const [profile, setProfile] = useState<StudentProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [isBusy, setIsBusy] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState("");
+
+  useEffect(() => setSelectedDay(null), [month.year, month.month]);
 
   const loadProfile = useCallback(() => {
     setIsLoading(true);
@@ -71,6 +79,18 @@ export function AdminStudentProfile({
     }
   }
 
+  const activityDays = useMemo(() => new Set(profile?.activity_days ?? []), [profile?.activity_days]);
+  const bookingsByDay = useMemo(() => {
+    const byDay = new Map<string, StudentProfile["bookings"]>();
+    for (const booking of profile?.bookings ?? []) {
+      const bookings = byDay.get(booking.date) ?? [];
+      bookings.push(booking);
+      byDay.set(booking.date, bookings);
+    }
+    return byDay;
+  }, [profile?.bookings]);
+  const bookingDays = useMemo(() => new Set(bookingsByDay.keys()), [bookingsByDay]);
+
   if (isLoading && !profile) {
     return (
       <div className="admin-profile">
@@ -93,7 +113,7 @@ export function AdminStudentProfile({
     );
   }
 
-  const activityDays = new Set(profile.activity_days);
+  const selectedBookings = selectedDay ? bookingsByDay.get(selectedDay) ?? [] : [];
 
   return (
     <div className="admin-profile">
@@ -109,18 +129,6 @@ export function AdminStudentProfile({
             {profile.is_admin && <span className="admin-badge">admin</span>}
           </strong>
           <small>{profile.email}</small>
-        </div>
-      </div>
-
-      <div className="calendar-head slots-month-head">
-        <strong>{getMonthTitle(month)}</strong>
-        <div className="calendar-nav">
-          <button type="button" onClick={() => setMonth(shiftCalendarMonth(month, -1))} aria-label="Предыдущий месяц">
-            ‹
-          </button>
-          <button type="button" onClick={() => setMonth(shiftCalendarMonth(month, 1))} aria-label="Следующий месяц">
-            ›
-          </button>
         </div>
       </div>
 
@@ -156,65 +164,72 @@ export function AdminStudentProfile({
         </div>
       </div>
 
-      <div className="profile-overview-grid">
-        <section className="profile-activity-calendar" aria-label="Календарь активности">
-          <div className="profile-activity-calendar-head">
+      <section className="account-calendar admin-profile-calendar" aria-label="Календарь активности и записей пользователя">
+        <header className="account-calendar__header">
+          <div className="account-calendar__title">
+            <span className="account-calendar__icon"><CalendarDays size={19} /></span>
             <div>
-              <span>Активность</span>
-              <strong>{profile.activity_days_count} дней заходил в этом месяце</strong>
+              <span className="account-calendar__eyebrow">АКТИВНОСТЬ И ЗАПИСИ</span>
+              <h2>{getMonthTitle(month)}</h2>
+              <span className="admin-profile-calendar__count">Активных дней: {profile.activity_days_count}</span>
             </div>
-            <span className="profile-activity-legend">Заходил</span>
           </div>
-          <div className="calendar-weekdays" aria-hidden="true">
-            <span>Пн</span>
-            <span>Вт</span>
-            <span>Ср</span>
-            <span>Чт</span>
-            <span>Пт</span>
-            <span>Сб</span>
-            <span>Вс</span>
+          <div className="account-calendar__navigation" aria-label="Навигация по месяцам">
+            <button type="button" onClick={() => setMonth(shiftCalendarMonth(month, -1))} aria-label="Предыдущий месяц">
+              <ChevronLeft size={18} />
+            </button>
+            <button type="button" onClick={() => setMonth(shiftCalendarMonth(month, 1))} aria-label="Следующий месяц">
+              <ChevronRight size={18} />
+            </button>
           </div>
-          <div className="calendar-grid" role="grid" aria-label={`Активность за ${getMonthTitle(month)}`}>
-            {buildMonthCells(month).map((cell, index) => {
-              if (!cell) {
-                return <span className="calendar-day is-empty" key={`empty-${index}`} aria-hidden="true" />;
-              }
+        </header>
 
-              const wasActive = activityDays.has(cell.dateKey);
-              return (
-                <span
-                  className={`calendar-day ${wasActive ? "is-active" : ""}`}
-                  key={cell.key}
-                  role="gridcell"
-                  title={wasActive ? "Заходил" : undefined}
-                  aria-label={`${cell.day}: ${wasActive ? "заходил" : "не заходил"}`}
-                >
-                  {cell.day}
-                </span>
-              );
-            })}
+        <div className="account-calendar__layout">
+          <div className="account-calendar__main">
+            <CalendarMonthGrid
+              month={month}
+              activityDays={activityDays}
+              bookingDays={bookingDays}
+              selectableDays={bookingDays}
+              selectedDay={selectedDay}
+              onSelectDay={setSelectedDay}
+              legend={[
+                { marker: "is-activity", label: "Был на платформе" },
+                { marker: "is-booking", label: "Запись на занятие" },
+              ]}
+            />
           </div>
-        </section>
 
-        <AdminLearningProgress progress={profile.learning_progress ?? []} />
-      </div>
-
-      <div className="profile-bookings">
-        <span className="profile-bookings-title">Записи на занятия</span>
-        {profile.bookings.length === 0 ? (
-          <p className="admin-note">В этом месяце записей нет.</p>
-        ) : (
-          profile.bookings.map((booking) => (
-            <div className="profile-booking-row" key={booking.id}>
-              <Clock size={14} />
-              <strong>{formatSlotDate(booking.date)}</strong>
-              <span>
-                {formatSlotTimeRange(booking.start_time, booking.duration_minutes)} · {booking.duration_minutes} мин
-              </span>
+          <aside className="account-calendar__details" aria-live="polite">
+            <div className="account-calendar__details-heading">
+              <span className="account-calendar__details-icon"><Clock size={16} /></span>
+              <div>
+                <span className="account-calendar__eyebrow">ЗАПИСЬ НА ЗАНЯТИЕ</span>
+                <h3>{selectedDay ? formatSlotDate(selectedDay) : "Занятия пользователя"}</h3>
+              </div>
             </div>
-          ))
-        )}
-      </div>
+            {selectedBookings.length > 0 ? (
+              <div className="admin-profile-calendar__bookings">
+                {selectedBookings.map((booking) => (
+                  <div className="admin-profile-calendar__booking" key={booking.id}>
+                    <Clock size={14} />
+                    <strong>{formatSlotTimeRange(booking.start_time, booking.duration_minutes)}</strong>
+                    <span>{booking.duration_minutes} мин</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="account-calendar__empty">
+                {profile.bookings.length === 0
+                  ? "В этом месяце записей нет."
+                  : "Выберите день с отметкой записи, чтобы посмотреть время занятия."}
+              </p>
+            )}
+          </aside>
+        </div>
+      </section>
+
+      <AdminLearningProgress progress={profile.learning_progress ?? []} />
 
       <div className="profile-danger">
         <span className="profile-bookings-title">Опасная зона</span>

@@ -1,0 +1,55 @@
+/* ---- Правда или ложь (TrueFalse) ---- */
+.truefalse-head {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.truefalse-head svg {
+  flex-shrink: 0;
+  margin-top: 3px;
+  color: var(--accent);
+}
+
+.truefalse-head p {
+  margin: 0;
+  font-size: 1.02rem;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.truefalse-buttons {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.truefalse-buttons button {
+  flex: 1;
+  padding: var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--text);
+  cursor: pointer;
+  font-weight: 600;
+  transition: border-color 140ms ease, transform 140ms ease;
+}
+
+.truefalse-buttons button:hover:not(:disabled) {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.truefalse-buttons button.is-correct {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.truefalse-buttons button.is-wrong {
+  border-color: var(--error);
+  background: color-mix(in srgb, var(--error) 10%, transparent);
+}
+
+.truefalse-buttons button:disabled {
+  cursor: default;
+}

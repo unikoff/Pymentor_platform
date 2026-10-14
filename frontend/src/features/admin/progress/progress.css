@@ -1,0 +1,288 @@
+.profile-learning-progress {
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  gap: var(--space-3);
+  min-width: 0;
+  max-height: 350px;
+  overflow: hidden;
+  padding: var(--space-3);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-md);
+  background: var(--card);
+}
+
+.profile-learning-progress-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.profile-learning-progress-head > div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.profile-learning-progress-head span {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.profile-learning-progress-head strong {
+  font-size: 0.95rem;
+}
+
+.profile-learning-progress-head > svg {
+  flex: 0 0 auto;
+  color: var(--accent);
+}
+
+.admin-progress-levels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.admin-progress-level {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-width: 0;
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-pill);
+  color: var(--muted);
+  font-size: 0.68rem;
+}
+
+.admin-progress-level i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.admin-progress-level strong {
+  color: inherit;
+  font-size: inherit;
+  font-weight: 700;
+}
+
+.admin-progress-level small {
+  color: var(--faint);
+  font-size: inherit;
+  font-variant-numeric: tabular-nums;
+}
+
+.admin-progress-level--easy {
+  color: var(--accent);
+}
+
+.admin-progress-level--medium {
+  color: var(--accent-secondary);
+}
+
+.admin-progress-level--hard {
+  color: var(--negative);
+}
+
+.admin-progress-tree {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.admin-progress-track,
+.admin-progress-module,
+.admin-progress-lesson {
+  min-width: 0;
+}
+
+.admin-progress-toggle {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-2);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  transition: border-color 140ms ease, background 140ms ease;
+}
+
+.admin-progress-toggle:hover {
+  border-color: var(--line);
+  background: var(--surface-2);
+}
+
+.admin-progress-toggle > svg:first-child {
+  flex: 0 0 auto;
+  color: var(--faint);
+  transition: transform 140ms ease;
+}
+
+.admin-progress-toggle.is-expanded > svg:first-child {
+  transform: rotate(90deg);
+}
+
+.admin-progress-track-toggle {
+  border-color: var(--line-soft);
+  background: var(--surface-2);
+}
+
+.admin-progress-module-toggle {
+  padding-block: 6px;
+}
+
+.admin-progress-lesson-toggle {
+  padding-block: var(--space-1);
+  padding-left: var(--space-1);
+}
+
+.admin-progress-toggle-copy {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+  gap: 1px;
+}
+
+.admin-progress-toggle-copy strong,
+.admin-progress-toggle-copy small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-progress-toggle-copy strong {
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.admin-progress-toggle-copy small {
+  color: var(--faint);
+  font-size: 0.68rem;
+}
+
+.admin-progress-count {
+  flex: 0 0 auto;
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.admin-progress-modules,
+.admin-progress-lessons {
+  display: grid;
+  gap: 2px;
+  margin: var(--space-1) 0 0 var(--space-2);
+  padding-left: var(--space-2);
+  border-left: 1px solid var(--line-soft);
+}
+
+.admin-progress-lessons {
+  margin-top: 2px;
+  padding-left: var(--space-2);
+}
+
+.admin-progress-status {
+  flex: 0 0 auto;
+  width: 8px;
+  height: 8px;
+  border: 1px solid var(--faint);
+  border-radius: 50%;
+}
+
+.admin-progress-status.is-done {
+  border-color: var(--accent);
+  background: var(--accent);
+}
+
+.admin-progress-status.is-pending {
+  border-color: var(--accent);
+  background: transparent;
+}
+
+.admin-progress-status.is-neutral {
+  border-color: var(--line);
+  background: var(--line);
+}
+
+.admin-progress-tasks {
+  display: grid;
+  gap: var(--space-1);
+  margin: 1px 0 var(--space-1) var(--space-6);
+  padding: var(--space-1) var(--space-2);
+  border-left: 1px solid var(--line-soft);
+}
+
+.admin-progress-task {
+  display: flex;
+  align-items: flex-start;
+  min-width: 0;
+  gap: var(--space-2);
+  color: var(--muted);
+  font-size: 0.7rem;
+  line-height: 1.35;
+}
+
+.admin-progress-task > svg {
+  flex: 0 0 auto;
+  margin-top: 1px;
+}
+
+.admin-progress-task > svg.is-done {
+  color: var(--accent);
+}
+
+.admin-progress-task-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-progress-task-level {
+  flex: 0 0 auto;
+  padding: 2px var(--space-1);
+  border: 1px solid currentColor;
+  border-radius: var(--radius-pill);
+  font-size: 0.62rem;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.admin-progress-task-level.is-easy {
+  color: var(--accent);
+}
+
+.admin-progress-task-level.is-medium {
+  color: var(--accent-secondary);
+}
+
+.admin-progress-task-level.is-hard {
+  color: var(--negative);
+}
+
+.admin-progress-task-level.is-manual {
+  color: var(--faint);
+}
+
+.admin-progress-task-dot {
+  flex: 0 0 auto;
+  width: 7px;
+  height: 7px;
+  margin-top: var(--space-1);
+  border: 1px solid var(--faint);
+  border-radius: 50%;
+}

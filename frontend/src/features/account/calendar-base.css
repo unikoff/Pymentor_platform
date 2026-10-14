@@ -1,0 +1,26 @@
+.calendar-head {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.calendar-head strong {
+  text-transform: capitalize;
+}
+
+.calendar-nav {
+  display: inline-flex;
+  gap: 6px;
+}
+
+.calendar-nav button {
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  background: var(--surface-2);
+  color: var(--text);
+  cursor: pointer;
+}
+

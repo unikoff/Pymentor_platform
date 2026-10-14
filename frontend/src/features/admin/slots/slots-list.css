@@ -1,0 +1,185 @@
+/* Плашка остатка занятий у студента */
+.quota-badge {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+  background: var(--accent-soft);
+  color: var(--text);
+  font-size: 0.84rem;
+}
+
+.quota-badge svg {
+  flex-shrink: 0;
+  color: var(--accent);
+}
+
+.quota-badge.is-empty {
+  border-color: var(--line);
+  background: var(--surface-2);
+  color: var(--muted);
+}
+
+.quota-badge.is-empty svg {
+  color: var(--muted);
+}
+
+.slot-form .primary-action {
+  height: 40px;
+}
+
+.slots-month-head {
+  padding-bottom: var(--space-1);
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.slot-row {
+  display: grid;
+  grid-template-columns: minmax(150px, 1fr) minmax(120px, 1fr) auto;
+  gap: var(--space-3);
+  align-items: center;
+  min-height: 72px;
+  padding: 14px 18px;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+}
+
+.slot-row.is-past {
+  opacity: 0.5;
+}
+
+.slot-row-when {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.slot-row-when svg {
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.slot-row-when strong {
+  display: block;
+  font-size: 0.9rem;
+}
+
+.slot-row-when small {
+  display: block;
+  color: var(--faint);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.35;
+  white-space: nowrap;
+}
+
+.slot-free {
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 0.86rem;
+}
+
+.slot-booked {
+  display: grid;
+  font-size: 0.86rem;
+  color: var(--text);
+}
+
+.slot-booked small {
+  color: var(--faint);
+}
+
+.slot-delete:hover {
+  color: var(--negative);
+}
+
+@container admin-screen (max-width: 720px) {
+  .admin-summary {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  .admin-summary-card {
+    min-height: 68px;
+    padding: 12px 14px;
+  }
+
+  .admin-title-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 15px;
+  }
+
+  .admin-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .admin-row-meta {
+    grid-column: 1;
+  }
+
+  .admin-row-chevron {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+  }
+
+  .slot-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .slot-row-status {
+    grid-column: 1 / -1;
+  }
+
+  .slot-form label {
+    flex: 1 1 140px;
+  }
+}
+
+@container admin-screen (max-width: 430px) {
+  .admin-title {
+    align-items: flex-start;
+    gap: 11px;
+  }
+
+  .admin-title-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 13px;
+  }
+
+  .admin-title-icon svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .admin-title p {
+    max-width: 260px;
+    font-size: 0.82rem;
+  }
+
+  .admin-tabs {
+    gap: 4px;
+  }
+
+  .admin-tabs button {
+    min-height: 36px;
+    padding-inline: 10px;
+    font-size: 0.78rem;
+  }
+
+  .admin-section-heading {
+    align-items: flex-start;
+  }
+
+  .admin-result-count {
+    padding: 5px 8px;
+    font-size: 0.68rem;
+  }
+
+  .admin-row {
+    padding: 12px;
+  }
+}

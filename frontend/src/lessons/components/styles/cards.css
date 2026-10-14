@@ -1,0 +1,167 @@
+.type-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--lesson-stack);
+}
+
+.learning-roadmap-preview .type-cards {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (max-width: 640px) {
+  .learning-roadmap-preview .type-cards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.type-card {
+  display: grid;
+  gap: var(--space-3);
+  align-content: start;
+  padding: var(--space-5);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--card);
+  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+}
+
+.type-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--accent);
+  box-shadow: var(--shadow);
+}
+
+.type-card h3 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.type-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+
+.type-card-badge {
+  justify-self: start;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-pill);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-family: "JetBrains Mono", Consolas, monospace;
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+.type-card-badge--float {
+  background: color-mix(in srgb, var(--info) 16%, transparent);
+  color: var(--info);
+}
+
+.type-card-badge--str {
+  background: color-mix(in srgb, var(--accent-secondary-glow) 16%, transparent);
+  color: var(--syntax-warm);
+}
+
+.code-block {
+  display: block;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-md);
+  background: var(--code-bg);
+}
+
+.code-block figcaption {
+  margin: 0;
+  padding: var(--space-3) var(--space-5);
+  border-bottom: 1px solid var(--line-soft);
+  background: color-mix(in srgb, var(--surface-2) 38%, transparent);
+  color: var(--faint);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.code-block pre {
+  margin: 0;
+  padding: var(--space-4) var(--space-5);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--code-text);
+  font-size: 0.9rem;
+  overflow-x: auto;
+}
+
+.type-card .code-block pre {
+  font-size: 0.82rem;
+  padding: var(--space-3) var(--space-4);
+}
+
+.lesson-callout {
+  display: flex;
+  gap: var(--lesson-stack-tight);
+  align-items: flex-start;
+  margin: 0;
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid color-mix(in srgb, var(--accent-secondary-glow) 40%, transparent);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--accent-secondary-glow) 9%, transparent);
+}
+
+.lesson-callout svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--syntax-warm);
+}
+
+.lesson-callout p {
+  margin: 0;
+  color: var(--text);
+  line-height: 1.62;
+  font-size: 0.94rem;
+}
+
+.method-grid {
+  display: grid;
+  gap: var(--lesson-stack-tight);
+  margin: 0;
+}
+
+.method-row {
+  display: grid;
+  grid-template-columns: minmax(180px, 240px) 1fr;
+  gap: var(--space-4);
+  align-items: center;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+
+.method-row > code {
+  font-family: "JetBrains Mono", Consolas, monospace;
+  font-size: 0.88rem;
+  color: var(--accent);
+}
+
+.method-row span {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.method-row span code {
+  color: var(--text);
+}
+
+.lesson-callout--info {
+  border-color: color-mix(in srgb, var(--info) 40%, transparent);
+  background: color-mix(in srgb, var(--info) 8%, transparent);
+}
+
+.lesson-callout--info svg {
+  color: var(--info);
+}

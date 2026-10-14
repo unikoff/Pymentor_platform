@@ -1,0 +1,28 @@
+/* ==================== Дизайн-страницы уроков ==================== */
+
+.document-view--rich {
+  max-width: var(--content-width);
+}
+
+.workspace--explorer-closed .dock-workbench--single-workspace .dock-lesson .document-view {
+  max-width: min(100%, 88rem);
+}
+
+.rich-lesson {
+  display: grid;
+  gap: var(--lesson-section-gap);
+}
+
+.rich-section {
+  display: grid;
+  gap: var(--lesson-stack-relaxed);
+  min-width: 0;
+}
+
+.rich-section > * {
+  min-width: 0;
+}
+
+.rich-section > p {
+  margin: 0;
+}

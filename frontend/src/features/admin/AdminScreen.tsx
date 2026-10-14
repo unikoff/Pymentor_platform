@@ -1,13 +1,28 @@
-import React, { useCallback, useEffect, useState } from "react";
-import { CalendarClock, ChevronRight, Search, ShieldCheck, User, X } from "lucide-react";
+import "./dashboard.css";
+import { useEffect, useState } from "react";
+import { BookCheck, CalendarClock, ChevronRight, Search, ShieldCheck, User, UsersRound } from "lucide-react";
 import { searchAdminAccounts } from "./api";
 import { formatSubscriptionDate } from "../../shared/lib/dates";
-import { AdminLearningProgress } from "./progress/AdminLearningProgress";
-import { AdminStudentProfile } from "./students/AdminStudentProfile";
-import { AdminSlotsView } from "./slots/AdminSlotsView";
+import { lazyNamed } from "../../shared/ui/async-boundary/lazyNamed";
+import { AsyncBoundary } from "../../shared/ui/async-boundary/AsyncBoundary";
 import type { AdminAccount } from "../../shared/api/contracts";
+const AdminStudentProfile = lazyNamed(() => import("./students/AdminStudentProfile"), "AdminStudentProfile");
+const AdminSlotsView = lazyNamed(() => import("./slots/AdminSlotsView"), "AdminSlotsView");
 
-export function AdminScreen({ onClose }: { onClose: () => void }) {
+function formatAccountCount(count: number) {
+  const lastTwoDigits = count % 100;
+  const lastDigit = count % 10;
+  const noun = lastTwoDigits >= 11 && lastTwoDigits <= 14
+    ? "аккаунтов"
+    : lastDigit === 1
+      ? "аккаунт"
+      : lastDigit >= 2 && lastDigit <= 4
+        ? "аккаунта"
+        : "аккаунтов";
+
+  return `${count.toLocaleString("ru-RU")} ${noun}`;
+}
+export function AdminScreen() {
   const [adminTab, setAdminTab] = useState<"accounts" | "slots">("accounts");
   const [openStudentId, setOpenStudentId] = useState<number | null>(null);
   const [search, setSearch] = useState("");
@@ -16,6 +31,8 @@ export function AdminScreen({ onClose }: { onClose: () => void }) {
   const [error, setError] = useState("");
   // Меняется после удаления аккаунта, чтобы список перезапросился.
   const [reloadKey, setReloadKey] = useState(0);
+  const activeSubscriptions = accounts.filter((account) => account.has_active_subscription).length;
+  const completedLessons = accounts.reduce((total, account) => total + account.completed_lessons, 0);
 
   useEffect(() => {
     let cancelled = false;
@@ -48,25 +65,40 @@ export function AdminScreen({ onClose }: { onClose: () => void }) {
   }, [search, reloadKey]);
 
   return (
-    <div className="admin-layer" role="dialog" aria-modal="true" aria-label="Админ-панель">
-      <div className="admin-panel">
+      <section className="admin-panel" aria-label="Админ-панель">
         <header className="admin-head">
           <div className="admin-title">
-            <ShieldCheck size={20} />
+            <span className="admin-title-icon"><ShieldCheck size={21} /></span>
             <div>
-              <strong>Админ-панель</strong>
-              <small>Аккаунты и подписки</small>
+              <span className="admin-eyebrow">УПРАВЛЕНИЕ ПЛАТФОРМОЙ</span>
+              <h1>Админ-панель</h1>
+              <p>Аккаунты, обучение и расписание занятий — в одном месте.</p>
             </div>
           </div>
-          <button className="icon-button" type="button" onClick={onClose} title="Закрыть">
-            <X size={18} />
-          </button>
         </header>
+
+        {adminTab === "accounts" && openStudentId === null && (
+          <div className="admin-summary" aria-label="Сводка по аккаунтам">
+            <section className="admin-summary-card">
+              <span className="admin-summary-icon"><UsersRound size={17} /></span>
+              <div><small>Аккаунтов в выборке</small><strong>{isLoading ? "—" : accounts.length.toLocaleString("ru-RU")}</strong></div>
+            </section>
+            <section className="admin-summary-card">
+              <span className="admin-summary-icon"><ShieldCheck size={17} /></span>
+              <div><small>Активная подписка</small><strong>{isLoading ? "—" : activeSubscriptions.toLocaleString("ru-RU")}</strong></div>
+            </section>
+            <section className="admin-summary-card">
+              <span className="admin-summary-icon"><BookCheck size={17} /></span>
+              <div><small>Пройдено уроков</small><strong>{isLoading ? "—" : completedLessons.toLocaleString("ru-RU")}</strong></div>
+            </section>
+          </div>
+        )}
 
         <div className="admin-tabs">
           <button
             type="button"
             className={adminTab === "accounts" ? "is-active" : ""}
+            aria-pressed={adminTab === "accounts"}
             onClick={() => setAdminTab("accounts")}
           >
             <User size={15} /> Аккаунты
@@ -74,6 +106,7 @@ export function AdminScreen({ onClose }: { onClose: () => void }) {
           <button
             type="button"
             className={adminTab === "slots" ? "is-active" : ""}
+            aria-pressed={adminTab === "slots"}
             onClick={() => setAdminTab("slots")}
           >
             <CalendarClock size={15} /> Слоты записи
@@ -81,18 +114,33 @@ export function AdminScreen({ onClose }: { onClose: () => void }) {
         </div>
 
         {adminTab === "slots" ? (
-          <AdminSlotsView />
+          <>
+            <div className="admin-section-heading">
+              <div>
+                <h2>Расписание занятий</h2>
+                <p>Создавайте свободные окна и управляйте записями учеников.</p>
+              </div>
+            </div>
+            <AsyncBoundary><AdminSlotsView /></AsyncBoundary>
+          </>
         ) : openStudentId !== null ? (
-          <AdminStudentProfile
+          <AsyncBoundary key={openStudentId}><AdminStudentProfile
             studentId={openStudentId}
             onBack={() => setOpenStudentId(null)}
             onDeleted={() => {
               setOpenStudentId(null);
               setReloadKey((key) => key + 1);
             }}
-          />
+          /></AsyncBoundary>
         ) : (
           <>
+            <div className="admin-section-heading">
+              <div>
+                <h2>Пользователи</h2>
+                <p>Управляйте доступом, подписками и прогрессом обучения.</p>
+              </div>
+              <span className="admin-result-count">{isLoading ? "Загрузка" : formatAccountCount(accounts.length)}</span>
+            </div>
             <label className="admin-search">
               <Search size={16} />
               <input
@@ -105,7 +153,7 @@ export function AdminScreen({ onClose }: { onClose: () => void }) {
 
             {error && <div className="form-error">{error}</div>}
 
-            <div className="admin-list">
+            <div className="admin-list" aria-live="polite">
               {isLoading ? (
                 <p className="admin-note">Загружаем аккаунты...</p>
               ) : accounts.length === 0 ? (
@@ -135,9 +183,6 @@ export function AdminScreen({ onClose }: { onClose: () => void }) {
             </div>
           </>
         )}
-      </div>
-    </div>
+      </section>
   );
 }
-
-// Слово, которое админ обязан ввести, чтобы удалить аккаунт.

@@ -21,6 +21,10 @@ export function runTask(taskId: string, code: string, revision: string) {
   return apiRequest<TaskRunResponse>(`/learning/tasks/${taskId}/run`, { code, task_revision: revision });
 }
 
+export function runInterpreter(code: string) {
+  return apiRequest<TaskRunResponse>("/learning/interpreter/run", { code });
+}
+
 export function submitTask(taskId: string, code: string, revision: string) {
   return apiRequest<TaskSubmitResponse>(`/learning/tasks/${taskId}/submit`, { code, task_revision: revision });
 }

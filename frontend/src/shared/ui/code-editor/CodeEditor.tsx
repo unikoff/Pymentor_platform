@@ -1,3 +1,4 @@
+import "./code-editor.css";
 import React, { useLayoutEffect, useMemo, useRef } from "react";
 import { highlightPython } from "../../lib/python-highlight";
 
@@ -7,6 +8,7 @@ type CodeEditorProps = {
   value: string;
   onChange: (next: string) => void;
   ariaLabel?: string;
+  scrollable?: boolean;
 };
 
 /**
@@ -15,8 +17,10 @@ type CodeEditorProps = {
  * Shift+Tab, автоотступ по Enter и номера строк. Растёт по содержимому —
  * прокрутка остаётся за страницей, поэтому слои не рассинхронизируются.
  */
-export function CodeEditor({ value, onChange, ariaLabel }: CodeEditorProps) {
+export function CodeEditor({ value, onChange, ariaLabel, scrollable = false }: CodeEditorProps) {
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const gutterRef = useRef<HTMLDivElement | null>(null);
+  const highlightRef = useRef<HTMLPreElement | null>(null);
   const pendingCaret = useRef<number | null>(null);
 
   const highlighted = useMemo(() => highlightPython(value) + "\n", [value]);
@@ -32,6 +36,16 @@ export function CodeEditor({ value, onChange, ariaLabel }: CodeEditorProps) {
   function applyEdit(next: string, caret: number) {
     pendingCaret.current = caret;
     onChange(next);
+  }
+
+  function syncScroll(event: React.UIEvent<HTMLTextAreaElement>) {
+    if (!scrollable) return;
+    const { scrollTop, scrollLeft } = event.currentTarget;
+    if (highlightRef.current) {
+      highlightRef.current.scrollTop = scrollTop;
+      highlightRef.current.scrollLeft = scrollLeft;
+    }
+    if (gutterRef.current) gutterRef.current.scrollTop = scrollTop;
   }
 
   function handleKeyDown(event: React.KeyboardEvent<HTMLTextAreaElement>) {
@@ -90,20 +104,21 @@ export function CodeEditor({ value, onChange, ariaLabel }: CodeEditorProps) {
   }
 
   return (
-    <div className="code-editor-shell">
-      <div className="code-gutter" aria-hidden="true">
+    <div className={`code-editor-shell${scrollable ? " code-editor-shell--scrollable" : ""}`}>
+      <div className="code-gutter" ref={gutterRef} aria-hidden="true">
         {Array.from({ length: lineCount }, (_, index) => (
           <span key={index}>{index + 1}</span>
         ))}
       </div>
       <div className="code-area">
-        <pre className="code-highlight" aria-hidden="true" dangerouslySetInnerHTML={{ __html: highlighted }} />
+        <pre className="code-highlight" ref={highlightRef} aria-hidden="true" dangerouslySetInnerHTML={{ __html: highlighted }} />
         <textarea
           ref={textareaRef}
           className="code-input"
           value={value}
           onChange={(event) => onChange(event.target.value)}
           onKeyDown={handleKeyDown}
+          onScroll={syncScroll}
           spellCheck={false}
           autoCapitalize="off"
           autoComplete="off"

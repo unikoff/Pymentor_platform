@@ -1,20 +1,35 @@
 import { Moon, Sun } from "lucide-react";
-import type { ThemeMode } from "./types";
+import { themeIds, themes, useTheme } from "../../theme";
+import "./theme-toggle.css";
 
-export function ThemeToggle({ theme, onToggleTheme }: { theme: ThemeMode; onToggleTheme: () => void }) {
-  const isDark = theme === "dark";
-  const Icon = isDark ? Sun : Moon;
+export function ThemeToggle() {
+  const { theme, setTheme, colorScheme } = useTheme();
+  const isDark = colorScheme === "dark";
+
+  if (themeIds.length > 2) return (
+    <select className="theme-select" aria-label="Тема оформления" value={theme}
+      onChange={(event) => {
+        const next = themeIds.find((id) => id === event.target.value);
+        if (next) setTheme(next);
+      }}>
+      {themeIds.map((id) => <option key={id} value={id}>{themes[id].label}</option>)}
+    </select>
+  );
+  const nextTheme = themeIds[(themeIds.indexOf(theme) + 1) % themeIds.length];
 
   return (
     <button
       className="theme-switch"
       type="button"
-      onClick={onToggleTheme}
-      aria-label={isDark ? "Включить светлую тему" : "Включить тёмную тему"}
-      title={isDark ? "Светлая тема" : "Тёмная тема"}
+      role="switch"
+      aria-checked={!isDark}
+      onClick={() => setTheme(nextTheme)}
+      aria-label="Светлая тема"
+      title={isDark ? "Включить светлую тему" : "Включить тёмную тему"}
     >
-      <Icon size={16} />
-      <span>{isDark ? "Светлая" : "Тёмная"}</span>
+      <span className="theme-switch__thumb" aria-hidden="true" />
+      <Moon size={14} aria-hidden="true" />
+      <Sun size={14} aria-hidden="true" />
     </button>
   );
 }

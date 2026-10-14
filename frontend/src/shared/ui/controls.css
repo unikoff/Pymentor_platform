@@ -1,0 +1,89 @@
+.auth-tabs button,
+.primary-action,
+.secondary-action,
+.profile-button,
+.theme-switch,
+.run-button {
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: background 160ms ease, border-color 160ms ease, transform 160ms ease, color 160ms ease;
+}
+
+.form-error {
+  padding: var(--space-3) var(--space-3);
+  border: 1px solid color-mix(in srgb, var(--negative) 34%, transparent);
+  border-radius: var(--radius-sm);
+  color: var(--negative);
+  background: color-mix(in srgb, var(--negative) 8%, transparent);
+}
+
+.primary-action,
+.secondary-action {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: 0 var(--space-4);
+}
+
+.primary-action {
+  background: var(--accent);
+  color: var(--brand-contrast);
+  font-weight: 900;
+}
+
+:root[data-color-scheme="light"] .primary-action {
+  box-shadow: 0 10px 26px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+:root[data-color-scheme="light"] .secondary-action,
+:root[data-color-scheme="light"] .theme-switch,
+:root[data-color-scheme="light"] .profile-button {
+  background: color-mix(in srgb, var(--card-highlight) 66%, transparent);
+  border-color: color-mix(in srgb, var(--card-border) 9%, transparent);
+}
+
+.primary-action:hover,
+.secondary-action:hover,
+.profile-button:hover,
+.theme-switch:hover,
+.run-button:hover {
+  transform: translateY(-1px);
+}
+
+.primary-action:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+.secondary-action {
+  width: 100%;
+  background: var(--surface-2);
+  border-color: var(--line);
+}
+
+.secondary-action--compact {
+  width: auto;
+  min-height: 36px;
+  padding: 0 var(--space-3);
+  white-space: nowrap;
+}
+
+.theme-switch {
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: 0 var(--space-3);
+  background: var(--surface-2);
+  border-color: var(--line);
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.theme-switch:hover {
+  color: var(--text);
+}

@@ -1,0 +1,125 @@
+/* ==================== Интерактивные блоки уроков ==================== */
+
+.sequence-card,
+.bug-hunt,
+.comparison-card,
+.recall-card,
+.match-card,
+.slice-card,
+.branch-card,
+.flip-section,
+.truefalse-card {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--card);
+}
+
+.interactive-heading {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.interactive-heading svg {
+  flex-shrink: 0;
+  color: var(--accent);
+}
+
+.interactive-heading span {
+  display: block;
+  color: var(--accent);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+}
+
+.interactive-heading h3 {
+  margin: 2px 0 0;
+  font-size: 1.08rem;
+}
+
+.interactive-prompt {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.interactive-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.interactive-primary,
+.interactive-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 40px;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  font-weight: 600;
+  transition: transform 140ms ease, border-color 140ms ease, background 140ms ease;
+}
+
+.interactive-primary {
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: var(--brand-contrast);
+}
+
+.interactive-secondary {
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.interactive-primary:hover:not(:disabled),
+.interactive-secondary:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.interactive-primary:disabled,
+.interactive-secondary:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.interactive-feedback {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line-soft);
+  background: var(--surface);
+  line-height: 1.55;
+}
+
+.interactive-feedback svg {
+  flex-shrink: 0;
+}
+
+.interactive-feedback.is-correct {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
+.interactive-feedback.is-correct svg {
+  color: var(--accent);
+}
+
+.interactive-feedback.is-wrong {
+  border-color: color-mix(in srgb, var(--error) 40%, transparent);
+  background: color-mix(in srgb, var(--error) 9%, transparent);
+}
+
+.interactive-feedback.is-wrong svg {
+  color: var(--error);
+}

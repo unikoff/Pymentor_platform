@@ -9,6 +9,7 @@
     "preview": "vite preview --config config/vite.config.ts --host 127.0.0.1 --port 4173 --configLoader bundle"
   },
   "dependencies": {
+    "dockview-react": "8.5.1",
     "lucide-react": "^0.468.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"

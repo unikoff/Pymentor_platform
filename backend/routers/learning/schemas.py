@@ -8,6 +8,10 @@ class CodeSubmitRequest(BaseModel):
     task_revision: constr(pattern=r"^[0-9a-f]{64}$") | None = None
 
 
+class InterpreterRunRequest(BaseModel):
+    code: constr(min_length=1, max_length=8000)
+
+
 class TestResult(BaseModel):
     name: str
     passed: bool

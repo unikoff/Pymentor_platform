@@ -1,0 +1,125 @@
+.lesson-infographic--lesson57 img {
+  aspect-ratio: auto;
+  object-fit: contain;
+}
+
+.lesson-infographic--lesson53 img {
+  aspect-ratio: auto;
+  object-fit: contain;
+}
+
+.lesson-infographic--lesson54 img {
+  aspect-ratio: auto;
+  object-fit: contain;
+}
+
+.lesson-infographic--lesson08 img {
+  aspect-ratio: auto;
+  object-fit: contain;
+}
+
+.lesson-infographic--lesson09 img {
+  aspect-ratio: auto;
+  object-fit: contain;
+}
+
+.lesson-infographic--lesson09-1 img {
+  aspect-ratio: auto;
+  object-fit: contain;
+}
+
+.lesson-infographic--lesson11 img {
+  aspect-ratio: auto;
+  object-fit: contain;
+}
+
+.lesson-infographic--lesson11-1 img {
+  aspect-ratio: auto;
+  object-fit: contain;
+}
+
+.lesson-infographic--lesson12 img {
+  aspect-ratio: auto;
+  object-fit: contain;
+}
+
+.lesson-infographic--lesson13-1 img {
+  aspect-ratio: auto;
+  object-fit: contain;
+}
+
+.lesson-infographic--lesson12-1 img {
+  aspect-ratio: auto;
+  object-fit: contain;
+}
+
+.lesson-infographic--lesson14 img {
+  aspect-ratio: auto;
+  object-fit: contain;
+}
+
+.lesson-infographic--lesson19-1 img {
+  aspect-ratio: auto;
+  object-fit: contain;
+}
+
+.lesson-infographic--lesson18-1 img {
+  aspect-ratio: auto;
+  object-fit: contain;
+}
+
+.lesson-infographic--lesson18 img {
+  aspect-ratio: auto;
+  object-fit: contain;
+}
+
+.lesson-infographic--lesson18-2 img {
+  aspect-ratio: auto;
+  object-fit: contain;
+}
+
+.lesson-infographic--lesson18-2 picture {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+}
+
+.lesson-infographic--lesson17 img {
+  aspect-ratio: auto;
+  object-fit: contain;
+}
+
+.lesson-infographic--lesson17 picture {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+}
+
+.lesson-infographic--lesson17-1 img {
+  aspect-ratio: auto;
+  object-fit: contain;
+  max-width: 100%;
+}
+
+.lesson-infographic--lesson17-1 picture {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+}
+
+.lesson-infographic--portrait {
+  max-width: 600px;
+  margin-inline: auto;
+}
+
+.lesson-infographic--portrait img {
+  aspect-ratio: auto;
+  object-fit: contain;
+}
+
+.lesson-infographic figcaption {
+  margin-top: var(--space-2);
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}

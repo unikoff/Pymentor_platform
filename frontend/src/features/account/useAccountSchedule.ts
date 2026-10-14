@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { cancelStudentBooking, bookStudentSlot, getActivityCalendar, getStudentSlots, recordActivityVisit } from "./api";
-import { getLocalDateKey } from "../../shared/lib/dates";
+import { cancelStudentBooking, bookStudentSlot, getActivityCalendar, getStudentSlots } from "./api";
 import type { CalendarMonth, QuotaStatus, StudentSlot } from "../../shared/api/contracts/account";
 
 export function useAccountSchedule(userId: number | null, calendarMonth: CalendarMonth) {
@@ -14,22 +13,11 @@ export function useAccountSchedule(userId: number | null, calendarMonth: Calenda
       return;
     }
 
-    recordActivityVisit(getLocalDateKey())
-      .then((data) => {
-        setActivityDays((currentDays) => new Set(currentDays).add(data.activity_date));
-      })
-      .catch(() => undefined);
-  }, [userId]);
-
-  useEffect(() => {
-    if (userId === null) {
-      setActivityDays(new Set());
-      return;
-    }
-
+    let cancelled = false;
     getActivityCalendar(calendarMonth)
-      .then((data) => setActivityDays(new Set(data.days)))
-      .catch(() => setActivityDays(new Set()));
+      .then((data) => { if (!cancelled) setActivityDays(new Set(data.days)); })
+      .catch(() => { if (!cancelled) setActivityDays(new Set()); });
+    return () => { cancelled = true; };
   }, [userId, calendarMonth.year, calendarMonth.month]);
 
   const loadBookingSlots = useCallback(async () => {

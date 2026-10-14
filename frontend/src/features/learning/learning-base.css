@@ -1,0 +1,49 @@
+.lesson-stage {
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: var(--space-8) var(--workspace-gutter);
+  scroll-behavior: smooth;
+  animation: view-in 180ms ease both;
+}
+
+.locked-lesson-view {
+  min-height: 100%;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: var(--space-4);
+  padding: var(--space-8);
+  text-align: center;
+}
+
+.locked-lesson-view svg {
+  color: var(--accent);
+}
+
+.locked-lesson-view span {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid color-mix(in srgb, var(--success) 34%, transparent);
+  border-radius: var(--radius-pill);
+  color: var(--accent);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.locked-lesson-view h1 {
+  max-width: 720px;
+  margin: 0;
+  font-size: clamp(2rem, 5vw, 4.4rem);
+  line-height: 0.95;
+}
+
+.locked-lesson-view p {
+  max-width: 560px;
+  margin: 0 0 var(--space-2);
+  color: var(--muted);
+  line-height: 1.65;
+}

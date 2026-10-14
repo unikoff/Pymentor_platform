@@ -1,0 +1,84 @@
+/* ==================== Маршрут занятия: компактная и мягкая версия ==================== */
+
+.lesson-route {
+  display: grid;
+  gap: var(--space-5);
+  padding: var(--space-5) var(--space-6);
+  border: 1px solid color-mix(in srgb, var(--accent) 16%, var(--line));
+  border-radius: var(--radius-lg);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--accent-soft) 28%, var(--card)),
+      var(--card) 72%
+    );
+}
+
+.lesson-route ol {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: lesson-route;
+}
+
+.lesson-route li {
+  position: relative;
+
+  /* Важно: не grid.
+     Иначе span/code внутри шага растягиваются на всю ширину. */
+  display: block;
+
+  min-height: 50px;
+  padding: 6px 0 var(--space-5) var(--space-12);
+  color: var(--muted);
+  line-height: 1.65;
+  counter-increment: lesson-route;
+}
+
+.lesson-route li:last-child {
+  padding-bottom: var(--space-2);
+}
+
+.lesson-route li:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  left: 16px;
+  top: 39px;
+  bottom: -2px;
+  width: 1px;
+  background: color-mix(in srgb, var(--accent) 20%, var(--line-soft));
+}
+
+.lesson-route li::before {
+  content: counter(lesson-route);
+  position: absolute;
+  left: 0;
+  top: 3px;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--accent) 34%, var(--line));
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--surface) 94%, var(--accent-soft));
+  color: color-mix(in srgb, var(--accent) 72%, var(--text));
+  font: 750 0.78rem/1 "JetBrains Mono", Consolas, monospace;
+}
+
+.lesson-route strong {
+  display: block;
+  margin-bottom: 3px;
+  color: var(--text);
+  font-weight: 720;
+  line-height: 1.45;
+}
+
+.lesson-route > p {
+  margin: 0;
+  padding-top: var(--space-4);
+  border-top: 1px solid color-mix(in srgb, var(--line-soft) 86%, transparent);
+  color: var(--muted);
+  line-height: 1.7;
+}

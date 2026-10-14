@@ -1,9 +1,10 @@
+import "./lesson-theory.css";
 import React, { useEffect, useMemo, useState } from "react";
-import { Lock } from "lucide-react";
 import { getLessonTheory as fetchLessonTheory } from "../api";
-import { getLessonAccessLabel } from "../access";
 import { NextLessonLink } from "../navigation/LessonNavigation";
 import { richLessonPages } from "../../../lessons/registry";
+import { LessonLoading } from "../LessonLoading";
+import { LessonPageBoundary } from "./LessonPageBoundary";
 import type { Lesson, LessonTheoryResponse, LessonVideo } from "../types";
 
 type MarkdownBlock =
@@ -180,30 +181,6 @@ function getLessonTheory(lesson: Lesson): string[] {
       ];
 }
 
-export function LockedLessonView({
-  lesson,
-  onRequireAuth,
-  isGuest,
-}: {
-  lesson: Lesson;
-  onRequireAuth: () => void;
-  isGuest: boolean;
-}) {
-  return (
-    <div className="locked-lesson-view">
-      <Lock size={34} />
-      <span>{getLessonAccessLabel(lesson)}</span>
-      <h1>{lesson.title}</h1>
-      <p>{lesson.locked_reason || "Это занятие закрыто. Проверьте доступ к аккаунту или подписке."}</p>
-      {isGuest && (
-        <button className="primary-action" type="button" onClick={onRequireAuth}>
-          Войти или зарегистрироваться
-        </button>
-      )}
-    </div>
-  );
-}
-
 function getLessonVideo(lesson: Lesson): LessonVideo | null | undefined {
   return lesson.video;
 }
@@ -265,9 +242,11 @@ export function LearningTheoryView({ lesson }: { lesson: Lesson }) {
   if (RichLessonPage) {
     return (
       <div className="document-view document-view--rich">
-        <RichLessonPage module={lesson.module} />
-        {video && <LessonVideoCard video={video} />}
-        <NextLessonLink />
+        <LessonPageBoundary key={lesson.source_file}>
+          <RichLessonPage module={lesson.module} />
+          {video && <LessonVideoCard video={video} />}
+          <NextLessonLink />
+        </LessonPageBoundary>
       </div>
     );
   }
@@ -282,7 +261,7 @@ export function LearningTheoryView({ lesson }: { lesson: Lesson }) {
       {theoryMarkdown ? (
         <MarkdownView source={theoryMarkdown.replace(/^\s*#\s+[^\n]*\n/, "")} />
       ) : isTheoryLoading ? (
-        <p className="theory-loading">Загружаем материал урока...</p>
+        <LessonLoading />
       ) : (
         getLessonTheory(lesson).map((paragraph) => <p key={paragraph}>{paragraph}</p>)
       )}

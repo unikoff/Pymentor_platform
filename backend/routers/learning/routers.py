@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy.orm import Session
 from starlette.concurrency import run_in_threadpool
 
-from learning.code_runner import run_python_preview, run_python_task
+from learning.code_runner import run_python_code, run_python_preview, run_python_task
 from learning.runner_executor import RunnerBusy, RunnerUnavailable, get_runner_executor
 from DataBase import model as models
 from learning.content import (
@@ -20,7 +20,7 @@ from learning.content import (
     get_tracks_summary,
 )
 from routers.user import crud as user_crud
-from .schemas import CodeRunResponse, CodeSubmitRequest, CodeSubmitResponse, LessonTheoryResponse
+from .schemas import CodeRunResponse, CodeSubmitRequest, CodeSubmitResponse, InterpreterRunRequest, LessonTheoryResponse
 
 
 learning_router = APIRouter()
@@ -351,3 +351,22 @@ async def run_task_code(task_id: str, payload: CodeSubmitRequest, request: Reque
     """Запускает одну демонстрационную проверку без зачёта урока."""
     context = await run_in_threadpool(_prepare_task, task_id, payload.task_revision, request)
     return await _execute_task(run_python_preview, payload.code, context["task"])
+
+
+@learning_router.post("/interpreter/run", response_model=CodeRunResponse)
+async def run_interpreter_code(payload: InterpreterRunRequest):
+    """Запускает самостоятельный фрагмент Python без проверки и зачёта урока."""
+    try:
+        return await get_runner_executor().run(run_python_code, code=payload.code)
+    except RunnerBusy:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Интерпретатор занят. Повторите запуск через несколько секунд",
+            headers={"Retry-After": "2"},
+        ) from None
+    except RunnerUnavailable:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Интерпретатор временно недоступен. Повторите попытку позже.",
+            headers={"Retry-After": "2"},
+        ) from None

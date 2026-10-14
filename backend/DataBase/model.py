@@ -1,10 +1,15 @@
-from datetime import date, datetime
+from datetime import date, datetime, timezone
+from uuid import uuid4
 
 import bcrypt
-from sqlalchemy import Boolean, Date, DateTime, ForeignKey, Integer, String, UniqueConstraint, func
+from sqlalchemy import Boolean, Date, DateTime, ForeignKey, Index, Integer, String, Text, UniqueConstraint, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from .engine import Base
+
+
+def _utcnow() -> datetime:
+    return datetime.now(timezone.utc)
 
 def _hash_password(plain: str) -> str:
     salt = bcrypt.gensalt()
@@ -133,3 +138,40 @@ class BookingQuota(Base):
     year: Mapped[int] = mapped_column(Integer, nullable=False)
     month: Mapped[int] = mapped_column(Integer, nullable=False)
     granted_slots: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+
+
+class BookingNotificationOutbox(Base):
+    """Durable Telegram notifications created in the booking transaction."""
+
+    __tablename__ = "booking_notification_outbox"
+    __table_args__ = (
+        Index("ix_booking_notification_ready", "status", "next_attempt_at"),
+        Index("ix_booking_notification_slot_order", "slot_id", "id"),
+        Index("ix_booking_notification_retention", "status", "sent_at"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    event_id: Mapped[str] = mapped_column(String(36), unique=True, nullable=False, default=lambda: str(uuid4()))
+    event_type: Mapped[str] = mapped_column(String(32), nullable=False)
+    slot_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    username: Mapped[str] = mapped_column(String(50), nullable=False)
+    email: Mapped[str] = mapped_column(String(100), nullable=False)
+    slot_date: Mapped[date] = mapped_column(Date, nullable=False)
+    start_time: Mapped[str] = mapped_column(String(5), nullable=False)
+    status: Mapped[str] = mapped_column(String(16), nullable=False, default="pending")
+    attempts: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    next_attempt_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=_utcnow)
+    locked_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    lock_token: Mapped[str | None] = mapped_column(String(36), nullable=True)
+    last_error: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
+    sent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+class BookingNotificationDeliveryState(Base):
+    """Shared Telegram cooldown, including notifications created during a rate limit."""
+
+    __tablename__ = "booking_notification_delivery_state"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    blocked_until: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)

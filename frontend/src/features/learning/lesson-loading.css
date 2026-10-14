@@ -1,0 +1,23 @@
+.lesson-transition { position: relative; min-height: 100%; }
+.lesson-transition__content { min-height: 100%; animation: lesson-reveal 220ms ease both; }
+.lesson-transition.is-entering > .lesson-transition__content { opacity: 0; visibility: hidden; animation: none; }
+.lesson-transition__cover { position: absolute; inset: 0; background: var(--bg); }
+.lesson-transition__cover > .lesson-loading { height: min(420px, 65vh); }
+.lesson-loading { display: grid; align-content: center; justify-items: center; gap: 10px; min-height: 260px; height: 100%; padding: 32px 16px; text-align: center; color: var(--text); }
+.lesson-loading > strong { font-size: 1rem; font-weight: 700; }
+.lesson-loading > span { color: var(--muted); font-size: .8rem; }
+.lesson-loading__visual { position: relative; display: grid; place-items: center; width: 92px; height: 92px; margin-bottom: 12px; }
+.lesson-loading__code { display: grid; place-items: center; width: 60px; height: 60px; border: 1px solid var(--line); border-radius: 20px; background: linear-gradient(135deg, var(--accent-soft), var(--surface)); color: var(--accent); font: 700 24px monospace; animation: lesson-breathe 1600ms ease-in-out infinite; }
+.lesson-loading__orbit { position: absolute; inset: 0; border: 1px solid var(--line-soft); border-top-color: var(--accent); border-right-color: var(--accent-secondary); border-radius: 50%; animation: lesson-orbit 2400ms linear infinite; }
+.lesson-loading__visual i { position: absolute; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); left: -12px; top: 22px; animation: lesson-breathe 1400ms ease-in-out infinite; }
+.lesson-loading__visual i:nth-last-child(2) { left: auto; right: -10px; top: 60px; background: var(--accent-secondary); animation-delay: 300ms; }
+.lesson-loading__visual i:last-child { left: 56px; top: -9px; animation-delay: 600ms; }
+.lesson-loading__track { overflow: hidden; width: 136px; height: 3px; margin-top: 12px; border-radius: var(--radius-pill); background: var(--line-soft); }
+.lesson-loading__track span { display: block; width: 45%; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--accent), var(--accent-secondary)); animation: lesson-scan 1200ms ease-in-out infinite alternate; }
+@keyframes lesson-orbit { to { transform: rotate(360deg); } }
+@keyframes lesson-breathe { 50% { opacity: .45; transform: scale(.94); } }
+@keyframes lesson-scan { from { transform: translateX(-40%); } to { transform: translateX(170%); } }
+@keyframes lesson-reveal { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .lesson-loading__visual *, .lesson-loading__track span, .lesson-transition__content { animation: none; }
+}

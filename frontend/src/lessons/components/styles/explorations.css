@@ -1,0 +1,301 @@
+/* ---- Соедини пары (MatchPairs) ---- */
+.match-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+.match-col {
+  display: grid;
+  gap: var(--space-2);
+  align-content: start;
+}
+
+.match-col-title {
+  color: var(--faint);
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.match-item {
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 140ms ease, background 140ms ease, transform 140ms ease;
+}
+
+.match-item:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+
+.match-item.is-active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  transform: translateX(3px);
+}
+
+.match-item.is-matched {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  opacity: 0.65;
+  cursor: default;
+}
+
+.match-item.is-wrong {
+  border-color: var(--error);
+  background: color-mix(in srgb, var(--error) 12%, transparent);
+  animation: shake 0.3s ease;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+/* ---- Исследователь срезов (SliceExplorer) ---- */
+.slice-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.slice-char {
+  display: grid;
+  gap: 2px;
+  justify-items: center;
+  min-width: 34px;
+  padding: var(--space-2) var(--space-1) var(--space-1);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  transition: background 140ms ease, border-color 140ms ease;
+}
+
+.slice-char.is-selected {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.slice-char--edge {
+  opacity: 0.5;
+  border-style: dashed;
+}
+
+.slice-symbol {
+  font-family: "JetBrains Mono", Consolas, monospace;
+  font-size: 1.05rem;
+  color: var(--text);
+}
+
+.slice-index {
+  font-size: 0.7rem;
+  color: var(--faint);
+}
+
+.slice-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.slice-stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 6px var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  background: var(--surface-2);
+}
+
+.slice-stepper > span {
+  color: var(--muted);
+  font-family: "JetBrains Mono", Consolas, monospace;
+  font-size: 0.85rem;
+}
+
+.slice-stepper strong {
+  min-width: 20px;
+  text-align: center;
+  color: var(--accent);
+  font-family: "JetBrains Mono", Consolas, monospace;
+}
+
+.slice-stepper button {
+  display: inline-grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.slice-stepper button:hover {
+  border-color: var(--accent);
+}
+
+.slice-result {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm);
+  background: var(--code-bg);
+  font-family: "JetBrains Mono", Consolas, monospace;
+}
+
+.slice-result code {
+  color: var(--code-text);
+}
+
+.slice-output {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.slice-result svg {
+  color: var(--faint);
+}
+
+.slice-note {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+/* ---- Исследователь ветвлений (BranchExplorer) ---- */
+.branch-scenarios {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.branch-chip {
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  background: var(--surface-2);
+  color: var(--text);
+  cursor: pointer;
+  font-family: "JetBrains Mono", Consolas, monospace;
+  font-size: 0.84rem;
+  transition: border-color 140ms ease, background 140ms ease;
+}
+
+.branch-chip.is-active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.branch-code {
+  padding: var(--space-4) var(--space-4);
+  border-radius: var(--radius-sm);
+  background: var(--code-bg);
+  overflow-x: auto;
+  font-family: "JetBrains Mono", Consolas, monospace;
+  font-size: 0.9rem;
+}
+
+.branch-line {
+  padding: 2px var(--space-2);
+  border-radius: 6px;
+  color: var(--code-text);
+  white-space: pre;
+  transition: background 160ms ease;
+}
+
+.branch-line.is-active {
+  background: var(--accent-soft);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+.branch-output {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.branch-output span {
+  color: var(--faint);
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.branch-output code {
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 700;
+}
+
+/* ---- Карточки-перевёртыши (FlipCards) ---- */
+.flip-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-3);
+}
+
+.flip-card {
+  perspective: 900px;
+  min-height: 120px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.flip-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 120px;
+  transform-style: preserve-3d;
+  transition: transform 500ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+.flip-card.is-flipped .flip-inner {
+  transform: rotateY(180deg);
+}
+
+.flip-front,
+.flip-back {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  gap: 6px;
+  padding: var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.flip-front {
+  background: var(--surface);
+  font-weight: 700;
+}
+
+.flip-back {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--text);
+  transform: rotateY(180deg);
+  font-size: 0.9rem;
+}
