@@ -1,0 +1,179 @@
+/* ==================== Мягкие акценты внутри текста ==================== */
+
+/* Смысловой акцент: лёгкая подложка вместо яркой толстой линии. */
+.lesson-emphasis {
+  display: inline;
+  padding: 0 0.08em;
+  border-radius: 3px;
+  background:
+    linear-gradient(
+      to top,
+      color-mix(in srgb, var(--accent) 10%, transparent) 0 42%,
+      transparent 42%
+    );
+  color: color-mix(in srgb, var(--text) 92%, var(--accent));
+  font-weight: 680;
+  text-decoration: none;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+/* Синтаксический токен: компактный inline-chip без свечения и без растяжения. */
+.lesson-token,
+.rich-lead code.lesson-token,
+.lesson-callout code.lesson-token,
+.type-card p code.lesson-token,
+.lesson-practice-steps code.lesson-token,
+.takeaways code.lesson-token,
+.lesson-route code.lesson-token {
+  display: inline-block;
+  width: auto;
+  max-width: 100%;
+  min-height: auto;
+  padding: 0.04em 0.34em;
+  border: 1px solid color-mix(in srgb, var(--accent) 20%, var(--line));
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--accent-soft) 34%, var(--surface-2));
+  color: var(--text);
+  box-shadow: none;
+  font: 650 0.9em/1.35 var(--font-code);
+  vertical-align: 0.02em;
+  white-space: nowrap;
+}
+
+.lesson-token--danger,
+.rich-lead code.lesson-token--danger,
+.lesson-practice-steps code.lesson-token--danger,
+.lesson-route code.lesson-token--danger {
+  border-color: color-mix(in srgb, var(--negative) 24%, var(--line));
+  background: color-mix(in srgb, var(--negative) 7%, var(--surface-2));
+  color: color-mix(in srgb, var(--negative) 58%, var(--text));
+}
+
+/* Светлая тема: сохраняем мягкость, но не теряем контраст. */
+:root[data-color-scheme="light"] .lesson-route {
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--accent-soft) 48%, var(--card)),
+      var(--card) 74%
+    );
+}
+
+:root[data-color-scheme="light"] .lesson-emphasis {
+  background:
+    linear-gradient(
+      to top,
+      color-mix(in srgb, var(--accent) 12%, transparent) 0 42%,
+      transparent 42%
+    );
+  color: color-mix(in srgb, var(--text) 94%, var(--accent));
+}
+
+:root[data-color-scheme="light"] .lesson-token,
+:root[data-color-scheme="light"] .rich-lead code.lesson-token,
+:root[data-color-scheme="light"] .lesson-practice-steps code.lesson-token,
+:root[data-color-scheme="light"] .takeaways code.lesson-token,
+:root[data-color-scheme="light"] .lesson-route code.lesson-token {
+  border-color: color-mix(in srgb, var(--accent) 18%, var(--line));
+  background: color-mix(in srgb, var(--accent) 5%, var(--surface-2));
+  color: var(--text);
+  box-shadow: none;
+}
+
+:root[data-color-scheme="light"] .lesson-token--danger,
+:root[data-color-scheme="light"] .lesson-practice-steps code.lesson-token--danger,
+:root[data-color-scheme="light"] .lesson-route code.lesson-token--danger {
+  border-color: color-mix(in srgb, var(--negative) 20%, var(--line));
+  background: color-mix(in srgb, var(--negative) 5%, var(--surface-2));
+  color: color-mix(in srgb, var(--negative) 62%, var(--text));
+}
+
+@media (max-width: 640px) {
+  .task-card--editor .task-head,
+  .task-brief,
+  .task-code-panel {
+    padding: var(--space-5);
+  }
+
+  .task-head__topline {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .task-editor-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .task-actions {
+    justify-content: stretch;
+  }
+
+  .task-actions .run-button {
+    flex: 1 1 170px;
+    justify-content: center;
+  }
+
+  .lesson-route {
+    padding: var(--space-5);
+  }
+
+  .lesson-route li {
+    padding-left: var(--space-10);
+  }
+
+  .lesson-route li::before {
+    width: 30px;
+    height: 30px;
+  }
+
+  .lesson-route li:not(:last-child)::after {
+    left: 15px;
+  }
+}
+
+
+@media (max-width: 640px) {
+  .self-check-card {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .self-check-card .primary-action {
+    justify-content: center;
+  }
+
+  .self-check-card--complete .primary-action {
+    width: 100%;
+    white-space: normal;
+  }
+
+  .manual-practice-card {
+    padding: var(--space-5);
+  }
+
+  .manual-practice-task {
+    padding: var(--space-4);
+  }
+
+  .manual-practice-task__toolbar {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .manual-practice-task__actions {
+    flex-wrap: wrap;
+  }
+
+  .manual-practice-task__done {
+    min-width: 0;
+    flex: 1 0 100%;
+    margin-left: 0;
+  }
+}
+
+.lesson-infographic--lesson62 img {
+  aspect-ratio: auto;
+  object-fit: contain;
+}

@@ -1,0 +1,77 @@
+/* ---- Активное воспроизведение (RecallCard) ---- */
+.recall-card {
+  gap: var(--space-4);
+  padding: var(--space-5) var(--space-6);
+  border-color: color-mix(in srgb, var(--line) 82%, var(--accent));
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--accent-soft) 74%, transparent), transparent 58%),
+    color-mix(in srgb, var(--surface-2) 48%, transparent);
+  backdrop-filter: blur(6px);
+}
+
+.recall-question {
+  margin: 0;
+  font-size: 1.02rem;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.recall-hint {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.recall-card .interactive-primary {
+  justify-self: start;
+  border-color: color-mix(in srgb, var(--accent) 62%, var(--line));
+  background: color-mix(in srgb, var(--accent-soft) 88%, transparent);
+  color: var(--text);
+}
+
+.recall-card .interactive-primary:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.recall-answer {
+  padding: var(--space-4) var(--space-4);
+  border: 1px solid color-mix(in srgb, var(--accent) 62%, var(--line));
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--accent-soft) 82%, transparent);
+  line-height: 1.6;
+  animation: view-in 200ms ease both;
+}
+
+.recall-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.recall-actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  background: var(--surface-2);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.recall-actions button.is-picked {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.recall-status {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.recall-status.is-correct {
+  color: var(--accent);
+}

@@ -1,2 +1,4 @@
 export { getCurrentUser, logoutUser } from "./api";
-export { AuthScreen } from "./AuthScreen";
+import { lazyNamed } from "../../shared/ui/async-boundary/lazyNamed";
+
+export const AuthScreen = lazyNamed(() => import("./AuthScreen"), "AuthScreen");

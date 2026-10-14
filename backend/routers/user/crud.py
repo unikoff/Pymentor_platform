@@ -375,7 +375,14 @@ def list_bookable_slots(year: int, month: int, user_id: int, db: Session, *, now
     return [serialize_slot_student(slot, user_id, now=current_time) for slot in visible]
 
 
-def book_slot(slot_id: int, user_id: int, db: Session) -> models.BookingSlot:
+def book_slot(
+    slot_id: int,
+    user_id: int,
+    db: Session,
+    *,
+    notification_username: str,
+    notification_email: str,
+) -> models.BookingSlot:
     _start_write_transaction(db)
     slot = db.query(models.BookingSlot).filter(models.BookingSlot.id == slot_id).with_for_update().first()
     if slot is None:
@@ -402,12 +409,29 @@ def book_slot(slot_id: int, user_id: int, db: Session) -> models.BookingSlot:
     if not updated:
         db.rollback()
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Это окно уже занято")
+    db.add(
+        models.BookingNotificationOutbox(
+            event_type="booking_created",
+            slot_id=slot.id,
+            username=notification_username,
+            email=notification_email,
+            slot_date=slot.slot_date,
+            start_time=slot.start_time,
+        )
+    )
     db.commit()
     db.refresh(slot)
     return slot
 
 
-def cancel_booking(slot_id: int, user_id: int, db: Session) -> models.BookingSlot:
+def cancel_booking(
+    slot_id: int,
+    user_id: int,
+    db: Session,
+    *,
+    notification_username: str,
+    notification_email: str,
+) -> models.BookingSlot:
     _start_write_transaction(db)
     slot = db.query(models.BookingSlot).filter(models.BookingSlot.id == slot_id).with_for_update().first()
     if slot is None:
@@ -421,6 +445,16 @@ def cancel_booking(slot_id: int, user_id: int, db: Session) -> models.BookingSlo
             detail="Занятие нельзя отменить менее чем за 36 часов до начала.",
         )
     slot.student_id = None
+    db.add(
+        models.BookingNotificationOutbox(
+            event_type="booking_cancelled",
+            slot_id=slot.id,
+            username=notification_username,
+            email=notification_email,
+            slot_date=slot.slot_date,
+            start_time=slot.start_time,
+        )
+    )
     db.commit()
     db.refresh(slot)
     return slot

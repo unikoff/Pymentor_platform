@@ -1,0 +1,241 @@
+/* ---- Собрать код (CodeSequence) ---- */
+.sequence-workspace {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--space-3);
+}
+
+.sequence-panel {
+  display: grid;
+  gap: var(--space-2);
+  align-content: start;
+  padding: var(--space-3);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  min-height: 120px;
+}
+
+.sequence-panel--target {
+  background: var(--code-bg);
+}
+
+.sequence-label {
+  color: var(--faint);
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.sequence-pieces,
+.sequence-target {
+  display: grid;
+  gap: 6px;
+}
+
+.sequence-piece,
+.sequence-selected {
+  display: flex;
+  align-items: flex-start;
+  min-width: 0;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+  font-family: "JetBrains Mono", Consolas, monospace;
+  transition: border-color 140ms ease, transform 140ms ease;
+}
+
+.sequence-piece:hover {
+  border-color: var(--accent);
+  transform: translateX(2px);
+}
+
+.sequence-piece code,
+.sequence-selected code {
+  flex: 1 1 auto;
+  min-width: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  line-height: 1.45;
+}
+
+.sequence-piece small {
+  margin-left: auto;
+  min-width: 0;
+  color: var(--faint);
+  font-family: var(--font, inherit);
+  overflow-wrap: anywhere;
+}
+
+.sequence-selected {
+  background: var(--surface);
+}
+
+.sequence-selected span {
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.sequence-selected svg {
+  margin-left: auto;
+  flex: 0 0 auto;
+  color: var(--faint);
+}
+
+.sequence-empty {
+  margin: 0;
+  color: var(--faint);
+  font-size: 0.85rem;
+}
+
+/* ---- Найди ошибку (BugHunt) ---- */
+.bug-options,
+.comparison-options {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.bug-option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 140ms ease;
+}
+
+.bug-option:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+
+.bug-option span {
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--surface-2);
+  font-weight: 700;
+  font-size: 0.82rem;
+}
+
+.bug-option.is-correct {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.bug-option.is-wrong {
+  border-color: var(--error);
+  background: color-mix(in srgb, var(--error) 10%, transparent);
+}
+
+.bug-feedback {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line-soft);
+}
+
+.bug-feedback p {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  line-height: 1.55;
+}
+
+.bug-feedback.is-correct {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.bug-feedback.is-correct svg {
+  color: var(--accent);
+}
+
+.bug-feedback.is-wrong {
+  border-color: color-mix(in srgb, var(--error) 40%, transparent);
+  background: color-mix(in srgb, var(--error) 8%, transparent);
+}
+
+/* ---- Сравнение решений (CompareSolutions) ---- */
+.comparison-options {
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.comparison-option {
+  display: grid;
+  gap: var(--space-3);
+  align-content: start;
+  padding: var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  transition: border-color 140ms ease;
+}
+
+.comparison-option span {
+  color: var(--accent);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+.comparison-option h4 {
+  margin: 2px 0 0;
+}
+
+.comparison-option p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.comparison-option button {
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  background: var(--surface-2);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.comparison-option button:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+
+.comparison-option button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.comparison-option.is-picked {
+  border-color: var(--accent);
+}
+
+.comparison-option.is-preferred {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-soft);
+}

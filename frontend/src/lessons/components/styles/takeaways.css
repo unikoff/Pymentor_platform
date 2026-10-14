@@ -1,0 +1,62 @@
+/* ---- Итоги урока (KeyTakeaways) ---- */
+.takeaways {
+  padding: var(--space-5) var(--space-5);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background:
+    radial-gradient(circle at 92% 10%, var(--accent-soft), transparent 40%),
+    var(--card);
+}
+
+.takeaways-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.takeaways-head svg {
+  color: var(--accent);
+}
+
+.takeaways-head strong {
+  font-size: 1.05rem;
+}
+
+.takeaways ul {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.takeaways li {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  line-height: 1.55;
+}
+
+.takeaways li svg {
+  flex-shrink: 0;
+  margin-top: 3px;
+  color: var(--accent);
+}
+
+@media (max-width: 640px) {
+  .match-grid,
+  .sequence-workspace {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    scroll-behavior: auto !important;
+    transition-duration: 1ms !important;
+  }
+}

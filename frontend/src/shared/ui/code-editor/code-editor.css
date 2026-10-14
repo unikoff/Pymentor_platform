@@ -12,8 +12,8 @@
 }
 
 .code-editor-shell:focus-within {
-  border-color: var(--green);
-  box-shadow: 0 0 0 3px var(--green-soft);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
 .code-gutter {
@@ -24,7 +24,7 @@
   color: var(--faint);
   text-align: right;
   user-select: none;
-  font: 0.95rem/1.65 "JetBrains Mono", "Cascadia Code", Consolas, monospace;
+  font: 0.95rem/1.65 var(--font-code);
 }
 
 .code-area {
@@ -34,7 +34,7 @@
 
 .code-highlight,
 .code-input {
-  font: 0.95rem/1.65 "JetBrains Mono", "Cascadia Code", Consolas, monospace;
+  font: 0.95rem/1.65 var(--font-code);
   padding: var(--space-4);
   white-space: pre;
   tab-size: 4;
@@ -65,48 +65,27 @@
 }
 
 .code-input::selection {
-  background: var(--green-soft);
+  background: var(--accent-soft);
 }
 
 .tok-kw {
-  color: #c586c0;
+  color: var(--syntax-keyword);
   font-weight: 600;
 }
 
 .tok-str {
-  color: #6fbf73;
+  color: var(--syntax-string);
 }
 
 .tok-num {
-  color: #4fb3bf;
+  color: var(--syntax-number);
 }
 
 .tok-com {
-  color: #7d8a7f;
+  color: var(--syntax-comment);
   font-style: italic;
 }
 
 .tok-fn {
-  color: #dcb56a;
+  color: var(--syntax-function);
 }
-
-[data-theme="light"] .tok-kw {
-  color: #9c27b0;
-}
-
-[data-theme="light"] .tok-str {
-  color: #2e7d32;
-}
-
-[data-theme="light"] .tok-num {
-  color: #0277bd;
-}
-
-[data-theme="light"] .tok-com {
-  color: #8d9288;
-}
-
-[data-theme="light"] .tok-fn {
-  color: #b26a00;
-}
-

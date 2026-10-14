@@ -1,0 +1,79 @@
+/* ==================== Квиз ==================== */
+
+.lesson-check-group {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.quiz-card {
+  display: grid;
+  gap: var(--lesson-stack);
+  margin: 0;
+  padding: var(--space-5);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--card);
+}
+
+.quiz-question {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.quiz-question svg {
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.quiz-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--space-2);
+}
+
+.quiz-option {
+  min-height: 40px;
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 140ms ease, background 140ms ease, transform 140ms ease;
+}
+
+.quiz-option:not(:disabled):hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.quiz-option code {
+  font-family: "JetBrains Mono", Consolas, monospace;
+  font-size: 0.88rem;
+}
+
+.quiz-option.is-correct {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.quiz-option.is-wrong {
+  border-color: var(--error);
+  background: color-mix(in srgb, var(--error) 10%, transparent);
+}
+
+.quiz-explanation {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.quiz-explanation.is-correct {
+  color: var(--accent);
+}
+
+.lesson-done-icon {
+  color: var(--accent);
+}

@@ -109,12 +109,20 @@ SELF_CHECK_LESSONS = {
 
 ## Красивые страницы уроков (вместо markdown)
 
-Теория по умолчанию рендерится из markdown. Чтобы сделать занятию дизайнерскую
-страницу (как у первых двух уроков Python) — добавь React-компонент в
-`frontend/src/lessonPages.tsx` и зарегистрируй его по `source_file` урока:
+Теория по умолчанию рендерится из Markdown. Для специальной React-страницы добавь
+компонент в `frontend/src/lessons/chapter_NN/block_NN/` и зарегистрируй его в
+`frontend/src/lessons/chapter_NN/index.ts`. Ключ — точный путь `source_file`, который
+возвращает backend; значение — путь к файлу компонента без расширения:
 
 ```tsx
-export const richLessonPages: Record<string, React.ComponentType> = {
-  "python-basics/Блок 1 - .../Базовые типы данных 1.md": NumbersAndStringsLesson,
-};
+import { defineLessonPages } from "../page-registry";
+
+export const pages = defineLessonPages("chapter_01", {
+  "block_01/01 - Первая программа.md": "block_01/Lesson01",
+});
 ```
+
+Имя именованного экспорта React-компонента должно совпадать с именем файла
+(`Lesson01` в примере). `lessons/registry.ts` объединяет манифесты глав, а
+`page-registry.ts` загружает компонент по требованию. Общая карта структуры есть в
+[`docs/ARCHITECTURE.md`](../../../docs/ARCHITECTURE.md).

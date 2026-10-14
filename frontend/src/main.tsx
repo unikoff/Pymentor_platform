@@ -1,7 +1,9 @@
 import React from "react";
 import { createRoot, type Root } from "react-dom/client";
+import "dockview-react/dist/styles/dockview.css";
 import "./app/styles.css";
 import { App } from "./app/App";
+import { ThemeProvider } from "./shared/theme";
 
 declare global {
   interface Window {
@@ -20,6 +22,6 @@ window.__pymentorRoot = root;
 
 root.render(
   <React.StrictMode>
-    <App />
+    <ThemeProvider><App /></ThemeProvider>
   </React.StrictMode>,
 );

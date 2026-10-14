@@ -1,19 +1,51 @@
 import os
+from io import BytesIO
 import unittest
 from datetime import date, datetime, timedelta, timezone
 from urllib.parse import parse_qs
+from urllib.error import HTTPError
 from unittest.mock import MagicMock, patch
 
 from services.telegram import (
     _format_booking_cancelled_message,
     _format_booking_message,
     _send_telegram_message,
+    TelegramDeliveryError,
     notify_booking_cancelled,
     notify_booking_created,
 )
 
 
 class TelegramBookingNotificationTests(unittest.IsolatedAsyncioTestCase):
+    def test_rate_limit_error_exposes_retry_after_without_bot_token(self) -> None:
+        response = BytesIO(
+            b'{"ok":false,"error_code":429,"description":"Too Many Requests",'
+            b'"parameters":{"retry_after":17}}'
+        )
+        http_error = HTTPError(
+            "https://api.telegram.org/botSECRET_TOKEN/sendMessage",
+            429,
+            "Too Many Requests",
+            {},
+            response,
+        )
+        with patch("services.telegram.request.urlopen", side_effect=http_error):
+            with self.assertRaises(TelegramDeliveryError) as raised:
+                _send_telegram_message(token="SECRET_TOKEN", chat_id="chat", text="message")
+
+        self.assertTrue(raised.exception.retryable)
+        self.assertEqual(raised.exception.retry_after_seconds, 17)
+        self.assertNotIn("SECRET_TOKEN", str(raised.exception))
+
+    def test_permanent_telegram_http_error_is_not_retryable(self) -> None:
+        response = BytesIO(b'{"ok":false,"error_code":403,"description":"bot was blocked"}')
+        http_error = HTTPError("https://api.telegram.org/botSECRET_TOKEN/sendMessage", 403, "Forbidden", {}, response)
+        with patch("services.telegram.request.urlopen", side_effect=http_error):
+            with self.assertRaises(TelegramDeliveryError) as raised:
+                _send_telegram_message(token="SECRET_TOKEN", chat_id="chat", text="message")
+
+        self.assertFalse(raised.exception.retryable)
+
     async def test_missing_credentials_skip_notification(self) -> None:
         with patch.dict(
             os.environ,

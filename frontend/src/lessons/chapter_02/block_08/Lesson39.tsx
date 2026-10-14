@@ -1,3 +1,4 @@
+import "./lesson39.css";
 import { Braces, Database } from "lucide-react";
 import {
   BugHunt,

@@ -1,0 +1,102 @@
+.empty-workbench {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  padding: var(--space-8) var(--space-10);
+  color: var(--muted);
+  animation: view-in 180ms ease both;
+}
+
+.empty-workbench > div {
+  width: min(620px, 100%);
+  padding: var(--space-8);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--card);
+  box-shadow: var(--shadow);
+}
+
+.empty-workbench span {
+  color: var(--accent);
+  font-weight: 800;
+}
+
+.empty-workbench h2 {
+  margin: var(--space-3) 0 var(--space-2);
+  color: var(--text);
+}
+
+.empty-workbench p {
+  margin: 0;
+  line-height: 1.65;
+}
+
+.empty-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+}
+
+.empty-actions .secondary-action {
+  width: auto;
+  padding: 0 var(--space-4);
+}
+
+.account-card {
+  display: grid;
+  grid-template-columns: 46px 1fr;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--card);
+}
+
+.avatar {
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  background: var(--accent);
+  color: var(--brand-contrast);
+  font-weight: 900;
+}
+
+.account-card small {
+  display: block;
+  margin-top: var(--space-1);
+  color: var(--muted);
+}
+
+.account-metric {
+  display: flex;
+  justify-content: space-between;
+  margin: 0;
+  padding: var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--card);
+}
+
+.account-metric span {
+  color: var(--muted);
+}
+
+.account-metric.is-active-subscription {
+  border-color: color-mix(in srgb, var(--success) 36%, transparent);
+}
+
+.account-metric.is-active-subscription strong {
+  color: var(--accent);
+}
+
+.account-metric.is-expired-subscription {
+  border-color: color-mix(in srgb, var(--warning) 36%, transparent);
+}
+
+.account-metric.is-expired-subscription strong {
+  color: var(--accent-secondary);
+}

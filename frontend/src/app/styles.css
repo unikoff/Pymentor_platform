@@ -1,8 +1,5 @@
 @import "./styles/tokens.css";
-@import "../features/auth/auth.css";
+@import "./styles/base.css";
+@import "../shared/ui/controls.css";
 @import "./styles/workspace.css";
-@import "../shared/ui/code-editor/code-editor.css";
-@import "../features/learning/theory/lesson-theory.css";
-@import "../features/admin/admin.css";
-@import "../features/account/calendar.css";
-@import "../features/learning/practice/lesson-interactions.css";
+@import "./workspace/dockview.css";

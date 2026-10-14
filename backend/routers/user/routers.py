@@ -1,14 +1,21 @@
 from datetime import date
+import logging
+from time import perf_counter
 
-from fastapi import APIRouter, BackgroundTasks, Depends, Query, Request, Response
+from fastapi import APIRouter, Depends, Query, Request, Response
 from sqlalchemy.orm import Session
-
-from services.telegram import notify_booking_cancelled, notify_booking_created
 
 from . import crud
 from .schemas import ActivityVisit, SlotCreate, UserCreate, UserLogin
 
 user_router = APIRouter()
+logger = logging.getLogger("pymentor.booking")
+if not logger.handlers:
+    handler = logging.StreamHandler()
+    handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(name)s %(message)s"))
+    logger.addHandler(handler)
+    logger.setLevel(logging.INFO)
+    logger.propagate = False
 
 
 def get_db():
@@ -74,18 +81,18 @@ def get_bookable_slots(
 def book_slot(
     slot_id: int,
     request: Request,
-    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
 ):
+    started = perf_counter()
     user_db = crud.get_current_user(request=request, db=db)
-    slot = crud.book_slot(slot_id=slot_id, user_id=user_db.id, db=db)
-    background_tasks.add_task(
-        notify_booking_created,
-        username=user_db.username,
-        email=user_db.email,
-        slot_date=slot.slot_date,
-        start_time=slot.start_time,
+    slot = crud.book_slot(
+        slot_id=slot_id,
+        user_id=user_db.id,
+        db=db,
+        notification_username=user_db.username,
+        notification_email=user_db.email,
     )
+    logger.info("booking_saved slot_id=%s duration_ms=%.1f", slot.id, (perf_counter() - started) * 1000)
     return {"slot": crud.serialize_slot_student(slot, user_db.id)}
 
 
@@ -93,18 +100,18 @@ def book_slot(
 def cancel_slot(
     slot_id: int,
     request: Request,
-    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
 ):
+    started = perf_counter()
     user_db = crud.get_current_user(request=request, db=db)
-    slot = crud.cancel_booking(slot_id=slot_id, user_id=user_db.id, db=db)
-    background_tasks.add_task(
-        notify_booking_cancelled,
-        username=user_db.username,
-        email=user_db.email,
-        slot_date=slot.slot_date,
-        start_time=slot.start_time,
+    slot = crud.cancel_booking(
+        slot_id=slot_id,
+        user_id=user_db.id,
+        db=db,
+        notification_username=user_db.username,
+        notification_email=user_db.email,
     )
+    logger.info("booking_cancelled slot_id=%s duration_ms=%.1f", slot.id, (perf_counter() - started) * 1000)
     return {"slot": crud.serialize_slot_student(slot, user_db.id)}
 
 

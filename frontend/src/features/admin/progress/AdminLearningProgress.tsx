@@ -1,3 +1,4 @@
+import "./progress.css";
 import React, { useEffect, useState } from "react";
 import { BookOpen, CalendarClock, CalendarPlus, CheckCircle2, ChevronDown, ChevronRight, Clock, Code2, FileText, Lock, LogOut, PanelLeftClose, PanelLeftOpen, Play, Moon, Search, ShieldCheck, Sun, Terminal, Trash2, User, X } from "lucide-react";
 import { getDisplayModule } from "../../learning/course";

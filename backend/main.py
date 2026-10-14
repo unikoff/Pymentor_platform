@@ -1,4 +1,7 @@
 from pathlib import Path
+import asyncio
+import os
+from contextlib import asynccontextmanager
 
 import uvicorn
 from fastapi import FastAPI
@@ -13,9 +16,23 @@ from learning.content import get_legacy_lesson_id_map
 from routers.admin.routers import admin_router
 from routers.learning.routers import learning_router
 from routers.user.routers import user_router
+from services.local_notifications import LocalNotificationDispatcher
 
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    dispatcher = None
+    if os.getenv("PYMENTOR_LOCAL_NOTIFICATIONS", "1").lower() not in {"0", "false", "off"}:
+        dispatcher = LocalNotificationDispatcher()
+        dispatcher.start()
+    try:
+        yield
+    finally:
+        if dispatcher is not None:
+            await asyncio.to_thread(dispatcher.stop)
+
+
+app = FastAPI(lifespan=lifespan)
 
 
 def ensure_schema() -> None:

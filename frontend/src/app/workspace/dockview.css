@@ -1,0 +1,330 @@
+.workspace.workspace--dock {
+  grid-template-columns: var(--activity) var(--explorer) minmax(0, 1fr);
+  width: 100%;
+  height: 100dvh;
+  min-height: 0;
+  --dock-tabs-strip-height: 42px;
+  --dock-panel-content-top-inset: calc(var(--dock-tabs-strip-height) + 12px);
+  --dock-lesson-content-top-inset: calc(24px + var(--dock-panel-content-top-inset));
+  background: var(--bg);
+  transition: grid-template-columns 220ms cubic-bezier(0.2, 0, 0, 1);
+}
+body.is-resizing-panel .workspace.workspace--dock { transition: none; }
+.workspace--dock.workspace--explorer-closed { grid-template-columns: var(--activity) 0 minmax(0, 1fr); }
+.workspace--dock .workspace-drawer {
+  grid-column: 2;
+  position: relative;
+  width: var(--explorer);
+  height: 100dvh;
+  min-width: 0;
+  overflow: hidden;
+  border-radius: 0 20px 20px 0;
+  background: var(--surface);
+}
+.workspace--dock .workspace-body { grid-column: 3; }
+.workspace--dock .top-bar {
+  position: relative;
+  justify-content: flex-end;
+  border-bottom-color: transparent;
+  background: var(--bg);
+  backdrop-filter: none;
+}
+.workspace--dock .breadcrumbs {
+  position: absolute;
+  left: 50%;
+  width: min(70%, calc(100% - 340px));
+  justify-content: center;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+.workspace--dock .workspace-chapter { flex-shrink: 0; padding-right: 10px; border-right: 1px solid var(--line); color: var(--muted); font-size: 12px; }
+.workspace--dock .workspace-lesson-number { flex-shrink: 0; color: var(--accent); font-size: 12px; font-weight: 650; }
+.workspace--dock .workspace-title {
+  min-width: 0;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 600;
+}
+.workspace--dock .top-actions { position: relative; z-index: 1; }
+.workspace--dock .theme-switch {
+  position: relative;
+  flex-shrink: 0;
+  display: flex;
+  justify-content: space-between;
+  width: 66px;
+  height: 32px;
+  min-height: 32px;
+  padding: 0 9px;
+  gap: 0;
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+.workspace--dock .theme-switch__thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--surface-3);
+  transition: transform 180ms ease;
+}
+.workspace--dock .theme-switch[aria-checked="true"] .theme-switch__thumb { transform: translateX(34px); }
+.workspace--dock .theme-switch svg { position: relative; z-index: 1; }
+.workspace--dock .theme-switch[aria-checked="false"] svg:first-of-type,
+.workspace--dock .theme-switch[aria-checked="true"] svg:last-of-type { color: var(--accent); }
+.workspace--dock .profile-button {
+  height: 38px;
+  max-width: 190px;
+  padding: 3px 8px 3px 4px;
+  gap: 8px;
+  border: 1px solid var(--line-soft);
+  border-radius: 12px;
+  background: var(--surface);
+}
+.workspace--dock .profile-button:hover,
+.workspace--dock .profile-button[aria-current="page"] { border-color: color-mix(in srgb, var(--accent) 30%, var(--line)); background: var(--surface-2); }
+.profile-button__avatar { display: grid; place-items: center; flex-shrink: 0; width: 28px; height: 28px; border-radius: 9px; background: var(--accent-soft); color: var(--accent); font-size: 13px; font-weight: 700; }
+.profile-button__text { display: grid; gap: 1px; min-width: 0; text-align: left; }
+.profile-button__text strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; font-weight: 650; line-height: 1.2; }
+.profile-button__text small { color: var(--muted); font-size: 10px; line-height: 1.2; white-space: nowrap; }
+.profile-button__chevron { flex-shrink: 0; color: var(--faint); }
+.workspace--dock .workspace-drawer > .dock-explorer { width: 100%; }
+.workspace--dock .workspace-drawer .explorer-panel {
+  overflow: hidden;
+  background: linear-gradient(155deg, color-mix(in srgb, var(--accent) 4%, var(--surface)), var(--surface) 55%, color-mix(in srgb, var(--accent-secondary) 3%, var(--surface)));
+  backdrop-filter: none;
+}
+.workspace-body { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+.workspace--dock > .activity-bar { height: 100%; }
+.workspace-body > .top-bar { flex: 0 0 50px; min-width: 0; }
+.dock-workbench { flex: 1; min-width: 0; min-height: 0; overflow: clip; }
+.workspace--dock .explorer-resizer {
+  position: absolute;
+  z-index: 30;
+  top: 0;
+  left: calc(var(--activity) + var(--explorer));
+  width: 8px;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  cursor: col-resize;
+  touch-action: none;
+}
+.workspace--dock .explorer-resizer::after {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 2px;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  content: "";
+  transition: background-color 140ms ease;
+}
+.workspace--dock .explorer-resizer:hover::after,
+.workspace--dock .explorer-resizer:focus-visible::after {
+  background: color-mix(in srgb, var(--accent) 72%, transparent);
+}
+body.is-resizing-panel,
+body.is-resizing-panel * {
+  cursor: col-resize !important;
+  user-select: none !important;
+}
+.pymentor-dock {
+  height: 100%;
+  width: 100%;
+  --dock-active-tab-bg: var(--bg);
+  --dv-group-view-background-color: var(--bg);
+  --dv-tabs-and-actions-container-background-color: transparent;
+  --dv-activegroup-visiblepanel-tab-background-color: var(--dock-active-tab-bg);
+  --dv-activegroup-hiddenpanel-tab-background-color: transparent;
+  --dv-inactivegroup-visiblepanel-tab-background-color: var(--dock-active-tab-bg);
+  --dv-inactivegroup-hiddenpanel-tab-background-color: transparent;
+  --dv-activegroup-visiblepanel-tab-color: var(--text);
+  --dv-activegroup-hiddenpanel-tab-color: var(--muted);
+  --dv-inactivegroup-visiblepanel-tab-color: var(--text);
+  --dv-inactivegroup-hiddenpanel-tab-color: var(--muted);
+  --dv-tab-divider-color: var(--line);
+  --dv-separator-border: var(--line);
+  --dv-active-sash-color: var(--accent);
+  --dv-drag-over-background-color: var(--accent-soft);
+  --dv-drag-over-border: 1px solid var(--accent);
+  --dv-tabs-and-actions-container-height: var(--dock-tabs-strip-height);
+}
+.pymentor-dock .dv-groupview:not(.dv-groupview-edge) {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: var(--bg);
+  box-shadow: none;
+}
+.pymentor-dock .dv-tabs-and-actions-container {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  right: 0;
+  left: 0;
+  box-sizing: border-box;
+  margin: 6px 8px;
+  border: 1px solid color-mix(in srgb, var(--text) 10%, transparent);
+  border-radius: 12px;
+}
+.track-status,
+.track-menu--overlay {
+  border-color: var(--line);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 8%, var(--surface)), var(--surface) 58%, color-mix(in srgb, var(--accent-secondary) 4%, var(--surface)));
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: none;
+}
+.pymentor-dock .dv-tabs-and-actions-container {
+  border-color: color-mix(in srgb, var(--text) 10%, transparent);
+  background: linear-gradient(
+    125deg,
+    color-mix(in srgb, var(--text) 7%, transparent),
+    color-mix(in srgb, var(--surface) 18%, transparent) 52%,
+    color-mix(in srgb, var(--accent) 3%, transparent)
+  );
+  -webkit-backdrop-filter: blur(5px) saturate(1.5);
+  backdrop-filter: blur(5px) saturate(1.5);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--text) 10%, transparent),
+    inset 0 -1px 0 color-mix(in srgb, var(--bg) 18%, transparent),
+    0 8px 24px color-mix(in srgb, var(--bg) 12%, transparent);
+}
+.pymentor-dock .dv-tabs-container { gap: 0; padding: 0 12px 0 0; }
+.pymentor-dock .dv-tabs-overflow-dropdown-default { display: none; }
+.pymentor-dock .dv-tab {
+  box-sizing: border-box;
+  height: calc(100% - 8px);
+  margin: 4px 0 4px 4px;
+  border: 0;
+  border-top: 2px solid transparent;
+  border-radius: 8px;
+  transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+}
+.pymentor-dock .dv-tab.dv-active-tab {
+  position: relative;
+  z-index: 1;
+  border-top: 2px solid color-mix(in srgb, var(--accent) 68%, var(--line));
+  background: var(--dock-active-tab-bg);
+  color: var(--text);
+  box-shadow: none;
+}
+.pymentor-dock .dv-tab:not(:last-child) .dock-tab::after {
+  position: absolute;
+  top: 50%;
+  right: calc(-1 * var(--space-2));
+  z-index: 2;
+  width: 1px;
+  height: 14px;
+  transform: translateY(-50%);
+  background-color: color-mix(in srgb, var(--text) 22%, transparent);
+  content: "";
+  pointer-events: none;
+}
+.pymentor-dock .dv-groupview.dv-active-group > .dv-tabs-and-actions-container .dv-tabs-container > .dv-tab.dv-active-tab {
+  background-color: var(--dock-active-tab-bg);
+}
+.pymentor-dock .dv-groupview.dv-inactive-group > .dv-tabs-and-actions-container .dv-tabs-container > .dv-tab.dv-active-tab {
+  background-color: var(--dock-active-tab-bg);
+}
+.pymentor-dock .dv-tab.dv-inactive-tab { color: var(--muted); }
+.pymentor-dock .dv-groupview.dv-active-group > .dv-tabs-and-actions-container .dv-tabs-container > .dv-tab.dv-inactive-tab:hover,
+.pymentor-dock .dv-groupview.dv-inactive-group > .dv-tabs-and-actions-container .dv-tabs-container > .dv-tab.dv-inactive-tab:hover {
+  background-color: var(--surface-2);
+  color: var(--text);
+}
+.pymentor-dock .dv-tab .dv-default-tab { border-radius: inherit; }
+.pymentor-dock .dv-tab:focus-visible::after,
+.pymentor-dock .dv-tab:has(:focus-visible)::after {
+  border-radius: inherit;
+  outline: 1px solid color-mix(in srgb, var(--accent) 28%, transparent) !important;
+  outline-offset: -2px;
+}
+.dock-tab { position: relative; display: flex; align-items: center; height: 100%; max-width: 290px; min-width: 0; }
+.dock-tab-main, .dock-tab-close { border: 0; background: transparent; color: inherit; cursor: pointer; }
+.dock-tab-main { padding: 0 8px; min-width: 0; height: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: inherit; font-size: 13px; font-weight: 450; line-height: 1.25; }
+.dv-active-tab .dock-tab-main { font-weight: 550; }
+.dock-tab-close { display: grid; place-items: center; flex-shrink: 0; height: 18px; width: 18px; margin-right: 4px; border-radius: var(--radius-pill); color: var(--muted); opacity: 1; transition: background-color 140ms ease, color 140ms ease, opacity 140ms ease; }
+.dv-inactive-tab:not(:hover):not(:focus-within) .dock-tab-close { opacity: 0; }
+.dock-tab-close:hover { background: transparent; color: var(--muted); }
+.dock-tab button:focus-visible { outline-offset: -3px; }
+.dock-lesson {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
+  min-width: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  container-type: inline-size;
+  container-name: dock-panel;
+  padding: var(--dock-lesson-content-top-inset) clamp(12px, 3cqw, 36px) 24px;
+  scroll-padding-top: var(--dock-panel-content-top-inset);
+  animation: none;
+}
+.workspace--dock .dock-lesson:has(.document-view) {
+  padding-inline: clamp(10px, 1.5cqw, 20px);
+}
+.workspace--dock .dock-lesson .document-view {
+  max-width: min(100%, 70rem);
+}
+.dock-scroll {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
+  min-width: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  container-type: inline-size;
+  container-name: dock-panel;
+}
+.workspace--dock .dv-react-part > .dock-scroll {
+  padding-top: var(--dock-panel-content-top-inset);
+  scroll-padding-top: var(--dock-panel-content-top-inset);
+}
+.workspace--dock .dock-scroll > .account-panel,
+.workspace--dock .dock-scroll > .admin-panel {
+  padding-top: 16px;
+}
+.dock-explorer { height: 100%; display: flex; flex-direction: column; min-height: 0; }
+.dock-explorer .explorer-panel { position: static; flex: 1; min-height: 0; height: auto; width: 100%; max-width: none; border: 0; box-shadow: none; }
+.panel-message { padding: 24px; overflow-wrap: anywhere; }
+.panel-status { padding: 0 16px; color: var(--muted); }
+.dock-workbench .empty-workbench { height: 100%; padding: 16px; }
+@container dock-panel (max-width: 600px) {
+  .workspace--dock .admin-row { grid-template-columns: minmax(0, 1fr) auto; }
+  .workspace--dock .admin-row-meta { grid-column: 1; }
+  .workspace--dock .admin-row-chevron { grid-column: 2; grid-row: 1 / span 2; }
+  .workspace--dock .admin-panel { padding: 16px; }
+  .workspace--dock .account-panel { padding: 12px; }
+}
+@media (max-width: 900px) {
+  .workspace--dock { --activity: 48px; }
+  .workspace--dock.workspace--explorer-open { grid-template-columns: var(--activity) minmax(0, 1fr); }
+  .workspace--dock.workspace--explorer-closed { grid-template-columns: var(--activity) minmax(0, 1fr); }
+  .workspace--dock .workspace-body { grid-column: 2; }
+  .workspace--dock .workspace-drawer {
+    position: absolute;
+    inset: 50px 0 0 var(--activity);
+    z-index: 10;
+    width: calc(100% - var(--activity));
+    height: calc(100dvh - 50px);
+    border-right: 0;
+    background: var(--surface);
+  }
+  .workspace--dock .activity-bar { padding-inline: 4px; }
+  .workspace-body > .top-bar { padding-inline: 8px; gap: 8px; }
+  .workspace--compact .breadcrumbs { display: none; }
+  .workspace--compact .top-actions { width: 100%; justify-content: flex-end; gap: 4px; }
+  .dock-tab { max-width: 230px; }
+  .workspace--compact .dv-sash { pointer-events: none; }
+}

@@ -1,63 +1,29 @@
-import type { ComponentType } from "react";
-import { Lesson189 } from "./block_33/Lesson189";
-import { Lesson190 } from "./block_33/Lesson190";
-import { Lesson191 } from "./block_33/Lesson191";
-import { Lesson192 } from "./block_33/Lesson192";
-import { Lesson193 } from "./block_33/Lesson193";
-import { Lesson194 } from "./block_33/Lesson194";
-import { Lesson195 } from "./block_34/Lesson195";
-import { Lesson196 } from "./block_34/Lesson196";
-import { Lesson197 } from "./block_34/Lesson197";
-import { Lesson198 } from "./block_34/Lesson198";
-import { Lesson199 } from "./block_34/Lesson199";
-import { Lesson200 } from "./block_34/Lesson200";
-import { Lesson201 } from "./block_35/Lesson201";
-import { Lesson202 } from "./block_35/Lesson202";
-import { Lesson203 } from "./block_35/Lesson203";
-import { Lesson204 } from "./block_35/Lesson204";
-import { Lesson205 } from "./block_35/Lesson205";
-import { Lesson206 } from "./block_35/Lesson206";
-import { Lesson207 } from "./block_36/Lesson207";
-import { Lesson208 } from "./block_36/Lesson208";
-import { Lesson209 } from "./block_36/Lesson209";
-import { Lesson210 } from "./block_36/Lesson210";
-import { Lesson211 } from "./block_36/Lesson211";
-import { Lesson212 } from "./block_36/Lesson212";
-import { LearningRoadmap } from "./block_00/LearningRoadmap";
+import { defineLessonPages } from "../page-registry";
 
-const COURSE_FOLDER = "chapter_09";
-const LESSON_BLOCKS = [[189, 194, "block_33"], [195, 200, "block_34"], [201, 206, "block_35"], [207, 212, "block_36"]] as const;
-const source = (file: string) => {
-  const filename = file.split("/").pop() ?? file;
-  const lessonNumber = Number(filename.match(/^\d+/)?.[0] ?? 0);
-  const block = LESSON_BLOCKS.find(([first, last]) => lessonNumber >= first && lessonNumber <= last)?.[2] ?? "block_00";
-  return `${COURSE_FOLDER}/${block}/${filename}`;
-};
-
-export const pages: Record<string, ComponentType<{ module?: string }>> = {
-  [source("00 Обзор/План обучения.md")]: LearningRoadmap,
-  [source("Блок 33 - Проектирование StudyHub LMS Core (6 занятий)/189 - От Planner к LMS, требования и границы MVP.md")]: Lesson189,
-  [source("Блок 33 - Проектирование StudyHub LMS Core (6 занятий)/190 - Course, Module и Lesson, структура учебного контента.md")]: Lesson190,
-  [source("Блок 33 - Проектирование StudyHub LMS Core (6 занятий)/191 - Enrollment как отдельная сущность связи.md")]: Lesson191,
-  [source("Блок 33 - Проектирование StudyHub LMS Core (6 занятий)/192 - Progress и инварианты прохождения.md")]: Lesson192,
-  [source("Блок 33 - Проектирование StudyHub LMS Core (6 занятий)/193 - Ownership, роли и permissions matrix.md")]: Lesson193,
-  [source("Блок 33 - Проектирование StudyHub LMS Core (6 занятий)/194 - API contract, ER-диаграмма и migration plan.md")]: Lesson194,
-  [source("Блок 34 - Курсы, зачисление и прогресс (6 занятий)/195 - Teacher создаёт и редактирует Course.md")]: Lesson195,
-  [source("Блок 34 - Курсы, зачисление и прогресс (6 занятий)/196 - Modules, Lessons и устойчивый порядок.md")]: Lesson196,
-  [source("Блок 34 - Курсы, зачисление и прогресс (6 занятий)/197 - Draft, publish и публичный каталог курсов.md")]: Lesson197,
-  [source("Блок 34 - Курсы, зачисление и прогресс (6 занятий)/198 - Enrollment и защита от повторной записи.md")]: Lesson198,
-  [source("Блок 34 - Курсы, зачисление и прогресс (6 занятий)/199 - Завершение Lesson и расчёт Progress.md")]: Lesson199,
-  [source("Блок 34 - Курсы, зачисление и прогресс (6 занятий)/200 - End-to-end LMS flow и отрицательные тесты.md")]: Lesson200,
-  [source("Блок 35 - Redis, кеш и фоновые операции (6 занятий)/201 - Redis key,value, TTL и source of truth.md")]: Lesson201,
-  [source("Блок 35 - Redis, кеш и фоновые операции (6 занятий)/202 - Cache-aside для каталога курсов.md")]: Lesson202,
-  [source("Блок 35 - Redis, кеш и фоновые операции (6 занятий)/203 - Cache invalidation после изменения курса.md")]: Lesson203,
-  [source("Блок 35 - Redis, кеш и фоновые операции (6 занятий)/204 - Простой rate limit через Redis.md")]: Lesson204,
-  [source("Блок 35 - Redis, кеш и фоновые операции (6 занятий)/205 - BackgroundTasks и действие после response.md")]: Lesson205,
-  [source("Блок 35 - Redis, кеш и фоновые операции (6 занятий)/206 - Тестирование кеша, rate limit и фоновых ошибок.md")]: Lesson206,
-  [source("Блок 36 - Финальное качество, портфолио и интервью (6 занятий)/207 - Единый API error contract и versioning.md")]: Lesson207,
-  [source("Блок 36 - Финальное качество, портфолио и интервью (6 занятий)/208 - Аудит безопасности и производительности.md")]: Lesson208,
-  [source("Блок 36 - Финальное качество, портфолио и интервью (6 занятий)/209 - Финальный test suite и quality gate.md")]: Lesson209,
-  [source("Блок 36 - Финальное качество, портфолио и интервью (6 занятий)/210 - README, ER-диаграмма и архитектурный рассказ.md")]: Lesson210,
-  [source("Блок 36 - Финальное качество, портфолио и интервью (6 занятий)/211 - Interview lab, Python, SQL, API и code review.md")]: Lesson211,
-  [source("Блок 36 - Финальное качество, портфолио и интервью (6 занятий)/212 - StudyHub LMS Release и финальная защита.md")]: Lesson212,
-};
+export const pages = defineLessonPages("chapter_09", {
+  "block_00/План обучения.md": "block_00/LearningRoadmap",
+  "block_33/189 - От Planner к LMS, требования и границы MVP.md": "block_33/Lesson189",
+  "block_33/190 - Course, Module и Lesson, структура учебного контента.md": "block_33/Lesson190",
+  "block_33/191 - Enrollment как отдельная сущность связи.md": "block_33/Lesson191",
+  "block_33/192 - Progress и инварианты прохождения.md": "block_33/Lesson192",
+  "block_33/193 - Ownership, роли и permissions matrix.md": "block_33/Lesson193",
+  "block_33/194 - API contract, ER-диаграмма и migration plan.md": "block_33/Lesson194",
+  "block_34/195 - Teacher создаёт и редактирует Course.md": "block_34/Lesson195",
+  "block_34/196 - Modules, Lessons и устойчивый порядок.md": "block_34/Lesson196",
+  "block_34/197 - Draft, publish и публичный каталог курсов.md": "block_34/Lesson197",
+  "block_34/198 - Enrollment и защита от повторной записи.md": "block_34/Lesson198",
+  "block_34/199 - Завершение Lesson и расчёт Progress.md": "block_34/Lesson199",
+  "block_34/200 - End-to-end LMS flow и отрицательные тесты.md": "block_34/Lesson200",
+  "block_35/201 - Redis key,value, TTL и source of truth.md": "block_35/Lesson201",
+  "block_35/202 - Cache-aside для каталога курсов.md": "block_35/Lesson202",
+  "block_35/203 - Cache invalidation после изменения курса.md": "block_35/Lesson203",
+  "block_35/204 - Простой rate limit через Redis.md": "block_35/Lesson204",
+  "block_35/205 - BackgroundTasks и действие после response.md": "block_35/Lesson205",
+  "block_35/206 - Тестирование кеша, rate limit и фоновых ошибок.md": "block_35/Lesson206",
+  "block_36/207 - Единый API error contract и versioning.md": "block_36/Lesson207",
+  "block_36/208 - Аудит безопасности и производительности.md": "block_36/Lesson208",
+  "block_36/209 - Финальный test suite и quality gate.md": "block_36/Lesson209",
+  "block_36/210 - README, ER-диаграмма и архитектурный рассказ.md": "block_36/Lesson210",
+  "block_36/211 - Interview lab, Python, SQL, API и code review.md": "block_36/Lesson211",
+  "block_36/212 - StudyHub LMS Release и финальная защита.md": "block_36/Lesson212",
+});

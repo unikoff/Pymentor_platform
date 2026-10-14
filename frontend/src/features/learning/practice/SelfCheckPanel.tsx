@@ -1,11 +1,9 @@
-import { useEffect, useState } from "react";
-import {
-  BookOpen, CalendarClock, CalendarPlus, CheckCircle2, ChevronDown, ChevronRight, Clock,
-  Code2, FileText, Lock, LogOut, PanelLeftClose, PanelLeftOpen, Play, Moon, Search,
-  ShieldCheck, Sun, Terminal, Trash2, User, X,
-} from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { ArrowLeft, ArrowRight, BookOpen, CheckCircle2, Lightbulb } from "lucide-react";
 import { completeLesson } from "../api";
 import { formatManualPracticeResult, renderPracticeText } from "./text-format";
+import { usePracticeState } from "./session";
+import { readStoredString, writeStoredValue } from "../../../shared/lib/storage";
 import type { Lesson } from "../types";
 
 function readStoredStringSet(key: string, signature: string): Set<string> {
@@ -23,14 +21,6 @@ function readStoredStringSet(key: string, signature: string): Set<string> {
     return new Set();
   } catch {
     return new Set();
-  }
-}
-
-export function readStoredString(key: string, fallback: string): string {
-  try {
-    return window.localStorage.getItem(key) ?? fallback;
-  } catch {
-    return fallback;
   }
 }
 
@@ -56,27 +46,23 @@ export function SelfCheckPanel({
   const manualPractice = lesson.manual_practice ?? [];
   const manualPracticeSignature = JSON.stringify(manualPractice) ?? "";
   const progressStorageKey = `pymentor:manual-progress:${progressOwnerKey}:${lesson.id}`;
-  const [checkedSteps, setCheckedSteps] = useState<Set<string>>(
+  const sessionKey = `${progressStorageKey}:${manualPracticeSignature}`;
+  const [checkedSteps, setCheckedSteps] = usePracticeState<Set<string>>(`${sessionKey}:checked`,
     () => readStoredStringSet(progressStorageKey, manualPracticeSignature),
   );
-  const [openTaskPanels, setOpenTaskPanels] = useState<Record<string, "hint" | "answer" | undefined>>({});
-  const [activeTaskIndexes, setActiveTaskIndexes] = useState<Record<string, number>>({});
-  const [isSaving, setIsSaving] = useState(false);
-  const [error, setError] = useState("");
+  const [openTaskPanels, setOpenTaskPanels] = usePracticeState<Record<string, "hint" | "answer" | undefined>>(`${sessionKey}:panels`, () => ({}));
+  const [activeTaskIndexes, setActiveTaskIndexes] = usePracticeState<Record<string, number>>(`${sessionKey}:tasks`, () => ({}));
+  const [isSaving, setIsSaving] = usePracticeState(`${sessionKey}:saving`, () => false);
+  const [error, setError] = usePracticeState(`${sessionKey}:error`, () => "");
+  const completionAttemptKey = useRef("");
+  const [completionRetry, setCompletionRetry] = useState(0);
 
   useEffect(() => {
     setCheckedSteps(readStoredStringSet(progressStorageKey, manualPracticeSignature));
   }, [manualPracticeSignature, progressStorageKey]);
 
   useEffect(() => {
-    try {
-      window.localStorage.setItem(
-        progressStorageKey,
-        JSON.stringify({ signature: manualPracticeSignature, checked: Array.from(checkedSteps) }),
-      );
-    } catch {
-      // Сохранение локальных отметок необязательно, если хранилище недоступно.
-    }
+    writeStoredValue(progressStorageKey, JSON.stringify({ signature: manualPracticeSignature, checked: Array.from(checkedSteps) }));
   }, [checkedSteps, manualPracticeSignature, progressStorageKey]);
 
   const totalStepCount = manualPractice.reduce(
@@ -86,6 +72,46 @@ export function SelfCheckPanel({
   const checkedStepCount = checkedSteps.size;
   const isManualPracticeComplete = totalStepCount === 0 || checkedStepCount === totalStepCount;
   const isPracticeComplete = isManualPracticeComplete && requiredTasksComplete;
+  const trackedItemCount = totalStepCount + requiredTaskCount;
+  const completedItemCount = checkedStepCount + completedTaskCount;
+  const completionPercent = trackedItemCount > 0
+    ? Math.min(100, Math.round(completedItemCount / trackedItemCount * 100))
+    : 0;
+
+  useEffect(() => {
+    if (
+      trackedItemCount === 0 || !isAuthenticated || !isPracticeComplete || lesson.completed || isSaving
+    ) {
+      return;
+    }
+
+    const attemptKey = `${sessionKey}:${completionRetry}`;
+    if (completionAttemptKey.current === attemptKey) {
+      return;
+    }
+    completionAttemptKey.current = attemptKey;
+    setIsSaving(true);
+    setError("");
+
+    void completeLesson(lesson.id)
+      .then(() => onLessonCompleted())
+      .catch((err: unknown) => {
+        setError(err instanceof Error ? err.message : "Не удалось сохранить выполнение занятия");
+      })
+      .finally(() => setIsSaving(false));
+  }, [
+    completionRetry,
+    isAuthenticated,
+    isPracticeComplete,
+    isSaving,
+    lesson.completed,
+    lesson.id,
+    onLessonCompleted,
+    sessionKey,
+    setError,
+    setIsSaving,
+    trackedItemCount,
+  ]);
 
   function toggleStep(stepId: string) {
     setCheckedSteps((current) => {
@@ -117,7 +143,7 @@ export function SelfCheckPanel({
       return;
     }
 
-    if (!isPracticeComplete) {
+    if (trackedItemCount > 0 || !isPracticeComplete) {
       return;
     }
 
@@ -147,11 +173,13 @@ export function SelfCheckPanel({
 
             return (
               <article className="manual-practice-card" key={`${lesson.id}-${exercise.title}`}>
-              <div className="manual-practice-card__head">
-                <span>Практика {exerciseIndex + 1}</span>
+              <header className="manual-practice-card__head">
                 <h2>{renderPracticeText(exercise.title)}</h2>
-              </div>
-              <div className="manual-practice-card__task">{renderPracticeText(exercise.task)}</div>
+              </header>
+              <section className="manual-practice-card__context" aria-label="Контекст занятия">
+                <span className="manual-practice-section-label">Контекст</span>
+                <p>{renderPracticeText(exercise.task)}</p>
+              </section>
               {practiceTask && (
                 <div className="manual-practice-task-list">
                   {(() => {
@@ -169,16 +197,20 @@ export function SelfCheckPanel({
                               type="button"
                               disabled={activeTaskIndex === 0}
                               onClick={() => switchPracticeTask(exerciseId, activeTaskIndex, -1, taskCount)}
+                              aria-label="Предыдущая задача"
+                              title="Предыдущая задача"
                             >
-                              Назад
+                              <ArrowLeft size={16} strokeWidth={1.9} aria-hidden="true" />
                             </button>
                             <button
                               className="practice-task-navigation__button practice-task-navigation__button--next"
                               type="button"
                               disabled={activeTaskIndex === taskCount - 1}
                               onClick={() => switchPracticeTask(exerciseId, activeTaskIndex, 1, taskCount)}
+                              aria-label="Следующая задача"
+                              title="Следующая задача"
                             >
-                              Следующая
+                              <ArrowRight size={16} strokeWidth={1.9} aria-hidden="true" />
                             </button>
                           </div>
                         </div>
@@ -186,44 +218,60 @@ export function SelfCheckPanel({
                         <div className="manual-practice-task__head">
                           <h3>{renderPracticeText(practiceTask.title)}</h3>
                         </div>
-                        <div className="manual-practice-task__summary">
-                          {renderPracticeText(practiceTask.task)}
+                        <div className="manual-practice-task__sections">
+                          <section className="manual-practice-task__summary-section" aria-label="Условие задачи">
+                            <span className="manual-practice-section-label">Условие</span>
+                            <p className="manual-practice-task__summary">
+                              {renderPracticeText(practiceTask.task)}
+                            </p>
+                          </section>
+
+                          <section className="manual-practice-task__requirements" aria-label={"Техническое задание: " + practiceTask.title}>
+                            <h4>Техническое задание</h4>
+                            <ol>
+                              {practiceTask.requirements.map((requirement) => (
+                                <li key={requirement}>{renderPracticeText(requirement)}</li>
+                              ))}
+                            </ol>
+                          </section>
+
+                          <section className="manual-practice-task__criterion" aria-label="Критерий готовности">
+                            <CheckCircle2 size={17} aria-hidden="true" />
+                            <div>
+                              <strong>Критерий готовности</strong>
+                              <p>{renderPracticeText(formatManualPracticeResult(exercise.result))}</p>
+                            </div>
+                          </section>
                         </div>
 
-                        <section className="manual-practice-task__requirements" aria-label={"Техническое задание: " + practiceTask.title}>
-                          <h4>Техническое задание</h4>
-                          <ol>
-                            {practiceTask.requirements.map((requirement) => (
-                              <li key={requirement}>{renderPracticeText(requirement)}</li>
-                            ))}
-                          </ol>
-                        </section>
-
                         <div className="manual-practice-task__actions">
-                          <button
-                            className={["manual-practice-task__action", activePanel === "answer" ? "is-active" : ""].filter(Boolean).join(" ")}
-                            type="button"
-                            aria-pressed={activePanel === "answer"}
-                            onClick={() => toggleTaskPanel(taskId, "answer")}
-                          >
-                            Ответ
-                          </button>
                           <button
                             className={["manual-practice-task__action", activePanel === "hint" ? "is-active" : ""].filter(Boolean).join(" ")}
                             type="button"
                             aria-pressed={activePanel === "hint"}
                             onClick={() => toggleTaskPanel(taskId, "hint")}
                           >
+                            <Lightbulb size={16} />
                             Подсказка
+                          </button>
+                          <button
+                            className={["manual-practice-task__action", activePanel === "answer" ? "is-active" : ""].filter(Boolean).join(" ")}
+                            type="button"
+                            aria-pressed={activePanel === "answer"}
+                            onClick={() => toggleTaskPanel(taskId, "answer")}
+                          >
+                            <BookOpen size={16} />
+                            Разбор
                           </button>
                           <button
                             className={["manual-practice-task__action", "manual-practice-task__done", isDone ? "is-done" : ""].filter(Boolean).join(" ")}
                             type="button"
                             aria-pressed={isDone}
-                            disabled={lesson.completed}
+                            disabled={lesson.completed || isSaving}
                             onClick={() => toggleStep(taskId)}
                           >
-                            {lesson.completed ? "Задача выполнена" : isDone ? "Снять отметку" : "Отметить готовым"}
+                            <CheckCircle2 size={16} />
+                            {lesson.completed ? "Выполнено" : isDone ? "Снять отметку" : "Отметить шаг"}
                           </button>
                         </div>
 
@@ -271,77 +319,104 @@ export function SelfCheckPanel({
               )}
 
               {(!exercise.tasks || exercise.tasks.length === 0) && (
-                <div className="manual-practice-steps">
-                  {(exercise.steps ?? []).map((step, stepIndex) => {
-                    const stepId = `${lesson.id}:${exerciseIndex}:${stepIndex}`;
-                    const stepTextId = `${stepId}:text`;
-                    return (
-                      <div
-                        className="manual-practice-step"
-                        key={stepId}
-                        onClick={(event) => {
-                          if (event.target instanceof HTMLElement && event.target.closest("input, label")) {
-                            return;
-                          }
-                          if (!lesson.completed) toggleStep(stepId);
-                        }}
-                      >
-                        <input
-                          id={stepId}
-                          type="checkbox"
-                          aria-labelledby={stepTextId}
-                          checked={checkedSteps.has(stepId) || lesson.completed === true}
-                          disabled={lesson.completed}
-                          onChange={() => toggleStep(stepId)}
-                        />
-                        <div className="manual-practice-step__text" id={stepTextId}>
-                          <label htmlFor={stepId}><strong>Шаг {stepIndex + 1}.</strong></label>{" "}
-                          {renderPracticeText(step)}
+                <>
+                  <div className="manual-practice-steps">
+                    {(exercise.steps ?? []).map((step, stepIndex) => {
+                      const stepId = `${lesson.id}:${exerciseIndex}:${stepIndex}`;
+                      const stepTextId = `${stepId}:text`;
+                      return (
+                        <div
+                          className="manual-practice-step"
+                          key={stepId}
+                          onClick={(event) => {
+                            if (event.target instanceof HTMLElement && event.target.closest("input, label")) {
+                              return;
+                            }
+                            if (!lesson.completed && !isSaving) toggleStep(stepId);
+                          }}
+                        >
+                          <input
+                            id={stepId}
+                            type="checkbox"
+                            aria-labelledby={stepTextId}
+                            checked={checkedSteps.has(stepId) || lesson.completed === true}
+                            disabled={lesson.completed || isSaving}
+                            onChange={() => toggleStep(stepId)}
+                          />
+                          <div className="manual-practice-step__text" id={stepTextId}>
+                            <label htmlFor={stepId}><strong>Шаг {stepIndex + 1}.</strong></label>{" "}
+                            {renderPracticeText(step)}
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                      );
+                    })}
+                  </div>
+                  <section className="manual-practice-card__result" aria-label="Критерий готовности">
+                    <CheckCircle2 size={17} aria-hidden="true" />
+                    <div>
+                      <strong>Критерий готовности</strong>
+                      <p>{renderPracticeText(formatManualPracticeResult(exercise.result))}</p>
+                    </div>
+                  </section>
+                </>
               )}
-              <div className="manual-practice-card__result">
-                <strong>Готово, если:</strong>{" "}
-                {renderPracticeText(formatManualPracticeResult(exercise.result))}
-              </div>
               </article>
             );
           })}
         </section>
       )}
 
-      {!lesson.completed && (
+      {!lesson.completed && trackedItemCount > 0 && (
+        <div className="self-check-status" aria-live="polite">
+          <div className="self-check-status__summary">
+            <CheckCircle2 size={17} aria-hidden="true" />
+            <span>
+              {isSaving
+                ? "Все задания выполнены — сохраняем результат"
+                : error
+                  ? "Не удалось сохранить результат"
+                  : isPracticeComplete
+                    ? (isAuthenticated ? "Все задания выполнены" : "Все задания выполнены — войдите, чтобы сохранить")
+                    : `Выполнено ${Math.min(completedItemCount, trackedItemCount)} из ${trackedItemCount}`}
+            </span>
+          </div>
+          <div
+            className="self-check-progress"
+            role="progressbar"
+            aria-label="Прогресс выполнения занятия"
+            aria-valuemin={0}
+            aria-valuemax={trackedItemCount}
+            aria-valuenow={Math.min(completedItemCount, trackedItemCount)}
+          >
+            <span style={{ width: `${completionPercent}%` }} />
+          </div>
+          {error && (
+            <div className="self-check-status__error">
+              <span className="form-error">{error}</span>
+              {isAuthenticated && isPracticeComplete && (
+                <button className="self-check-status__retry" type="button" onClick={() => setCompletionRetry((value) => value + 1)}>
+                  Повторить сохранение
+                </button>
+              )}
+            </div>
+          )}
+          {isPracticeComplete && !isAuthenticated && (
+            <button className="self-check-status__login" type="button" onClick={onRequireAuth}>
+              Войти и сохранить прогресс
+            </button>
+          )}
+        </div>
+      )}
+      {!lesson.completed && trackedItemCount === 0 && (
         <section className="self-check-card self-check-card--complete">
-          <div>
-            <h2>Зафиксируем результат</h2>
-            <p>
-              {requiredTaskCount > 0
-                ? `Редакторские задания: ${completedTaskCount} из ${requiredTaskCount}. Ручные шаги: ${checkedStepCount} из ${totalStepCount}.`
-                : totalStepCount > 0
-                  ? `Отмечено шагов: ${checkedStepCount} из ${totalStepCount}.`
-                  : "После самостоятельной практики отметим занятие выполненным."}
-            </p>
+          <div className="self-check-card__content">
+            <span className="self-check-card__eyebrow">Самопроверка</span>
+            <p>После самостоятельной практики отметьте занятие выполненным.</p>
             {error && <div className="form-error">{error}</div>}
           </div>
-          <button
-            className="primary-action"
-            type="button"
-            onClick={markCompleted}
-            disabled={isSaving || (isAuthenticated && !isPracticeComplete)}
-          >
+          <button className="primary-action" type="button" onClick={markCompleted} disabled={isSaving}>
             <CheckCircle2 size={17} />
-            {isSaving
-              ? "Сохраняем..."
-              : !isAuthenticated
-                ? "Войти и отметить"
-                : !requiredTasksComplete
-                  ? "Сначала решим задания в редакторе"
-                  : isPracticeComplete
-                    ? "Задание выполнено"
-                    : "Сначала отметим все ручные шаги"}
+            {isSaving ? "Сохраняем..." : isAuthenticated ? "Завершить практику" : "Войти и сохранить"}
           </button>
         </section>
       )}

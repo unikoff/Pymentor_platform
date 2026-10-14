@@ -1,6 +1,8 @@
+import "./calendar-base.css";
 import { useEffect, useMemo, useState } from "react";
-import { CalendarClock, Clock } from "lucide-react";
-import { buildMonthCells, formatSlotDate, formatSlotTimeRange, getMonthTitle, shiftCalendarMonth } from "../../shared/lib/dates";
+import { CalendarClock, CalendarDays, ChevronLeft, ChevronRight, Clock } from "lucide-react";
+import { formatSlotDate, formatSlotTimeRange, getMonthTitle, shiftCalendarMonth } from "../../shared/lib/dates";
+import { CalendarMonthGrid } from "../../shared/ui/calendar/CalendarMonthGrid";
 import type { CalendarMonth, StudentSlot, QuotaStatus } from "../../shared/api/contracts/account";
 
 export function CalendarPanel({
@@ -20,48 +22,45 @@ export function CalendarPanel({
   onBookSlot: (slotId: number) => Promise<void>;
   onCancelSlot: (slotId: number) => Promise<void>;
 }) {
-  const cells = buildMonthCells(calendarMonth);
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
   const [busySlotId, setBusySlotId] = useState<number | null>(null);
   const [error, setError] = useState("");
 
-  // Группируем слоты по дню: где есть свободные окна, где есть моя запись.
   const { freeDays, myDays, slotsByDay } = useMemo(() => {
     const free = new Set<string>();
     const mine = new Set<string>();
     const byDay = new Map<string, StudentSlot[]>();
     for (const slot of bookingSlots) {
-      if (!byDay.has(slot.date)) {
-        byDay.set(slot.date, []);
-      }
-      byDay.get(slot.date)!.push(slot);
-      if (slot.status === "mine") {
-        mine.add(slot.date);
-      } else {
-        free.add(slot.date);
-      }
+      const daySlots = byDay.get(slot.date) ?? [];
+      daySlots.push(slot);
+      byDay.set(slot.date, daySlots);
+      if (slot.status === "mine") mine.add(slot.date);
+      else free.add(slot.date);
     }
+    for (const daySlots of byDay.values()) daySlots.sort((a, b) => a.start_time.localeCompare(b.start_time));
     return { freeDays: free, myDays: mine, slotsByDay: byDay };
   }, [bookingSlots]);
 
-  // Сбрасываем выбранный день при смене месяца, если его слотов больше нет.
   useEffect(() => {
-    if (selectedDay && !slotsByDay.has(selectedDay)) {
-      setSelectedDay(null);
-    }
+    if (selectedDay && !slotsByDay.has(selectedDay)) setSelectedDay(null);
   }, [selectedDay, slotsByDay]);
 
+  useEffect(() => {
+    setSelectedDay(null);
+    setError("");
+  }, [calendarMonth.month, calendarMonth.year]);
+
   const selectedSlots = selectedDay ? slotsByDay.get(selectedDay) ?? [] : [];
+  const usedQuotaPercent = bookingQuota && bookingQuota.granted > 0
+    ? Math.min(100, Math.max(0, Math.round((bookingQuota.used / bookingQuota.granted) * 100)))
+    : 0;
 
   async function handleSlotAction(slot: StudentSlot) {
     setBusySlotId(slot.id);
     setError("");
     try {
-      if (slot.status === "mine") {
-        await onCancelSlot(slot.id);
-      } else {
-        await onBookSlot(slot.id);
-      }
+      if (slot.status === "mine") await onCancelSlot(slot.id);
+      else await onBookSlot(slot.id);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Не удалось изменить запись");
     } finally {
@@ -70,118 +69,97 @@ export function CalendarPanel({
   }
 
   return (
-    <aside className="calendar-panel" aria-label="Календарь занятий">
-      <div className="calendar-card">
-        <div className="calendar-head">
+    <section className="account-calendar" aria-label="Календарь занятий">
+      <header className="account-calendar__header">
+        <div className="account-calendar__title">
+          <span className="account-calendar__icon"><CalendarDays size={19} /></span>
           <div>
-            <span>Занятия</span>
-            <strong>{getMonthTitle(calendarMonth)}</strong>
-          </div>
-          <div className="calendar-nav">
-            <button type="button" onClick={() => onMonthChange(shiftCalendarMonth(calendarMonth, -1))} aria-label="Предыдущий месяц">
-              ‹
-            </button>
-            <button type="button" onClick={() => onMonthChange(shiftCalendarMonth(calendarMonth, 1))} aria-label="Следующий месяц">
-              ›
-            </button>
+            <span className="account-calendar__eyebrow">РАСПИСАНИЕ</span>
+            <h2>{getMonthTitle(calendarMonth)}</h2>
           </div>
         </div>
+        <div className="account-calendar__navigation" aria-label="Навигация по месяцам">
+          <button type="button" onClick={() => onMonthChange(shiftCalendarMonth(calendarMonth, -1))} aria-label="Предыдущий месяц">
+            <ChevronLeft size={18} />
+          </button>
+          <button type="button" onClick={() => onMonthChange(shiftCalendarMonth(calendarMonth, 1))} aria-label="Следующий месяц">
+            <ChevronRight size={18} />
+          </button>
+        </div>
+      </header>
 
-        <div className="calendar-weekdays" aria-hidden="true">
-          {["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"].map((weekday) => (
-            <span key={weekday}>{weekday}</span>
-          ))}
+      <div className="account-calendar__layout">
+        <div className="account-calendar__main">
+          <CalendarMonthGrid
+            month={calendarMonth}
+            activityDays={activityDays}
+            freeDays={freeDays}
+            bookingDays={myDays}
+            selectableDays={new Set([...freeDays, ...myDays])}
+            selectedDay={selectedDay}
+            onSelectDay={(dateKey) => setSelectedDay((current) => current === dateKey ? null : dateKey)}
+            legend={[
+              { marker: "is-free", label: "Свободное время" },
+              { marker: "is-booking", label: "Ваша запись" },
+              { marker: "is-activity", label: "Были на платформе" },
+            ]}
+          />
         </div>
 
-        <div className="calendar-grid">
-          {cells.map((cell, index) => {
-            if (!cell) {
-              return <span className="calendar-day is-empty" key={`empty-${index}`} />;
-            }
-            const hasFree = freeDays.has(cell.dateKey);
-            const hasMine = myDays.has(cell.dateKey);
-            const clickable = hasFree || hasMine;
-            const classes = [
-              "calendar-day",
-              activityDays.has(cell.dateKey) ? "is-active" : "",
-              hasFree ? "has-free" : "",
-              hasMine ? "has-booking" : "",
-              clickable ? "is-clickable" : "",
-              selectedDay === cell.dateKey ? "is-selected" : "",
-            ]
-              .filter(Boolean)
-              .join(" ");
-
-            return clickable ? (
-              <button
-                className={classes}
-                key={cell.key}
-                type="button"
-                onClick={() => setSelectedDay((current) => (current === cell.dateKey ? null : cell.dateKey))}
-                title={hasMine ? "У вас есть запись" : "Есть свободные окна"}
-              >
-                {cell.day}
-              </button>
-            ) : (
-              <span className={classes} key={cell.key} title={activityDays.has(cell.dateKey) ? "Вы заходили" : undefined}>
-                {cell.day}
-              </span>
-            );
-          })}
-        </div>
-
-        <div className="calendar-legend">
-          <span><i className="dot dot-free" /> свободно</span>
-          <span><i className="dot dot-booking" /> ваша запись</span>
-          <span><i className="dot dot-activity" /> заходили</span>
-        </div>
-
-        {bookingQuota && (
-          <div className={`quota-badge ${bookingQuota.remaining <= 0 ? "is-empty" : ""}`}>
-            <CalendarClock size={15} />
-            {bookingQuota.granted === 0 ? (
-              <span>Занятия на этот месяц не выданы. Обратитесь к преподавателю.</span>
-            ) : (
-              <span>
-                Осталось занятий: <strong>{bookingQuota.remaining}</strong> из {bookingQuota.granted}
-              </span>
-            )}
-          </div>
-        )}
-
-        {selectedDay ? (
-          <div className="slot-picker">
-            <strong>{formatSlotDate(selectedDay)}</strong>
-            {error && <div className="form-error">{error}</div>}
-            <div className="slot-picker-list">
-              {selectedSlots.map((slot) => (
-                <button
-                  key={slot.id}
-                  type="button"
-                  className={`slot-chip ${slot.status === "mine" ? "is-mine" : ""}`}
-                  disabled={busySlotId === slot.id || (slot.status === "mine" && !slot.can_cancel)}
-                  onClick={() => handleSlotAction(slot)}
-                  title={
-                    slot.status === "mine" && !slot.can_cancel
-                      ? "Отменить занятие можно не позднее чем за 36 часов до начала"
-                      : undefined
-                  }
-                >
-                  <Clock size={13} />
-                  <span className="slot-chip-time">{formatSlotTimeRange(slot.start_time, slot.duration_minutes)}</span>
-                  <small>
-                    {slot.duration_minutes} мин · {slot.status === "mine" ? (slot.can_cancel ? "отменить" : "отмена закрыта: меньше 36 ч") : "записаться"}
-                  </small>
-                </button>
-              ))}
+        <aside className="account-calendar__details" aria-live="polite">
+          <div className="account-calendar__details-heading">
+            <span className="account-calendar__details-icon"><Clock size={16} /></span>
+            <div>
+              <span className="account-calendar__eyebrow">ВЫБРАННЫЙ ДЕНЬ</span>
+              <h3>{selectedDay ? formatSlotDate(selectedDay) : "Занятия и запись"}</h3>
             </div>
           </div>
-        ) : (
-          <p className="calendar-note">
-            Кликните на день с кружком, чтобы выбрать время занятия. Свободные окна выставляет преподаватель.
-          </p>
-        )}
+
+          {selectedDay ? (
+            selectedSlots.length > 0 ? (
+              <div className="account-calendar__slots">
+                <p>{selectedSlots.length === 1 ? "Доступно одно время" : `Доступно вариантов: ${selectedSlots.length}`}</p>
+                {error && <div className="form-error" role="alert">{error}</div>}
+                {selectedSlots.map((slot) => {
+                  const isMine = slot.status === "mine";
+                  const cannotCancel = isMine && !slot.can_cancel;
+                  const actionLabel = isMine ? (slot.can_cancel ? "Отменить запись" : "Отмена закрыта") : "Записаться";
+                  return (
+                    <button key={slot.id} type="button" className={`account-calendar__slot ${isMine ? "is-booked" : ""}`}
+                      disabled={busySlotId === slot.id || cannotCancel}
+                      onClick={() => void handleSlotAction(slot)}
+                      title={cannotCancel ? "Отменить занятие можно не позднее чем за 36 часов до начала" : undefined}>
+                      <span className="account-calendar__slot-time">{formatSlotTimeRange(slot.start_time, slot.duration_minutes)}</span>
+                      <span className="account-calendar__slot-action">{busySlotId === slot.id ? "Сохраняем…" : actionLabel}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            ) : <p className="account-calendar__empty">На этот день пока нет доступных окон.</p>
+          ) : <p className="account-calendar__empty">Выберите отмеченный день, чтобы посмотреть свободное время или свою запись.</p>}
+
+          {bookingQuota && (
+            <div className={`account-calendar__quota ${bookingQuota.remaining <= 0 ? "is-empty" : ""}`}>
+              <div className="account-calendar__quota-heading">
+                <CalendarClock size={16} />
+                <span>Занятия в этом месяце</span>
+              </div>
+              {bookingQuota.granted === 0 ? (
+                <p>Занятия на этот месяц не выданы. Обратитесь к преподавателю.</p>
+              ) : (
+                <>
+                  <strong><span>{bookingQuota.remaining}</span> из {bookingQuota.granted} осталось</strong>
+                  <div className="account-calendar__quota-track" role="progressbar" aria-label="Использовано занятий"
+                    aria-valuemin={0} aria-valuemax={bookingQuota.granted}
+                    aria-valuenow={Math.min(bookingQuota.granted, Math.max(0, bookingQuota.used))}>
+                    <span style={{ width: `${usedQuotaPercent}%` }} />
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+        </aside>
       </div>
-    </aside>
+    </section>
   );
 }

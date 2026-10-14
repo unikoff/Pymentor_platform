@@ -20,6 +20,21 @@ _PLATFORM_BOT_TOKEN_ENV = "PYMENTOR_PLATFORM_TELEGRAM_BOT_TOKEN"
 _PLATFORM_CHAT_ID_ENV = "PYMENTOR_PLATFORM_TELEGRAM_CHAT_ID"
 
 
+class TelegramDeliveryError(RuntimeError):
+    """A Telegram rejection with retry information safe to persist in logs."""
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        retryable: bool,
+        retry_after_seconds: int | None = None,
+    ) -> None:
+        super().__init__(message[:500])
+        self.retryable = retryable
+        self.retry_after_seconds = retry_after_seconds
+
+
 def _get_telegram_credentials() -> tuple[str, str] | None:
     token = os.getenv(_PLATFORM_BOT_TOKEN_ENV, "").strip()
     chat_id = os.getenv(_PLATFORM_CHAT_ID_ENV, "").strip()
@@ -127,11 +142,74 @@ def _send_telegram_message(
         headers={"Content-Type": "application/x-www-form-urlencoded"},
         method="POST",
     )
-    with request.urlopen(telegram_request, timeout=10) as response:
-        response_data = json.loads(response.read().decode("utf-8"))
+    try:
+        with request.urlopen(telegram_request, timeout=10) as response:
+            response_data = json.loads(response.read(65_536).decode("utf-8"))
+    except error.HTTPError as exc:
+        try:
+            response_data = json.loads(exc.read(16_384).decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError):
+            response_data = {}
+        finally:
+            exc.close()
+        _raise_telegram_error(response_data, fallback_code=exc.code)
     if not response_data.get("ok"):
-        description = response_data.get("description", "неизвестная ошибка")
-        raise RuntimeError(f"Telegram API отклонил сообщение: {description}")
+        _raise_telegram_error(response_data, fallback_code=200)
+
+
+def _raise_telegram_error(response_data: dict, *, fallback_code: int) -> None:
+    error_code = response_data.get("error_code", fallback_code)
+    try:
+        error_code = int(error_code)
+    except (TypeError, ValueError):
+        error_code = fallback_code
+    description = str(response_data.get("description", "неизвестная ошибка"))[:350]
+    parameters = response_data.get("parameters") or {}
+    retry_after = parameters.get("retry_after") if isinstance(parameters, dict) else None
+    try:
+        retry_after = max(1, int(retry_after)) if retry_after is not None else None
+    except (TypeError, ValueError):
+        retry_after = None
+    if error_code == 429 and retry_after is None:
+        retry_after = 60
+    retryable = error_code == 429 or error_code >= 500
+    raise TelegramDeliveryError(
+        f"Telegram error {error_code}: {description}",
+        retryable=retryable,
+        retry_after_seconds=retry_after,
+    )
+
+
+def send_booking_created_notification(
+    *, username: str, email: str, slot_date: date, start_time: str, now: datetime | None = None
+) -> None:
+    credentials = _get_telegram_credentials()
+    if credentials is None:
+        raise TelegramDeliveryError("Telegram credentials are not configured", retryable=False)
+    token, chat_id = credentials
+    _send_telegram_message(
+        token=token,
+        chat_id=chat_id,
+        text=_format_booking_message(
+            username=username, email=email, slot_date=slot_date, start_time=start_time, now=now
+        ),
+    )
+
+
+def send_booking_cancelled_notification(
+    *, username: str, email: str, slot_date: date, start_time: str, now: datetime | None = None
+) -> None:
+    credentials = _get_telegram_credentials()
+    if credentials is None:
+        raise TelegramDeliveryError("Telegram credentials are not configured", retryable=False)
+    token, chat_id = credentials
+    _send_telegram_message(
+        token=token,
+        chat_id=chat_id,
+        text=_format_booking_cancelled_message(
+            username=username, email=email, slot_date=slot_date, start_time=start_time, now=now
+        ),
+    )
 
 
 async def notify_booking_created(
@@ -149,24 +227,21 @@ async def notify_booking_created(
     to the caller as ``False`` instead of rolling back a valid booking.
     """
 
-    credentials = _get_telegram_credentials()
-    if credentials is None:
+    if _get_telegram_credentials() is None:
         logger.info("Telegram booking notification skipped: credentials are not configured")
         return False
 
-    token, chat_id = credentials
-    text = _format_booking_message(
-        username=username,
-        email=email,
-        slot_date=slot_date,
-        start_time=start_time,
-        now=now,
-    )
-
     try:
-        await asyncio.to_thread(_send_telegram_message, token=token, chat_id=chat_id, text=text)
+        await asyncio.to_thread(
+            send_booking_created_notification,
+            username=username,
+            email=email,
+            slot_date=slot_date,
+            start_time=start_time,
+            now=now,
+        )
     except (OSError, ValueError, RuntimeError, error.URLError) as exc:
-        logger.warning("Telegram booking notification failed: %s", exc)
+        logger.warning("Telegram booking notification failed (%s)", type(exc).__name__)
         return False
 
     return True
@@ -182,24 +257,21 @@ async def notify_booking_cancelled(
 ) -> bool:
     """Notify the administrator after a student cancels a booking."""
 
-    credentials = _get_telegram_credentials()
-    if credentials is None:
+    if _get_telegram_credentials() is None:
         logger.info("Telegram cancellation notification skipped: credentials are not configured")
         return False
 
-    token, chat_id = credentials
-    text = _format_booking_cancelled_message(
-        username=username,
-        email=email,
-        slot_date=slot_date,
-        start_time=start_time,
-        now=now,
-    )
-
     try:
-        await asyncio.to_thread(_send_telegram_message, token=token, chat_id=chat_id, text=text)
+        await asyncio.to_thread(
+            send_booking_cancelled_notification,
+            username=username,
+            email=email,
+            slot_date=slot_date,
+            start_time=start_time,
+            now=now,
+        )
     except (OSError, ValueError, RuntimeError, error.URLError) as exc:
-        logger.warning("Telegram cancellation notification failed: %s", exc)
+        logger.warning("Telegram cancellation notification failed (%s)", type(exc).__name__)
         return False
 
     return True

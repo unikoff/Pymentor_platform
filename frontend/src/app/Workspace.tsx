@@ -1,251 +1,157 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { CalendarClock, CalendarPlus, Clock, LogOut, Moon, Search, Sun, Trash2 } from "lucide-react";
-import { AccountDrawer, useAccountSchedule } from "../features/account";
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent } from "react";
+import { ChevronRight, User } from "lucide-react";
+import { useRecordActivityVisit } from "../features/account";
 import { logoutUser } from "../features/auth";
+import { PracticeSessionProvider, useLearningCourse, type Lesson } from "../features/learning";
 import { getInitialCalendarMonth } from "../shared/lib/dates";
-import { AdminScreen } from "../features/admin";
-import { PYTHON_TRACK_NAME, useLearningCourse, type WorkspaceView } from "../features/learning";
-import { WorkspaceActivityBar } from "./workspace/WorkspaceActivityBar";
-import { LessonExplorer } from "./workspace/LessonExplorer";
-import { DEFAULT_OPEN_VIEWS, WorkspaceWorkbench } from "./workspace/WorkspaceWorkbench";
+import { ThemeToggle } from "../shared/ui/theme-toggle/ThemeToggle";
 import type { UserProfile, CalendarMonth } from "../shared/api/contracts";
-import type { ThemeMode } from "../shared/ui/theme-toggle/types";
+import { WorkspaceActivityBar } from "./workspace/WorkspaceActivityBar";
+import { WorkspaceWorkbench, type ActiveWorkspacePanel, type WorkspaceCommands } from "./workspace/WorkspaceWorkbench";
+import { LessonsDrawerContent, WorkspacePanelContext } from "./workspace/WorkspacePanels";
+import type { LessonPanelKind, LessonTarget } from "./workspace/layout";
 
 const EXPLORER_MIN_WIDTH = 220;
 const EXPLORER_MAX_WIDTH = 480;
 const EXPLORER_DEFAULT_WIDTH = 320;
 
-function clampNumber(value: number, min: number, max: number): number {
-  return Math.min(Math.max(value, min), max);
+function formatLessonHeading(lesson: Lesson, trackTitle?: string) {
+  const chapterNumber = trackTitle?.match(/^Глава\s+(\d+)/i)?.[1]
+    ?? lesson.source_file?.match(/chapter_(\d+)/i)?.[1]
+    ?? lesson.module.match(/(?:Блок|Глава)\s+(\d+)/i)?.[1];
+  const lessonMatch = lesson.title.match(/^(\d+(?:\.\d+)*)\.?\s+(.+)$/);
+  return {
+    chapter: chapterNumber ? `Глава ${Number(chapterNumber)}` : undefined,
+    number: lessonMatch?.[1],
+    title: lessonMatch ? lessonMatch[2].replace(/^[.)\-–—]\s*/, "") : lesson.title,
+  };
 }
 
-function getInitialExplorerWidth(): number {
+function getInitialExplorerWidth() {
   try {
-    const storedWidth = Number(window.localStorage.getItem("pymentor-explorer-width"));
-    if (Number.isFinite(storedWidth)) {
-      return clampNumber(storedWidth, EXPLORER_MIN_WIDTH, EXPLORER_MAX_WIDTH);
-    }
-  } catch {
-    // localStorage can be unavailable in restricted browser modes.
-  }
-
+    const width = Number(localStorage.getItem("pymentor-explorer-width"));
+    if (Number.isFinite(width)) return Math.min(EXPLORER_MAX_WIDTH, Math.max(EXPLORER_MIN_WIDTH, width));
+  } catch { /* Storage is optional. */ }
   return EXPLORER_DEFAULT_WIDTH;
 }
 
-export function Workspace({
-  user,
-  theme,
-  onToggleTheme,
-  onLogout,
-  onRequireAuth,
-}: {
+export function Workspace({ user, onLogout, onRequireAuth }: {
   user: UserProfile | null;
-  theme: ThemeMode;
-  onToggleTheme: () => void;
   onLogout: () => void;
   onRequireAuth: () => void;
 }) {
-  const {
-    tracks,
-    activeTrackId,
-    setActiveTrackId,
-    isLessonsLoading,
-    displayLessons,
-    lessonModules,
-    progress,
-    handleLessonCompleted,
-  } = useLearningCourse(user);
-  const [isTrackMenuOpen, setIsTrackMenuOpen] = useState(false);
-  const [activeLessonId, setActiveLessonId] = useState(`${PYTHON_TRACK_NAME}-lesson-01`);
-  const [activeView, setActiveView] = useState<WorkspaceView>("theory");
-  const [openViews, setOpenViews] = useState<WorkspaceView[]>(DEFAULT_OPEN_VIEWS);
-  const [isExplorerOpen, setIsExplorerOpen] = useState(() => window.innerWidth > 900);
-  const [isAccountOpen, setIsAccountOpen] = useState(false);
-  const [isAdminOpen, setIsAdminOpen] = useState(false);
-  const [isResizingExplorer, setIsResizingExplorer] = useState(false);
-  const [explorerWidth, setExplorerWidth] = useState(getInitialExplorerWidth);
+  const ownerKey = user ? String(user.id) : "guest";
+  const course = useLearningCourse(user);
   const [calendarMonth, setCalendarMonth] = useState<CalendarMonth>(getInitialCalendarMonth);
-  const { activityDays, bookingSlots, bookingQuota, bookSlot, cancelSlotBooking } = useAccountSchedule(user?.id ?? null, calendarMonth);
-  const [openModules, setOpenModules] = useState<Set<string>>(() => new Set());
-  const activeLesson = displayLessons.find((lesson) => lesson.id === activeLessonId) ?? displayLessons[0];
-  const nextLesson = useMemo(() => {
-    const currentIndex = displayLessons.findIndex((lesson) => lesson.id === activeLesson?.id);
-    return currentIndex >= 0 ? displayLessons[currentIndex + 1] : undefined;
-  }, [activeLesson?.id, displayLessons]);
-  const workspaceStyle = { "--explorer": `${explorerWidth}px` } as React.CSSProperties;
+  useRecordActivityVisit(user?.id ?? null);
+  const [compact, setCompact] = useState(() => window.matchMedia("(max-width: 900px)").matches);
+  const [activePanel, setActivePanel] = useState<ActiveWorkspacePanel>();
+  const [lessonTarget, setLessonTarget] = useState<LessonTarget>();
+  const [isExplorerOpen, setIsExplorerOpen] = useState(!compact);
+  const [explorerWidth, setExplorerWidth] = useState(getInitialExplorerWidth);
+  const [isResizingExplorer, setIsResizingExplorer] = useState(false);
+  const commands = useRef<WorkspaceCommands | null>(null);
+  const firstAvailable = course.displayLessons.find((lesson) => lesson.is_available !== false);
+  const initialLesson = useMemo(() => firstAvailable ? { trackId: course.activeTrackId, lessonId: firstAvailable.id } : undefined,
+    [course.activeTrackId, firstAvailable?.id]);
+  const entry = course.courses[course.activeTrackId];
+  const ready = Boolean(course.tracksError || (course.tracksLoaded && (!course.activeTrackId || (entry && !entry.loading))));
+  const workspaceStyle = { "--explorer": `${explorerWidth}px` } as CSSProperties;
 
   useEffect(() => {
-    try {
-      window.localStorage.setItem("pymentor-explorer-width", String(explorerWidth));
-    } catch {
-      // localStorage can be unavailable in restricted browser modes.
-    }
+    try { localStorage.setItem("pymentor-explorer-width", String(explorerWidth)); }
+    catch { /* Storage is optional. */ }
   }, [explorerWidth]);
 
   useEffect(() => {
-    if (!isResizingExplorer) {
-      return undefined;
-    }
-
-    function handlePointerMove(event: PointerEvent) {
+    if (!isResizingExplorer) return;
+    const move = (event: globalThis.PointerEvent) => {
       const activityWidth = document.querySelector(".activity-bar")?.getBoundingClientRect().width ?? 54;
-      setExplorerWidth(clampNumber(event.clientX - activityWidth, EXPLORER_MIN_WIDTH, EXPLORER_MAX_WIDTH));
-    }
-
-    function handlePointerUp() {
-      setIsResizingExplorer(false);
-    }
-
+      setExplorerWidth(Math.min(EXPLORER_MAX_WIDTH, Math.max(EXPLORER_MIN_WIDTH, event.clientX - activityWidth)));
+    };
+    const finish = () => setIsResizingExplorer(false);
     document.body.classList.add("is-resizing-panel");
-    window.addEventListener("pointermove", handlePointerMove);
-    window.addEventListener("pointerup", handlePointerUp, { once: true });
-
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", finish, { once: true });
     return () => {
       document.body.classList.remove("is-resizing-panel");
-      window.removeEventListener("pointermove", handlePointerMove);
-      window.removeEventListener("pointerup", handlePointerUp);
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", finish);
     };
   }, [isResizingExplorer]);
 
   useEffect(() => {
-    setOpenModules((current) => {
-      const availableModules = new Set(lessonModules);
-      const retainedModules = Array.from(current).filter((moduleName) => availableModules.has(moduleName));
-      return new Set(retainedModules.length > 0 ? retainedModules : lessonModules);
-    });
-    if (!displayLessons.some((lesson) => lesson.id === activeLessonId) && displayLessons[0]) {
-      setActiveLessonId(displayLessons[0].id);
-    }
-  }, [activeLessonId, displayLessons, lessonModules]);
+    const media = window.matchMedia("(max-width: 900px)");
+    const update = () => setCompact(media.matches);
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
 
-  function toggleModule(moduleName: string) {
-    setOpenModules((current) => {
-      const next = new Set(current);
-      if (next.has(moduleName)) {
-        next.delete(moduleName);
-      } else {
-        next.add(moduleName);
-      }
-      return next;
-    });
+  const onActivePanel = useCallback((panel?: ActiveWorkspacePanel) => {
+    setActivePanel(panel);
+  }, []);
+  const onLessonChange = useCallback((target?: LessonTarget) => {
+    setLessonTarget(target);
+    if (target && compact) setIsExplorerOpen(false);
+  }, [compact]);
+  const openLesson = useCallback((kind: LessonPanelKind, target: LessonTarget) => {
+    commands.current?.openLesson(kind, target);
+  }, []);
+  function onSelectLesson(lesson: Lesson) {
+    openLesson("theory", { trackId: course.activeTrackId, lessonId: lesson.id });
   }
-
-  function openView(view: WorkspaceView) {
-    setOpenViews((current) => (current.includes(view) ? current : [...current, view]));
-    setActiveView(view);
-    if (window.innerWidth <= 900) {
-      setIsExplorerOpen(false);
-    }
+  function openStudy(kind: LessonPanelKind) {
+    const target = lessonTarget ?? initialLesson;
+    if (target) openLesson(kind, target);
+    else setIsExplorerOpen(true);
   }
-
-  function closeView(view: WorkspaceView) {
-    const next = openViews.filter((item) => item !== view);
-    setOpenViews(next);
-    if (activeView === view) {
-      setActiveView(next[next.length - 1] ?? "theory");
-    }
-  }
-
-  function openNextLesson() {
-    if (!nextLesson) {
-      return;
-    }
-    setActiveLessonId(nextLesson.id);
-    openView("theory");
-  }
-
-  async function handleLogout() {
-    await logoutUser().catch(() => undefined);
-    onLogout();
-  }
-
   function openAccount() {
-    if (!user) {
-      onRequireAuth();
-      return;
-    }
-    setIsAccountOpen(true);
+    if (!user) { onRequireAuth(); return; }
+    commands.current?.openAccount();
   }
-
-  return (
-    <main className={`workspace ${isExplorerOpen ? "workspace--explorer-open" : "workspace--explorer-closed"}`} style={workspaceStyle}>
-      <WorkspaceActivityBar
-        isExplorerOpen={isExplorerOpen}
-        isAdmin={Boolean(user?.is_admin)}
-        isAdminOpen={isAdminOpen}
-        activeView={activeView}
-        onOpenLessons={() => setIsExplorerOpen(true)}
-        onOpenPractice={() => openView("practice")}
-        onOpenAdmin={() => setIsAdminOpen(true)}
-        onOpenAccount={openAccount}
-      />
-      <LessonExplorer
-        tracks={tracks}
-        activeTrackId={activeTrackId}
-        isTrackMenuOpen={isTrackMenuOpen}
-        progress={progress}
-        lessonModules={lessonModules}
-        displayLessons={displayLessons}
-        activeLessonId={activeLessonId}
-        openModules={openModules}
-        isGuest={!user}
-        onToggleTrackMenu={() => setIsTrackMenuOpen((current) => !current)}
-        onSelectTrack={(trackId) => {
-          setActiveTrackId(trackId);
-          setIsTrackMenuOpen(false);
-          if (window.innerWidth <= 900) {
-            setIsExplorerOpen(false);
-          }
-        }}
-        onToggleModule={toggleModule}
-        onSelectLesson={(lesson) => {
-          setActiveLessonId(lesson.id);
-          openView("theory");
-        }}
-        onRequireAuth={onRequireAuth}
-        onCollapse={() => setIsExplorerOpen(false)}
-        onResizeStart={(event) => {
-          event.preventDefault();
-          setIsExplorerOpen(true);
-          setIsResizingExplorer(true);
-        }}
-      />
-      <WorkspaceWorkbench
-        user={user}
-        theme={theme}
-        activeLesson={activeLesson}
-        nextLesson={nextLesson}
-        isExplorerOpen={isExplorerOpen}
-        isLessonsLoading={isLessonsLoading}
-        activeView={activeView}
-        openViews={openViews}
-        onToggleTheme={onToggleTheme}
-        onOpenAccount={openAccount}
-        onOpenExplorer={() => setIsExplorerOpen(true)}
-        onOpenView={openView}
-        onCloseView={closeView}
-        onSetActiveView={setActiveView}
-        onOpenNextLesson={openNextLesson}
-        onLessonCompleted={handleLessonCompleted}
-        onRequireAuth={onRequireAuth}
-      />
-      {user && (
-        <AccountDrawer
-          isOpen={isAccountOpen}
-          progress={progress}
-          user={user}
-          calendarMonth={calendarMonth}
-          activityDays={activityDays}
-          bookingSlots={bookingSlots}
-          bookingQuota={bookingQuota}
-          onMonthChange={setCalendarMonth}
-          onBookSlot={bookSlot}
-          onCancelSlot={cancelSlotBooking}
-          onClose={() => setIsAccountOpen(false)}
-          onLogout={handleLogout}
-        />
-      )}
-      {user?.is_admin && isAdminOpen && <AdminScreen onClose={() => setIsAdminOpen(false)} />}
-    </main>
-  );
+  async function handleLogout() {
+    try { await logoutUser(); onLogout(); }
+    catch (error) { window.alert(error instanceof Error ? error.message : "Не удалось выйти из аккаунта"); }
+  }
+  const activeLesson = activePanel?.kind && lessonTarget ? course.courses[lessonTarget.trackId]?.lessons.find((lesson) => lesson.id === lessonTarget.lessonId) : undefined;
+  const activeTrackTitle = lessonTarget ? course.tracks.find((track) => track.id === lessonTarget.trackId)?.title : undefined;
+  const workspaceHeading = activeLesson ? formatLessonHeading(activeLesson, activeTrackTitle) : undefined;
+  return <PracticeSessionProvider>
+    <WorkspacePanelContext.Provider value={{ user, course, calendarMonth, setCalendarMonth,
+      selectedLessonId: lessonTarget?.trackId === course.activeTrackId ? lessonTarget.lessonId : "", onSelectLesson, openLesson, onRequireAuth, onLogout: handleLogout,
+      onCloseLessons: () => setIsExplorerOpen(false) }}>
+      <main className={`workspace workspace--dock ${compact ? "workspace--compact" : ""} ${isExplorerOpen ? "workspace--explorer-open" : "workspace--explorer-closed"}`} style={workspaceStyle}>
+        <WorkspaceActivityBar isExplorerOpen={isExplorerOpen} isAdmin={Boolean(user?.is_admin)}
+          isAdminOpen={activePanel?.id === "admin"} isAccountOpen={activePanel?.id === "account"} isInterpreterOpen={activePanel?.id === "interpreter"} activeView={activePanel?.kind}
+          onOpenLessons={() => setIsExplorerOpen((value) => !value)} onOpenTheory={() => openStudy("theory")} onOpenPractice={() => openStudy("practice")}
+          onOpenAdmin={() => commands.current?.openAdmin()} onOpenAccount={openAccount} onOpenInterpreter={() => commands.current?.openInterpreter()} />
+        {isExplorerOpen && <aside className="workspace-drawer" aria-label="Список занятий">
+          <LessonsDrawerContent />
+        </aside>}
+        {isExplorerOpen && !compact && <button className="explorer-resizer" type="button" aria-label="Изменить ширину списка занятий"
+          onPointerDown={(event: PointerEvent<HTMLButtonElement>) => { event.preventDefault(); setIsResizingExplorer(true); }} />}
+        <div className="workspace-body">
+          <header className="top-bar">
+            <div className="breadcrumbs" title={workspaceHeading ? [workspaceHeading.chapter, workspaceHeading.number, workspaceHeading.title].filter(Boolean).join(" · ") : undefined}>
+              {workspaceHeading?.chapter && <span className="workspace-chapter">{workspaceHeading.chapter}</span>}
+              {workspaceHeading?.number && <span className="workspace-lesson-number">{workspaceHeading.number}</span>}
+              <strong className="workspace-title">{workspaceHeading?.title ?? (activePanel?.id === "account" ? "Личный кабинет" : activePanel?.id === "admin" ? "Админ-панель" : activePanel?.id === "interpreter" ? "Интерпретатор Python" : "Pymentor")}</strong>
+            </div>
+            <div className="top-actions">
+              <ThemeToggle />
+              <button className="profile-button" type="button" onClick={openAccount} aria-label={user ? `Личный кабинет: ${user.username}` : "Войти в личный кабинет"} aria-current={activePanel?.id === "account" ? "page" : undefined}>
+                <span className="profile-button__avatar" aria-hidden="true">{user ? user.username.slice(0, 1).toUpperCase() : <User size={16} />}</span>
+                <span className="profile-button__text"><strong>{user?.username ?? "Войти"}</strong><small>Личный кабинет</small></span>
+                <ChevronRight className="profile-button__chevron" size={14} aria-hidden="true" />
+              </button>
+            </div>
+          </header>
+          <WorkspaceWorkbench key={compact ? "mobile" : "desktop"} ownerKey={ownerKey} compact={compact}
+            isAuthenticated={Boolean(user)} isAdmin={Boolean(user?.is_admin)} ready={ready} initialLesson={initialLesson}
+            selectedLesson={lessonTarget} commands={commands} onActivePanel={onActivePanel}
+            onLessonChange={onLessonChange} onOpenLessons={() => setIsExplorerOpen(true)} />
+        </div>
+      </main>
+    </WorkspacePanelContext.Provider>
+  </PracticeSessionProvider>;
 }
