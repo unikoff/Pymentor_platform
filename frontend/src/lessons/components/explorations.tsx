@@ -187,6 +187,8 @@ export function FlipCards({ cards }: { cards: { front: React.ReactNode; back: Re
             type="button"
             className={`flip-card ${flipped.has(index) ? "is-flipped" : ""}`}
             onClick={() => toggle(index)}
+            aria-pressed={flipped.has(index)}
+            aria-label={`Карточка ${index + 1}: ${flipped.has(index) ? "показан ответ" : "показан вопрос"}. Нажмите, чтобы перевернуть`}
           >
             <div className="flip-inner">
               <div className="flip-front">{card.front}</div>

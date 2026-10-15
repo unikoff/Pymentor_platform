@@ -17,6 +17,15 @@ function formatTestValue(value: unknown): string {
     return "undefined";
   }
 
+  if (typeof value === "string") {
+    const escaped = value
+      .replace(/\\/g, "\\\\")
+      .replace(/"/g, '\\"')
+      .replace(/\r/g, "\\r")
+      .replace(/\t/g, "\\t");
+    return `"${escaped}"`;
+  }
+
   try {
     const serialized = JSON.stringify(value, null, 2);
     return serialized ?? String(value);

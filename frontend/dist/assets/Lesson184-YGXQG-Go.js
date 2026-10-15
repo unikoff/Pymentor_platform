@@ -1,0 +1,95 @@
+import{n as e,t}from"./jsx-runtime-lw2jiZar.js";import{A as n,C as r,D as i,E as a,I as o,L as s,M as c,N as l,O as u,P as d,S as f,T as p,b as m,f as h,g,h as _,j as v,p as y,v as b,w as x,x as S,y as C}from"./shared-f6Drw7Sx.js";import{k as w}from"./index-mjLKWsua.js";import{t as T}from"./CodeEditor-BZlrvoTL.js";var E=e(`Github`,[[`path`,{d:`M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4`,key:`tonef`}],[`path`,{d:`M9 18c-4.51 2-5-2-7-2`,key:`9comsn`}]]),D=t(),O=`Блок 32 · GitHub Actions, CI/CD и первый деплой`;function k({module:e}){return(0,D.jsxs)(l,{children:[(0,D.jsx)(c,{variant:`project`,chip:e??O,title:`Первый workflow GitHub Actions`,intro:"Перенесём локальный CI-контракт в `.github/workflows/ci.yml`: выберем события, runner, checkout, Python и отдельные steps. Затем прочитаем красный run сверху вниз и добьёмся первого зелёного pull request.",tags:[{icon:(0,D.jsx)(E,{size:14}),label:`workflow · job · step`},{icon:(0,D.jsx)(w,{size:14}),label:`YAML без магии`}]}),(0,D.jsxs)(a,{tone:`info`,children:[(0,D.jsx)(`strong`,{children:`Связь с этапом.`}),` Quality gates уже названы и запускаются локально. GitHub Actions должен повторить тот же контракт на чистом runner. `,(0,D.jsx)(`strong`,{children:`Важно не перепутать:`}),` Не вводим matrix, reusable workflows и десятки actions. Один понятный job ценнее сложной конфигурации без потребности.`]}),(0,D.jsxs)(d,{number:`01`,title:`Зачем тема появляется сейчас`,children:[(0,D.jsx)(u,{children:"Перенесём локальный CI-контракт в `.github/workflows/ci.yml`: выберем события, runner, checkout, Python и отдельные steps. Затем прочитаем красный run сверху вниз и добьёмся первого зелёного pull request."}),(0,D.jsxs)(`div`,{className:`lesson-route`,children:[(0,D.jsxs)(`ol`,{children:[(0,D.jsxs)(`li`,{children:[(0,D.jsx)(`strong`,{children:`Выбрать события: `}),`проверять push в main и каждый pull_request.`]}),(0,D.jsxs)(`li`,{children:[(0,D.jsx)(`strong`,{children:`Подготовить runner: `}),`получить код, установить согласованную версию Python и dependencies.`]}),(0,D.jsxs)(`li`,{children:[(0,D.jsx)(`strong`,{children:`Запустить gates: `}),`повторить format, lint и tests отдельными steps.`]}),(0,D.jsxs)(`li`,{children:[(0,D.jsx)(`strong`,{children:`Прочитать run: `}),`найти первый красный step и повторить его команду локально.`]})]}),(0,D.jsx)(`p`,{children:`Итог занятия — проверяемое изменение Deployable StudyHub, которое другой разработчик может повторить по команде, workflow или runbook.`})]}),(0,D.jsxs)(s,{children:[(0,D.jsx)(o,{badge:`workflow`,title:`Файл`,children:`файл автоматизации и его события`}),(0,D.jsx)(o,{badge:`job`,badgeTone:`float`,title:`Набор`,children:`набор steps на одном runner`}),(0,D.jsx)(o,{badge:`step`,badgeTone:`str`,title:`Одно`,children:`одно действие или одна shell-команда`}),(0,D.jsx)(o,{badge:`runner`,title:`Чистая`,children:`чистая машина, выполняющая job`})]}),(0,D.jsxs)(`div`,{className:`lesson-practice-steps`,children:[(0,D.jsx)(`h3`,{children:`До изменения`}),(0,D.jsx)(`p`,{children:`Зафиксируйте рабочий сценарий, текущий commit и наблюдаемый результат. Это baseline для сравнения.`}),(0,D.jsx)(`h3`,{children:`Во время изменения`}),(0,D.jsx)(`p`,{children:`Меняйте один инфраструктурный слой, читайте первый failed step и не исправляйте несколько независимых причин одновременно.`}),(0,D.jsx)(`h3`,{children:`После изменения`}),(0,D.jsx)(`p`,{children:`Повторите успешный и ошибочный путь, сохраните команду проверки и сделайте один осмысленный Git-коммит.`})]}),(0,D.jsx)(S,{question:`Какую проблему решает занятие 184 и чем подтверждается результат?`,hint:`Назовите исходный риск, одно изменение и воспроизводимую проверку.`,answer:(0,D.jsx)(`p`,{children:`Quality gates уже названы и запускаются локально. GitHub Actions должен повторить тот же контракт на чистом runner. Результат подтверждается не описанием, а зелёным gate, smoke test, log или повторяемым runbook.`})})]}),(0,D.jsxs)(d,{number:`02`,title:`Главная модель и ответственность частей`,children:[(0,D.jsx)(u,{children:`Сначала разделим роли. Инфраструктура становится понятной, когда для каждого объекта можно назвать вход, результат, срок жизни и причину ошибки.`}),(0,D.jsx)(n,{rows:[[(0,D.jsx)(D.Fragment,{children:`"workflow"`}),`файл автоматизации и его события`],[(0,D.jsx)(D.Fragment,{children:`"job"`}),`набор steps на одном runner`],[(0,D.jsx)(D.Fragment,{children:`"step"`}),`одно действие или одна shell-команда`],[(0,D.jsx)(D.Fragment,{children:`"runner"`}),`чистая машина, выполняющая job`]]}),(0,D.jsx)(y,{prompt:`Соедините понятие и его ответственность.`,leftTitle:`Понятие`,rightTitle:`Ответственность`,pairs:[{left:`workflow`,right:`файл автоматизации и его события`},{left:`job`,right:`набор steps на одном runner`},{left:`step`,right:`одно действие или одна shell-команда`},{left:`runner`,right:`чистая машина, выполняющая job`}],explanation:`Пара считается усвоенной, когда вы можете назвать не только определение, но и момент использования в release pipeline.`}),(0,D.jsxs)(`div`,{className:`lesson-practice-steps`,children:[(0,D.jsx)(`h3`,{children:`Вход`}),(0,D.jsx)(`p`,{children:`workflow получает конкретный commit, configuration или состояние предыдущего шага, а не случайные локальные файлы.`}),(0,D.jsx)(`h3`,{children:`Действие`}),(0,D.jsx)(`p`,{children:`Один step выполняет одну понятную команду и возвращает явный exit code.`}),(0,D.jsx)(`h3`,{children:`Результат`}),(0,D.jsx)(`p`,{children:`runner фиксирует наблюдаемый итог: green check, image tag, health response или восстановленную версию.`}),(0,D.jsx)(`h3`,{children:`Граница`}),(0,D.jsx)(`p`,{children:`Не вводим matrix, reusable workflows и десятки actions. Один понятный job ценнее сложной конфигурации без потребности.`})]}),(0,D.jsx)(f,{statement:(0,D.jsx)(D.Fragment,{children:`Если команда работает локально один раз, автоматическая проверка exact commit больше не нужна.`}),isTrue:!1,explanation:`Локальное состояние может отличаться по коду, dependencies, runtime и configuration. Pipeline устраняет эту неопределённость.`})]}),(0,D.jsxs)(d,{number:`03`,title:`Минимальный механизм по шагам`,children:[(0,D.jsx)(u,{children:`Прочитайте пример сверху вниз и до запуска отметьте, где подготавливается окружение, где начинается внешняя операция и какой exit code остановит маршрут.`}),(0,D.jsx)(T,{caption:`.github/workflows/ci.yml`,code:`name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: python -m pip install -r requirements-dev.txt
+
+      - name: Check formatting
+        run: python -m ruff format --check .
+
+      - name: Run linter
+        run: python -m ruff check .
+
+      - name: Run tests
+        run: python -m pytest -q`}),(0,D.jsx)(b,{code:`name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: python -m pip install -r requirements-dev.txt
+
+      - name: Check formatting
+        run: python -m ruff format --check .
+
+      - name: Run linter
+        run: python -m ruff check .
+
+      - name: Run tests
+        run: python -m pytest -q`,steps:[{line:0,note:`Имя помогает найти workflow в Actions.`,vars:{workflow:`CI`}},{line:2,note:`События определяют, когда создаётся run.`,vars:{events:`push + pull_request`}},{line:8,note:`Job quality получает отдельный Ubuntu runner.`,vars:{job:`quality`}},{line:12,note:`Checkout помещает проверяемый commit в workspace.`,vars:{code:`available`}},{line:15,note:`setup-python фиксирует runtime.`,vars:{python:`3.12`}},{line:25,note:`Каждый gate повторяет локальную команду.`,vars:{result:`green or red`}}]}),(0,D.jsx)(g,{prompt:`Закончите правило: обязательный step должен вернуть код ... для продолжения pipeline.`,before:`exit code = `,after:``,options:[`0`,`1`,`latest`],answer:`0`,explanation:`Нулевой exit code означает успешное выполнение команды. Ненулевой код делает обязательный step красным.`}),(0,D.jsx)(a,{tone:`info`,children:`YAML и shell здесь не являются отдельной магией. Это декларация порядка и обычные команды, которые должны воспроизводиться локально или в учебном окружении.`})]}),(0,D.jsxs)(d,{number:`04`,title:`Сравнение решений и явный контракт`,children:[(0,D.jsx)(u,{children:`Сравним две конфигурации по диагностируемости, безопасности и прослеживаемости, а не по количеству строк.`}),(0,D.jsx)(p,{question:`Какой вариант лучше сохраняет воспроизводимость release pipeline?`,left:{title:`Скрытая подготовка runner`,code:`steps:
+  - run: pytest`,note:`Неясно, откуда взялся код, какая версия Python используется и установлены ли dependencies.`},right:{title:`Явный минимальный workflow`,code:`steps:
+  - uses: actions/checkout@v4
+  - uses: actions/setup-python@v5
+    with:
+      python-version: "3.12"
+  - run: python -m pip install -r requirements-dev.txt
+  - run: python -m pytest -q`,note:`Runner собирается от пустого состояния к воспроизводимой проверке.`},preferred:`right`,explanation:`Чистый runner должен получить код, runtime и dependencies явно, иначе workflow зависит от случайного состояния.`}),(0,D.jsx)(h,{cards:[{front:(0,D.jsx)(D.Fragment,{children:`Что должно быть явным?`}),back:(0,D.jsx)(D.Fragment,{children:`Точный commit или image tag, команда проверки и ожидаемый результат.`})},{front:(0,D.jsx)(D.Fragment,{children:`Что нельзя скрывать?`}),back:(0,D.jsx)(D.Fragment,{children:`Первый failed gate, порядок migrations и решение о rollback.`})},{front:(0,D.jsx)(D.Fragment,{children:`Что нельзя публиковать?`}),back:(0,D.jsx)(D.Fragment,{children:`Production secrets, приватные keys и чувствительные значения configuration.`})},{front:(0,D.jsx)(D.Fragment,{children:`Что фиксирует готовность?`}),back:(0,D.jsx)(D.Fragment,{children:`Зелёный check, успешный smoke test или повторяемая команда runbook.`})}]}),(0,D.jsx)(a,{children:`Чистый runner должен получить код, runtime и dependencies явно, иначе workflow зависит от случайного состояния.`})]}),(0,D.jsxs)(d,{number:`05`,title:`Ожидаемый сбой и диагностика`,children:[(0,D.jsx)(u,{children:`Инфраструктурный навык проявляется не в идеальном первом запуске, а в способности локализовать сбой по первому красному шагу, logs и состоянию зависимостей.`}),(0,D.jsx)(r,{code:`jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run tests
+        run: python -m pytest -q`,question:`Какой обязательный шаг отсутствует до запуска tests?`,options:[`Checkout repository и установка dependencies`,`Создание production secret`,`Публикация Docker image`],correctIndex:0,explanation:`Новый runner не содержит репозиторий и проектные зависимости автоматически.`,fix:`steps:
+  - uses: actions/checkout@v4
+  - uses: actions/setup-python@v5
+    with:
+      python-version: "3.12"
+  - run: python -m pip install -r requirements-dev.txt
+  - run: python -m pytest -q`}),(0,D.jsx)(C,{title:`воспроизводимая проверка`,lines:[{cmd:`git add .github/workflows/ci.yml`},{cmd:`git commit -m "ci: add quality workflow"`},{out:`[feature/ci 31ac8e1] ci: add quality workflow`},{cmd:`git push -u origin feature/ci`},{out:`remote: Create a pull request for feature/ci`},{cmd:`python -m pytest -q`},{out:`124 passed in 3.38s`}]}),(0,D.jsxs)(s,{children:[(0,D.jsx)(o,{badge:`signal`,title:`Наблюдаемый симптом`,children:`Первый failed step, ненулевой exit code, unhealthy service или ошибочный HTTP response.`}),(0,D.jsx)(o,{badge:`cause`,badgeTone:`float`,title:`Проверяемая гипотеза`,children:`Exact commit, runtime, dependency, migration revision, image tag и environment сверяются по одному.`}),(0,D.jsx)(o,{badge:`action`,badgeTone:`str`,title:`Минимальное действие`,children:`Повторить одну команду, исправить одну причину и снова пройти тот же отрицательный сценарий.`})]}),(0,D.jsxs)(`div`,{className:`lesson-practice-steps`,children:[(0,D.jsx)(`h3`,{children:`1. Найдите первый failed step`}),(0,D.jsx)(`p`,{children:`Поздние skipped или failed steps часто являются следствием, а не новой причиной.`}),(0,D.jsx)(`h3`,{children:`2. Повторите точную команду`}),(0,D.jsx)(`p`,{children:`Используйте тот же commit, runtime, environment и arguments, насколько это возможно.`}),(0,D.jsx)(`h3`,{children:`3. Исправьте одну причину`}),(0,D.jsx)(`p`,{children:`Не смешивайте исправление workflow, application code и production config в один непрозрачный diff.`}),(0,D.jsx)(`h3`,{children:`4. Повторите отрицательный сценарий`}),(0,D.jsx)(`p`,{children:`Убедитесь, что gate действительно блокирует известный дефект, а не просто стал зелёным случайно.`})]})]}),(0,D.jsxs)(d,{number:`06`,title:`Применение в Deployable StudyHub`,children:[(0,D.jsx)(u,{children:`Теперь встроим механизм в один сквозной release pipeline и сохраним границу между source code, artifact, configuration и эксплуатационной проверкой.`}),(0,D.jsx)(T,{caption:`иерархия workflow`,code:`CI workflow
+├── event: pull_request
+└── job: quality
+    ├── checkout
+    ├── setup Python
+    ├── install dependencies
+    ├── format check
+    ├── lint
+    └── tests`}),(0,D.jsx)(_,{code:`pull request opened
+  ↓
+workflow parsed
+  ↓
+runner allocated
+  ↓
+steps execute in order
+  ↓
+check reported to pull request`,scenarios:[{label:`ошибка YAML`,activeLine:2,output:`workflow не запускается: сначала исправить структуру файла`},{label:`dependency install failed`,activeLine:4,output:`следующие gates не выполняются`},{label:`all steps passed`,activeLine:8,output:`pull request получает зелёный check`}]}),(0,D.jsxs)(`div`,{className:`lesson-practice-steps`,children:[(0,D.jsx)(`h3`,{children:`Наблюдаемый успех`}),(0,D.jsx)(`p`,{children:`Запишите конкретный check, endpoint, tag или migration revision, который подтверждает завершение шага.`}),(0,D.jsx)(`h3`,{children:`Ожидаемая ошибка`}),(0,D.jsx)(`p`,{children:`Создайте безопасный учебный дефект и подтвердите, что pipeline останавливается до опасного действия.`}),(0,D.jsx)(`h3`,{children:`Артефакт занятия`}),(0,D.jsx)(`p`,{children:`Обновите workflow, script, README или runbook так, чтобы следующий разработчик повторил занятие 184 без устных подсказок.`})]}),(0,D.jsx)(S,{question:`Какие четыре границы нужно назвать перед изменением pipeline?`,answer:(0,D.jsx)(`p`,{children:`Вход шага, выполняемая команда, наблюдаемый критерий успеха и действие при ошибке. Для deployment дополнительно фиксируется предыдущий рабочий image tag.`})})]}),(0,D.jsxs)(d,{number:`07`,title:`Управляемая практика и Git-результат`,children:[(0,D.jsx)(u,{children:"Добавьте `.github/workflows/ci.yml`, откройте pull request, намеренно сломайте один test, найдите первый красный step по logs, исправьте дефект и сохраните screenshot или ссылку на зелёный run в README."}),(0,D.jsx)(x,{title:`Соберите безопасный порядок`,prompt:`Расположите действия так, чтобы каждый следующий шаг использовал только проверенный результат предыдущего.`,pieces:[{id:`events`,code:`описать on: pull_request`},{id:`runner`,code:`выбрать runs-on`},{id:`checkout`,code:`получить repository`},{id:`python`,code:`установить Python`},{id:`deps`,code:`установить dependencies`},{id:`gates`,code:`запустить quality gates`}],correctOrder:[`events`,`runner`,`checkout`,`python`,`deps`,`gates`],explanation:`Порядок сохраняет fail-fast, прослеживаемость и возможность остановить release до воздействия на production.`}),(0,D.jsxs)(`div`,{className:`lesson-checklist`,children:[(0,D.jsxs)(`label`,{children:[(0,D.jsx)(`input`,{type:`checkbox`}),` Я могу объяснить проблему без чтения определения.`]}),(0,D.jsxs)(`label`,{children:[(0,D.jsx)(`input`,{type:`checkbox`}),` Я запустил минимальный успешный сценарий.`]}),(0,D.jsxs)(`label`,{children:[(0,D.jsx)(`input`,{type:`checkbox`}),` Я намеренно получил ожидаемый сбой.`]}),(0,D.jsxs)(`label`,{children:[(0,D.jsx)(`input`,{type:`checkbox`}),` Я повторил команду из failed step.`]}),(0,D.jsxs)(`label`,{children:[(0,D.jsx)(`input`,{type:`checkbox`}),` Я обновил README, workflow или runbook.`]}),(0,D.jsxs)(`label`,{children:[(0,D.jsx)(`input`,{type:`checkbox`}),` Я сделал один осмысленный Git-коммит.`]})]}),(0,D.jsx)(a,{tone:`info`,children:`Не добавляйте новый инструмент только ради усложнения. Завершённая практика должна давать один измеримый artifact и понятный способ проверки.`})]}),(0,D.jsxs)(d,{number:`08`,title:`Контрольная точка занятия`,children:[(0,D.jsx)(u,{children:`Ответьте без запуска кода, затем подтвердите ответы реальным workflow, command output или release record.`}),(0,D.jsxs)(`div`,{className:`lesson-check-group`,children:[(0,D.jsx)(m,{question:`Что запускает workflow?`,options:[`Событие из секции on`,`Имя файла README`,`Docker volume`],correctIndex:0,explanation:`Workflow реагирует на явно описанные events.`}),(0,D.jsx)(m,{question:`Зачем нужен checkout?`,options:[`Поместить проверяемый commit на runner`,`Создать PostgreSQL`,`Сохранить secret`],correctIndex:0,explanation:`Runner начинает с чистого workspace.`}),(0,D.jsx)(m,{question:`Что такое job?`,options:[`Набор steps на runner`,`Одна строка Python`,`Git branch`],correctIndex:0,explanation:`Job объединяет последовательность действий в одном окружении.`}),(0,D.jsx)(m,{question:`С чего начинать диагностику красного run?`,options:[`С первого обязательного failed step`,`С последнего зелёного commit`,`С удаления workflow`],correctIndex:0,explanation:`Первый сбой обычно объясняет все пропущенные следующие steps.`})]}),(0,D.jsx)(i,{points:[(0,D.jsx)(D.Fragment,{children:"Workflow хранится в `.github/workflows`."}),(0,D.jsx)(D.Fragment,{children:"Секция `on` описывает события запуска."}),(0,D.jsx)(D.Fragment,{children:`Runner является чистым исполнительным окружением.`}),(0,D.jsx)(D.Fragment,{children:`Checkout, Python и dependencies подготавливаются явно.`}),(0,D.jsx)(D.Fragment,{children:`Steps выполняются последовательно внутри job.`}),(0,D.jsx)(D.Fragment,{children:`Красный run читают от первого failed step.`}),(0,D.jsx)(D.Fragment,{children:`Минимальный workflow проще расширять после реальной потребности.`})]}),(0,D.jsx)(v,{text:"Добавьте `.github/workflows/ci.yml`, откройте pull request, намеренно сломайте один test, найдите первый красный step по logs, исправьте дефект и сохраните screenshot или ссылку на зелёный run в README."})]})]})}export{k as Lesson184};

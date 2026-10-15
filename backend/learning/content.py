@@ -71,6 +71,7 @@ MODULE_LABELS = {
 }
 
 NEW_PYTHON_TRACK_NAME = "Основы Python и мышление программиста"
+NEW_PYTHON_12_TRACK_NAME = "Основы Python и мышление программиста 01.2"
 PYTHON_DEEPER_TRACK_NAME = "Python глубже, файлы и структура небольшого проекта"
 PLANNER_API_TRACK_NAME = "HTTP, API и FastAPI - Planner API"
 
@@ -109,6 +110,55 @@ NEW_PYTHON_MODULE_LABELS = {
     "19 - README, .gitignore и публикация.md": "Блок 4. Сборка и защита проекта",
     "19.1 - Проверка передачи из чистой копии.md": "Блок 4. Сборка и защита проекта",
     "20 - Контрольная точка месяца.md": "Блок 4. Сборка и защита проекта",
+}
+
+NEW_PYTHON_12_MODULE_LABELS = {
+  "План обучения.md": "00 Обзор курса 01.2",
+  "01 - Как запускается программа.md": "Блок 1. Первые шаги в Python",
+  "02 - Переменные и значения.md": "Блок 1. Первые шаги в Python",
+  "03 - Строки- длина и части.md": "Блок 1. Первые шаги в Python",
+  "04 - Методы строк на практике.md": "Блок 1. Первые шаги в Python",
+  "05 - Целые числа и деление.md": "Блок 1. Первые шаги в Python",
+  "06 - Дробные числа и округление.md": "Блок 1. Первые шаги в Python",
+  "07 - Сообщение из данных.md": "Блок 1. Первые шаги в Python",
+  "08 - Сравнения и логика.md": "Блок 1. Первые шаги в Python",
+  "09 - Значение None в программе.md": "Блок 1. Первые шаги в Python",
+  "10 - Пишем короткую программу.md": "Блок 1. Первые шаги в Python",
+  "11 - Как работает ветвление.md": "Блок 2. Условия, данные и циклы",
+  "12 - Списки- чтение и изменение.md": "Блок 2. Условия, данные и циклы",
+  "13 - Общие ссылки и копии.md": "Блок 2. Условия, данные и циклы",
+  "14 - Разделяем и соединяем текст.md": "Блок 2. Условия, данные и циклы",
+  "15 - Кортежи и множества.md": "Блок 2. Условия, данные и циклы",
+  "16 - Словари- поля и значения.md": "Блок 2. Условия, данные и циклы",
+  "17 - Список записей и копии.md": "Блок 2. Условия, данные и циклы",
+  "18 - Цикл for и элементы данных.md": "Блок 2. Условия, данные и циклы",
+  "19 - Суммы, счётчики и максимум.md": "Блок 2. Условия, данные и циклы",
+  "20 - Управление циклом и поиск.md": "Блок 2. Условия, данные и циклы",
+  "21 - Цикл while и выход.md": "Блок 2. Условия, данные и циклы",
+  "22 - Пишем программу с циклами.md": "Блок 2. Условия, данные и циклы",
+  "23 - Функции- вход и результат.md": "Блок 3. Функции и инструменты",
+  "24 - Область видимости и данные.md": "Блок 3. Функции и инструменты",
+  "25 - Ошибки- ищем причину.md": "Блок 3. Функции и инструменты",
+  "26 - Настраиваем Python и VS Code.md": "Блок 3. Функции и инструменты",
+  "27 - Создаём проект и репозиторий.md": "Блок 3. Функции и инструменты",
+  "28 - Первый коммит в Git.md": "Блок 3. Функции и инструменты",
+  "29 - Отправляем код на GitHub.md": "Блок 3. Функции и инструменты",
+  "30 - Название задачи и Git.md": "Блок 3. Функции и инструменты",
+  "31 - Создаём задачу и карточку.md": "Блок 3. Функции и инструменты",
+  "32 - Соединяем готовые функции.md": "Блок 3. Функции и инструменты",
+  "33 - Отладка своего проекта.md": "Блок 3. Функции и инструменты",
+  "34 - Ввод и обработка ошибок.md": "Блок 3. Функции и инструменты",
+  "35 - Передаём проект дальше.md": "Блок 3. Функции и инструменты",
+  "36 - Запускаем каркас Planner.md": "Блок 4. Собираем свой Planner",
+  "37 - Проверяем ввод задачи.md": "Блок 4. Собираем свой Planner",
+  "38 - Добавляем первую задачу.md": "Блок 4. Собираем свой Planner",
+  "39 - Показываем список задач.md": "Блок 4. Собираем свой Planner",
+  "40 - Находим задачу по номеру.md": "Блок 4. Собираем свой Planner",
+  "41 - Отмечаем задачу выполненной.md": "Блок 4. Собираем свой Planner",
+  "42 - Ищем задачи по названию.md": "Блок 4. Собираем свой Planner",
+  "43 - Считаем статистику задач.md": "Блок 4. Собираем свой Planner",
+  "44 - Проверяем работу Planner.md": "Блок 4. Собираем свой Planner",
+  "45 - Проверяем чистую копию.md": "Блок 4. Собираем свой Planner",
 }
 
 PYTHON_DEEPER_MODULE_LABELS = {
@@ -187,6 +237,7 @@ PLANNER_API_MODULE_LABELS = {
 
 RICH_TRACK_MODULE_LABELS = {
     NEW_PYTHON_TRACK_NAME: NEW_PYTHON_MODULE_LABELS,
+    NEW_PYTHON_12_TRACK_NAME: NEW_PYTHON_12_MODULE_LABELS,
     PYTHON_DEEPER_TRACK_NAME: PYTHON_DEEPER_MODULE_LABELS,
     PLANNER_API_TRACK_NAME: PLANNER_API_MODULE_LABELS,
 }
@@ -195,6 +246,7 @@ RICH_TRACK_MODULE_LABELS = {
 # paths and module labels used by saved progress, lesson pages, and the UI.
 LEGACY_COURSE_LAYOUTS = {
     "chapter_01": {"track_id": NEW_PYTHON_TRACK_NAME, "source_dirs": {"block_00": None, "block_01": None, "block_02": None, "block_03": None, "block_04": None}},
+    "chapter_01_2": {"track_id": NEW_PYTHON_12_TRACK_NAME, "source_dirs": {"block_00": None, "block_01": None, "block_02": None, "block_03": None, "block_04": None}},
     "chapter_02": {"track_id": PYTHON_DEEPER_TRACK_NAME, "source_dirs": {"block_00": None, "block_05": None, "block_06": None, "block_07": None, "block_08": None}},
     "chapter_03": {"track_id": PLANNER_API_TRACK_NAME, "source_dirs": {"block_00": None, "block_09": None, "block_10": None, "block_11": None, "block_12": None}},
     "chapter_04": {
@@ -667,17 +719,24 @@ def _lesson_access(path: Path, track_dir: Path, track_id: str | None = None) -> 
     """Возвращает уровень доступа по новой воронке обучения.
 
     Карта обучения остаётся открытой в каждом курсе. Бесплатный старт есть
-    только у первого курса: весь обзор и блок 1. После регистрации доступен
-    блок 2 первого курса; все остальные занятия требуют Pro-подписку.
+    у первой главы и её временной версии 01.2: обзор и первый блок. После
+    регистрации доступен второй блок; остальные занятия требуют Pro-подписку.
     """
     if path.name == "План обучения.md":
         return "free"
 
-    if (track_id or track_dir.name) != NEW_PYTHON_TRACK_NAME:
+    current_track = track_id or track_dir.name
+    if current_track not in {NEW_PYTHON_TRACK_NAME, NEW_PYTHON_12_TRACK_NAME}:
         return "subscription"
 
     lesson_match = re.match(r"^(\d+)", path.name)
     lesson_number = int(lesson_match.group(1)) if lesson_match else None
+    if current_track == NEW_PYTHON_12_TRACK_NAME:
+        if lesson_number is not None and 1 <= lesson_number <= 10:
+            return "free"
+        if lesson_number is not None and 11 <= lesson_number <= 22:
+            return "registered"
+        return "subscription"
     if lesson_number is not None and 1 <= lesson_number <= 5:
         return "free"
     if lesson_number is not None and 6 <= lesson_number <= 10:

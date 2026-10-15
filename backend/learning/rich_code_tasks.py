@@ -7,6 +7,7 @@ from typing import Any
 
 from learning.course_content import chapter_03 as _planner_api
 from learning.course_content import chapter_01 as _foundations
+from learning.course_content import chapter_01_2 as _foundations_12
 from learning.course_content import chapter_02 as _deeper
 from learning.course_content import chapter_04 as _database_api
 from learning.course_content import chapter_05 as _personal_api
@@ -49,6 +50,7 @@ LMS_TRACK_ALIASES = (
 
 
 FOUNDATIONS_CODE_TASKS = _foundations.CODE_TASKS
+FOUNDATIONS_12_CODE_TASKS = _foundations_12.CODE_TASKS
 
 DEEPER_CODE_TASKS = _deeper.CODE_TASKS
 
@@ -75,6 +77,7 @@ def get_code_tasks(track_id: str, filename: str) -> list[dict[str, Any]]:
     lesson_number = lesson_catalog_key(match.group(1))
     tasks_by_track = {
         FOUNDATIONS_TRACK: FOUNDATIONS_CODE_TASKS,
+        _foundations_12.TRACK_ID: FOUNDATIONS_12_CODE_TASKS,
         DEEPER_TRACK: DEEPER_CODE_TASKS,
         PLANNER_API_TRACK: PLANNER_API_CODE_TASKS,
         DATABASE_API_TRACK: DATABASE_API_CODE_TASKS,
