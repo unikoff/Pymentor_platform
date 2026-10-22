@@ -72,7 +72,7 @@ class CodeRunnerRegressionTests(unittest.TestCase):
         )
 
     def test_property_task_reference_solution_keeps_stdout_contract(self) -> None:
-        task = rich_code_tasks.DEEPER_CODE_TASKS[38][0]
+        task = rich_code_tasks.DEEPER_CODE_TASKS[34][0]
 
         result = run_python_task(task["reference_code"], task)
 
@@ -168,7 +168,7 @@ class CodeRunnerRegressionTests(unittest.TestCase):
         )
 
     def test_callback_task_accepts_independent_closures(self) -> None:
-        task = rich_code_tasks.DEEPER_CODE_TASKS["26.1"][0]
+        task = rich_code_tasks.DEEPER_CODE_TASKS["24.1"][0]
         code = """def solve(first_message, second_message):
     def make_labeler(prefix):
         def label(message):
