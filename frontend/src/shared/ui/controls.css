@@ -35,14 +35,14 @@
 }
 
 :root[data-color-scheme="light"] .primary-action {
-  box-shadow: 0 10px 26px color-mix(in srgb, var(--accent) 18%, transparent);
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--accent) 7%, transparent);
 }
 
 :root[data-color-scheme="light"] .secondary-action,
 :root[data-color-scheme="light"] .theme-switch,
 :root[data-color-scheme="light"] .profile-button {
   background: color-mix(in srgb, var(--card-highlight) 66%, transparent);
-  border-color: color-mix(in srgb, var(--card-border) 9%, transparent);
+  border-color: var(--line);
 }
 
 .primary-action:hover,

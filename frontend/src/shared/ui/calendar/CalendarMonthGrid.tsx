@@ -1,4 +1,5 @@
 import { buildMonthCells, getLocalDateKey, getMonthTitle } from "../../lib/dates";
+import { Check } from "lucide-react";
 import type { CalendarMonth } from "../../api/contracts/account";
 
 type CalendarMarker = "is-activity" | "is-free" | "is-booking";
@@ -33,7 +34,7 @@ export function CalendarMonthGrid({
       <div className="account-calendar__weekdays" aria-hidden="true">
         {weekdays.map((weekday) => <span key={weekday}>{weekday}</span>)}
       </div>
-      <div className="account-calendar__grid" role="grid" aria-label={`События за ${getMonthTitle(month)}`}>
+      <div key={`${month.year}:${month.month}`} className="account-calendar__grid" role="grid" aria-label={`События за ${getMonthTitle(month)}`}>
         {buildMonthCells(month).map((cell, index) => {
           if (!cell) return <span className="account-calendar__day is-empty" key={`empty-${index}`} aria-hidden="true" />;
 
@@ -58,12 +59,17 @@ export function CalendarMonthGrid({
           ].filter(Boolean).join(", ");
           const markers = (
             <span className="account-calendar__markers" aria-hidden="true">
-              {hasActivity && <i className="is-activity" />}
               {hasFree && <i className="is-free" />}
               {hasBooking && <i className="is-booking" />}
             </span>
           );
-          const dayContent = <><span className="account-calendar__day-number">{cell.day}</span>{markers}</>;
+          const dayContent = <>
+            <span className="account-calendar__day-heading">
+              <span className="account-calendar__day-number">{cell.day}</span>
+              {hasActivity && <Check className="account-calendar__visit-check" size={15} aria-hidden="true" />}
+            </span>
+            {markers}
+          </>;
 
           if (onSelectDay && selectableDays.has(cell.dateKey)) {
             return (

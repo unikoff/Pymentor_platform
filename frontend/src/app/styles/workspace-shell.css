@@ -36,7 +36,7 @@
 
 :root[data-color-scheme="light"] .activity-bar,
 :root[data-color-scheme="light"] .explorer-panel {
-  border-right-color: color-mix(in srgb, var(--chrome-border) 8%, transparent);
+  border-right-color: var(--line-soft);
 }
 
 .activity-bar {
@@ -99,7 +99,7 @@
 :root[data-color-scheme="light"] .activity-button:hover,
 :root[data-color-scheme="light"] .activity-button--active,
 :root[data-color-scheme="light"] .icon-button:hover {
-  background: color-mix(in srgb, var(--white) 62%, transparent);
+  background: color-mix(in srgb, var(--accent) 7%, var(--surface));
   border-color: color-mix(in srgb, var(--success) 18%, transparent);
   box-shadow: none;
 }
@@ -179,11 +179,11 @@
 :root[data-color-scheme="light"] .empty-task-card,
 :root[data-color-scheme="light"] .task-result,
 :root[data-color-scheme="light"] .empty-workbench > div {
-  border-color: color-mix(in srgb, var(--card-border) 9.5%, transparent);
+  border-color: var(--line);
   background:
     linear-gradient(180deg, color-mix(in srgb, var(--card-highlight) 94%, transparent), color-mix(in srgb, var(--card-end) 88%, transparent)),
     var(--card);
-  box-shadow: 0 18px 46px color-mix(in srgb, var(--surface-shadow) 8%, transparent);
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--surface-shadow) 4%, transparent);
 }
 
 .track-status span {
@@ -403,21 +403,6 @@
   white-space: nowrap;
 }
 
-.module-lessons {
-  max-height: 0;
-  overflow: hidden;
-  opacity: 0;
-  transform: translateY(-4px);
-  transition: max-height 220ms cubic-bezier(0.2, 0, 0, 1), opacity 160ms ease, transform 180ms ease;
-}
-
-.module-lessons.is-open {
-  max-height: 2000px;
-  opacity: 1;
-  transform: translateY(0);
-  padding: 3px 0 7px 6px;
-}
-
 .lesson-row {
   min-height: 50px;
   display: grid;
@@ -431,6 +416,7 @@
   font-size: 1rem;
   transition: background 150ms ease, border-color 150ms ease, color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
 }
+
 
 .lesson-row svg {
   margin-top: 2px;
@@ -473,6 +459,33 @@
 }
 
 .lesson-row.is-active svg { color: var(--accent); }
+
+.lesson-row.is-completed,
+:root[data-color-scheme="light"] .lesson-row.is-completed {
+  border-color: color-mix(in srgb, var(--achievement) 30%, var(--line));
+  background: linear-gradient(115deg, color-mix(in srgb, var(--achievement) 13%, var(--surface)), color-mix(in srgb, var(--achievement) 5%, var(--surface)));
+  box-shadow: inset 0 0 22px color-mix(in srgb, var(--achievement) 5%, transparent);
+  color: var(--text);
+}
+
+.lesson-row.is-completed:hover,
+:root[data-color-scheme="light"] .lesson-row.is-completed:hover {
+  border-color: color-mix(in srgb, var(--achievement) 52%, var(--line));
+  background: color-mix(in srgb, var(--achievement) 15%, var(--surface));
+}
+
+.lesson-row.is-completed.is-active,
+:root[data-color-scheme="light"] .lesson-row.is-completed.is-active {
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
+  box-shadow: inset 3px 0 var(--accent), inset 0 0 22px color-mix(in srgb, var(--achievement) 7%, transparent);
+}
+
+.lesson-row svg.lesson-done-icon {
+  color: var(--achievement);
+  border-radius: 50%;
+  background: var(--achievement-soft);
+  box-shadow: 0 0 0 3px var(--achievement-soft);
+}
 
 .lesson-row span {
   min-width: 0;

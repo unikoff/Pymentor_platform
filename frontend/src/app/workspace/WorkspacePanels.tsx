@@ -9,6 +9,7 @@ import { LessonExplorer } from "./LessonExplorer";
 import { AsyncBoundary } from "../../shared/ui/async-boundary/AsyncBoundary";
 import { LessonLoading, LessonTransition } from "../../features/learning/LessonLoading";
 import { usePanelOpened } from "./usePanelOpened";
+import { withPanelTransition } from "./PanelTransition";
 import { isLessonTarget, type LessonPanelKind, type LessonTarget } from "./layout";
 
 export type WorkspacePanelContextValue = {
@@ -47,6 +48,7 @@ export function LessonsDrawerContent() {
     <LessonExplorer tracks={course.tracks} activeTrackId={course.activeTrackId} isTrackMenuOpen={isTrackMenuOpen}
       progress={course.progress} lessonModules={course.lessonModules} displayLessons={course.displayLessons}
       activeLessonId={context.selectedLessonId} openModules={openModules} isGuest={!context.user}
+      isAuthenticated={Boolean(context.user)} hasActiveSubscription={Boolean(context.user?.has_active_subscription)}
       onToggleTrackMenu={() => setIsTrackMenuOpen((value) => !value)}
       onSelectTrack={(trackId) => { course.setActiveTrackId(trackId); setIsTrackMenuOpen(false); }}
       onToggleModule={(name) => setOpenModules((current) => { const next = new Set(current); if (next.has(name)) next.delete(name); else next.add(name); return next; })}
@@ -123,4 +125,10 @@ function InterpreterDockPanel({ api }: IDockviewPanelProps) {
   const ownerKey = user ? String(user.id) : "guest";
   return opened ? <AsyncBoundary><OnlineInterpreter key={ownerKey} ownerKey={ownerKey} /></AsyncBoundary> : null;
 }
-export const workspacePanels = { theory: TheoryPanel, practice: PracticePanel, account: AccountDockPanel, admin: AdminDockPanel, interpreter: InterpreterDockPanel };
+export const workspacePanels = {
+  theory: withPanelTransition(TheoryPanel),
+  practice: withPanelTransition(PracticePanel),
+  account: withPanelTransition(AccountDockPanel),
+  admin: withPanelTransition(AdminDockPanel),
+  interpreter: withPanelTransition(InterpreterDockPanel),
+};

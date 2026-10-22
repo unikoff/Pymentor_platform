@@ -32,7 +32,7 @@ function DockTab({ api }: IDockviewPanelHeaderProps) {
         const next = panels[(index + (event.key === "ArrowRight" ? 1 : -1) + panels.length) % panels.length];
         next?.api.setActive();
         if (next) document.getElementById(`dock-tab-${next.id}`)?.focus();
-      }}>{title}</button>
+      }}><span className="dock-tab-title">{title}</span></button>
     <button className="dock-tab-close" type="button" aria-label={`Закрыть ${title}`}
       onPointerDown={(event) => event.stopPropagation()} onClick={(event) => { event.stopPropagation(); close(); }}>
       <X size={14} aria-hidden="true" />

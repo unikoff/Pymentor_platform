@@ -3,7 +3,7 @@ import { darkPalette, lightPalette, type ThemePalette } from "./palettes";
 export type ColorScheme = "dark" | "light";
 type ThemeDefinition = { label: string; colorScheme: ColorScheme; palette: ThemePalette };
 
-// A new theme inherits a complete palette and overrides only its differences.
+// Every theme supplies the same semantic roles with its own color palette.
 export const themes = {
   dark: { label: "Тёмная", colorScheme: "dark", palette: darkPalette },
   light: { label: "Светлая", colorScheme: "light", palette: lightPalette },

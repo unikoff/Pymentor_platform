@@ -2,6 +2,12 @@ import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "re
 import "./lesson-loading.css";
 
 export function LessonLoading() {
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const timer = window.setTimeout(() => setVisible(true), 180);
+    return () => window.clearTimeout(timer);
+  }, []);
+  if (!visible) return <div className="lesson-loading lesson-loading--pending" role="status" aria-busy="true" />;
   return <div className="lesson-loading" role="status" aria-live="polite">
     <div className="lesson-loading__visual" aria-hidden="true">
       <span className="lesson-loading__orbit" />
@@ -14,20 +20,14 @@ export function LessonLoading() {
   </div>;
 }
 
-// Start fetching immediately, while a short transition covers intermediate renders.
+// Reveal ready material immediately; each content root owns its entry animation.
 export function LessonTransition({ children }: { children: ReactNode }) {
-  const [entering, setEntering] = useState(true);
   const root = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
     const stage = root.current?.closest<HTMLElement>(".lesson-stage");
     if (stage) stage.scrollTop = 0;
   }, []);
-  useEffect(() => {
-    const timer = window.setTimeout(() => setEntering(false), 380);
-    return () => window.clearTimeout(timer);
-  }, []);
-  return <div ref={root} className={`lesson-transition${entering ? " is-entering" : ""}`}>
-    <div className="lesson-transition__content" aria-hidden={entering || undefined}>{children}</div>
-    {entering && <div className="lesson-transition__cover"><LessonLoading /></div>}
+  return <div ref={root} className="lesson-transition">
+    <div className="lesson-transition__content">{children}</div>
   </div>;
 }

@@ -3,12 +3,13 @@ import { ChevronRight, User } from "lucide-react";
 import { useRecordActivityVisit } from "../features/account";
 import { logoutUser } from "../features/auth";
 import { PracticeSessionProvider, useLearningCourse, type Lesson } from "../features/learning";
-import { getInitialCalendarMonth } from "../shared/lib/dates";
+import { formatSubscriptionDate, getInitialCalendarMonth } from "../shared/lib/dates";
 import { ThemeToggle } from "../shared/ui/theme-toggle/ThemeToggle";
 import type { UserProfile, CalendarMonth } from "../shared/api/contracts";
 import { WorkspaceActivityBar } from "./workspace/WorkspaceActivityBar";
 import { WorkspaceWorkbench, type ActiveWorkspacePanel, type WorkspaceCommands } from "./workspace/WorkspaceWorkbench";
 import { LessonsDrawerContent, WorkspacePanelContext } from "./workspace/WorkspacePanels";
+import { useContentSwitch } from "../shared/ui/motion/useContentSwitch";
 import type { LessonPanelKind, LessonTarget } from "./workspace/layout";
 
 const EXPLORER_MIN_WIDTH = 220;
@@ -25,6 +26,17 @@ function formatLessonHeading(lesson: Lesson, trackTitle?: string) {
     number: lessonMatch?.[1],
     title: lessonMatch ? lessonMatch[2].replace(/^[.)\-–—]\s*/, "") : lesson.title,
   };
+}
+
+function getProfileHint(user: UserProfile | null): { tier?: string; detail: string } {
+  if (!user) return { detail: "Гостевой доступ" };
+  if (user.has_active_subscription) {
+    const endDate = user.subscription_until
+      ? formatSubscriptionDate(user.subscription_until).match(/^(\d{2}\.\d{2})\./)?.[1]
+      : undefined;
+    return { tier: "pro", detail: endDate ? `до ${endDate}` : "активен" };
+  }
+  return { detail: user.is_admin ? "Администратор" : "Нет подписки" };
 }
 
 function getInitialExplorerWidth() {
@@ -48,9 +60,17 @@ export function Workspace({ user, onLogout, onRequireAuth }: {
   const [activePanel, setActivePanel] = useState<ActiveWorkspacePanel>();
   const [lessonTarget, setLessonTarget] = useState<LessonTarget>();
   const [isExplorerOpen, setIsExplorerOpen] = useState(!compact);
+  const [lessonMenuPeek, setLessonMenuPeek] = useState<"closed" | "open" | "closing">("closed");
   const [explorerWidth, setExplorerWidth] = useState(getInitialExplorerWidth);
   const [isResizingExplorer, setIsResizingExplorer] = useState(false);
+  const lessonMenuTimers = useRef<number[]>([]);
   const commands = useRef<WorkspaceCommands | null>(null);
+  const workspaceRef = useRef<HTMLElement>(null);
+  const switchContent = useContentSwitch();
+  const clearLessonMenuTimers = useCallback(() => {
+    lessonMenuTimers.current.forEach((timer) => window.clearTimeout(timer));
+    lessonMenuTimers.current = [];
+  }, []);
   const firstAvailable = course.displayLessons.find((lesson) => lesson.is_available !== false);
   const initialLesson = useMemo(() => firstAvailable ? { trackId: course.activeTrackId, lessonId: firstAvailable.id } : undefined,
     [course.activeTrackId, firstAvailable?.id]);
@@ -80,6 +100,13 @@ export function Workspace({ user, onLogout, onRequireAuth }: {
     };
   }, [isResizingExplorer]);
 
+  useEffect(() => clearLessonMenuTimers, [clearLessonMenuTimers]);
+  useEffect(() => {
+    if (!compact) return;
+    clearLessonMenuTimers();
+    setLessonMenuPeek("closed");
+  }, [clearLessonMenuTimers, compact]);
+
   useEffect(() => {
     const media = window.matchMedia("(max-width: 900px)");
     const update = () => setCompact(media.matches);
@@ -94,9 +121,40 @@ export function Workspace({ user, onLogout, onRequireAuth }: {
     setLessonTarget(target);
     if (target && compact) setIsExplorerOpen(false);
   }, [compact]);
+  const previewLessonsOnHover = useCallback((pointerType: string) => {
+    if (pointerType !== "mouse" || compact || isExplorerOpen) return;
+    clearLessonMenuTimers();
+    setLessonMenuPeek("open");
+  }, [clearLessonMenuTimers, compact, isExplorerOpen]);
+  const closeLessonPreview = useCallback((pointerType: string) => {
+    if (pointerType !== "mouse" || compact || isExplorerOpen) return;
+    clearLessonMenuTimers();
+    lessonMenuTimers.current.push(window.setTimeout(() => {
+      setLessonMenuPeek("closing");
+      lessonMenuTimers.current.push(window.setTimeout(() => {
+        setLessonMenuPeek("closed");
+        lessonMenuTimers.current = [];
+      }, 170));
+    }, 110));
+  }, [clearLessonMenuTimers, compact, isExplorerOpen]);
+  const toggleLessons = useCallback(() => {
+    clearLessonMenuTimers();
+    setLessonMenuPeek("closed");
+    setIsExplorerOpen((value) => !value);
+  }, [clearLessonMenuTimers]);
+  const closeLessons = useCallback(() => {
+    clearLessonMenuTimers();
+    setLessonMenuPeek("closed");
+    setIsExplorerOpen(false);
+  }, [clearLessonMenuTimers]);
   const openLesson = useCallback((kind: LessonPanelKind, target: LessonTarget) => {
-    commands.current?.openLesson(kind, target);
-  }, []);
+    const changingLesson = lessonTarget?.trackId !== target.trackId || lessonTarget?.lessonId !== target.lessonId;
+    const current = changingLesson
+      ? Array.from(workspaceRef.current?.querySelectorAll<HTMLElement>(".dock-lesson:not(.content-switch-snapshot)") ?? [])
+        .filter((panel) => panel.getClientRects().length > 0 && getComputedStyle(panel).visibility === "visible")
+      : null;
+    switchContent("lesson", current ?? null, () => commands.current?.openLesson(kind, target));
+  }, [lessonTarget, switchContent]);
   function onSelectLesson(lesson: Lesson) {
     openLesson("theory", { trackId: course.activeTrackId, lessonId: lesson.id });
   }
@@ -116,16 +174,22 @@ export function Workspace({ user, onLogout, onRequireAuth }: {
   const activeLesson = activePanel?.kind && lessonTarget ? course.courses[lessonTarget.trackId]?.lessons.find((lesson) => lesson.id === lessonTarget.lessonId) : undefined;
   const activeTrackTitle = lessonTarget ? course.tracks.find((track) => track.id === lessonTarget.trackId)?.title : undefined;
   const workspaceHeading = activeLesson ? formatLessonHeading(activeLesson, activeTrackTitle) : undefined;
+  const profileHint = getProfileHint(user);
   return <PracticeSessionProvider>
     <WorkspacePanelContext.Provider value={{ user, course, calendarMonth, setCalendarMonth,
       selectedLessonId: lessonTarget?.trackId === course.activeTrackId ? lessonTarget.lessonId : "", onSelectLesson, openLesson, onRequireAuth, onLogout: handleLogout,
-      onCloseLessons: () => setIsExplorerOpen(false) }}>
-      <main className={`workspace workspace--dock ${compact ? "workspace--compact" : ""} ${isExplorerOpen ? "workspace--explorer-open" : "workspace--explorer-closed"}`} style={workspaceStyle}>
-        <WorkspaceActivityBar isExplorerOpen={isExplorerOpen} isAdmin={Boolean(user?.is_admin)}
+      onCloseLessons: closeLessons }}>
+      <main ref={workspaceRef} className={`workspace workspace--dock ${compact ? "workspace--compact" : ""} ${isExplorerOpen ? "workspace--explorer-open" : "workspace--explorer-closed"}`} style={workspaceStyle}>
+        <WorkspaceActivityBar isExplorerOpen={isExplorerOpen || lessonMenuPeek !== "closed"} isAdmin={Boolean(user?.is_admin)}
           isAdminOpen={activePanel?.id === "admin"} isAccountOpen={activePanel?.id === "account"} isInterpreterOpen={activePanel?.id === "interpreter"} activeView={activePanel?.kind}
-          onOpenLessons={() => setIsExplorerOpen((value) => !value)} onOpenTheory={() => openStudy("theory")} onOpenPractice={() => openStudy("practice")}
+          onOpenLessons={toggleLessons} onLessonsPointerEnter={previewLessonsOnHover} onLessonsPointerLeave={closeLessonPreview}
+          onOpenTheory={() => openStudy("theory")} onOpenPractice={() => openStudy("practice")}
           onOpenAdmin={() => commands.current?.openAdmin()} onOpenAccount={openAccount} onOpenInterpreter={() => commands.current?.openInterpreter()} />
-        {isExplorerOpen && <aside className="workspace-drawer" aria-label="Список занятий">
+        {(isExplorerOpen || lessonMenuPeek !== "closed") && <aside
+          className={`workspace-drawer${lessonMenuPeek !== "closed" && !isExplorerOpen ? ` workspace-drawer--peek workspace-drawer--peek-${lessonMenuPeek}` : ""}`}
+          aria-label="Список занятий"
+          onPointerEnter={(event) => previewLessonsOnHover(event.pointerType)}
+          onPointerLeave={(event) => closeLessonPreview(event.pointerType)}>
           <LessonsDrawerContent />
         </aside>}
         {isExplorerOpen && !compact && <button className="explorer-resizer" type="button" aria-label="Изменить ширину списка занятий"
@@ -141,7 +205,13 @@ export function Workspace({ user, onLogout, onRequireAuth }: {
               <ThemeToggle />
               <button className="profile-button" type="button" onClick={openAccount} aria-label={user ? `Личный кабинет: ${user.username}` : "Войти в личный кабинет"} aria-current={activePanel?.id === "account" ? "page" : undefined}>
                 <span className="profile-button__avatar" aria-hidden="true">{user ? user.username.slice(0, 1).toUpperCase() : <User size={16} />}</span>
-                <span className="profile-button__text"><strong>{user?.username ?? "Войти"}</strong><small>Личный кабинет</small></span>
+                <span className="profile-button__text">
+                  <strong>{user?.username ?? "Войти"}</strong>
+                  <span className="profile-button__meta" title={[profileHint.tier, profileHint.detail].filter(Boolean).join(" ")}>
+                    {profileHint.tier && <span className="profile-button__tier">{profileHint.tier}</span>}
+                    <small>{profileHint.detail}</small>
+                  </span>
+                </span>
                 <ChevronRight className="profile-button__chevron" size={14} aria-hidden="true" />
               </button>
             </div>

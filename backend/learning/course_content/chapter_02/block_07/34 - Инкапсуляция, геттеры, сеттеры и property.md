@@ -1,4 +1,4 @@
-# 34. Dataclass после обычного класса
+# 34. Класс и dataclass
 
 <!-- youtube: -->
 

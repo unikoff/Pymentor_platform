@@ -269,3 +269,24 @@
     margin-inline: auto;
   }
 }
+
+/* Keep each task mounted; showing it again preserves its draft and output. */
+@supports not (view-transition-name: none) {
+  .practice-dashboard .task-card--editor:not([hidden]), .manual-practice-task {
+    animation: practice-task-arrive 220ms ease-out both;
+  }
+}
+@keyframes practice-task-arrive {
+  from { opacity: .25; }
+  to { opacity: 1; }
+}
+
+.manual-practice-task__panel { animation: practice-panel-reveal 240ms var(--motion-ease) both; }
+@keyframes practice-panel-reveal {
+  from { opacity: 0; translate: 0 6px; }
+  to { opacity: 1; translate: 0 0; }
+}
+.manual-practice-task__action, .manual-practice-step {
+  transition: background-color var(--motion-normal) ease, border-color var(--motion-normal) ease, color var(--motion-fast) ease;
+}
+.self-check-progress span { transition: width var(--motion-slow) var(--motion-ease); }

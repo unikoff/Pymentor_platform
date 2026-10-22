@@ -9,6 +9,8 @@ export function WorkspaceActivityBar({
   isInterpreterOpen,
   activeView,
   onOpenLessons,
+  onLessonsPointerEnter,
+  onLessonsPointerLeave,
   onOpenTheory,
   onOpenPractice,
   onOpenAdmin,
@@ -22,6 +24,8 @@ export function WorkspaceActivityBar({
   isInterpreterOpen: boolean;
   activeView?: WorkspaceView;
   onOpenLessons: () => void;
+  onLessonsPointerEnter: (pointerType: string) => void;
+  onLessonsPointerLeave: (pointerType: string) => void;
   onOpenTheory: () => void;
   onOpenPractice: () => void;
   onOpenAdmin: () => void;
@@ -36,6 +40,8 @@ export function WorkspaceActivityBar({
         title="Занятия"
         aria-label={isExplorerOpen ? "Свернуть занятия" : "Открыть список занятий"}
         aria-expanded={isExplorerOpen}
+        onPointerEnter={(event) => onLessonsPointerEnter(event.pointerType)}
+        onPointerLeave={(event) => onLessonsPointerLeave(event.pointerType)}
         onClick={onOpenLessons}
       >
         <BookOpen size={20} />

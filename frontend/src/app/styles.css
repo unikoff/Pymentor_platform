@@ -3,3 +3,4 @@
 @import "../shared/ui/controls.css";
 @import "./styles/workspace.css";
 @import "./workspace/dockview.css";
+@import "./styles/motion.css";

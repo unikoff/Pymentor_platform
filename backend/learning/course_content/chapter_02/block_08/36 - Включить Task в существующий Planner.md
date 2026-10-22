@@ -1,4 +1,4 @@
-# 36. Включить Task в существующий Planner
+# 36. Task в Planner
 
 <!-- youtube: -->
 

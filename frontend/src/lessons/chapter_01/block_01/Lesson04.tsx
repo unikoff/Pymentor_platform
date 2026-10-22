@@ -159,10 +159,10 @@ export function Lesson04({ module }: { module?: string }) {
           В шаблоне поля выделены цветом. После подстановки в тех же местах стоят текущие значения:
         </p>
         <p>
-          Шаблон: <code>Книга «<mark>{"{"}book_title{"}"}</mark>»: разделов <mark>{"{"}chapters{"}"}</mark>, общее время <mark>{"{"}total_minutes{"}"}</mark> мин.</code>
+          Шаблон: <code>Книга «<mark className="lesson-template-highlight">{"{"}book_title{"}"}</mark>»: разделов <mark className="lesson-template-highlight">{"{"}chapters{"}"}</mark>, общее время <mark className="lesson-template-highlight">{"{"}total_minutes{"}"}</mark> мин.</code>
         </p>
         <p>
-          Результат: <code>Книга «<mark>Летний сад</mark>»: разделов <mark>4</mark>, общее время <mark>72</mark> мин.</code>
+          Результат: <code>Книга «<mark className="lesson-template-highlight">Летний сад</mark>»: разделов <mark className="lesson-template-highlight">4</mark>, общее время <mark className="lesson-template-highlight">72</mark> мин.</code>
         </p>
         <p>
           Можно поместить умножение и внутрь фигурных скобок. Но отдельное имя делает путь заметнее: мы видим и формулу, и место, где её ответ используется. F-строка только превращает готовое значение в часть текста. Она не округляет число по скрытому правилу. Единицу измерения, например слово «минут», мы добавляем сами как обычный текст.

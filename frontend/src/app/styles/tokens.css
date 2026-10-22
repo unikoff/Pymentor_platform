@@ -1,4 +1,8 @@
 :root {
+  --motion-fast: 140ms;
+  --motion-normal: 240ms;
+  --motion-slow: 340ms;
+  --motion-ease: cubic-bezier(.22, 1, .36, 1);
   --font-body: "Manrope", "Nunito Sans", "Segoe UI", sans-serif;
   --font-code: "JetBrains Mono", "Cascadia Code", Consolas, monospace;
   --radius-sm: 16px;
