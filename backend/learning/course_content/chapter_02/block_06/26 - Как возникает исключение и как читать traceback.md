@@ -1,4 +1,4 @@
-# Исключение и traceback своей цепочки
+# 26. Разбор traceback
 
 <!-- youtube: -->
 

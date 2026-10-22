@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
 import { CheckCircle2, ChevronDown, ChevronRight, Lock, PanelLeftClose, Play } from "lucide-react";
 import { getLessonAccessLabel, isLessonUnavailable, type Lesson, type Track } from "../../features/learning";
@@ -20,6 +20,8 @@ export function LessonExplorer({
   activeLessonId,
   openModules,
   isGuest,
+  isAuthenticated,
+  hasActiveSubscription,
   onToggleTrackMenu,
   onSelectTrack,
   onToggleModule,
@@ -36,6 +38,8 @@ export function LessonExplorer({
   activeLessonId: string;
   openModules: Set<string>;
   isGuest: boolean;
+  isAuthenticated: boolean;
+  hasActiveSubscription: boolean;
   onToggleTrackMenu: () => void;
   onSelectTrack: (trackId: string) => void;
   onToggleModule: (moduleName: string) => void;
@@ -45,6 +49,12 @@ export function LessonExplorer({
 }) {
   const trackStatusRef = useRef<HTMLDivElement>(null);
   const [trackMenuStyle, setTrackMenuStyle] = useState<CSSProperties>();
+  const [keepTrackMenu, setKeepTrackMenu] = useState(isTrackMenuOpen);
+  useEffect(() => {
+    if (isTrackMenuOpen) { setKeepTrackMenu(true); return; }
+    const timer = window.setTimeout(() => setKeepTrackMenu(false), 140);
+    return () => window.clearTimeout(timer);
+  }, [isTrackMenuOpen]);
 
   useLayoutEffect(() => {
     if (!isTrackMenuOpen) return;
@@ -97,8 +107,8 @@ export function LessonExplorer({
         <div className="progress-line">
           <i style={{ width: `${progress}%` }} />
         </div>
-        {isTrackMenuOpen && trackMenuStyle && createPortal(
-          <div className="track-menu track-menu--overlay" style={trackMenuStyle} role="dialog" aria-label="Выбор программы обучения">
+        {(isTrackMenuOpen || keepTrackMenu) && trackMenuStyle && createPortal(
+          <div className={`track-menu track-menu--overlay${isTrackMenuOpen ? "" : " is-closing"}`} aria-hidden={!isTrackMenuOpen} style={trackMenuStyle} role="dialog" aria-label="Выбор программы обучения">
             <div className="track-menu__header">
               <strong>Учебные программы</strong>
               <span>Выберите главу</span>
@@ -136,17 +146,18 @@ export function LessonExplorer({
 
           return (
             <div className="module-group" key={moduleName}>
-              <button className="module-toggle" type="button" title={moduleName} onClick={() => onToggleModule(moduleName)}>
-                {isOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+              <button className="module-toggle" type="button" aria-expanded={isOpen} title={moduleName} onClick={() => onToggleModule(moduleName)}>
+                <ChevronRight size={16} />
                 <span>{moduleName}</span>
               </button>
-              <div className={`module-lessons ${isOpen ? "is-open" : ""}`}>
+              <div className={`module-lessons ${isOpen ? "is-open" : ""}`} aria-hidden={!isOpen}><div className="module-lessons__inner">
                 {moduleLessons.map((lesson) => {
                   const isUnavailable = isLessonUnavailable(lesson);
+                  const accessLabel = getLessonAccessLabel(lesson, isAuthenticated, hasActiveSubscription);
 
                   return (
                     <button
-                      className={`lesson-row ${lesson.id === activeLessonId ? "is-active" : ""} ${isUnavailable ? "is-locked" : ""}`}
+                      className={`lesson-row ${lesson.id === activeLessonId ? "is-active" : ""} ${lesson.completed && !isUnavailable ? "is-completed" : ""} ${isUnavailable ? "is-locked" : ""}`}
                       type="button"
                       key={lesson.id}
                       title={lesson.locked_reason || lesson.title}
@@ -162,11 +173,11 @@ export function LessonExplorer({
                     >
                       {isUnavailable ? <Lock size={15} /> : lesson.completed ? <CheckCircle2 size={15} className="lesson-done-icon" /> : <Play size={15} />}
                       <span>{lesson.title}</span>
-                      <small>{getLessonAccessLabel(lesson)}</small>
+                      {accessLabel && <small>{accessLabel}</small>}
                     </button>
                   );
                 })}
-              </div>
+              </div></div>
             </div>
           );
         })}

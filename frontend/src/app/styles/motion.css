@@ -1,0 +1,161 @@
+/* Shared motion language. Animate interaction, not every element on the page. */
+
+:is(.lesson-row, .module-toggle, .track-menu button, .activity-button,
+  .primary-action, .secondary-action, .profile-button, .run-button,
+  .interactive-primary, .quiz-option, .account-calendar__day,
+  .account-calendar__navigation button, .admin-tabs button, .admin-row--clickable) {
+  transition: background-color var(--motion-normal) ease,
+    border-color var(--motion-normal) ease, color var(--motion-fast) ease,
+    box-shadow var(--motion-normal) ease, opacity var(--motion-fast) ease,
+    translate var(--motion-normal) var(--motion-ease), scale var(--motion-fast) var(--motion-ease);
+}
+@media (hover: hover) and (pointer: fine) {
+  :is(.primary-action, .secondary-action, .profile-button, .run-button,
+    .interactive-primary):not(:disabled):hover { translate: 0 -1px; }
+}
+:is(.primary-action, .secondary-action, .profile-button, .run-button,
+  .interactive-primary, .quiz-option, .account-calendar__navigation button):not(:disabled):active {
+  scale: .98;
+  translate: 0 0;
+}
+
+.lesson-row {
+  transition: background 220ms var(--motion-ease), border-color 220ms ease,
+    color 180ms ease, box-shadow 220ms ease,
+    scale 210ms var(--motion-ease), translate 210ms var(--motion-ease);
+}
+.lesson-row > svg { transition: color 180ms ease, background-color 220ms ease, box-shadow 220ms ease; }
+@media (hover: hover) and (pointer: fine) {
+  .lesson-row:hover:not(:disabled):not(.is-locked) {
+    position: relative;
+    z-index: 1;
+    scale: 1.04;
+    translate: 0 -1px;
+  }
+  .lesson-row:hover:not(:disabled):not(.is-locked):not(.is-active):not(.is-completed) {
+    border-color: color-mix(in srgb, var(--accent) 22%, var(--line));
+    background: linear-gradient(125deg,
+      color-mix(in srgb, var(--accent) 8%, var(--surface-2)),
+      color-mix(in srgb, var(--accent) 3%, var(--surface-2)));
+  }
+}
+.module-lessons {
+  display: grid;
+  opacity: 0;
+  grid-template-rows: 0fr;
+  max-height: none;
+  padding: 0;
+  visibility: hidden;
+  transform: none;
+  transition: grid-template-rows var(--motion-slow) var(--motion-ease),
+    opacity var(--motion-normal) ease, visibility 0s var(--motion-slow);
+}
+.module-lessons.is-open {
+  opacity: 1;
+  grid-template-rows: 1fr;
+  max-height: none;
+  padding: 0;
+  visibility: visible;
+  transition-delay: 0s;
+}
+.module-lessons__inner { min-height: 0; overflow: hidden; }
+.module-lessons__inner::before, .module-lessons__inner::after { content: ""; display: block; height: 3px; }
+.module-lessons__inner > .lesson-row + .lesson-row { margin-top: 4px; }
+.module-lessons__inner > .lesson-row {
+  width: calc(95% - 6px);
+  margin: 0 5% 0 6px;
+  transform-origin: left center;
+}
+.module-toggle > svg { transition: rotate var(--motion-normal) var(--motion-ease); }
+.module-toggle[aria-expanded="true"] > svg { rotate: 90deg; }
+
+.track-menu--overlay {
+  transform-origin: top center;
+  animation: menu-appear var(--motion-normal) var(--motion-ease) both;
+}
+.track-menu--overlay.is-closing {
+  pointer-events: none;
+  animation: menu-disappear var(--motion-fast) ease both;
+}
+:is(.workspace-body, .workspace-drawer, .top-bar, .track-status, .track-menu,
+  .account-calendar, .account-calendar__details, .auth-panel, .code-editor-shell) {
+  transition: background-color var(--motion-normal) ease, border-color var(--motion-normal) ease, color var(--motion-fast) ease;
+}
+.progress-line i { transition: width var(--motion-slow) var(--motion-ease); }
+.workspace.workspace--dock { transition-timing-function: var(--motion-ease); }
+.workspace--dock .dock-scroll > :is(.account-panel, .admin-panel),
+.workspace--dock .online-interpreter,
+.account-calendar__grid, .account-calendar__details > :not(.account-calendar__details-heading),
+.quiz-explanation, .interactive-feedback, .recall-answer, .task-hints,
+.form-error, .auth-panel, .auth-form { animation: surface-appear var(--motion-normal) var(--motion-ease) both; }
+.workspace--dock .dv-tab { transition-duration: var(--motion-normal); }
+.dock-tab-close > svg { transition: rotate var(--motion-normal) var(--motion-ease); }
+.dock-tab-close:hover > svg { rotate: 90deg; }
+
+/* The wrapper must not change Dockview's sizing or scroll containers. */
+.panel-transition { display: contents; }
+
+/* Only the old local surface fades; live content never becomes transparent. */
+.content-switch-snapshot,
+.content-switch-snapshot * {
+  animation: none !important;
+  transition: none !important;
+  caret-color: transparent !important;
+}
+.content-switch-target,
+.content-switch-target :is(.code-demo, .recall, .rich-lesson, .practice-stack,
+  .markdown-body, .task-card--editor, .manual-practice-task) {
+  animation: none !important;
+}
+.pymentor-dock .dock-tab-main { display: grid; align-items: center; font-weight: 500; }
+.dock-tab-title { grid-area: 1 / 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.dock-tab-main, .dock-tab-close, .icon-button, .theme-switch,
+.task-code-action, .task-terminal__toggle {
+  transition: color var(--motion-fast) ease, background-color var(--motion-normal) ease,
+    border-color var(--motion-normal) ease, box-shadow var(--motion-normal) ease,
+    opacity var(--motion-normal) ease, scale var(--motion-fast) var(--motion-ease);
+}
+:is(.icon-button, .task-code-action):not(:disabled):active { scale: .94; }
+.activity-button::before {
+  content: "";
+  position: absolute;
+  left: -8px;
+  width: 3px;
+  height: 18px;
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--accent) 68%, var(--muted));
+  opacity: 0;
+  scale: 1 .3;
+  transition: opacity var(--motion-normal) ease, scale var(--motion-normal) var(--motion-ease);
+}
+.activity-button--active::before { opacity: 1; scale: 1 1; }
+.task-terminal__body { animation: surface-appear var(--motion-normal) var(--motion-ease) both; }
+.task-code-action[aria-busy="true"] > svg { animation: action-working 900ms linear infinite; }
+.task-code-action[aria-busy="true"] { opacity: .8; }
+@keyframes action-working { to { rotate: 360deg; } }
+
+@keyframes menu-appear {
+  from { opacity: 0; transform: translateY(-6px) scale(.985); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes menu-disappear {
+  to { opacity: 0; transform: translateY(-4px) scale(.985); }
+}
+@keyframes surface-appear {
+  from { opacity: 0; translate: 0 6px; }
+  to { opacity: 1; translate: 0 0; }
+}
+
+/* Keep resizing immediate; motion should never follow the pointer with a lag. */
+body.is-resizing-panel *, body.is-resizing-panel *::before, body.is-resizing-panel *::after {
+  transition: none !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    transition-delay: 0s !important;
+    scroll-behavior: auto !important;
+  }
+}

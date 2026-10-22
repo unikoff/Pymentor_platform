@@ -3,6 +3,7 @@ import { ArrowLeft, ArrowRight, BookOpen, CheckCircle2, Lightbulb } from "lucide
 import { completeLesson } from "../api";
 import { formatManualPracticeResult, renderPracticeText } from "./text-format";
 import { usePracticeState } from "./session";
+import { useContentSwitch, focusTaskNavigation } from "./useContentSwitch";
 import { readStoredString, writeStoredValue } from "../../../shared/lib/storage";
 import type { Lesson } from "../types";
 
@@ -43,6 +44,9 @@ export function SelfCheckPanel({
   requiredTaskCount?: number;
   completedTaskCount?: number;
 }) {
+  const manualListRef = useRef<HTMLElement>(null);
+  const switchContent = useContentSwitch();
+  const pendingFocus = useRef(new Map<string, "next" | "previous">());
   const manualPractice = lesson.manual_practice ?? [];
   const manualPracticeSignature = JSON.stringify(manualPractice) ?? "";
   const progressStorageKey = `pymentor:manual-progress:${progressOwnerKey}:${lesson.id}`;
@@ -132,9 +136,22 @@ export function SelfCheckPanel({
     }));
   }
 
-  function switchPracticeTask(exerciseId: string, currentIndex: number, direction: -1 | 1, taskCount: number) {
+  useEffect(() => {
+    pendingFocus.current.forEach((direction, exerciseId) => {
+      const card = Array.from(manualListRef.current?.querySelectorAll<HTMLElement>("[data-exercise-id]") ?? [])
+        .find((element) => element.dataset.exerciseId === exerciseId);
+      focusTaskNavigation(card, direction);
+    });
+    pendingFocus.current.clear();
+  }, [activeTaskIndexes]);
+
+  function switchPracticeTask(exerciseId: string, currentIndex: number, direction: -1 | 1, taskCount: number, element: HTMLElement | null) {
     const nextIndex = Math.max(0, Math.min(taskCount - 1, currentIndex + direction));
-    setActiveTaskIndexes((current) => ({ ...current, [exerciseId]: nextIndex }));
+    if (nextIndex === currentIndex) return;
+    switchContent(exerciseId, element?.closest<HTMLElement>(".manual-practice-task-list") ?? null, () => {
+      pendingFocus.current.set(exerciseId, direction === 1 ? "next" : "previous");
+      setActiveTaskIndexes((current) => ({ ...current, [exerciseId]: nextIndex }));
+    });
   }
 
   async function markCompleted() {
@@ -162,7 +179,7 @@ export function SelfCheckPanel({
   return (
     <>
       {manualPractice.length > 0 && (
-        <section className="manual-practice-list" aria-label="Практические задания урока">
+        <section ref={manualListRef} className="manual-practice-list" aria-label="Практические задания урока">
           {manualPractice.map((exercise, exerciseIndex) => {
             const exerciseId = [lesson.id, exerciseIndex].join(":");
             const taskCount = exercise.tasks?.length ?? 0;
@@ -172,7 +189,7 @@ export function SelfCheckPanel({
             const practiceTask = exercise.tasks?.[activeTaskIndex];
 
             return (
-              <article className="manual-practice-card" key={`${lesson.id}-${exercise.title}`}>
+              <article className="manual-practice-card" data-exercise-id={exerciseId} key={`${lesson.id}-${exercise.title}`}>
               <header className="manual-practice-card__head">
                 <h2>{renderPracticeText(exercise.title)}</h2>
               </header>
@@ -196,7 +213,7 @@ export function SelfCheckPanel({
                               className="practice-task-navigation__button"
                               type="button"
                               disabled={activeTaskIndex === 0}
-                              onClick={() => switchPracticeTask(exerciseId, activeTaskIndex, -1, taskCount)}
+                              onClick={(event) => switchPracticeTask(exerciseId, activeTaskIndex, -1, taskCount, event.currentTarget.closest<HTMLElement>(".manual-practice-task"))}
                               aria-label="Предыдущая задача"
                               title="Предыдущая задача"
                             >
@@ -206,7 +223,7 @@ export function SelfCheckPanel({
                               className="practice-task-navigation__button practice-task-navigation__button--next"
                               type="button"
                               disabled={activeTaskIndex === taskCount - 1}
-                              onClick={() => switchPracticeTask(exerciseId, activeTaskIndex, 1, taskCount)}
+                              onClick={(event) => switchPracticeTask(exerciseId, activeTaskIndex, 1, taskCount, event.currentTarget.closest<HTMLElement>(".manual-practice-task"))}
                               aria-label="Следующая задача"
                               title="Следующая задача"
                             >

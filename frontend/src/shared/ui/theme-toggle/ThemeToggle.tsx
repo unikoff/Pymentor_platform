@@ -28,8 +28,8 @@ export function ThemeToggle() {
       title={isDark ? "Включить светлую тему" : "Включить тёмную тему"}
     >
       <span className="theme-switch__thumb" aria-hidden="true" />
-      <Moon size={14} aria-hidden="true" />
-      <Sun size={14} aria-hidden="true" />
+      <span className="theme-switch__option" aria-hidden="true"><Moon size={14} /></span>
+      <span className="theme-switch__option" aria-hidden="true"><Sun size={14} /></span>
     </button>
   );
 }

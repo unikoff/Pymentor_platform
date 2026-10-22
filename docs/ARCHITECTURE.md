@@ -157,9 +157,9 @@ FastAPI (backend/main.py)
 
 ### `docs/`, конфигурация и выпуск
 
-- `docs/CONTENT_AUTHORING.md` и `docs/LESSON_PLAN_AUTHORING.md` описывают подготовку содержания и планов занятий; `docs/PROJECT_CONTEXT.md` и `docs/STUDYHUB_WORKFLOW.md` содержат контекст и процесс разработки учебной программы.
+- `docs/manual/LESSON_AUTHORING_GUIDE.md` и `docs/manual/LESSON_PLAN_GUIDE.md` описывают подготовку содержания и планов занятий; `docs/PROJECT_CONTEXT.md` и `docs/manual/STUDYHUB_LEARNING_WORKFLOW.md` содержат контекст и процесс разработки учебной программы.
 - `docs/concept/` хранит учебные концепции и паспорта блоков. Внутри `chapter_01/` … `chapter_04/` находятся `COURSE.md` и `BLOCK_N.md`; `chapter_01new/` — отдельная версия концепции первого курса. Эти документы задают план и не загружаются runtime-кодом приложения.
-- `docs/concept/CONCEPT_AUTHORING.md` и `BLOCK_CONCEPT_AUTHORING.md` задают формат концепций и паспортов блоков.
+- `docs/manual/COURSE_CONCEPT_GUIDE.md` и `docs/manual/BLOCK_CONCEPT_GUIDE.md` задают формат концепций и паспортов блоков.
 - `frontend/config/vite.config.ts` задаёт dev proxy и production base path; `tsconfig.json` проверяет исходники приложения, `tsconfig.node.json` — конфигурацию сборки.
 - `frontend/package.json` описывает frontend-команды и зависимости; `package-lock.json` фиксирует версии npm-зависимостей.
 - `requirements.txt` фиксирует Python-зависимости. Локальные настройки и секреты загружаются из неотслеживаемого `backend/.env`.
@@ -208,7 +208,7 @@ LearningPracticeView / OnlineInterpreter
 
 | Нужно изменить | Начать отсюда |
 | --- | --- |
-| Текст или структуру теории | `backend/learning/course_content/chapter_NN/block_NN/*.md` и [CONTENT_AUTHORING.md](CONTENT_AUTHORING.md) |
+| Текст или структуру теории | `backend/learning/course_content/chapter_NN/block_NN/*.md` и [LESSON_AUTHORING_GUIDE.md](manual/LESSON_AUTHORING_GUIDE.md) |
 | Ручное упражнение или самопроверку | `backend/learning/course_content/.../manual.py` |
 | Автоматически проверяемое задание | `backend/learning/course_content/.../code_tasks.py`; правила запуска — `backend/learning/code_runner.py` |
 | Специальную React-страницу занятия | `frontend/src/lessons/chapter_NN/`, затем манифест `index.ts`; см. [README учебного контента](../backend/learning/course_content/README.md) |

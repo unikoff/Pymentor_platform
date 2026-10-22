@@ -1,5 +1,5 @@
 import "./toolbar.css";
-import { CheckCircle2, Code2, Play } from "lucide-react";
+import { CheckCircle2, Code2, LoaderCircle, Play } from "lucide-react";
 
 export function CodeToolbar({ onRun, onCheck, isRunning, isChecking = false, disabled,
   runLabel = isRunning ? "примера" : "пример", className = "" }: {
@@ -12,12 +12,12 @@ export function CodeToolbar({ onRun, onCheck, isRunning, isChecking = false, dis
     <span><Code2 size={15} /> Python</span>
     <div className="task-code-toolbar__actions" role="group" aria-label="Действия с кодом">
       <button className="task-code-action" type="button" onClick={onRun} disabled={disabled}
-        aria-label={runTitle.replace("…", "")} title={runTitle}>
-        <Play size={16} fill="currentColor" aria-hidden="true" />
+        aria-busy={isRunning} aria-label={runTitle.replace("…", "")} title={runTitle}>
+        {isRunning ? <LoaderCircle size={16} aria-hidden="true" /> : <Play size={16} fill="currentColor" aria-hidden="true" />}
       </button>
       {onCheck && <button className="task-code-action task-code-action--check" type="button" onClick={onCheck}
-        disabled={disabled} aria-label={checkTitle.replace("…", "")} title={checkTitle}>
-        <CheckCircle2 size={17} aria-hidden="true" />
+        disabled={disabled} aria-busy={isChecking} aria-label={checkTitle.replace("…", "")} title={checkTitle}>
+        {isChecking ? <LoaderCircle size={17} aria-hidden="true" /> : <CheckCircle2 size={17} aria-hidden="true" />}
       </button>}
     </div>
   </div>;

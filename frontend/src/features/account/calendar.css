@@ -115,6 +115,19 @@
   gap: 18px;
 }
 
+:root[data-color-scheme="light"] .account-profile-card,
+:root[data-color-scheme="light"] .account-stat-card,
+:root[data-color-scheme="light"] .account-calendar {
+  border-color: var(--line-strong);
+  background: var(--card);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--surface-shadow) 8%, transparent);
+}
+
+:root[data-color-scheme="light"] .account-calendar__details {
+  border-color: var(--line);
+  background: var(--surface-2);
+}
+
 .account-profile-card__avatar {
   display: grid;
   place-items: center;
@@ -131,6 +144,11 @@
 }
 
 .account-profile-card__identity { min-width: 0; }
+:root[data-color-scheme="light"] .account-profile-card__avatar {
+  border-color: color-mix(in srgb, var(--accent) 18%, var(--line));
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface-2));
+  color: var(--accent);
+}
 .account-profile-card__identity > span,
 .account-stat-card__hint { color: var(--muted); font-size: 0.8rem; }
 .account-profile-card__identity h2 { overflow: hidden; margin: 4px 0; font-size: clamp(1.05rem, 1.5cqw, 1.35rem); text-overflow: ellipsis; }
@@ -249,17 +267,23 @@
 button.account-calendar__day { cursor: pointer; }
 .account-calendar__day.is-empty { visibility: hidden; }
 .account-calendar__day.is-today { border-color: color-mix(in srgb, var(--accent) 55%, var(--line)); color: var(--accent); }
-.account-calendar__day.has-activity { background: color-mix(in srgb, var(--accent) 7%, var(--surface-2)); }
+.account-calendar__day.has-activity {
+  border-color: color-mix(in srgb, var(--attendance) 34%, var(--line));
+  background: color-mix(in srgb, var(--attendance) 16%, var(--surface-2));
+}
+.account-calendar__day.has-activity .account-calendar__day-number { color: var(--attendance); }
 .account-calendar__day.has-free { border-color: color-mix(in srgb, var(--accent) 36%, var(--line)); }
-.account-calendar__day.has-booking { background: color-mix(in srgb, var(--accent) 14%, var(--surface-2)); color: var(--text); }
+.account-calendar__day.has-booking { border-color: color-mix(in srgb, var(--accent) 55%, var(--line)); color: var(--text); }
+.account-calendar__day.has-booking:not(.has-activity) { background: color-mix(in srgb, var(--accent) 14%, var(--surface-2)); }
 button.account-calendar__day:hover { transform: translateY(-2px); border-color: var(--accent); color: var(--text); }
 .account-calendar__day.is-selected { outline: 2px solid var(--accent); outline-offset: 2px; box-shadow: 0 0 0 5px var(--accent-soft); }
 .account-calendar__day-number { font-variant-numeric: tabular-nums; }
+.account-calendar__day-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 2px 4px; width: 100%; min-width: 0; }
+.account-calendar__visit-check { flex: 0 0 auto; color: var(--attendance); }
 .account-calendar__markers { display: flex; min-height: 6px; align-items: center; gap: 4px; }
 .account-calendar__markers i,
 .account-calendar__legend i { display: block; width: 6px; height: 6px; border-radius: 50%; background: var(--faint); }
-.account-calendar__markers .is-activity,
-.account-calendar__legend .is-activity { background: color-mix(in srgb, var(--accent) 55%, var(--surface-3)); }
+.account-calendar__legend .is-activity { background: var(--attendance-soft); border: 1px solid var(--attendance); border-radius: 3px; }
 .account-calendar__markers .is-free,
 .account-calendar__legend .is-free { background: transparent; box-shadow: inset 0 0 0 1.5px var(--accent); }
 .account-calendar__markers .is-booking,
@@ -348,4 +372,10 @@ button.account-calendar__day:hover { transform: translateY(-2px); border-color: 
   .account-calendar__grid { gap: 5px; }
   .account-calendar__day { min-height: 52px; padding: 8px; border-radius: 13px; font-size: 0.82rem; }
   .account-calendar__legend { gap: 9px 12px; font-size: 0.7rem; }
+}
+
+@container account-calendar (max-width: 480px) {
+  .account-calendar__day { padding-inline: 6px; }
+  .account-calendar__day-heading { column-gap: 2px; }
+  .account-calendar__visit-check { width: 12px; height: 12px; }
 }

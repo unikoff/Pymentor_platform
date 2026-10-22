@@ -18,6 +18,15 @@
   -webkit-box-decoration-break: clone;
 }
 
+/* Подсветка значений в примерах подстановки использует акцент темы. */
+.lesson-template-highlight {
+  padding: 0 0.12em;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--accent) 24%, var(--surface-2));
+  color: var(--text);
+  font-weight: 650;
+}
+
 /* Синтаксический токен: компактный inline-chip без свечения и без растяжения. */
 .lesson-token,
 .rich-lead code.lesson-token,

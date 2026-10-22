@@ -1,9 +1,10 @@
 import "./practice.css";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { getLessonTasks } from "../access";
 import { SelfCheckPanel } from "./SelfCheckPanel";
 import { TaskRunner } from "./TaskRunner";
 import { usePracticeState } from "./session";
+import { useContentSwitch, focusTaskNavigation } from "./useContentSwitch";
 import type { Lesson } from "../types";
 
 export function LearningPracticeView({
@@ -19,6 +20,9 @@ export function LearningPracticeView({
   onLessonCompleted: () => void;
   progressOwnerKey: string;
 }) {
+  const taskListRef = useRef<HTMLDivElement>(null);
+  const switchContent = useContentSwitch();
+  const pendingFocus = useRef<"next" | "previous" | null>(null);
   const tasks = getLessonTasks(lesson);
   const manualPractice = lesson.manual_practice ?? [];
   const isLearningRoadmap = lesson.title === "Карта обучения";
@@ -33,7 +37,23 @@ export function LearningPracticeView({
     setSolvedTaskIds(new Set(getLessonTasks(lesson).filter((task) => task.completed).map((task) => task.id)));
   }, [lesson.id]);
 
+  useEffect(() => {
+    const direction = pendingFocus.current;
+    pendingFocus.current = null;
+    const card = taskListRef.current?.querySelector<HTMLElement>(".task-card:not([hidden])");
+    if (direction) focusTaskNavigation(card, direction);
+  }, [activeTaskIndex]);
+
   const completedTaskCount = tasks.filter((task) => task.completed || solvedTaskIds.has(task.id)).length;
+
+  function navigateTask(index: number) {
+    const nextIndex = Math.max(0, Math.min(index, tasks.length - 1));
+    if (nextIndex === Math.min(activeTaskIndex, tasks.length - 1)) return;
+    switchContent("task", taskListRef.current, () => {
+      pendingFocus.current = nextIndex > activeTaskIndex ? "next" : "previous";
+      setActiveTaskIndex(nextIndex);
+    });
+  }
 
   function handleMixedTaskSolved(taskId: string) {
     setSolvedTaskIds((current) => new Set(current).add(taskId));
@@ -43,7 +63,7 @@ export function LearningPracticeView({
   return (
     <main className="practice-stack practice-dashboard" aria-label={`Практика: ${lesson.title}`}>
       {tasks.length > 0 && (
-        <div className="task-list">
+        <div className="task-list" ref={taskListRef}>
           {tasks.map((task, taskIndex) => (
             <TaskRunner
               task={task}
@@ -52,7 +72,7 @@ export function LearningPracticeView({
               taskNumber={taskIndex + 1}
               taskTotal={tasks.length}
               isActive={taskIndex === Math.min(activeTaskIndex, tasks.length - 1)}
-              onNavigateTask={setActiveTaskIndex}
+              onNavigateTask={navigateTask}
               progressOwnerKey={progressOwnerKey}
               onSolved={hasMixedPractice ? () => handleMixedTaskSolved(task.id) : onLessonCompleted}
             />
