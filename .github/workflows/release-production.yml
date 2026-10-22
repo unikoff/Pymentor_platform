@@ -85,13 +85,14 @@ jobs:
           expected_content_revision="$(PYTHONPATH=backend python3 -c 'from learning.content import get_content_revision; print(get_content_revision())')"
           for attempt in {1..40}; do
             page_status="$(curl -skS -o "$RUNNER_TEMP/platform.html" -w '%{http_code}' https://pymentor.ru/platform/)"
-            api_status="$(curl -skS -o "$RUNNER_TEMP/tracks.json" -w '%{http_code}' https://pymentor.ru/platform/learning/tracks)"
+            api_status="$(curl -skS -D "$RUNNER_TEMP/tracks.headers" -o "$RUNNER_TEMP/tracks.json" -w '%{http_code}' https://pymentor.ru/platform/learning/tracks)"
             actual_content_revision="$(python3 -c 'import json, sys; print(json.load(open(sys.argv[1]))["content_revision"])' "$RUNNER_TEMP/tracks.json" 2>/dev/null || true)"
-            if [ "$page_status" = '200' ] && [ "$api_status" = '200' ] && grep -Fq "$expected_asset" "$RUNNER_TEMP/platform.html" && [ "$actual_content_revision" = "$expected_content_revision" ]; then
+            if [ "$page_status" = '200' ] && [ "$api_status" = '200' ] && grep -Fq "$expected_asset" "$RUNNER_TEMP/platform.html" && [ "$actual_content_revision" = "$expected_content_revision" ] && grep -iqE '^cache-control:[[:space:]]*no-store([,[:space:]]|$)' "$RUNNER_TEMP/tracks.headers"; then
               echo 'DEPLOY_VERIFIED'
               exit 0
             fi
             sleep 3
           done
-          echo "Production did not reach the expected release: page=$page_status api=$api_status content_revision=$actual_content_revision" >&2
+          api_cache_control="$(grep -i '^cache-control:' "$RUNNER_TEMP/tracks.headers" | tail -n 1 | tr -d '\r' || true)"
+          echo "Production did not reach the expected release: page=$page_status api=$api_status content_revision=$actual_content_revision cache_control=$api_cache_control" >&2
           exit 1
