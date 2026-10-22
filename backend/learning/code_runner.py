@@ -153,11 +153,11 @@ def _normalize_compiler_message(message: Any) -> Any:
     if not isinstance(message, str):
         return message
 
-    if MISSING_SOLVE_ERROR_CODE in message:
+    if message in {MISSING_SOLVE_ERROR_CODE, f"AssertionError: {MISSING_SOLVE_ERROR_CODE}"}:
         return MISSING_SOLVE_ERROR_MESSAGE
 
     # Backward-compatible guard for already cached/encoded broken responses.
-    if "solve" in message and ("\ufffd" in message or "РќСѓ" in message):
+    if "\n" not in message and "solve" in message and ("\ufffd" in message or "РќСѓ" in message):
         return MISSING_SOLVE_ERROR_MESSAGE
 
     return message
@@ -322,12 +322,11 @@ def run_python_preview(code: str, task: dict[str, Any]) -> dict[str, Any]:
 
 def _describe_crash(stderr: str) -> str:
     """Достаёт из stderr последнюю строку с типом ошибки, чтобы студенту было понятно."""
-    if MISSING_SOLVE_ERROR_CODE in stderr:
-        return MISSING_SOLVE_ERROR_MESSAGE
-
     for line in reversed(stderr.strip().splitlines()):
         line = line.strip()
         if line and not line.startswith(("File ", "Traceback", "^")):
+            if line == f"AssertionError: {MISSING_SOLVE_ERROR_CODE}":
+                return MISSING_SOLVE_ERROR_MESSAGE
             return f"Ошибка запуска: {_normalize_compiler_message(line)}"
     return "Код завершился с ошибкой запуска."
 

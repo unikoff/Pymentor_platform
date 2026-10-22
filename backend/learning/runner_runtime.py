@@ -56,6 +56,14 @@ def bootstrap_source(source: str, limits: RunnerLimits) -> str:
 import io
 import json
 import sys
+import contextlib
+import copy
+import math
+import traceback
+
+# Load trusted harness extensions before RLIMIT_AS can prevent dlopen().
+# Student code is still executed only after all resource limits are installed.
+runner_code = compile({source!r}, "<pymentor-runner>", "exec")
 
 def write_failure(message):
     sys.stdout.write(json.dumps({{"ok": False, "score": 0, "tests": [], "stdout": "", "error": message}}, ensure_ascii=False))
@@ -107,11 +115,14 @@ def emit_result(result):
     sys.stdout.buffer.write(b"".join(chunks))
 
 try:
-    exec({source!r}, globals())
+    exec(runner_code, globals())
 except RunnerLimitError as exc:
     write_failure(str(exc))
 except MemoryError:
     write_failure("Превышен лимит памяти программы.")
+except Exception as exc:
+    sys.stderr.write(f"Runner startup failed: {{type(exc).__name__}}: {{exc}}\\n")
+    write_failure("Не удалось выполнить проверку на сервере. Повторите попытку позже.")
 '''
 
 
