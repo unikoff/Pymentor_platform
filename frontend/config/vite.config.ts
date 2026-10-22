@@ -12,6 +12,7 @@ export default defineConfig({
   base: process.env.VITE_BASE ?? "/",
   cacheDir: process.env.VITE_CACHE_DIR ?? "C:/Temp/pymentor-platform-vite-cache",
   server: {
+    strictPort: true,
     proxy: {
       "/user": {
         target: apiTarget,

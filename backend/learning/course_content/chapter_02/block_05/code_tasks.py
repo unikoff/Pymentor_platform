@@ -1,7 +1,7 @@
 from typing import Any
 
 CODE_TASKS: dict[int | str, list[dict[str, Any]]] = {
-    25: [{'title': 'Сводка через args и kwargs',
+    23: [{'title': 'Сводка через args и kwargs',
        'level': 'easy',
        'mode': 'solve',
        'prompt': 'Объявите вспомогательную функцию make_summary(total, label, multiplier), возвращающую словарь '
@@ -59,7 +59,7 @@ CODE_TASKS: dict[int | str, list[dict[str, Any]]] = {
                          "    multiplier = settings.get('multiplier', 1)\n"
                          "    config = {'label': label, 'multiplier': multiplier}\n"
                          '    return make_summary(total, **config)\n'}],
-    "26.1": [{'title': 'Два callback с отдельными настройками',
+    "24.1": [{'title': 'Два callback с отдельными настройками',
        'level': 'easy',
        'mode': 'solve',
        'prompt': 'Внутри solve объявите make_labeler(prefix). В ней объявите label(message), которая возвращает строку «{prefix}: {message}». Верните саму label, не вызывая её. Создайте notice и question с разными префиксами, затем верните список из трёх результатов: notice(first_message), question(second_message), notice(second_message).',
@@ -98,7 +98,7 @@ CODE_TASKS: dict[int | str, list[dict[str, Any]]] = {
                          "    notice = make_labeler('Важно')\n"
                          "    question = make_labeler('Вопрос')\n"
                          '    return [notice(first_message), question(second_message), notice(second_message)]\n'}],
-    '27.1': [
+    "25.1": [
     {
         "title": "Сравниваем ручное применение и @",
         "level": "easy",

@@ -104,8 +104,10 @@ def get_lesson_access(lesson: dict, user: models.User | None) -> tuple[bool, str
     return False, "Этот тип доступа пока не поддерживается."
 
 
-def build_lessons_payload(track_id: str, user: models.User | None, db: Session) -> list[dict]:
+def build_lessons_payload(track_id: str, user: models.User | None, db: Session, lesson_id: str | None = None) -> list[dict]:
     lessons = get_public_lessons(track_id)
+    if lesson_id is not None:
+        lessons = [lesson for lesson in lessons if lesson["id"] == lesson_id]
     completed_ids = user_crud.get_completed_lesson_ids(user.id, db) if user else set()
     block_three_tasks = [
         task
@@ -201,6 +203,57 @@ def list_lessons(
             "has_active_subscription": bool(user and user_crud.has_active_subscription(user)),
         },
     }
+
+
+@learning_router.get("/catalog")
+def learning_catalog(request: Request, db: Session = Depends(get_db)):
+    """Complete navigation in one request, without lesson bodies or task text."""
+    user = get_optional_user(request=request, db=db)
+    completed_ids = user_crud.get_completed_lesson_ids(user.id, db) if user else set()
+    summaries = get_tracks_summary()
+    source_tracks = {track["id"]: find_track(track["id"]) for track in summaries}
+    task_ids = [
+        task["id"]
+        for track in source_tracks.values() if track
+        for lesson in track["lessons"] if _uses_persisted_task_progress(lesson)
+        for task in lesson.get("tasks", [])
+    ]
+    revisions = user_crud.get_completed_task_revisions(user.id, task_ids, db) if user and task_ids else {}
+    courses = {}
+    for track in summaries:
+        countable_ids = set(track.pop("countable_lesson_ids"))
+        lessons = []
+        source_track = source_tracks[track["id"]]
+        for lesson in source_track["lessons"] if source_track else []:
+            item = {key: lesson[key] for key in (
+                "id", "module", "title", "duration", "status", "access", "source_file"
+            ) if key in lesson}
+            available, reason = get_lesson_access(lesson, user)
+            item.update(is_available=available, locked_reason=reason,
+                        completed=_lesson_completion_status(lesson, completed_ids, revisions))
+            lessons.append(item)
+        track["lessons_completed"] = sum(item["completed"] for item in lessons if item["id"] in countable_ids)
+        courses[track["id"]] = lessons
+    return {"tracks": summaries, "courses": courses, "default_track": default_track_id(),
+            "content_revision": get_content_revision()}
+
+
+@learning_router.get("/lessons/{lesson_id}")
+def lesson_material(lesson_id: str, request: Request, db: Session = Depends(get_db)):
+    lesson = find_lesson(lesson_id)
+    if lesson is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Lesson not found")
+    user = get_optional_user(request=request, db=db)
+    available, reason = get_lesson_access(lesson, user)
+    if not available:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=reason)
+    # Reuse the public projection: hidden tests stay on the server.
+    for track in get_tracks_summary():
+        source_track = find_track(track["id"])
+        if source_track and any(item["id"] == lesson["id"] for item in source_track["lessons"]):
+            material = build_lessons_payload(track["id"], user, db, lesson["id"])[0]
+            return {"lesson": material}
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Lesson not found")
 
 
 @learning_router.post("/lessons/{lesson_id}/complete")

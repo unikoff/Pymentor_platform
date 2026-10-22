@@ -59,6 +59,7 @@ export type ManualPracticeTask = {
   requirements: string[];
   hint: string;
   answer: ManualPracticeTaskAnswer;
+  result?: string;
 };
 
 export type LessonManualPractice = {

@@ -6,7 +6,8 @@ import re
 from typing import Any
 
 from learning.course_content import chapter_03 as _planner_api
-from learning.course_content import chapter_01 as _foundations
+from learning.course_content import chapter_01_archive as _foundations
+from learning.course_content import chapter_01 as _foundations_12
 from learning.course_content import chapter_02 as _deeper
 from learning.course_content import chapter_04 as _database_api
 from learning.course_content import chapter_05 as _personal_api
@@ -18,6 +19,7 @@ from learning.practice_helpers import _exercise, lesson_catalog_key
 
 
 FOUNDATIONS_TRACK = "Основы Python и мышление программиста"
+FOUNDATIONS_12_TRACK = _foundations_12.TRACK_ID
 DEEPER_TRACK = "Python глубже, файлы и структура небольшого проекта"
 PLANNER_API_TRACK = _planner_api.TRACK_ID
 DATABASE_API_TRACK = "FastAPI, SQLite и SQLAlchemy - StudyHub Database API"
@@ -49,6 +51,7 @@ LMS_TRACK_ALIASES = (
 
 
 FOUNDATIONS_OVERVIEW_PRACTICE = _foundations.OVERVIEW_PRACTICE
+FOUNDATIONS_12_OVERVIEW_PRACTICE = _foundations_12.OVERVIEW_PRACTICE
 
 DEEPER_OVERVIEW_PRACTICE = _deeper.OVERVIEW_PRACTICE
 
@@ -67,6 +70,7 @@ DEPLOY_OVERVIEW_PRACTICE = _deployment.OVERVIEW_PRACTICE
 LMS_OVERVIEW_PRACTICE = _lms.OVERVIEW_PRACTICE
 
 FOUNDATIONS_PRACTICE = _foundations.MANUAL_PRACTICE
+FOUNDATIONS_12_PRACTICE = _foundations_12.MANUAL_PRACTICE
 
 DEEPER_PRACTICE = _deeper.MANUAL_PRACTICE
 
@@ -88,6 +92,7 @@ def get_manual_practice(track_id: str, filename: str) -> list[dict[str, Any]]:
     """Возвращает ручную практику обзорной страницы или нумерованного урока."""
     overview_by_track = {
         FOUNDATIONS_TRACK: FOUNDATIONS_OVERVIEW_PRACTICE,
+        FOUNDATIONS_12_TRACK: FOUNDATIONS_12_OVERVIEW_PRACTICE,
         DEEPER_TRACK: DEEPER_OVERVIEW_PRACTICE,
         PLANNER_API_TRACK: PLANNER_API_OVERVIEW_PRACTICE,
         DATABASE_API_TRACK: DATABASE_API_OVERVIEW_PRACTICE,
@@ -95,6 +100,7 @@ def get_manual_practice(track_id: str, filename: str) -> list[dict[str, Any]]:
     }
     practice_by_track = {
         FOUNDATIONS_TRACK: FOUNDATIONS_PRACTICE,
+        FOUNDATIONS_12_TRACK: FOUNDATIONS_12_PRACTICE,
         DEEPER_TRACK: DEEPER_PRACTICE,
         PLANNER_API_TRACK: PLANNER_API_PRACTICE,
         DATABASE_API_TRACK: DATABASE_API_PRACTICE,

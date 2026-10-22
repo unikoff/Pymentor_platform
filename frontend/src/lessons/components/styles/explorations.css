@@ -250,18 +250,22 @@
 }
 
 .flip-card {
+  display: block;
+  width: 100%;
   perspective: 900px;
   min-height: 120px;
   padding: 0;
   border: 0;
   background: transparent;
+  color: var(--text);
   cursor: pointer;
+  text-align: inherit;
 }
 
 .flip-inner {
   position: relative;
   width: 100%;
-  height: 100%;
+  height: 120px;
   min-height: 120px;
   transform-style: preserve-3d;
   transition: transform 500ms cubic-bezier(0.2, 0, 0, 1);
@@ -285,11 +289,14 @@
   -webkit-backface-visibility: hidden;
   text-align: center;
   line-height: 1.5;
+  overflow-wrap: anywhere;
+  transition: opacity 180ms ease;
 }
 
 .flip-front {
   background: var(--surface);
   font-weight: 700;
+  opacity: 1;
 }
 
 .flip-back {
@@ -298,4 +305,26 @@
   color: var(--text);
   transform: rotateY(180deg);
   font-size: 0.9rem;
+  opacity: 0;
+}
+
+.flip-card.is-flipped .flip-front {
+  opacity: 0;
+}
+
+.flip-card.is-flipped .flip-back {
+  opacity: 1;
+}
+
+.flip-card:focus-visible {
+  outline-offset: 4px;
+  border-radius: var(--radius-md);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flip-inner,
+  .flip-front,
+  .flip-back {
+    transition-duration: 0.01ms;
+  }
 }

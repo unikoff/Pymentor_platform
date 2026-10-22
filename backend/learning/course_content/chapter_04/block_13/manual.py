@@ -2,9 +2,9 @@ from typing import Any
 
 
 
-MANUAL_PRACTICE: dict[int, list[dict[str, Any]]] = {
+MANUAL_PRACTICE: dict[int | str, list[dict[str, Any]]] = {
 
-    69: [{
+    61: [{
 
         "title": "Перенесите HTTP-ресурс tasks в пакет",
 
@@ -166,7 +166,7 @@ MANUAL_PRACTICE: dict[int, list[dict[str, Any]]] = {
 
     }],
 
-    70: [{
+    62: [{
 
         "title": "Подключите JSON_PATH из окружения и корневого .env",
 
@@ -200,7 +200,7 @@ MANUAL_PRACTICE: dict[int, list[dict[str, Any]]] = {
 
                     "Значение процесса имеет приоритет над .env, а отсутствующий ключ выбирает прежний default.",
 
-                    "Пустой JSON_PATH считается заданным и не выбирает default; явный отказ от него и проверка этого случая относятся к уроку 71."
+                    "Пустой JSON_PATH считается заданным и не выбирает default; явный отказ от него и проверка этого случая относятся к уроку 62.1."
 
                 ],
 
@@ -214,7 +214,7 @@ MANUAL_PRACTICE: dict[int, list[dict[str, Any]]] = {
 
                         "значения файла в окружение, не подменяя уже установленную переменную. Отсутствующее "
 
-                        "значение возвращает прежний путь. Пустой JSON_PATH не включает default и преобразуется в Path('.'), то есть в текущий каталог. Это промежуточное поведение; урок 71 добавит явный отказ и проверит его тестом."
+                        "значение возвращает прежний путь. Пустой JSON_PATH не включает default и преобразуется в Path('.'), то есть в текущий каталог. Это промежуточное поведение; урок 62.1 добавит явный отказ и проверит его тестом."
 
                     ),
 
@@ -236,7 +236,7 @@ MANUAL_PRACTICE: dict[int, list[dict[str, Any]]] = {
 
                         "Вызов без JSON_PATH возвращает прежний data/tasks.json.",
 
-                        "Пустой JSON_PATH не включает default и даёт Path('.'); явный отказ и его тест относятся к уроку 71. Settings и валидация путей в этом уроке не появляются."
+                        "Пустой JSON_PATH не включает default и даёт Path('.'); явный отказ и его тест относятся к уроку 62.1. Settings и валидация путей в этом уроке не появляются."
 
                     ]
 
@@ -444,13 +444,13 @@ MANUAL_PRACTICE: dict[int, list[dict[str, Any]]] = {
 
         )
 
-    }],    71: [{
+    }],    "62.1": [{
 
         "title": "Централизуйте Settings в существующем Planner",
 
         "task": (
 
-            "Обновите текущую конфигурационную границу StudyHub Planner после урока 70. "
+            "Обновите текущую конфигурационную границу StudyHub Planner после урока 62. "
 
             "API и CLI должны загружать общую конфигурацию и использовать одинаковые правила JSON_PATH. "
 
@@ -480,7 +480,7 @@ MANUAL_PRACTICE: dict[int, list[dict[str, Any]]] = {
 
                     "Относительный JSON_PATH привяжите к корню проекта, абсолютный сохраните, существующую папку вместо файла отклоните; отсутствие самого файла допустимо.",
 
-                    "Читайте уже подготовленное окружение после урока 70; не добавляйте BaseSettings, lru_cache или повторную загрузку .env."
+                    "Читайте уже подготовленное окружение после урока 62; не добавляйте BaseSettings, lru_cache или повторную загрузку .env."
 
                 ],
 
@@ -914,7 +914,7 @@ def test_build_service_keeps_injected_storage(tmp_path):
 
     }],
 
-    72: [{
+    63: [{
 
         "title": "Подключить PlannerService через простой Depends",
 
@@ -1196,7 +1196,7 @@ def read_stats(planner: PlannerService = Depends(get_planner)):
 
     }],
 
-    73: [{
+    "63.1": [{
 
         "title": "Обновите объявления Planner API без изменения HTTP-договора",
 
@@ -1404,7 +1404,7 @@ def read_stats(planner: PlannerService = Depends(get_planner)):
 
     }],
 
-    74: [{
+    64: [{
         "title": "Подготовленная выборка сохраняет контракт и тестовую изоляцию",
         "task": "GET /tasks использует небольшой граф зависимостей для прежних query-параметров и PlannerService. Тестовый provider возвращает отдельный сервис, а рабочие данные остаются изолированными.",
         "tasks": [
@@ -1485,7 +1485,7 @@ finally:
         "result": "GET /tasks использует подготовленную выборку без изменения контракта. API-fixture работает на отдельном JSON и восстанавливает override."
     }],
 
-    75: [{
+    65: [{
         "title": "Первый GET /preferences в существующем Planner",
         "task": "Новый HTTP-ресурс сообщает default-представление и диагностический контекст запроса. Он остаётся частью текущего приложения и не сохраняет настройку между запросами.",
         "tasks": [
@@ -1561,7 +1561,7 @@ assert json_path.read_bytes() == json_before''',
         "result": "GET /preferences возвращает default compact, принимает необязательный диагностический header и отправляет серверную версию. JSON и прежние API/CLI-сценарии сохраняют состояние."
     }],
 
-    76: [{
+    "65.1": [{
 
         "title": "Режим preferences хранится в cookie конкретного клиента",
 
@@ -2081,7 +2081,7 @@ def test_preferences_cookie_round_trip_and_isolation(api_client, api_service):
 
     }],
 
-    77: [{
+    "65.2": [{
 
         "title": "Свяжите политику cookie с Settings и проверьте границы доверия",
 
@@ -2151,7 +2151,7 @@ def test_preferences_cookie_round_trip_and_isolation(api_client, api_service):
 
                 "answer": {
 
-                    "explanation": "После урока 76 app.state.settings уже содержит собранный объект, но provider для Settings ещё не добавлен. В этом шаге мы создаём get_settings и SettingsDep, которые передают именно сохранённый объект. Загрузчик окружения и сам Settings не дублируются; тест по-прежнему может подменить dependency через override.",
+                    "explanation": "После урока 65.1 app.state.settings уже содержит собранный объект, но provider для Settings ещё не добавлен. В этом шаге мы создаём get_settings и SettingsDep, которые передают именно сохранённый объект. Загрузчик окружения и сам Settings не дублируются; тест по-прежнему может подменить dependency через override.",
 
                     "steps": [
 

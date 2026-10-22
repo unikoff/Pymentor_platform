@@ -239,7 +239,7 @@ export function SelfCheckPanel({
                             <CheckCircle2 size={17} aria-hidden="true" />
                             <div>
                               <strong>Критерий готовности</strong>
-                              <p>{renderPracticeText(formatManualPracticeResult(exercise.result))}</p>
+                              <p>{renderPracticeText(formatManualPracticeResult(practiceTask.result ?? exercise.result))}</p>
                             </div>
                           </section>
                         </div>
@@ -411,12 +411,12 @@ export function SelfCheckPanel({
         <section className="self-check-card self-check-card--complete">
           <div className="self-check-card__content">
             <span className="self-check-card__eyebrow">Самопроверка</span>
-            <p>После самостоятельной практики отметьте занятие выполненным.</p>
+            <p>Проверили себя и готовы закрыть урок? Оставьте след: «Я тут был, читал :)»</p>
             {error && <div className="form-error">{error}</div>}
           </div>
           <button className="primary-action" type="button" onClick={markCompleted} disabled={isSaving}>
             <CheckCircle2 size={17} />
-            {isSaving ? "Сохраняем..." : isAuthenticated ? "Завершить практику" : "Войти и сохранить"}
+            {isSaving ? "Сохраняем..." : isAuthenticated ? "Я тут был, читал :)" : "Войти и сохранить"}
           </button>
         </section>
       )}

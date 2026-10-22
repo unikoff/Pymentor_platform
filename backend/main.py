@@ -4,7 +4,7 @@ import os
 from contextlib import asynccontextmanager
 
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -33,6 +33,14 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+
+
+@app.middleware("http")
+async def prevent_api_caching(request, call_next):
+    response = await call_next(request)
+    if request.url.path.strip("/").split("/", 1)[0] in {"learning", "user", "admin"}:
+        response.headers["Cache-Control"] = "no-store"
+    return response
 
 
 def ensure_schema() -> None:
@@ -116,8 +124,10 @@ if (_DIST_DIR / "index.html").exists():
 
     @app.get("/{full_path:path}")
     async def spa(full_path: str):
+        if full_path.split("/", 1)[0] in {"learning", "user", "admin"}:
+            raise HTTPException(status_code=404, detail="API endpoint not found. Update the backend and retry.")
         # Любой путь, не пойманный роутерами и /assets, отдаёт index.html (SPA-роутинг).
-        return FileResponse(_DIST_DIR / "index.html")
+        return FileResponse(_DIST_DIR / "index.html", headers={"Cache-Control": "no-cache"})
 else:
     @app.get("/")
     async def root():

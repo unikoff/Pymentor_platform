@@ -21,6 +21,7 @@ export function LearningPracticeView({
 }) {
   const tasks = getLessonTasks(lesson);
   const manualPractice = lesson.manual_practice ?? [];
+  const isLearningRoadmap = lesson.title === "Карта обучения";
   const hasMixedPractice = tasks.length > 0 && manualPractice.length > 0;
   const sessionKey = `${progressOwnerKey}:${lesson.id}:${tasks.map((task) => `${task.id}:${task.revision}`).join("|")}`;
   const [activeTaskIndex, setActiveTaskIndex] = usePracticeState(`${sessionKey}:active-task`, () => 0);
@@ -71,8 +72,12 @@ export function LearningPracticeView({
         />
       ) : tasks.length === 0 ? (
         <div className="empty-task-card">
-          <h2>Задания скоро появятся</h2>
-          <p>Для этого урока пока нет практических задач. Можно выбрать другой урок или вернуться к теории.</p>
+          <h2>{isLearningRoadmap ? "Карта на руках :)" : "Задания скоро появятся"}</h2>
+          <p>
+            {isLearningRoadmap
+              ? "Здесь собран маршрут по главе, а задания ждут внутри занятий. Выберите первое слева и отправляйтесь в путь!"
+              : "Для этого урока пока нет практических задач. Можно выбрать другой урок или вернуться к теории."}
+          </p>
         </div>
       ) : null}
     </main>

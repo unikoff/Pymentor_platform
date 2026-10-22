@@ -1,7 +1,7 @@
 from typing import Any
 
-CODE_TASKS: dict[int, list[dict[str, Any]]] = {
-    36: [{'title': 'Два экземпляра ReadingPlan',
+CODE_TASKS: dict[int | str, list[dict[str, Any]]] = {
+    31: [{'title': 'Два экземпляра ReadingPlan',
        'level': 'easy',
        'mode': 'script',
        'prompt': 'Опишите ReadingPlan с конструктором __init__(self, topic, days). До запуска предскажите значения '
@@ -39,7 +39,7 @@ CODE_TASKS: dict[int, list[dict[str, Any]]] = {
                          'print(first.days)\n'
                          'print(second.topic)\n'
                          'print(second.days)\n'}],
-    38: [{'title': 'Property защищает приоритет',
+    34: [{'title': 'Property защищает приоритет',
        'level': 'medium',
        'mode': 'script',
        'prompt': 'Объявите Task. В __init__ создайте _priority и присвойте начальное значение через публичное '

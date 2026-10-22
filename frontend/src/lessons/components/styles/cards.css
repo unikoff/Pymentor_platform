@@ -157,6 +157,49 @@
   color: var(--text);
 }
 
+.lesson-acceptance-table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+
+.lesson-acceptance-table {
+  width: 100%;
+  min-width: 42rem;
+  border-collapse: collapse;
+  color: var(--text);
+  font-size: 0.9rem;
+  line-height: 1.55;
+  text-align: left;
+}
+
+.lesson-acceptance-table caption {
+  padding: var(--space-4);
+  color: var(--text);
+  font-size: 1rem;
+  font-weight: 650;
+  text-align: left;
+}
+
+.lesson-acceptance-table th,
+.lesson-acceptance-table td {
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--line-soft);
+  vertical-align: top;
+}
+
+.lesson-acceptance-table thead th {
+  color: var(--accent);
+  font-weight: 650;
+}
+
+.lesson-acceptance-table tbody th {
+  min-width: 12rem;
+  font-weight: 600;
+}
+
 .lesson-callout--info {
   border-color: color-mix(in srgb, var(--info) 40%, transparent);
   background: color-mix(in srgb, var(--info) 8%, transparent);
