@@ -38,7 +38,11 @@ app = FastAPI(lifespan=lifespan)
 @app.middleware("http")
 async def prevent_api_caching(request, call_next):
     response = await call_next(request)
-    if request.url.path.strip("/").split("/", 1)[0] in {"learning", "user", "admin"}:
+    path = request.url.path
+    root_path = request.scope.get("root_path", "").rstrip("/")
+    if root_path and path.startswith(f"{root_path}/"):
+        path = path[len(root_path) :]
+    if path.strip("/").split("/", 1)[0] in {"learning", "user", "admin"}:
         response.headers["Cache-Control"] = "no-store"
     return response
 
