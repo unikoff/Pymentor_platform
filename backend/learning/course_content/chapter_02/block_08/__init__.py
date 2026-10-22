@@ -3,6 +3,6 @@ from learning.practice_helpers import validate_block
 from .manual import MANUAL_PRACTICE
 from .code_tasks import CODE_TASKS
 
-validate_block(39, 44, MANUAL_PRACTICE, CODE_TASKS)
+validate_block(36, 40, MANUAL_PRACTICE, CODE_TASKS)
 
 __all__ = ["MANUAL_PRACTICE", "CODE_TASKS"]

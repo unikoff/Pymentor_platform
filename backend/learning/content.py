@@ -27,6 +27,18 @@ from typing import Any
 
 from learning.rich_code_tasks import get_code_tasks
 from learning.rich_practice import get_manual_practice
+from learning.course_content.chapter_01.numbering import (
+    LEGACY_NUMBERS as FOUNDATIONS_12_LEGACY_NUMBERS,
+    legacy_filename as foundations_12_legacy_filename,
+)
+from learning.course_content.chapter_02.numbering import (
+    LEGACY_INDICES as DEEPER_LEGACY_INDICES,
+    legacy_filename as deeper_legacy_filename,
+)
+from learning.course_content.chapter_04.numbering import (
+    LEGACY_INDICES as DATABASE_LEGACY_INDICES,
+    legacy_filename as database_legacy_filename,
+)
 
 
 COURSE_ROOT = Path(__file__).resolve().parent / "course_content"
@@ -113,98 +125,100 @@ NEW_PYTHON_MODULE_LABELS = {
 }
 
 NEW_PYTHON_12_MODULE_LABELS = {
-  "План обучения.md": "00 Обзор курса 01.2",
+  "План обучения.md": "00 Обзор",
   "01 - Как запускается программа.md": "Блок 1. Первые шаги в Python",
-  "02 - Переменные и значения.md": "Блок 1. Первые шаги в Python",
-  "03 - Строки- длина и части.md": "Блок 1. Первые шаги в Python",
-  "04 - Методы строк на практике.md": "Блок 1. Первые шаги в Python",
-  "05 - Целые числа и деление.md": "Блок 1. Первые шаги в Python",
-  "06 - Дробные числа и округление.md": "Блок 1. Первые шаги в Python",
-  "07 - Сообщение из данных.md": "Блок 1. Первые шаги в Python",
-  "08 - Сравнения и логика.md": "Блок 1. Первые шаги в Python",
-  "09 - Значение None в программе.md": "Блок 1. Первые шаги в Python",
-  "10 - Пишем короткую программу.md": "Блок 1. Первые шаги в Python",
-  "11 - Как работает ветвление.md": "Блок 2. Условия, данные и циклы",
-  "12 - Списки- чтение и изменение.md": "Блок 2. Условия, данные и циклы",
-  "13 - Общие ссылки и копии.md": "Блок 2. Условия, данные и циклы",
-  "14 - Разделяем и соединяем текст.md": "Блок 2. Условия, данные и циклы",
-  "15 - Кортежи и множества.md": "Блок 2. Условия, данные и циклы",
-  "16 - Словари- поля и значения.md": "Блок 2. Условия, данные и циклы",
-  "17 - Список записей и копии.md": "Блок 2. Условия, данные и циклы",
-  "18 - Цикл for и элементы данных.md": "Блок 2. Условия, данные и циклы",
-  "19 - Суммы, счётчики и максимум.md": "Блок 2. Условия, данные и циклы",
-  "20 - Управление циклом и поиск.md": "Блок 2. Условия, данные и циклы",
-  "21 - Цикл while и выход.md": "Блок 2. Условия, данные и циклы",
-  "22 - Пишем программу с циклами.md": "Блок 2. Условия, данные и циклы",
-  "23 - Функции- вход и результат.md": "Блок 3. Функции и инструменты",
-  "24 - Область видимости и данные.md": "Блок 3. Функции и инструменты",
-  "25 - Ошибки- ищем причину.md": "Блок 3. Функции и инструменты",
-  "26 - Настраиваем Python и VS Code.md": "Блок 3. Функции и инструменты",
-  "27 - Создаём проект и репозиторий.md": "Блок 3. Функции и инструменты",
-  "28 - Первый коммит в Git.md": "Блок 3. Функции и инструменты",
-  "29 - Отправляем код на GitHub.md": "Блок 3. Функции и инструменты",
-  "30 - Название задачи и Git.md": "Блок 3. Функции и инструменты",
-  "31 - Создаём задачу и карточку.md": "Блок 3. Функции и инструменты",
-  "32 - Соединяем готовые функции.md": "Блок 3. Функции и инструменты",
-  "33 - Отладка своего проекта.md": "Блок 3. Функции и инструменты",
-  "34 - Ввод и обработка ошибок.md": "Блок 3. Функции и инструменты",
-  "35 - Передаём проект дальше.md": "Блок 3. Функции и инструменты",
-  "36 - Запускаем каркас Planner.md": "Блок 4. Собираем свой Planner",
-  "37 - Проверяем ввод задачи.md": "Блок 4. Собираем свой Planner",
-  "38 - Добавляем первую задачу.md": "Блок 4. Собираем свой Planner",
-  "39 - Показываем список задач.md": "Блок 4. Собираем свой Planner",
-  "40 - Находим задачу по номеру.md": "Блок 4. Собираем свой Planner",
-  "41 - Отмечаем задачу выполненной.md": "Блок 4. Собираем свой Planner",
-  "42 - Ищем задачи по названию.md": "Блок 4. Собираем свой Planner",
-  "43 - Считаем статистику задач.md": "Блок 4. Собираем свой Planner",
-  "44 - Проверяем работу Planner.md": "Блок 4. Собираем свой Planner",
-  "45 - Проверяем чистую копию.md": "Блок 4. Собираем свой Planner",
+  "01.1 - Переменные и значения.md": "Блок 1. Первые шаги в Python",
+  "02 - Строки- длина и части.md": "Блок 1. Первые шаги в Python",
+  "02.1 - Методы строк на практике.md": "Блок 1. Первые шаги в Python",
+  "03 - Целые числа и деление.md": "Блок 1. Первые шаги в Python",
+  "03.1 - Дробные числа и округление.md": "Блок 1. Первые шаги в Python",
+  "04 - Сообщение из данных.md": "Блок 1. Первые шаги в Python",
+  "04.1 - Сравнения и логика.md": "Блок 1. Первые шаги в Python",
+  "05 - Значение None в программе.md": "Блок 1. Первые шаги в Python",
+  "05.1 - Пишем короткую программу.md": "Блок 1. Первые шаги в Python",
+  "06 - Как работает ветвление.md": "Блок 2. Условия, данные и циклы",
+  "06.1 - Списки- чтение и изменение.md": "Блок 2. Условия, данные и циклы",
+  "07 - Общие ссылки и копии.md": "Блок 2. Условия, данные и циклы",
+  "07.1 - Разделяем и соединяем текст.md": "Блок 2. Условия, данные и циклы",
+  "07.2 - Кортежи и множества.md": "Блок 2. Условия, данные и циклы",
+  "08 - Словари- поля и значения.md": "Блок 2. Условия, данные и циклы",
+  "08.1 - Список записей и копии.md": "Блок 2. Условия, данные и циклы",
+  "09 - Цикл for и элементы данных.md": "Блок 2. Условия, данные и циклы",
+  "09.1 - Суммы, счётчики и максимум.md": "Блок 2. Условия, данные и циклы",
+  "10 - Управление циклом и поиск.md": "Блок 2. Условия, данные и циклы",
+  "10.1 - Цикл while и выход.md": "Блок 2. Условия, данные и циклы",
+  "10.2 - Пишем программу с циклами.md": "Блок 2. Условия, данные и циклы",
+  "11 - Функции- вход и результат.md": "Блок 3. Функции и инструменты",
+  "11.1 - Область видимости и данные.md": "Блок 3. Функции и инструменты",
+  "11.2 - Ошибки- ищем причину.md": "Блок 3. Функции и инструменты",
+  "12 - Настраиваем Python и VS Code.md": "Блок 3. Функции и инструменты",
+  "12.1 - Создаём проект и репозиторий.md": "Блок 3. Функции и инструменты",
+  "13 - Первый коммит в Git.md": "Блок 3. Функции и инструменты",
+  "13.1 - Отправляем код на GitHub.md": "Блок 3. Функции и инструменты",
+  "13.2 - Название задачи и Git.md": "Блок 3. Функции и инструменты",
+  "14 - Создаём задачу и карточку.md": "Блок 3. Функции и инструменты",
+  "14.1 - Соединяем готовые функции.md": "Блок 3. Функции и инструменты",
+  "14.2 - Отладка своего проекта.md": "Блок 3. Функции и инструменты",
+  "15 - Ввод и обработка ошибок.md": "Блок 3. Функции и инструменты",
+  "15.1 - Передаём проект дальше.md": "Блок 3. Функции и инструменты",
+  "16 - Запускаем каркас Planner.md": "Блок 4. Собираем свой Planner",
+  "16.1 - Проверяем ввод задачи.md": "Блок 4. Собираем свой Planner",
+  "17 - Добавляем первую задачу.md": "Блок 4. Собираем свой Planner",
+  "17.1 - Показываем список задач.md": "Блок 4. Собираем свой Planner",
+  "18 - Находим задачу по номеру.md": "Блок 4. Собираем свой Planner",
+  "18.1 - Отмечаем задачу выполненной.md": "Блок 4. Собираем свой Planner",
+  "19 - Ищем задачи по названию.md": "Блок 4. Собираем свой Planner",
+  "19.1 - Считаем статистику задач.md": "Блок 4. Собираем свой Planner",
+  "20 - Проверяем работу Planner.md": "Блок 4. Собираем свой Planner",
+  "20.1 - Проверяем чистую копию.md": "Блок 4. Собираем свой Planner",
 }
 
 PYTHON_DEEPER_MODULE_LABELS = {
     "План обучения.md": "00 Обзор месяца",
-    "21 - Переход от первого месяца, разбираем Console Planner.md": "Блок 5. Функции как строительный материал",
-    "22 - Функция как контракт, вход, правило, результат.md": "Блок 5. Функции как строительный материал",
-    "23 - Позиционные, именованные аргументы и значения по умолчанию.md": "Блок 5. Функции как строительный материал",
-    "24 - Область видимости и изменяемые объекты.md": "Блок 5. Функции как строительный материал",
-    "24.1 - Состояние запуска и изменяемый default.md": "Блок 5. Функции как строительный материал",
-    "25 - args, kwargs и распаковка.md": "Блок 5. Функции как строительный материал",
-    "26 - Функция как значение, callbacks и замыкания.md": "Блок 5. Функции как строительный материал",
-    "26.1 - Вложенная функция и замыкание.md": "Блок 5. Функции как строительный материал",
-    "27 - Диагностическая обёртка существующей функции.md": "Блок 5. Функции как строительный материал",
-    "27.1 - Синтаксис @ и границы применения.md": "Блок 5. Функции как строительный материал",
-    "28 - Как возникает исключение и как читать traceback.md": "Блок 6. Ошибки, модули и рабочее JSON-хранение",
-    "29 - try и конкретные except.md": "Блок 6. Ошибки, модули и рабочее JSON-хранение",
-    "30 - else, finally, raise и собственные исключения.md": "Блок 6. Ошибки, модули и рабочее JSON-хранение",
-    "30.1 - Собственная ошибка и обязательное получение задачи.md": "Блок 6. Ошибки, модули и рабочее JSON-хранение",
-    "31 - Модули, импорты и точка входа.md": "Блок 6. Ошибки, модули и рабочее JSON-хранение",
-    "32 - Пакеты, init.py и направление импортов.md": "Блок 6. Ошибки, модули и рабочее JSON-хранение",
-    "33 - Отделить CLI от сборки.md": "Блок 6. Ошибки, модули и рабочее JSON-хранение",
-    "34 - Файл как ресурс, путь, режим, with и UTF-8.md": "Блок 6. Ошибки, модули и рабочее JSON-хранение",
-    "35 - Подключить загрузку и сохранение после изменения.md": "Блок 6. Ошибки, модули и рабочее JSON-хранение",
-    "35.1 - Проверить форму восстановленного состояния.md": "Блок 6. Ошибки, модули и рабочее JSON-хранение",
-    "35.2 - Ошибки хранения и сохранность данных.md": "Блок 6. Ошибки, модули и рабочее JSON-хранение",
-    "36 - Класс, объект, init и self.md": "Блок 7. Архитектура, файлы, JSON и начало ООП",
-    "36.1 - Обычная Task в настоящем пакете.md": "Блок 7. Архитектура, файлы, JSON и начало ООП",
-    "36.2 - Экземпляр, атрибут класса и общие ссылки.md": "Блок 7. Архитектура, файлы, JSON и начало ООП",
-    "37 - Атрибуты, методы и str.md": "Блок 7. Архитектура, файлы, JSON и начало ООП",
-    "37.1 - Представление, инкапсуляция и вычисляемое property.md": "Блок 7. Архитектура, файлы, JSON и начало ООП",
-    "37.2 - Task на границе словаря.md": "Блок 7. Архитектура, файлы, JSON и начало ООП",
-    "38 - Инкапсуляция, геттеры, сеттеры и property.md": "Блок 7. Архитектура, файлы, JSON и начало ООП",
-    "38.1 - Независимые tags и совместимость записи.md": "Блок 7. Архитектура, файлы, JSON и начало ООП",
-    "38.2 - Выбор формы и базовая композиция.md": "Блок 7. Архитектура, файлы, JSON и начало ООП",
-    "39 - Включить Task в существующий Planner.md": "Блок 8. Проектирование, SOLID, тесты и финальный проект",
-    "39.1 - JsonStorage вокруг готового хранения.md": "Блок 8. Проектирование, SOLID, тесты и финальный проект",
-    "40 - MemoryStorage и один договор.md": "Блок 8. Проектирование, SOLID, тесты и финальный проект",
-    "40.1 - PlannerService и перенос чтения.md": "Блок 8. Проектирование, SOLID, тесты и финальный проект",
-    "40.2 - Единое изменение и тонкий CLI.md": "Блок 8. Проектирование, SOLID, тесты и финальный проект",
-    "41 - Первые тесты через pytest.md": "Блок 8. Проектирование, SOLID, тесты и финальный проект",
-    "41.1 - Свежая fixture и параметризация.md": "Блок 8. Проектирование, SOLID, тесты и финальный проект",
-    "41.2 - Файловая интеграция через tmp_path.md": "Блок 8. Проектирование, SOLID, тесты и финальный проект",
-    "42 - Финальный проект 1, архитектура Persistent Planner.md": "Блок 8. Проектирование, SOLID, тесты и финальный проект",
-    "42.1 - Регрессия команд, сохранений и безопасной сборки.md": "Блок 8. Проектирование, SOLID, тесты и финальный проект",
-    "43 - Финальный проект 2, модель, сервисы и хранение.md": "Блок 8. Проектирование, SOLID, тесты и финальный проект",
-    "44 - Финальный проект 3, тесты, README, GitHub Release и защита.md": "Блок 8. Проектирование, SOLID, тесты и финальный проект",
+    "21 - Переход от первого месяца, разбираем Console Planner.md": "Блок 5. Функции и улучшение существующего CLI",
+    "21.1 - Функция как контракт, вход, правило, результат.md": "Блок 5. Функции и улучшение существующего CLI",
+    "21.2 - Позиционные, именованные аргументы и значения по умолчанию.md": "Блок 5. Функции и улучшение существующего CLI",
+    "22 - Область видимости и изменяемые объекты.md": "Блок 5. Функции и улучшение существующего CLI",
+    "22.1 - Состояние запуска и изменяемый default.md": "Блок 5. Функции и улучшение существующего CLI",
+    "23 - args, kwargs и распаковка.md": "Блок 5. Функции и улучшение существующего CLI",
+    "24 - Функция как значение, callbacks и замыкания.md": "Блок 5. Функции и улучшение существующего CLI",
+    "24.1 - Вложенная функция и замыкание.md": "Блок 5. Функции и улучшение существующего CLI",
+    "25 - Диагностическая обёртка существующей функции.md": "Блок 5. Функции и улучшение существующего CLI",
+    "25.1 - Синтаксис @ и границы применения.md": "Блок 5. Функции и улучшение существующего CLI",
+    "26 - Как возникает исключение и как читать traceback.md": "Блок 6. Ошибки, модули и рабочее JSON-хранение",
+    "26.1 - try и конкретные except.md": "Блок 6. Ошибки, модули и рабочее JSON-хранение",
+    "27 - else, finally, raise и собственные исключения.md": "Блок 6. Ошибки, модули и рабочее JSON-хранение",
+    "27.1 - Собственная ошибка и обязательное получение задачи.md": "Блок 6. Ошибки, модули и рабочее JSON-хранение",
+    "28 - Модули, импорты и точка входа.md": "Блок 6. Ошибки, модули и рабочее JSON-хранение",
+    "28.1 - Пакеты, init.py и направление импортов.md": "Блок 6. Ошибки, модули и рабочее JSON-хранение",
+    "28.2 - Отделить CLI от сборки.md": "Блок 6. Ошибки, модули и рабочее JSON-хранение",
+    "29 - Файл как ресурс, путь, режим, with и UTF-8.md": "Блок 6. Ошибки, модули и рабочее JSON-хранение",
+    "29.1 - JSON-представление настоящих задач.md": "Блок 6. Ошибки, модули и рабочее JSON-хранение",
+    "30 - Подключить загрузку и сохранение после изменения.md": "Блок 6. Ошибки, модули и рабочее JSON-хранение",
+    "30.1 - Проверить форму восстановленного состояния.md": "Блок 6. Ошибки, модули и рабочее JSON-хранение",
+    "30.2 - Ошибки хранения и сохранность данных.md": "Блок 6. Ошибки, модули и рабочее JSON-хранение",
+    "31 - Класс, объект, init и self.md": "Блок 7. Обычные классы, состояние и Task",
+    "31.1 - Обычная Task в настоящем пакете.md": "Блок 7. Обычные классы, состояние и Task",
+    "32 - Экземпляр, атрибут класса и общие ссылки.md": "Блок 7. Обычные классы, состояние и Task",
+    "32.1 - Атрибуты, методы и str.md": "Блок 7. Обычные классы, состояние и Task",
+    "33 - Представление, инкапсуляция и вычисляемое property.md": "Блок 7. Обычные классы, состояние и Task",
+    "33.1 - Task на границе словаря.md": "Блок 7. Обычные классы, состояние и Task",
+    "34 - Инкапсуляция, геттеры, сеттеры и property.md": "Блок 7. Обычные классы, состояние и Task",
+    "34.1 - Независимые tags и совместимость записи.md": "Блок 7. Обычные классы, состояние и Task",
+    "35 - Выбор формы и базовая композиция.md": "Блок 7. Обычные классы, состояние и Task",
+    "36 - Включить Task в существующий Planner.md": "Блок 8. Интеграция модели, service/storage и тесты",
+    "36.1 - JsonStorage вокруг готового хранения.md": "Блок 8. Интеграция модели, service/storage и тесты",
+    "37 - MemoryStorage и один договор.md": "Блок 8. Интеграция модели, service/storage и тесты",
+    "37.1 - PlannerService и перенос чтения.md": "Блок 8. Интеграция модели, service/storage и тесты",
+    "37.2 - Единое изменение и тонкий CLI.md": "Блок 8. Интеграция модели, service/storage и тесты",
+    "37.3 - Виртуальное окружение проекта.md": "Блок 8. Интеграция модели, service/storage и тесты",
+    "38 - Первые тесты через pytest.md": "Блок 8. Интеграция модели, service/storage и тесты",
+    "38.1 - Свежая fixture и параметризация.md": "Блок 8. Интеграция модели, service/storage и тесты",
+    "39 - Файловая интеграция через tmp_path.md": "Блок 8. Интеграция модели, service/storage и тесты",
+    "39.1 - SOLID и проверяемая граница CLI.md": "Блок 8. Интеграция модели, service/storage и тесты",
+    "39.2 - Регрессия команд, сохранений и безопасной сборки.md": "Блок 8. Интеграция модели, service/storage и тесты",
+    "40 - Финальный проект 2, модель, сервисы и хранение.md": "Блок 8. Интеграция модели, service/storage и тесты",
+    "40.1 - Финальный проект 3, тесты, README, GitHub Release и защита.md": "Блок 8. Интеграция модели, service/storage и тесты",
 }
 
 PLANNER_API_MODULE_LABELS = {
@@ -245,8 +259,8 @@ RICH_TRACK_MODULE_LABELS = {
 # New package/block names are Python-safe. This table preserves the old source
 # paths and module labels used by saved progress, lesson pages, and the UI.
 LEGACY_COURSE_LAYOUTS = {
-    "chapter_01": {"track_id": NEW_PYTHON_TRACK_NAME, "source_dirs": {"block_00": None, "block_01": None, "block_02": None, "block_03": None, "block_04": None}},
-    "chapter_01_2": {"track_id": NEW_PYTHON_12_TRACK_NAME, "source_dirs": {"block_00": None, "block_01": None, "block_02": None, "block_03": None, "block_04": None}},
+    "chapter_01_archive": {"track_id": NEW_PYTHON_TRACK_NAME, "source_dirs": {"block_00": None, "block_01": None, "block_02": None, "block_03": None, "block_04": None}},
+    "chapter_01": {"track_id": NEW_PYTHON_12_TRACK_NAME, "source_dirs": {"block_00": None, "block_01": None, "block_02": None, "block_03": None, "block_04": None}},
     "chapter_02": {"track_id": PYTHON_DEEPER_TRACK_NAME, "source_dirs": {"block_00": None, "block_05": None, "block_06": None, "block_07": None, "block_08": None}},
     "chapter_03": {"track_id": PLANNER_API_TRACK_NAME, "source_dirs": {"block_00": None, "block_09": None, "block_10": None, "block_11": None, "block_12": None}},
     "chapter_04": {
@@ -719,7 +733,7 @@ def _lesson_access(path: Path, track_dir: Path, track_id: str | None = None) -> 
     """Возвращает уровень доступа по новой воронке обучения.
 
     Карта обучения остаётся открытой в каждом курсе. Бесплатный старт есть
-    у первой главы и её временной версии 01.2: обзор и первый блок. После
+    у первой главы: обзор и первый блок. После
     регистрации доступен второй блок; остальные занятия требуют Pro-подписку.
     """
     if path.name == "План обучения.md":
@@ -732,9 +746,9 @@ def _lesson_access(path: Path, track_dir: Path, track_id: str | None = None) -> 
     lesson_match = re.match(r"^(\d+)", path.name)
     lesson_number = int(lesson_match.group(1)) if lesson_match else None
     if current_track == NEW_PYTHON_12_TRACK_NAME:
-        if lesson_number is not None and 1 <= lesson_number <= 10:
+        if lesson_number is not None and 1 <= lesson_number <= 5:
             return "free"
-        if lesson_number is not None and 11 <= lesson_number <= 22:
+        if lesson_number is not None and 6 <= lesson_number <= 10:
             return "registered"
         return "subscription"
     if lesson_number is not None and 1 <= lesson_number <= 5:
@@ -791,6 +805,13 @@ def _lesson_identity_source(relative: str) -> str:
         return alias
     parts = relative.split("/")
     if len(parts) == 3:
+        if parts[0] == "chapter_01" and parts[2] in NEW_PYTHON_12_MODULE_LABELS:
+            # New day numbers must keep the hashes of the original 45 lessons.
+            parts[2] = foundations_12_legacy_filename(parts[2])
+        if parts[0] == "chapter_02" and parts[2] in PYTHON_DEEPER_MODULE_LABELS:
+            parts[2] = deeper_legacy_filename(parts[2])
+        if parts[0] == "chapter_04":
+            parts[2] = database_legacy_filename(parts[2])
         migrated = LEGACY_COURSE_LAYOUTS.get(parts[0])
         if migrated is not None:
             old_module = migrated["source_dirs"].get(parts[1])
@@ -834,31 +855,33 @@ def _build_lesson(
     title = "Карта обучения" if path.name == "План обучения.md" else _extract_title(path, text)
     access = _lesson_access(path, track_dir, track_id)
     number_parts = _lesson_number_parts(path.name)
-    numbered_rich_course = track_id == LEGACY_COURSE_LAYOUTS["chapter_04"]["track_id"] and path.parent.name in {"block_13", "block_14"}
-    if (track_id in {NEW_PYTHON_TRACK_NAME, PYTHON_DEEPER_TRACK_NAME} or numbered_rich_course) and number_parts and not re.match(r"^\d+(?:\.\d+)*\.", title):
+    numbered_rich_course = track_id == LEGACY_COURSE_LAYOUTS["chapter_04"]["track_id"] and path.parent.name in {"block_13", "block_14", "block_15", "block_16"}
+    if (track_id in {NEW_PYTHON_TRACK_NAME, NEW_PYTHON_12_TRACK_NAME, PYTHON_DEEPER_TRACK_NAME} or numbered_rich_course) and number_parts and not re.match(r"^\d+(?:\.\d+)*\.", title):
         display_number = ".".join(str(part) for part in number_parts)
         title = f"{display_number}. {title}"
     tasks = _tasks_for_lesson(identity_source, text, lesson_id, legacy_lesson_id, track_id, path.name)
     for task in tasks:
         task["revision"] = build_task_revision(task)
     mixed_practice_lessons = {
-        "chapter_01/block_01/04 - Переменные и базовые типы.md",
-        "chapter_01/block_01/05 - Числа, операции и преобразование типов.md",
-        "chapter_01/block_02/06 - Строки и форматирование.md",
-        "chapter_01/block_02/07 - Boolean, сравнения и логика.md",
-        "chapter_01/block_02/09 - Цикл for и последовательности.md",
-        "chapter_01/block_02/09.1 - Накопление, счётчик и итог после цикла.md",
-        "chapter_01/block_03/11 - Списки, кортежи и множества.md",
-        "chapter_01/block_03/13 - Функции, параметры и return.md",
-        "chapter_01/block_03/15 - Ошибки, traceback и отладка.md",
-        "chapter_02/block_05/25 - args, kwargs и распаковка.md",
+        "chapter_01_archive/block_01/04 - Переменные и базовые типы.md",
+        "chapter_01_archive/block_01/05 - Числа, операции и преобразование типов.md",
+        "chapter_01_archive/block_02/06 - Строки и форматирование.md",
+        "chapter_01_archive/block_02/07 - Boolean, сравнения и логика.md",
+        "chapter_01_archive/block_02/09 - Цикл for и последовательности.md",
+        "chapter_01_archive/block_02/09.1 - Накопление, счётчик и итог после цикла.md",
+        "chapter_01_archive/block_03/11 - Списки, кортежи и множества.md",
+        "chapter_01_archive/block_03/13 - Функции, параметры и return.md",
+        "chapter_01_archive/block_03/15 - Ошибки, traceback и отладка.md",
+        "chapter_02/block_05/23 - args, kwargs и распаковка.md",
     }
     manual_practice = (
         get_manual_practice(track_id, path.name)
         if not tasks or relative in mixed_practice_lessons
         else []
     )
-    self_check = identity_source in SELF_CHECK_LESSONS or bool(manual_practice)
+    self_check = (
+        path.parent.name != "block_00" and identity_source in SELF_CHECK_LESSONS
+    ) or bool(manual_practice)
     video = _extract_youtube_video(text, title)
 
     return {
@@ -902,7 +925,7 @@ def _load_tracks() -> list[dict[str, Any]]:
 
     tracks: list[dict[str, Any]] = []
     for track_dir in sorted(COURSE_ROOT.iterdir()):
-        if not track_dir.is_dir() or track_dir.name == "__pycache__":
+        if not track_dir.is_dir() or track_dir.name == "__pycache__" or track_dir.name.endswith("_archive"):
             continue
         track = _load_track_meta(track_dir)
         files = _collect_markdown_files(track_dir, track["id"])
@@ -918,6 +941,16 @@ def _load_tracks() -> list[dict[str, Any]]:
             current_legacy_index = None if is_supplemental else legacy_index
             if not is_supplemental:
                 legacy_index += 1
+            if track["id"] == NEW_PYTHON_12_TRACK_NAME and number_parts:
+                # The old positional aliases include the overview at index zero.
+                display_number = ".".join(str(part) for part in number_parts)
+                current_legacy_index = FOUNDATIONS_12_LEGACY_NUMBERS.get(display_number)
+            if track["id"] == PYTHON_DEEPER_TRACK_NAME and number_parts:
+                display_number = ".".join(str(part) for part in number_parts)
+                current_legacy_index = DEEPER_LEGACY_INDICES.get(display_number)
+            if track["id"] == LEGACY_COURSE_LAYOUTS["chapter_04"]["track_id"] and number_parts:
+                display_number = ".".join(str(part) for part in number_parts)
+                current_legacy_index = DATABASE_LEGACY_INDICES.get(display_number)
             lessons.append(
                 _build_lesson(
                     path,

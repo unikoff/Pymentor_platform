@@ -1,6 +1,7 @@
 import ast
 import json
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -58,7 +59,10 @@ def _jsonable(value: Any) -> Any:
 def _blocked_reason(code: str) -> str | None:
     lowered = code.lower()
     for token in BLOCKED_TOKENS:
-        if token in lowered:
+        # A student helper such as choose_open() is not the file builtin open().
+        if token == "open(" and not re.search(r"(?<!\w)open\s*\(", lowered):
+            continue
+        if token == "open(" or token in lowered:
             return f"Запрещённая конструкция в коде: {token.strip()}"
     return None
 

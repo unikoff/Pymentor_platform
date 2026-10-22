@@ -1,470 +1,3204 @@
 from typing import Any
 
+# Add interpreter/code tasks for each lesson after authoring its concept-based material.
+CODE_TASKS: dict[int | str, list[dict[str, Any]]] = {number: [] for number in (6, "6.1", 7, "7.1", "7.2", 8, "8.1", 9, "9.1", 10, "10.1", "10.2")}
 
-CODE_TASKS: dict[int | str, list[dict[str, Any]]] = {
-    6: [
-        {
-            "title": "Различим длину, индекс и срез",
-            "level": "easy",
-            "mode": "script",
-            "prompt": (
-                "Платформа задаёт непустые text и пустую empty_text. Выведем длину, крайние символы и несколько срезов "
-                "text, затем длину и безопасный срез пустой строки. Отдельно объясним, почему длина строки не является "
-                "последним индексом."
-            ),
-            "contract": {
-                "given": "Платформа задаёт непустую строку text и пустую строку empty_text.",
-                "todo": "Мы покажем len(), индексы первого и последнего символа, безопасные срезы и пустой срез.",
-                "check": "Сверим обычную и односимвольную строки. Для empty_text не используем индексный доступ.",
-            },
-            "requirements": {
-                "items": ["Используем len()", "Показываем первый и последний символ text", "Проверяем срезы с разными границами", "Для пустой строки используем только длину и срез"],
-                "names": ["text", "empty_text"],
-                "calls": ["print", "len"],
-                "nodes": ["Subscript", "Slice"],
-            },
-            "starter_code": "# text и empty_text уже заданы платформой\n# Покажем длину, символы и срезы\n",
-            "hints": [
-                "Длина равна количеству символов, а крайний индекс на единицу меньше длины.",
-                "В срезе правая граница не входит в результат; длинная граница останавливается у конца строки.",
-                "Пустая строка безопасно возвращает длину 0 и пустой срез.",
+CODE_TASKS["6.1"] = [
+    {
+        "title": "Прочитаем и заменим элемент списка",
+        "level": "easy",
+        "mode": "script",
+        "prompt": "Покажем старое значение, заменим элемент на той же позиции и проверим список.",
+        "contract": {
+            "given": "Платформа задаёт готовые значения:",
+            "given_items": [
+                "materials: список строк.",
+                "position: индекс существующего элемента, начиная с 0.",
+                "replacement: строка для замены.",
             ],
-            "tests": [
-                {"name": "Несколько символов", "namespace": {"text": "Git", "empty_text": ""}, "expected": "3\nG t\nG\nit\n\n0\n\n", "assert": "stdout"},
-                {"name": "Один символ", "namespace": {"text": "A", "empty_text": ""}, "expected": "1\nA A\nA\n\n\n0\n\n", "assert": "stdout"},
+            "todo": "Покажите прежнее значение, замените его и выведите список.",
+            "todo_items": [
+                "Выведите materials[position].",
+                "Запишите replacement в materials[position].",
+                "Выведите materials.",
             ],
-            "reference_code": "print(len(text))\nprint(text[0], text[-1])\nprint(text[:1])\nprint(text[1:20])\nprint(text[2:2])\nprint(len(empty_text))\nprint(empty_text[:3])\n",
+            "check": "Позиция всегда указывает на существующий элемент. Проверка сравнит старое значение и весь список после замены.",
         },
-        {
-            "title": "Исправим ошибки доступа к строке",
-            "level": "easy",
-            "mode": "script",
-            "prompt": (
-                "Разберём, почему title[3] для строки Git выходит за границу и почему title[0] = \"g\" пытается "
-                "изменить неизменяемую строку. Затем напечатаем существующий символ и новую строку, собранную из "
-                "символа и среза."
-            ),
-            "contract": {
-                "given": "Строка title задана значением Git.",
-                "todo": "Мы выведем существующий символ и соберём новую строку без присваивания по индексу.",
-                "check": "Ошибочные выражения останутся объяснёнными в условии, а исполняемый ответ завершится без исключения.",
-            },
-            "requirements": {
-                "items": ["Используем существующий индекс", "Создаём новую строку конкатенацией символа и среза", "Не присваиваем значение по индексу"],
-                "names": ["title"],
-                "calls": ["print"],
-                "nodes": ["Subscript", "Slice", "BinOp"],
-            },
-            "starter_code": "title = \"Git\"\n# Выведем символ и соберём новую строку\n",
-            "hints": [
-                "В Git допустимы индексы 0, 1 и 2.",
-                "Строка не меняется на месте, но выражение среза создаёт часть для новой строки.",
+        "requirements": {
+            "items": [
+                "Старый элемент читается до замены.",
+                "Значение меняется только на указанной позиции.",
+                "После замены выводится весь список.",
             ],
-            "tests": [
-                {"name": "Исправленные обращения", "namespace": {}, "expected": "t\ngit", "assert": "stdout"},
-            ],
-            "reference_code": "title = \"Git\"\nprint(title[-1])\nnew_title = \"g\" + title[1:]\nprint(new_title)\n",
+            "names": ["materials", "position", "replacement"],
+            "nodes": ["Subscript", "Assign"],
+            "calls": ["print"],
         },
-        {
-            "title": "Сохраним результат метода",
-            "level": "easy",
-            "mode": "script",
-            "prompt": (
-                "Сравним вызов upper() без присваивания и сохранённый результат. Затем очистим пробелы вокруг "
-                "названия без смены регистра, а команду подготовим к сравнению через strip() и lower()."
-            ),
-            "contract": {
-                "given": "Используем строки python, Изучить SQL и команду CaLc с пробелами по краям.",
-                "todo": "Мы выведем исходное значение, сохранённый результат метода, название и нормализованную команду.",
-                "check": "Исходная строка остаётся прежней; правило для названия отличается от правила для команды.",
+        "hints": [
+            "position внутри квадратных скобок указывает на нужный элемент.",
+            "Чтобы заменить его, напишите слева от знака равенства materials[position].",
+            "После замены выведите materials и сравните его с исходным списком.",
+        ],
+        "starter_code": (
+            "print(materials[position])\n"
+            "# Теперь замените элемент и выведите список\n"
+        ),
+        "tests": [
+            {
+                "name": "Замена второго элемента",
+                "namespace": {"materials": ["Карта", "Вода"], "position": 1, "replacement": "Термос"},
+                "expected": "Вода\n['Карта', 'Термос']",
+                "assert": "stdout",
             },
-            "requirements": {
-                "items": ["Показываем, что upper() без присваивания не меняет переменную", "Сохраняем результат метода в новую переменную", "Очищаем название без смены регистра", "Нормализуем команду до сравнения"],
-                "calls": ["print"],
-                "names": ["sample", "upper_sample", "title", "command"],
-                "attributes": ["upper", "strip", "lower"],
+            {
+                "name": "Замена первого элемента",
+                "namespace": {"materials": ["Плед", "Книга", "Фонарь"], "position": 0, "replacement": "Карта"},
+                "expected": "Плед\n['Карта', 'Книга', 'Фонарь']",
+                "assert": "stdout",
             },
-            "starter_code": "# Создадим исходные строки и сохраним результаты методов\n",
-            "hints": [
-                "Сначала вызовем upper() отдельно и выведем исходную переменную.",
-                "Для отображаемого названия используем только strip().",
-                "Для команды применим strip().lower() и сравним с calc.",
+        ],
+        "reference_code": (
+            "print(materials[position])\n"
+            "materials[position] = replacement\n"
+            "print(materials)\n"
+        ),
+    },
+    {
+        "title": "Добавим одну строку через append",
+        "level": "easy",
+        "mode": "script",
+        "prompt": "Добавим одну строку и посмотрим, как изменился список и что вернул append.",
+        "contract": {
+            "given": "Платформа задаёт готовые значения:",
+            "given_items": [
+                "materials: список строк.",
+                "new_material: одна строка, которую нужно добавить.",
             ],
-            "tests": [
-                {"name": "Исходные строки и новые значения", "namespace": {}, "expected": "python\nPYTHON\nИзучить SQL\nTrue", "assert": "stdout"},
+            "todo": "Покажите список до и после добавления, затем выведите ответ метода.",
+            "todo_items": [
+                "Выведите materials до изменения.",
+                "Сохраните ответ вызова materials.append(new_material) в method_result.",
+                "Выведите изменённый materials, затем method_result.",
             ],
-            "reference_code": "sample = \"python\"\nsample.upper()\nprint(sample)\nupper_sample = sample.upper()\nprint(upper_sample)\nraw_title = \"  Изучить SQL  \"\ntitle = raw_title.strip()\nraw_command = \"  CaLc  \"\ncommand = raw_command.strip().lower()\nprint(title)\nprint(command == \"calc\")\n",
+            "check": "Проверка сравнит состояние до и после добавления и отдельно проверит возвращаемое значение `None`.",
         },
-        {
-            "title": "Соберём короткий код заголовка",
-            "level": "easy",
-            "mode": "script",
-            "prompt": (
-                "Для названия с пробелами по краям получим очищенный текст, короткий код из первых трёх символов "
-                "и сообщение с приоритетом. Короткий код здесь показывает работу со строками и не является постоянным номером записи."
-            ),
-            "contract": {
-                "given": "Название Python практика и приоритет 2 заданы в условии.",
-                "todo": "Мы очистим название, преобразуем только первые три символа и соберём карточку f-строкой.",
-                "check": "Полный заголовок сохраняет исходный регистр.",
-            },
-            "requirements": {
-                "items": ["Используем strip(), срез и upper()", "Сохраняем полный заголовок в исходном регистре", "Формируем сообщение f-строкой"],
-                "calls": ["print"],
-                "names": ["clean_title", "short_code", "priority"],
-                "attributes": ["strip", "upper"],
-                "nodes": ["Subscript", "Slice", "JoinedStr"],
-            },
-            "starter_code": "raw_title = \"  Python практика  \"\npriority = 2\n# Подготовим короткий код и сообщение\n",
-            "hints": [
-                "Сначала очистим заголовок по краям.",
-                "Получим срез первых трёх символов и изменим регистр только у него.",
-                "Соберём итоговую строку через f-строку.",
+        "requirements": {
+            "items": [
+                "До изменения выводится исходный список.",
+                "В конец добавляется одно значение вызовом append.",
+                "После вызова отдельно выводятся изменённый список и результат метода.",
             ],
-            "tests": [
-                {"name": "Карточка с коротким кодом", "namespace": {}, "expected": "[PYT] Python практика | приоритет: 2", "assert": "stdout"},
-            ],
-            "reference_code": "raw_title = \"  Python практика  \"\npriority = 2\nclean_title = raw_title.strip()\nshort_code = clean_title[:3].upper()\nprint(f\"[{short_code}] {clean_title} | приоритет: {priority}\")\n",
+            "names": ["materials", "new_material", "method_result"],
+            "nodes": ["Call", "Assign"],
+            "calls": ["print"],
+            "attributes": ["append"],
         },
-    ],
-    7: [
-        {
-            "title": "Соберём скрипт срочности",
-            "level": "easy",
-            "mode": "script",
-            "prompt": (
-                "Платформа задаёт priority, is_done и days_left. Сначала сохраним ответы о высоком приоритете и "
-                "незавершённой задаче, соединим их, а затем добавим проверку положительного остатка дней. Выведем "
-                "промежуточные bool и итоговый is_urgent, чтобы увидеть причину каждого ответа. Дни до срока заданы "
-                "только для этого учебного примера и не являются полем Planner; проверим границу 4 и каждую отдельную причину False."
-            ),
-            "contract": {
-                "given": "Платформа задаёт целый priority, булево is_done и целое days_left.",
-                "todo": "Мы объединим сначала две проверки, затем третью, и выведем промежуточные bool вместе с итогом.",
-                "check": "Проверим границу priority = 4, значение ниже порога, завершённую задачу и нулевой остаток дней.",
+        "hints": [
+            "Сначала выведите materials, чтобы увидеть список до изменения.",
+            "Вызовите materials.append(new_material) и сохраните его ответ в method_result.",
+            "После вызова выведите materials и method_result. Ответ append равен None.",
+        ],
+        "starter_code": (
+            "print(materials)\n"
+            "# Добавьте строку, которая меняет список, и покажите оба результата\n"
+        ),
+        "tests": [
+            {
+                "name": "Добавление к непустому списку",
+                "namespace": {"materials": ["Карта", "Вода"], "new_material": "Фонарь"},
+                "expected": "['Карта', 'Вода']\n['Карта', 'Вода', 'Фонарь']\nNone",
+                "assert": "stdout",
             },
-            "requirements": {
-                "items": ["Сохраняем три отдельных bool для исходных проверок", "Сначала соединяем приоритет и незавершённость", "Добавляем положительный остаток дней к промежуточному результату", "Выводим промежуточные ответы и is_urgent"],
-                "names": ["priority", "is_done", "days_left", "priority_is_high", "task_is_open", "has_time", "urgent_by_priority_and_state", "is_urgent"],
-                "calls": ["print"],
-                "nodes": ["BoolOp", "And", "UnaryOp", "Not", "Compare"],
+            {
+                "name": "Добавление к списку из одного элемента",
+                "namespace": {"materials": ["Книга"], "new_material": "Карандаш"},
+                "expected": "['Книга']\n['Книга', 'Карандаш']\nNone",
+                "assert": "stdout",
             },
-            "starter_code": "# priority, is_done и days_left уже заданы платформой\n# Вычислим и выведем is_urgent\n",
-            "hints": [
-                "Сначала запишем отдельно priority >= 4 и not is_done.",
-                "Через and объединим первые две проверки и выведем промежуточный bool.",
-                "Затем проверим days_left > 0 и соединим этот ответ с промежуточным результатом.",
+        ],
+        "reference_code": (
+            "print(materials)\n"
+            "method_result = materials.append(new_material)\n"
+            "print(materials)\n"
+            "print(method_result)\n"
+        ),
+    },
+    {
+        "title": "Удалим элемент через pop и сохраним его",
+        "level": "easy",
+        "mode": "script",
+        "prompt": "Удалим элемент по позиции и покажем его значение и оставшийся список.",
+        "contract": {
+            "given": "Платформа задаёт готовые значения:",
+            "given_items": [
+                "materials: непустой список строк.",
+                "position: индекс существующего элемента, начиная с 0.",
             ],
-            "tests": [
-                {"name": "Приоритет на границе", "namespace": {"priority": 4, "is_done": False, "days_left": 2}, "expected": "True True True True True", "assert": "stdout"},
-                {"name": "Ниже порога", "namespace": {"priority": 3, "is_done": False, "days_left": 2}, "expected": "False True True False False", "assert": "stdout"},
-                {"name": "Выше порога", "namespace": {"priority": 5, "is_done": False, "days_left": 2}, "expected": "True True True True True", "assert": "stdout"},
-                {"name": "Задача завершена", "namespace": {"priority": 5, "is_done": True, "days_left": 2}, "expected": "True False True False False", "assert": "stdout"},
-                {"name": "Срок наступил", "namespace": {"priority": 5, "is_done": False, "days_left": 0}, "expected": "True True False True False", "assert": "stdout"},
+            "todo": "Удалите элемент через pop. Покажите удалённое значение и новый список.",
+            "todo_items": [
+                "Сохраните ответ вызова materials.pop(position) в removed.",
+                "Выведите removed.",
+                "Выведите materials после удаления.",
             ],
-            "reference_code": "priority_is_high = priority >= 4\ntask_is_open = not is_done\nhas_time = days_left > 0\nurgent_by_priority_and_state = priority_is_high and task_is_open\nis_urgent = urgent_by_priority_and_state and has_time\nprint(priority_is_high, task_is_open, has_time, urgent_by_priority_and_state, is_urgent)\n",
+            "check": "Проверка сравнит удалённую строку и порядок оставшихся элементов для разных позиций.",
         },
-    ],
-    9: [
-        {
-            "title": "Обойдём строку",
-            "level": "easy",
-            "mode": "script",
-            "prompt": (
-                "Платформа задаёт строку text. Мы выведем каждый её символ на отдельной строке через прямой for. "
-                "Проверим обычную строку, один символ и пустую строку. Для пустого текста цикл не должен печатать ничего."
-            ),
-            "contract": {
-                "given": "Платформа задаёт строковое значение text. Оно может быть пустым, коротким или содержать несколько символов.",
-                "todo": "Мы обойдём text напрямую и выведем текущий символ на каждом проходе.",
-                "check": "Сверим вывод для трёх размеров строки. Индексация не нужна.",
-            },
-            "requirements": {"items": ["Используем прямой цикл for symbol in text", "Печатаем один текущий символ за проход"]},
-            "starter_code": "# text уже задан платформой\n# Выведем символы по порядку\n",
-            "hints": [
-                "Переменная после for получает очередной символ, а не его позицию.",
-                "Поместим print с отступом внутрь тела цикла.",
-                "Если строка пуста, тело не запустится и вывода не будет.",
+        "requirements": {
+            "items": [
+                "Удаление выполняется по заданной позиции методом pop.",
+                "Возвращённое значение сохраняется отдельно.",
+                "Вывод показывает удалённый элемент и новый список.",
             ],
-            "tests": [
-                {"name": "Несколько символов", "namespace": {"text": "мир"}, "expected": "м\nи\nр", "assert": "stdout"},
-                {"name": "Один символ", "namespace": {"text": "Я"}, "expected": "Я", "assert": "stdout"},
-                {"name": "Пустая строка", "namespace": {"text": ""}, "expected": "", "assert": "stdout"},
-            ],
-            "reference_code": "for symbol in text:\n    print(symbol)\n",
+            "names": ["materials", "position", "removed"],
+            "nodes": ["Call", "Assign"],
+            "calls": ["print"],
+            "attributes": ["pop"],
         },
-        {
-            "title": "Проследим границы range",
-            "level": "easy",
-            "mode": "script",
-            "prompt": (
-                "Платформа задаёт целые start и stop. Сначала выведем числа из range(stop), затем числа из "
-                "range(start, stop), каждое на отдельной строке. Правая граница не входит в обход. Проверим пустые "
-                "диапазоны, range(1), range(3) и диапазон от 2 до 5."
-            ),
-            "contract": {
-                "given": "Платформа задаёт целые start и stop. Значение stop может быть равно нулю или start.",
-                "todo": "Мы выполним два отдельных обхода: range(stop) и range(start, stop).",
-                "check": "Сверим нулевой, одиночный и многозначный диапазоны, включая исключённую правую границу.",
+        "hints": [
+            "Вызовите materials.pop(position) и сохраните ответ в removed.",
+            "Выведите сначала removed, затем materials.",
+            "После удаления список становится короче на один элемент.",
+        ],
+        "starter_code": (
+            "# Удалите элемент, сохраните его и покажите оба результата\n"
+        ),
+        "tests": [
+            {
+                "name": "Удаление из середины",
+                "namespace": {"materials": ["Карта", "Вода", "Перекус"], "position": 1},
+                "expected": "Вода\n['Карта', 'Перекус']",
+                "assert": "stdout",
             },
-            "requirements": {"items": ["Используем оба изучаемых вида range", "Печатаем каждое число внутри цикла", "Не добавляем правую границу вручную"]},
-            "starter_code": "# start и stop уже заданы платформой\n# Сначала обойдём range(stop), затем range(start, stop)\n",
-            "hints": [
-                "В range(stop) последовательность начинается с нуля.",
-                "В range(start, stop) первое значение включено, а stop задаёт границу остановки.",
-                "Запишем два цикла отдельно, чтобы сравнить их последовательности.",
+            {
+                "name": "Удаление первого элемента",
+                "namespace": {"materials": ["Плед", "Книга"], "position": 0},
+                "expected": "Плед\n['Книга']",
+                "assert": "stdout",
+            },
+        ],
+        "reference_code": (
+            "removed = materials.pop(position)\n"
+            "print(removed)\n"
+            "print(materials)\n"
+        ),
+    },
+    {
+        "title": "Сравним добавление одного и нескольких элементов",
+        "level": "easy",
+        "mode": "script",
+        "prompt": "Сравним добавление одной строки и добавление нескольких строк.",
+        "contract": {
+            "given": "Платформа задаёт значения для двух списков:",
+            "given_items": [
+                "first_material и second_material: первые две строки обоих списков.",
+                "one_new_material: одна строка для append.",
+                "more_materials: несколько строк для extend.",
             ],
-            "tests": [
-                {"name": "Оба обхода пусты", "namespace": {"start": 2, "stop": 0}, "expected": "", "assert": "stdout"},
-                {"name": "Один элемент", "namespace": {"start": 0, "stop": 1}, "expected": "0\n0", "assert": "stdout"},
-                {"name": "Три значения от нуля", "namespace": {"start": 0, "stop": 3}, "expected": "0\n1\n2\n0\n1\n2", "assert": "stdout"},
-                {"name": "Правая граница не входит", "namespace": {"start": 2, "stop": 5}, "expected": "0\n1\n2\n3\n4\n2\n3\n4", "assert": "stdout"},
+            "todo": "Создайте два одинаковых списка. Добавьте в первый одну строку, во второй несколько, затем выведите оба.",
+            "todo_items": [
+                "Создайте one_item и several_items с первыми двумя значениями.",
+                "Добавьте one_new_material через append, а more_materials через extend.",
+                "Выведите one_item и several_items.",
             ],
-            "reference_code": "for number in range(stop):\n    print(number)\n\nfor number in range(start, stop):\n    print(number)\n",
+            "check": "Проверка сравнит отдельное добавление одной строки и добавление нескольких строк по элементам.",
         },
-        {
-            "title": "Обойдём список напрямую",
-            "level": "easy",
-            "mode": "script",
-            "prompt": (
-                "Платформа задаёт список строк samples. Выведем каждый элемент напрямую через for, сохранив порядок "
-                "и повторы. Проверим непустой список, повторяющееся значение и пустой список."
-            ),
-            "contract": {
-                "given": "Платформа задаёт список строк samples. В нём могут быть повторы или не быть элементов.",
-                "todo": "Мы выведем каждый текущий элемент списка на отдельной строке.",
-                "check": "Порядок и число строк должны совпасть со списком; для пустого списка вывода нет.",
-            },
-            "requirements": {"items": ["Используем прямой обход for sample in samples", "Не обращаемся к элементам по индексу"]},
-            "starter_code": "# samples уже задан платформой\n# Выведем каждый элемент по порядку\n",
-            "hints": [
-                "После in укажем сам список.",
-                "Переменная цикла уже содержит строку, которую нужно вывести.",
-                "Повторяющиеся значения остаются отдельными элементами и отдельными проходами.",
+        "requirements": {
+            "items": [
+                "Оба списка начинаются с одинаковых значений.",
+                "append добавляет одну строку, а extend добавляет элементы последовательности.",
+                "После операций выводятся оба списка.",
             ],
-            "tests": [
-                {"name": "Порядок и повтор", "namespace": {"samples": ["текст", "цикл", "текст"]}, "expected": "текст\nцикл\nтекст", "assert": "stdout"},
-                {"name": "Один элемент", "namespace": {"samples": ["один"]}, "expected": "один", "assert": "stdout"},
-                {"name": "Пустой список", "namespace": {"samples": []}, "expected": "", "assert": "stdout"},
-            ],
-            "reference_code": "for sample in samples:\n    print(sample)\n",
+            "names": ["first_material", "second_material", "one_new_material", "more_materials"],
+            "nodes": ["List", "Call"],
+            "calls": ["print"],
+            "attributes": ["append", "extend"],
         },
-        {
-            "title": "Исправим ошибки прямого обхода",
-            "level": "medium",
-            "mode": "script",
-            "prompt": (
-                "Платформа задаёт список languages и строку text. Исправим два фрагмента. В первом текущую строку "
-                "ошибочно используют как индекс: for language in languages: print(languages[language]). Во втором "
-                "сообщение помещено внутрь цикла символов, хотя должно появиться один раз после обхода:\n\n"
-                "for symbol in text:\n    print(symbol)\n    print(\"Готово\")\n\n"
-                "Выведем названия языков, символы текста, затем один раз напечатаем Готово. Пустой список и пустой "
-                "текст тоже должны завершаться сообщением Готово."
-            ),
-            "contract": {
-                "given": "Платформа задаёт список languages и строку text. Любой из входов может быть пустым.",
-                "todo": "Мы выведем элементы обоих входов прямым обходом, а итоговую строку напечатаем после циклов.",
-                "check": "Текущие элементы не используются как индексы. Готово появляется ровно один раз даже при пустых входах.",
+        "hints": [
+            "Создайте оба списка из first_material и second_material.",
+            "Для one_item вызовите append с one_new_material.",
+            "Для several_items передайте весь список more_materials в extend.",
+        ],
+        "starter_code": (
+            "one_item = [first_material, second_material]\n"
+            "several_items = [first_material, second_material]\n"
+            "# Добавьте одно значение и последовательность\n"
+            "print(one_item)\n"
+            "print(several_items)\n"
+        ),
+        "tests": [
+            {
+                "name": "Два новых материала",
+                "namespace": {
+                    "first_material": "Карта",
+                    "second_material": "Вода",
+                    "one_new_material": "Фонарь",
+                    "more_materials": ["Фонарь", "Перекус"],
+                },
+                "expected": "['Карта', 'Вода', 'Фонарь']\n['Карта', 'Вода', 'Фонарь', 'Перекус']",
+                "assert": "stdout",
             },
-            "requirements": {"items": ["Исправляем обращение languages[language] на вывод текущей строки", "Ставим print(\"Готово\") после циклов без отступа", "Не используем индексный доступ"]},
-            "starter_code": "# languages и text уже заданы платформой\n# Выведем их элементы и один раз завершим обход\n",
-            "hints": [
-                "Переменная language уже содержит строку, поэтому передадим её в print напрямую.",
-                "Итоговое сообщение поставим после обоих циклов, на одном уровне с их заголовками.",
-                "Проверка с пустыми входами покажет, что сообщение не зависит от количества проходов.",
+            {
+                "name": "Другая последовательность",
+                "namespace": {
+                    "first_material": "Книга",
+                    "second_material": "Карандаш",
+                    "one_new_material": "Закладка",
+                    "more_materials": ["Ластик", "Линейка", "Папка"],
+                },
+                "expected": "['Книга', 'Карандаш', 'Закладка']\n['Книга', 'Карандаш', 'Ластик', 'Линейка', 'Папка']",
+                "assert": "stdout",
+            },
+        ],
+        "reference_code": (
+            "one_item = [first_material, second_material]\n"
+            "several_items = [first_material, second_material]\n"
+            "one_item.append(one_new_material)\n"
+            "several_items.extend(more_materials)\n"
+            "print(one_item)\n"
+            "print(several_items)\n"
+        ),
+    },
+    {
+        "title": "Проверим позицию до чтения",
+        "level": "easy",
+        "mode": "script",
+        "prompt": "Проверим заданную позицию перед чтением элемента.",
+        "contract": {
+            "given": "Платформа задаёт список и неотрицательную позицию:",
+            "given_items": [
+                "materials: список строк, он может быть пустым.",
+                "position: неотрицательное целое число. Оно может указывать на элемент или быть равно длине списка.",
             ],
-            "tests": [
-                {"name": "Оба входа непустые", "namespace": {"languages": ["Python", "Git"], "text": "код"}, "expected": "Python\nGit\nк\nо\nд\nГотово", "assert": "stdout"},
-                {"name": "Пустой список", "namespace": {"languages": [], "text": "код"}, "expected": "к\nо\nд\nГотово", "assert": "stdout"},
-                {"name": "Пустой текст", "namespace": {"languages": ["Python"], "text": ""}, "expected": "Python\nГотово", "assert": "stdout"},
-                {"name": "Оба входа пусты", "namespace": {"languages": [], "text": ""}, "expected": "Готово", "assert": "stdout"},
+            "todo": "Если элемент по этой позиции есть, выведите его. Иначе выведите сообщение об отсутствии.",
+            "todo_items": [
+                "Сначала проверьте position < len(materials).",
+                "При истинном условии выведите materials[position].",
+                "Иначе выведите Нет элемента в этой позиции.",
             ],
-            "reference_code": "for language in languages:\n    print(language)\n\nfor symbol in text:\n    print(symbol)\n\nprint(\"Готово\")\n",
+            "check": "Проверка охватывает существующую позицию, позицию на границе длины и пустой список.",
         },
-    ],
-    "9.1": [
-        {
-            "title": "Проследим накопитель",
-            "level": "easy",
-            "mode": "script",
-            "prompt": (
-                "Платформа задаёт список целых values, возможно пустой. Цикл выводит сумму после каждого элемента, "
-                "а после обхода один раз выводит общий итог. Входы из нескольких значений, одного значения и пустого "
-                "списка показывают промежуточные и конечные результаты."
-            ),
-            "contract": {
-                "given": "Платформа задаёт список целых values, который может быть пустым.",
-                "todo": "Код создаёт total до цикла, прибавляет каждый элемент и выводит общий итог после цикла.",
-                "check": "Промежуточные суммы сохраняют предыдущие значения; пустой список оставляет начальный итог 0.",
-            },
-            "requirements": {"items": ["total создаётся до цикла со значением 0", "Прежний total участвует в каждом сложении", "Промежуточная сумма выводится внутри цикла, общий итог после цикла"]},
-            "starter_code": "# values уже задан платформой\n# Покажем промежуточные суммы и общий итог\n",
-            "hints": [
-                "Начнём с total = 0 до заголовка for.",
-                "На каждом шаге используем total = total + value.",
-                "Промежуточный print оставим внутри цикла, а общий print поставим после него.",
+        "requirements": {
+            "items": [
+                "Перед чтением проверяется условие position < len(materials).",
+                "Элемент читается только в истинной ветви.",
+                "При отсутствии позиции выводится заданное сообщение.",
             ],
-            "tests": [
-                {"name": "Несколько значений", "namespace": {"values": [2, 4, 1]}, "expected": "2\n6\n7\n7", "assert": "stdout"},
-                {"name": "Одно значение", "namespace": {"values": [4]}, "expected": "4\n4", "assert": "stdout"},
-                {"name": "Пустой список", "namespace": {"values": []}, "expected": "0", "assert": "stdout"},
-            ],
-            "reference_code": "total = 0\nfor value in values:\n    total = total + value\n    print(total)\nprint(total)\n",
+            "names": ["materials", "position"],
+            "nodes": ["If", "Compare", "Subscript"],
+            "calls": ["len", "print"],
         },
-        {
-            "title": "Различим сумму и количество",
-            "level": "easy",
-            "mode": "script",
-            "prompt": (
-                "Платформа задаёт список целых scores, возможно пустой. Код отдельно выводит сумму значений и "
-                "количество обработанных элементов после обхода. Пустой, одноэлементный и многозначный списки "
-                "показывают, что сумма и счётчик меняются по разным правилам."
-            ),
-            "contract": {
-                "given": "Платформа задаёт список целых scores. Он может быть пустым или содержать несколько значений.",
-                "todo": "Код хранит total и count в отдельных переменных, обновляет их разными действиями и выводит после обхода.",
-                "check": "total хранит сумму элементов, count увеличивается на единицу за каждый проход.",
+        "hints": [
+            "len(materials) сообщает количество элементов. Сравните его с position.",
+            "Поместите print(materials[position]) внутрь первой ветви if.",
+            "Если условие ложно, ветка else должна вывести Нет элемента в этой позиции.",
+        ],
+        "starter_code": (
+            "# Проверьте position до чтения materials[position]\n"
+            "# Выведите элемент или сообщение об отсутствии позиции\n"
+        ),
+        "tests": [
+            {
+                "name": "Доступная позиция",
+                "namespace": {"materials": ["Карта", "Вода"], "position": 1},
+                "expected": "Вода",
+                "assert": "stdout",
             },
-            "requirements": {"items": ["total и count созданы до цикла со значением 0", "К total прибавляется значение score", "count увеличивается на 1 за каждый проход", "Оба итога выводятся после цикла"]},
-            "starter_code": "# scores уже задан платформой\n# Выведем сумму, затем количество элементов\n",
-            "hints": [
-                "Сумма и количество отвечают на разные вопросы.",
-                "Текущий score прибавляется к total, а к count каждый раз прибавляется 1.",
-                "Оба значения создаются до цикла и печатаются после него.",
+            {
+                "name": "Позиция равна длине",
+                "namespace": {"materials": ["Карта", "Вода"], "position": 2},
+                "expected": "Нет элемента в этой позиции",
+                "assert": "stdout",
+            },
+            {
+                "name": "Пустой список",
+                "namespace": {"materials": [], "position": 0},
+                "expected": "Нет элемента в этой позиции",
+                "assert": "stdout",
+            },
+        ],
+        "reference_code": (
+            "if position < len(materials):\n"
+            "    print(materials[position])\n"
+            "else:\n"
+            "    print(\"Нет элемента в этой позиции\")\n"
+        ),
+    },
+    {
+        "title": "Исправим присваивание результата append",
+        "level": "easy",
+        "mode": "script",
+        "prompt": "Исправим строку с append и сохраним список под именем materials.",
+        "contract": {
+            "given": "Платформа задаёт список и строку для добавления:",
+            "given_items": [
+                "materials: список строк.",
+                "new_material: новая строка.",
+                "В заготовке ответ append ошибочно записывается обратно в materials.",
             ],
-            "tests": [
-                {"name": "Несколько элементов", "namespace": {"scores": [3, 5, 8]}, "expected": "16\n3", "assert": "stdout"},
-                {"name": "Один элемент", "namespace": {"scores": [4]}, "expected": "4\n1", "assert": "stdout"},
-                {"name": "Пустой список", "namespace": {"scores": []}, "expected": "0\n0", "assert": "stdout"},
+            "todo": "Исправьте строку так, чтобы materials остался списком, затем выведите его.",
+            "todo_items": [
+                "Вызовите materials.append(new_material) без присваивания ответа.",
+                "Выведите materials.",
             ],
-            "reference_code": "total = 0\ncount = 0\nfor score in scores:\n    total = total + score\n    count = count + 1\nprint(total)\nprint(count)\n",
+            "check": "Проверка запускает исправленную программу для нескольких начальных списков и новых значений.",
         },
-    ],
-    10: [
-        {
-            "title": "Конечный цикл по состоянию",
-            "level": "easy",
-            "mode": "script",
-            "prompt": (
-                "Платформа создаёт целое limit. Мы используем счётчик attempt, чтобы вывести номера попыток от 1 "
-                "до limit включительно, по одному в строке, а затем строку Готово. При limit = 0 тело цикла не "
-                "выполняется, но итоговая строка остаётся."
-            ),
-            "hints": [
-                "Сначала задаём начальное значение счётчика и проверяем, что при limit = 0 тело не запускается.",
-                "После обычного прохода обновляем счётчик так, чтобы следующее сравнение приближалось к завершению.",
-                "Итоговое сообщение выводим один раз после цикла, даже если первая проверка ложна.",
+        "requirements": {
+            "items": [
+                "Вызов append изменяет список без присваивания его результата имени materials.",
+                "После вызова materials остаётся списком.",
+                "Вывод показывает начальные и добавленные значения в прежнем порядке.",
             ],
-            "contract": {
-                "given": "Платформа создаёт целое число limit. В проверках встречаются значения 0, 1 и 3.",
-                "todo": "Мы организуем конечный цикл со счётчиком. Он выводит все номера от 1 до limit включительно, а после цикла выводит Готово.",
-                "check": "Проверяются ноль, один и несколько проходов. Цикл должен завершиться, счётчик должен меняться внутри тела, а итоговая строка должна появиться после цикла.",
-            },
-            "requirements": {"items": ["цикл while", "счётчик изменяется в теле цикла", "итоговый print после цикла"], "names": ["limit", "attempt"], "nodes": ["While"], "calls": ["print"]},
-            "starter_code": "# limit уже создан платформой\n# Номера попыток и итоговое сообщение выводятся через конечный цикл\n",
-            "tests": [
-                {"name": "Ноль проходов", "namespace": {"limit": 0}, "expected": "Готово", "assert": "stdout"},
-                {"name": "Один проход", "namespace": {"limit": 1}, "expected": "1\nГотово", "assert": "stdout"},
-                {"name": "Несколько проходов", "namespace": {"limit": 3}, "expected": "1\n2\n3\nГотово", "assert": "stdout"},
-            ],
-            "reference_code": "attempt = 1\nwhile attempt <= limit:\n    print(attempt)\n    attempt = attempt + 1\nprint('Готово')\n",
+            "names": ["materials", "new_material"],
+            "nodes": ["Call"],
+            "calls": ["print"],
+            "attributes": ["append"],
         },
-        {
-            "title": "Сравним for и while на одном диапазоне",
-            "level": "medium",
-            "mode": "script",
-            "prompt": (
-                "Платформа задаёт целое limit. Выведем номера от 1 до limit двумя способами: сначала через for и range(limit), "
-                "затем через while со счётчиком. Перед каждым циклом напечатаем его название, а строку Готово выведем "
-                "один раз после обоих циклов. До запуска сверим, что оба цикла обходят одинаковые номера."
-            ),
-            "contract": {
-                "given": "Платформа задаёт limit, который может быть равен 0 или положительному числу.",
-                "todo": "Мы покажем последовательность от 1 до limit через for, затем повторим её через while.",
-                "check": "Для нуля оба тела пропускаются. Для положительного limit последовательности совпадают; Готово появляется один раз после них.",
+        "hints": [
+            "append меняет список, но возвращает None.",
+            "Уберите присваивание ответа имени materials.",
+            "Вызовите append отдельной строкой, затем выведите materials.",
+        ],
+        "starter_code": (
+            "materials = materials.append(new_material)\n"
+            "print(materials)\n"
+        ),
+        "tests": [
+            {
+                "name": "Список материалов",
+                "namespace": {"materials": ["Карта", "Вода"], "new_material": "Фонарь"},
+                "expected": "['Карта', 'Вода', 'Фонарь']",
+                "assert": "stdout",
             },
-            "requirements": {
-                "items": ["Используем for с range для первого обхода", "Используем while и изменяем счётчик для второго обхода", "Оба цикла показывают номера от 1 до limit включительно", "Печатаем Готово после обоих циклов"],
-                "names": ["limit", "number"],
-                "nodes": ["For", "While"],
-                "calls": ["print"],
+            {
+                "name": "Список из одного элемента",
+                "namespace": {"materials": ["Книга"], "new_material": "Карандаш"},
+                "expected": "['Книга', 'Карандаш']",
+                "assert": "stdout",
             },
-            "starter_code": "# limit уже задан платформой\n# Сравним одинаковый диапазон через for и while\n",
-            "hints": [
-                "В for переменная начинается с 0, поэтому для отображения прибавим к ней 1.",
-                "Для while зададим number = 1 и после каждого вывода увеличим number на 1.",
-                "Строку Готово поставим без отступа после обоих циклов.",
+        ],
+        "reference_code": (
+            "materials.append(new_material)\n"
+            "print(materials)\n"
+        ),
+    },
+]
+
+CODE_TASKS[6] = [
+    {
+        "title": "Выберем один из двух путей",
+        "level": "easy",
+        "mode": "script",
+        "prompt": "Платформа задаёт has_pass как True или False. Запишем if и else, чтобы для каждого значения вывести нужное сообщение.",
+        "contract": {
+            "given": "Платформа уже задаёт has_pass как True или False. Вводить это значение не нужно.",
+            "todo": "Напишем if и else. Выведем одно сообщение для каждого случая:",
+            "todo_items": [
+                "Если has_pass равно True, выведем «Можно войти».",
+                "Если has_pass равно False, выведем «Сначала проверим условие».",
             ],
-            "tests": [
-                {"name": "Ноль проходов", "namespace": {"limit": 0}, "expected": "for:\nwhile:\nГотово", "assert": "stdout"},
-                {"name": "Несколько проходов", "namespace": {"limit": 3}, "expected": "for:\n1\n2\n3\nwhile:\n1\n2\n3\nГотово", "assert": "stdout"},
-            ],
-            "reference_code": "print('for:')\nfor number in range(limit):\n    print(number + 1)\nprint('while:')\nnumber = 1\nwhile number <= limit:\n    print(number)\n    number = number + 1\nprint('Готово')\n",
+            "check": "Оба значения проверяются отдельно.",
         },
-        {
-            "title": "Найдём обновление, которое ведёт к завершению",
-            "level": "medium",
-            "mode": "script",
-            "prompt": (
-                "До запуска изучим два дефектных цикла: в первом attempt не меняется, во втором remaining увеличивается, "
-                "хотя должно уменьшаться до нуля. На limit = 3 запишем несколько значений состояния и объясним, "
-                "почему каждый дефект мешает завершению. Затем в редакторе создадим два исправленных конечных цикла: "
-                "первый выводит числа от 1 до limit, второй от limit до 1. Для limit = 0 оба цикла должны пропустить тело."
-            ),
-            "contract": {
-                "given": "Платформа задаёт limit, равный 0 или положительному числу. В условии показаны два неработающих направления изменения состояния.",
-                "todo": "Мы заранее объясним дефекты, затем напишем конечный возрастающий и конечный убывающий цикл.",
-                "check": "Не запускаем дефектные варианты. Исправленный код завершается при limit 0, 1 и 3 и выводит обе последовательности.",
-            },
-            "requirements": {
-                "items": ["Пишем возрастающий цикл от 1 до limit", "Пишем убывающий цикл от limit до 1", "Обновляем состояние в направлении к ложной проверке", "Выводим Готово после обоих циклов"],
-                "names": ["limit", "attempt", "remaining"],
-                "nodes": ["While"],
-                "calls": ["print"],
-            },
-            "starter_code": "# limit уже задан платформой\n# Не будем копировать дефектные варианты из условия.\n# Запишем исправленные циклы после трассы.\n",
-            "hints": [
-                "Для возрастающего счётчика начнём с 1 и после вывода будем прибавлять 1.",
-                "Для remaining начнём с limit и после вывода будем вычитать 1.",
-                "Проверим, что при limit = 0 обе первые проверки ложны.",
+        "requirements": {
+            "items": [
+                "Проверяется готовое имя has_pass.",
+                "Для True выводится «Можно войти».",
+                "Для False выводится «Сначала проверим условие».",
+                "На каждом запуске появляется ровно одно сообщение.",
             ],
-            "tests": [
-                {"name": "Ноль проходов", "namespace": {"limit": 0}, "expected": "Готово", "assert": "stdout"},
-                {"name": "Один проход", "namespace": {"limit": 1}, "expected": "1\n1\nГотово", "assert": "stdout"},
-                {"name": "Несколько проходов", "namespace": {"limit": 3}, "expected": "1\n2\n3\n3\n2\n1\nГотово", "assert": "stdout"},
-            ],
-            "reference_code": "attempt = 1\nwhile attempt <= limit:\n    print(attempt)\n    attempt = attempt + 1\nremaining = limit\nwhile remaining > 0:\n    print(remaining)\n    remaining = remaining - 1\nprint('Готово')\n",
+            "names": ["has_pass"],
+            "nodes": ["If"],
+            "calls": ["print"],
         },
-        {
-            "title": "Проследим break и continue",
-            "level": "medium",
-            "mode": "script",
-            "prompt": (
-                "Напишем конечный while для чисел от 1 до 5. Число 2 пропустим через continue, а при числе 4 завершим "
-                "цикл через break. Перед запуском проследим, что обновление счётчика происходит до continue; "
-                "после цикла один раз напечатаем Готово. Ожидаемый вывод: 1, 3 и Готово, каждое с новой строки."
-            ),
-            "contract": {
-                "given": "Диапазон ограничен числами от 1 до 5, поэтому правильный цикл конечен.",
-                "todo": "Мы пропустим вывод для 2, остановим цикл перед выводом 4 и оставим завершающую строку после цикла.",
-                "check": "continue возвращает к проверке после обновления состояния; break прекращает цикл, а Готово печатается один раз.",
-            },
-            "requirements": {
-                "items": ["Используем while с меняющимся number", "Применяем continue для числа 2", "Применяем break для числа 4", "Печатаем Готово после цикла"],
-                "names": ["number"],
-                "nodes": ["While", "Break", "Continue"],
-                "calls": ["print"],
-            },
-            "starter_code": "number = 0\n# Добавим конечный цикл и обработку значений 2 и 4\n",
-            "hints": [
-                "Сначала увеличим number, чтобы continue не пропустил обновление.",
-                "Проверим число 2 до печати и продолжим цикл.",
-                "Проверим число 4 и выйдем до его печати; Готово поставим после while.",
+        "hints": [
+            "Сначала запишем условие с именем has_pass и двоеточием.",
+            "Отступом выделим сообщение для истинного случая.",
+            "После else добавим сообщение для оставшегося случая.",
+        ],
+        "starter_code": (
+            "if has_pass:\n"
+            "    print(\"Замените сообщение для True\")\n"
+            "else:\n"
+            "    print(\"Замените сообщение для False\")\n"
+        ),
+        "tests": [
+            {"name": "Пропуск есть", "namespace": {"has_pass": True}, "expected": "Можно войти", "assert": "stdout"},
+            {"name": "Пропуска нет", "namespace": {"has_pass": False}, "expected": "Сначала проверим условие", "assert": "stdout"},
+        ],
+        "reference_code": (
+            "if has_pass:\n"
+            "    print(\"Можно войти\")\n"
+            "else:\n"
+            "    print(\"Сначала проверим условие\")\n"
+        ),
+    },
+    {
+        "title": "Расположим числовые условия по порядку",
+        "level": "easy",
+        "mode": "script",
+        "prompt": "Платформа задаёт целое число minutes. Исправим порядок проверок и выведем категорию по заданным границам.",
+        "contract": {
+            "given": "Платформа уже задаёт целое число minutes. Вводить его не нужно.",
+            "todo": "Исправим порядок в одной цепочке if, elif, else. Выведем одну подходящую подпись:",
+            "todo_items": [
+                "Если minutes меньше 10, выведем «Короткий».",
+                "Если minutes от 10 до 29 включительно, выведем «Средний».",
+                "Если minutes равно 30 или больше, выведем «Длинный».",
             ],
-            "tests": [
-                {"name": "Пропуск и выход", "namespace": {}, "expected": "1\n3\nГотово", "assert": "stdout"},
+            "check": "Проверяются оба края каждой границы и значения между ними.",
+        },
+        "requirements": {
+            "items": [
+                "Используется одна цепочка if, elif, else.",
+                "Сначала проверяется minutes >= 30, затем minutes >= 10.",
+                "Границы 10 и 30 относятся к следующим категориям.",
             ],
-            "reference_code": "number = 0\nwhile number < 5:\n    number = number + 1\n    if number == 2:\n        continue\n    if number == 4:\n        break\n    print(number)\nprint('Готово')\n",
-        }
-    ],
-}
+            "names": ["minutes"],
+            "nodes": ["If"],
+            "calls": ["print"],
+        },
+        "hints": [
+            "Проверка minutes >= 10 перехватила бы и длинные значения, если поставить её первой.",
+            "Сначала проверим более строгую границу 30.",
+            "После неё значение не меньше 10 относится к средней категории.",
+        ],
+        "starter_code": (
+            "if minutes >= 10:\n"
+            "    print(\"Средний или длинный\")\n"
+            "elif minutes >= 30:\n"
+            "    print(\"Длинный\")\n"
+            "else:\n"
+            "    print(\"Короткий\")\n"
+        ),
+        "tests": [
+            {"name": "Ниже первой границы", "namespace": {"minutes": 9}, "expected": "Короткий", "assert": "stdout"},
+            {"name": "Ровно 10", "namespace": {"minutes": 10}, "expected": "Средний", "assert": "stdout"},
+            {"name": "Внутри средней категории", "namespace": {"minutes": 25}, "expected": "Средний", "assert": "stdout"},
+            {"name": "Последнее среднее значение", "namespace": {"minutes": 29}, "expected": "Средний", "assert": "stdout"},
+            {"name": "Ровно 30", "namespace": {"minutes": 30}, "expected": "Длинный", "assert": "stdout"},
+        ],
+        "reference_code": (
+            "if minutes >= 30:\n"
+            "    print(\"Длинный\")\n"
+            "elif minutes >= 10:\n"
+            "    print(\"Средний\")\n"
+            "else:\n"
+            "    print(\"Короткий\")\n"
+        ),
+    },
+    {
+        "title": "Найдём точный заголовок или его часть",
+        "level": "easy",
+        "mode": "script",
+        "prompt": "Платформа задаёт строку title. Запишем одну цепочку условий, чтобы отличить точное название от строки с его частью.",
+        "contract": {
+            "given": "Платформа уже задаёт строку title. Вводить её не нужно. Заглавная P и строчные буквы должны совпасть с написанием Python.",
+            "todo": "Напишем одну цепочку if, elif, else и выведем подпись для каждого случая:",
+            "todo_items": [
+                "Если вся строка равна Python, выведем «Точное название».",
+                "Если Python находится внутри более длинной строки, выведем «Содержит Python».",
+                "Если точного совпадения и фрагмента нет, выведем «Нет Python».",
+            ],
+            "check": "Проверяются точное совпадение, дополнительный текст и другой регистр.",
+        },
+        "requirements": {
+            "items": [
+                "Полное совпадение проверяется оператором ==.",
+                "Более длинный текст проверяется оператором in для строки.",
+                "Порядок позволяет сначала распознать точное название.",
+                "Проверка учитывает регистр.",
+            ],
+            "names": ["title"],
+            "nodes": ["If"],
+            "calls": ["print"],
+        },
+        "hints": [
+            "Сначала спросим, равна ли вся строка слову Python.",
+            "Затем найдём это слово внутри более длинной строки.",
+            "Оператор in не меняет регистр автоматически.",
+        ],
+        "starter_code": (
+            "if title == \"Python\":\n"
+            "    print(\"Точное название\")\n"
+            "elif \"Python\" in title:\n"
+            "    print(\"Замените сообщение для совпадения\")\n"
+            "else:\n"
+            "    print(\"Замените сообщение для отсутствия\")\n"
+        ),
+        "tests": [
+            {"name": "Полное совпадение", "namespace": {"title": "Python"}, "expected": "Точное название", "assert": "stdout"},
+            {"name": "Дополнительный текст", "namespace": {"title": "Python основы"}, "expected": "Содержит Python", "assert": "stdout"},
+            {"name": "Другой регистр", "namespace": {"title": "python основы"}, "expected": "Нет Python", "assert": "stdout"},
+        ],
+        "reference_code": (
+            "if title == \"Python\":\n"
+            "    print(\"Точное название\")\n"
+            "elif \"Python\" in title:\n"
+            "    print(\"Содержит Python\")\n"
+            "else:\n"
+            "    print(\"Нет Python\")\n"
+        ),
+    },
+    {
+        "title": "Напишем ветвление без заготовки",
+        "level": "easy",
+        "mode": "script",
+        "prompt": "Платформа задаёт целое число points. Самостоятельно запишем if и else: для points не меньше 15 выведем «Результат подходит», иначе выведем «Проверим ещё раз».",
+        "contract": {
+            "given": "Платформа уже задаёт целое число points. Не изменяйте его и не вводите новое значение.",
+            "todo": "Напишите ветвление полностью: добавьте заголовки условий, двоеточия, отступы и команды вывода.",
+            "todo_items": [
+                "При points >= 15 выведите «Результат подходит».",
+                "Во всех остальных случаях выведите «Проверим ещё раз».",
+            ],
+            "check": "Проверка сравнит значения по обе стороны от 15 и само граничное значение.",
+        },
+        "requirements": {
+            "items": [
+                "Целое значение points не переопределяется.",
+                "Условие points >= 15 записано в заголовке if.",
+                "Команды двух веток имеют правильный отступ.",
+                "На каждом запуске печатается ровно одна ожидаемая строка.",
+            ],
+            "names": ["points"],
+            "nodes": ["If", "Compare"],
+            "calls": ["print"],
+        },
+        "hints": [
+            "Начните с новой строки и сами запишите if points >= 15:.",
+            "Команду для True поставьте на один уровень глубже. Затем добавьте else на уровне if и его команду с отступом.",
+            "Сверьте отступы: else стоит на одном уровне с if, а команды внутри обеих веток расположены одинаково глубже.",
+        ],
+        "starter_code": "# points уже задано платформой\n",
+        "tests": [
+            {"name": "На границе", "namespace": {"points": 15}, "expected": "Результат подходит", "assert": "stdout"},
+            {"name": "Ниже границы", "namespace": {"points": 14}, "expected": "Проверим ещё раз", "assert": "stdout"},
+            {"name": "Выше границы", "namespace": {"points": 27}, "expected": "Результат подходит", "assert": "stdout"},
+        ],
+        "reference_code": (
+            "if points >= 15:\n"
+            "    print(\"Результат подходит\")\n"
+            "else:\n"
+            "    print(\"Проверим ещё раз\")\n"
+        ),
+    },
+]
+
+CODE_TASKS[9] = [
+    {
+        "title": "Пройдём по значениям списка",
+        "level": "easy",
+        "mode": "script",
+        "prompt": "В списке хранятся названия. Напечатайте каждое название по очереди, в том числе повторы.",
+        "contract": {
+            "given": "Платформа задаёт список `values`. Он может быть пустым, с одним названием или с несколькими.",
+            "todo": "Напишите цикл, который получает названия по одному. Внутри цикла напечатайте текущее название. В заготовке `pass` ничего не делает и временно занимает место тела. Замените его своей командой.",
+            "check": "Проверка подставит пустой список, один элемент и список с повтором.",
+        },
+        "requirements": {
+            "items": [
+                "Цикл for проходит по исходному списку напрямую.",
+                "Каждое значение выводится внутри тела цикла.",
+                "Повторяющиеся значения обрабатываются в своих проходах.",
+            ],
+            "names": ["values"],
+            "nodes": ["For"],
+            "calls": ["print"],
+        },
+        "hints": [
+            "После for выберите имя для одного текущего названия, затем укажите список после in.",
+            "Команду print поставьте с отступом, чтобы она выполнилась для каждого названия.",
+            "Удалите pass и замените его командой, которая печатает текущее значение.",
+        ],
+        "starter_code": (
+            "for value in values:\n"
+            "    # Выведите текущее значение\n"
+            "    pass\n"
+        ),
+        "tests": [
+            {"name": "Три значения и повтор", "namespace": {"values": ["Лес", "Парк", "Лес"]}, "expected": "Лес\nПарк\nЛес", "assert": "stdout"},
+            {"name": "Один элемент", "namespace": {"values": ["Берег"]}, "expected": "Берег", "assert": "stdout"},
+            {"name": "Пустой список", "namespace": {"values": []}, "expected": "", "assert": "stdout"},
+        ],
+        "reference_code": (
+            "for value in values:\n"
+            "    print(value)\n"
+        ),
+    },
+    {
+        "title": "Выполним заданное число шагов",
+        "level": "easy",
+        "mode": "script",
+        "prompt": "Платформа задаёт число шагов. Напечатайте номера шагов, начиная с нуля.",
+        "contract": {
+            "given": "Платформа задаёт `step_count`: сколько шагов нужно выполнить. Это число может быть 0, 1 или больше.",
+            "todo": "Цикл уже записан. Внутри него напечатайте текущий номер шага.",
+            "check": "Проверка подставит 0, 1 и несколько шагов. При 0 тело цикла не запускается.",
+        },
+        "requirements": {
+            "items": [
+                "Цикл использует range(step_count).",
+            "Номер текущего шага выводится внутри тела цикла.",
+                "Граница step_count не включается в последовательность.",
+            ],
+            "names": ["step_count"],
+            "nodes": ["For"],
+            "calls": ["range", "print"],
+        },
+        "hints": [
+            "range(step_count) даёт числа, начиная с 0.",
+            "Последнее число меньше step_count. Само step_count не входит в последовательность.",
+            "При нуле шагов список чисел пуст, и тело не выполняется.",
+        ],
+        "starter_code": (
+            "for step in range(step_count):\n"
+            "    # Выведите номер текущего шага\n"
+            "    pass\n"
+        ),
+        "tests": [
+            {"name": "Три шага", "namespace": {"step_count": 3}, "expected": "0\n1\n2", "assert": "stdout"},
+            {"name": "Один шаг", "namespace": {"step_count": 1}, "expected": "0", "assert": "stdout"},
+            {"name": "Нет шагов", "namespace": {"step_count": 0}, "expected": "", "assert": "stdout"},
+        ],
+        "reference_code": (
+            "for step in range(step_count):\n"
+            "    print(step)\n"
+        ),
+    },
+    {
+        "title": "Прочитаем значения по позициям",
+        "level": "easy",
+        "mode": "script",
+        "prompt": "Для каждого числа выведите его место в списке и само число.",
+        "contract": {
+            "given": "Платформа задаёт список чисел `values`. Он может быть пустым или содержать несколько чисел.",
+            "todo": "Цикл уже записан. Для каждого `position` напечатайте позицию и число, которое лежит в `values[position]`.",
+            "check": "Проверка подставит пустой список, повторы и разные числа. Позиции начинаются с 0.",
+        },
+        "requirements": {
+            "items": [
+                "Числа позиций создаются через range(len(values)).",
+                "Значение читается из списка по текущей позиции.",
+                "Позиция и значение выводятся на каждом проходе.",
+            ],
+            "names": ["values", "position"],
+            "nodes": ["For"],
+            "calls": ["range", "len", "print"],
+        },
+        "hints": [
+            "len(values) сообщает, сколько чисел в списке.",
+            "range создаёт позиции от 0 до последней позиции. Число элементов в диапазон не входит.",
+            "Напечатайте position и значение values[position]. Это разные вещи: место и число на нём.",
+        ],
+        "starter_code": (
+            "for position in range(len(values)):\n"
+            "    # Выведите позицию и значение на ней\n"
+            "    pass\n"
+        ),
+        "tests": [
+            {"name": "Три элемента", "namespace": {"values": [10, 30, 50]}, "expected": "0 10\n1 30\n2 50", "assert": "stdout"},
+            {"name": "Повторяющиеся значения", "namespace": {"values": [7, 7]}, "expected": "0 7\n1 7", "assert": "stdout"},
+            {"name": "Пустой список", "namespace": {"values": []}, "expected": "", "assert": "stdout"},
+        ],
+        "reference_code": (
+            "for position in range(len(values)):\n"
+            "    print(position, values[position])\n"
+        ),
+    },
+    {
+        "title": "Выберем прямой проход или позиции",
+        "level": "easy",
+        "mode": "script",
+        "prompt": "Нужно показать каждое число вместе с его местом. Выберите подходящий вид цикла и напишите заголовок и тело целиком.",
+        "contract": {
+            "given": "Платформа задаёт список чисел `values`. В нём может не быть чисел, а значения могут повторяться.",
+            "todo": "Решите, достаточно ли прямого прохода или нужно получить позиции. Напишите цикл целиком и выведите позицию вместе с числом на ней.",
+            "check": "Проверка подставит пустой список, повторяющиеся числа и список с разными числами.",
+        },
+        "requirements": {
+            "items": [
+                "Самостоятельно написан заголовок цикла for.",
+                "Для получения позиции используется длина списка.",
+                "На каждой строке выводятся позиция и значение на ней.",
+            ],
+            "names": ["values", "position"],
+            "nodes": ["For"],
+            "calls": ["range", "len", "print"],
+        },
+        "hints": [
+            "Спросите себя: нужно вывести только число или ещё и место, где оно находится? Здесь нужны оба.",
+            "Прямой проход даёт сами значения. Чтобы получить места, используйте другой источник чисел.",
+            "После получения position прочитайте число по этой позиции и выведите их вместе.",
+        ],
+        "starter_code": "# Напишите заголовок цикла for и его тело\n",
+        "tests": [
+            {"name": "Три разных числа", "namespace": {"values": [10, 30, 50]}, "expected": "0 10\n1 30\n2 50", "assert": "stdout"},
+            {"name": "Одинаковые числа стоят на разных местах", "namespace": {"values": [7, 7]}, "expected": "0 7\n1 7", "assert": "stdout"},
+            {"name": "Пустой список", "namespace": {"values": []}, "expected": "", "assert": "stdout"},
+        ],
+        "reference_code": (
+            "for position in range(len(values)):\n"
+            "    print(position, values[position])\n"
+        ),
+    },
+    {
+        "title": "Выведем пары ключ и значение",
+        "level": "easy",
+        "mode": "script",
+        "prompt": "У записи есть поля и значения. Выведите каждое имя поля рядом с его значением.",
+        "contract": {
+            "given": "Платформа задаёт словарь `route_info`. В нём может быть одно поле или несколько.",
+            "todo": "Заголовок цикла уже дан. На каждом проходе напечатайте имя поля `key` и его значение `value`.",
+            "check": "Проверка подставит записи с разным числом полей.",
+        },
+        "requirements": {
+            "items": [
+                "Источник цикла создаётся через route_info.items().",
+                "Каждая пара распаковывается в ключ и значение.",
+                "Ключ и соответствующее значение выводятся вместе.",
+            ],
+            "names": ["route_info", "key", "value"],
+            "nodes": ["For"],
+            "calls": ["print"],
+            "attributes": ["items"],
+        },
+        "hints": [
+            "Здесь нужны и имена полей, и значения. Поэтому цикл использует items().",
+            "Каждая пара состоит из двух частей: сначала key, затем value.",
+            "Поставьте print с отступом, чтобы напечатать каждую пару.",
+        ],
+        "starter_code": (
+            "for key, value in route_info.items():\n"
+            "    # Выведите ключ и его значение\n"
+            "    pass\n"
+        ),
+        "tests": [
+            {"name": "Два поля", "namespace": {"route_info": {"title": "Лес", "minutes": 12}}, "expected": "title Лес\nminutes 12", "assert": "stdout"},
+            {"name": "Одно поле", "namespace": {"route_info": {"visited": True}}, "expected": "visited True", "assert": "stdout"},
+        ],
+        "reference_code": (
+            "for key, value in route_info.items():\n"
+            "    print(key, value)\n"
+        ),
+    },
+    {
+        "title": "Пройдём по списку записей",
+        "level": "easy",
+        "mode": "script",
+        "prompt": "В списке лежат записи о маршрутах. Напечатайте название каждой записи по очереди.",
+        "contract": {
+            "given": "Платформа задаёт список `routes`. В каждой записи есть текстовое поле `title`. Список может быть пустым.",
+            "todo": "Цикл уже записан. Для текущей записи `route` напечатайте значение поля `title`.",
+            "check": "Проверка подставит пустой список, одну запись и несколько записей.",
+        },
+        "requirements": {
+            "items": [
+                "Цикл получает по одной записи из routes.",
+                "Поле title читается у текущего словаря.",
+                "Название выводится для каждой записи.",
+            ],
+            "names": ["routes", "route"],
+            "nodes": ["For"],
+            "calls": ["print"],
+        },
+        "hints": [
+            "На каждом проходе route получает одну целую запись.",
+            "Поле title читается как route[\"title\"].",
+            "Поставьте чтение и print с отступом внутри цикла.",
+        ],
+        "starter_code": (
+            "for route in routes:\n"
+            "    # Выведите название текущей записи\n"
+            "    pass\n"
+        ),
+        "tests": [
+            {"name": "Две записи", "namespace": {"routes": [{"title": "Лес"}, {"title": "Берег"}]}, "expected": "Лес\nБерег", "assert": "stdout"},
+            {"name": "Одна запись", "namespace": {"routes": [{"title": "Парк"}]}, "expected": "Парк", "assert": "stdout"},
+            {"name": "Нет записей", "namespace": {"routes": []}, "expected": "", "assert": "stdout"},
+        ],
+        "reference_code": (
+            "for route in routes:\n"
+            "    print(route[\"title\"])\n"
+        ),
+    },
+]
+
+CODE_TASKS["8.1"] = [
+    {
+        "title": "Прочитаем поле выбранной записи",
+        "level": "easy",
+        "mode": "script",
+        "prompt": "Платформа задаёт список записей и допустимую позицию. Получим выбранный словарь в отдельное имя и выведем его поле title.",
+        "contract": {
+            "given": "Платформа задаёт список `records` и позицию выбранной записи.",
+            "given_items": [
+                "В списке два словаря. В каждом есть поля `code` и `title`.",
+                "`selected_position` равен 0 или 1.",
+            ],
+            "todo": "Найдём выбранный словарь и выведем его название.",
+            "todo_items": [
+                "Сохраним `records[selected_position]` в переменную `selected_record`.",
+                "Выведем значение `selected_record[\"title\"]`.",
+            ],
+            "check": "Проверка выберет обе позиции и сравнит вывод с соответствующим полем. Значение code не используется как позиция.",
+        },
+        "requirements": {"names": ["records", "selected_position", "selected_record"], "nodes": ["Subscript"], "calls": ["print"]},
+        "hints": [
+            "Сначала выберем словарь по позиции и сохраним его в отдельное имя.",
+            "Затем прочитаем у этого имени поле через строковый ключ title.",
+            "Позиция выбирает элемент списка, а значение поля code само по себе позицию не задаёт.",
+        ],
+        "starter_code": "# records и selected_position уже заданы\n# Получите запись и выведите её поле title\n",
+        "tests": [
+            {"name": "Первая запись", "namespace": {"records": [{"code": "R8", "title": "Лесная тропа"}, {"code": "A2", "title": "Маршрут у озера"}], "selected_position": 0}, "expected": "Лесная тропа", "assert": "stdout"},
+            {"name": "Вторая запись", "namespace": {"records": [{"code": "R8", "title": "Лесная тропа"}, {"code": "A2", "title": "Маршрут у озера"}], "selected_position": 1}, "expected": "Маршрут у озера", "assert": "stdout"},
+        ],
+        "reference_code": "selected_record = records[selected_position]\nprint(selected_record[\"title\"])\n",
+    },
+    {
+        "title": "Изменим выбранную запись без копии",
+        "level": "easy",
+        "mode": "script",
+        "prompt": "Получим выбранный словарь по позиции, заменим его поле title и выведем новое поле вместе с полем соседа.",
+        "contract": {
+            "given": "Платформа задаёт две записи и новое название.",
+            "given_items": [
+                "В каждой записи есть поля `code` и `title`.",
+                "`selected_position` и `neighbor_position` равны 0 или 1, но указывают на разные записи.",
+                "`new_title` содержит текст для выбранной записи.",
+            ],
+            "todo": "Заменим название выбранной записи без копирования и проверим соседа.",
+            "todo_items": [
+                "Сохраним словарь из `records[selected_position]` в `selected_record`.",
+                "Запишем `new_title` в поле `selected_record[\"title\"]`, не вызывая `copy()`.",
+                "Выведем новое поле выбранной записи, затем поле записи-соседа.",
+            ],
+            "check": "Тесты выбирают разные позиции и названия. Изменяется только title выбранной записи, сосед остаётся прежним.",
+        },
+        "requirements": {"names": ["records", "selected_position", "neighbor_position", "selected_record", "new_title"], "nodes": ["Subscript"], "calls": ["print"]},
+        "hints": [
+            "Сохраните словарь из выбранной позиции в selected_record.",
+            "Замените поле title у selected_record, не создавая копию.",
+            "Прочитайте оба результата через исходный список.",
+        ],
+        "starter_code": "selected_record = records[selected_position]\n# Измените title выбранной записи\nprint(records[selected_position][\"title\"])\nprint(records[neighbor_position][\"title\"])\n",
+        "tests": [
+            {"name": "Изменена первая запись", "namespace": {"records": [{"code": "X3", "title": "Северный берег"}, {"code": "M7", "title": "Сад у реки"}], "selected_position": 0, "neighbor_position": 1, "new_title": "Тропа на холме"}, "expected": "Тропа на холме\nСад у реки", "assert": "stdout"},
+            {"name": "Изменена вторая запись", "namespace": {"records": [{"code": "X3", "title": "Северный берег"}, {"code": "M7", "title": "Сад у реки"}], "selected_position": 1, "neighbor_position": 0, "new_title": "Площадь у музея"}, "expected": "Площадь у музея\nСеверный берег", "assert": "stdout"},
+        ],
+        "reference_code": "selected_record = records[selected_position]\nselected_record[\"title\"] = new_title\nprint(records[selected_position][\"title\"])\nprint(records[neighbor_position][\"title\"])\n",
+    },
+    {
+        "title": "Проверим общие записи после копии списка",
+        "level": "easy",
+        "mode": "script",
+        "prompt": "Создадим поверхностную копию списка, изменим поле вложенной записи через копию и сравним оба списка.",
+        "contract": {
+            "given": "Платформа задаёт список записей, позицию и новое название.",
+            "given_items": [
+                "`records` содержит два словаря с полями `code` и `title`.",
+                "`selected_position` равен 0 или 1.",
+                "`new_title` содержит текст для выбранной записи.",
+            ],
+            "todo": "Скопируем список и проверим, что его словарь на выбранной позиции общий.",
+            "todo_items": [
+                "Создадим `records_copy` вызовом `records.copy()`.",
+                "Через `records_copy[selected_position]` заменим значение поля `title` на `new_title`.",
+                "Выведем поле выбранной записи через оба списка.",
+                "Выведем проверки `records is records_copy` и `records[selected_position] is records_copy[selected_position]`.",
+            ],
+            "check": "Для обеих позиций после изменения оба списка показывают новое название; идентичность даёт False для списков и True для словарей.",
+        },
+        "requirements": {"names": ["records", "records_copy", "selected_position", "new_title"], "attributes": ["copy"], "nodes": ["Subscript"], "calls": ["print"]},
+        "hints": [
+            "Сначала вызовите copy у внешнего списка и сохраните результат.",
+            "В копии на выбранной позиции пока находится тот же словарь. Замените его title.",
+            "Проверьте is отдельно для двух списков и для словарей на выбранной позиции.",
+        ],
+        "starter_code": "records_copy = records.copy()\n# Измените title словаря на выбранной позиции в копии\nprint(records[selected_position][\"title\"])\nprint(records_copy[selected_position][\"title\"])\nprint(records is records_copy)\nprint(records[selected_position] is records_copy[selected_position])\n",
+        "tests": [
+            {"name": "Общий словарь на первой позиции", "namespace": {"records": [{"code": "C1", "title": "Парк у школы"}, {"code": "C2", "title": "Мост через ручей"}], "selected_position": 0, "new_title": "Сквер у библиотеки"}, "expected": "Сквер у библиотеки\nСквер у библиотеки\nFalse\nTrue", "assert": "stdout"},
+            {"name": "Общий словарь на второй позиции", "namespace": {"records": [{"code": "C1", "title": "Парк у школы"}, {"code": "C2", "title": "Мост через ручей"}], "selected_position": 1, "new_title": "Тропа вдоль канала"}, "expected": "Тропа вдоль канала\nТропа вдоль канала\nFalse\nTrue", "assert": "stdout"},
+        ],
+        "reference_code": "records_copy = records.copy()\nrecords_copy[selected_position][\"title\"] = new_title\nprint(records[selected_position][\"title\"])\nprint(records_copy[selected_position][\"title\"])\nprint(records is records_copy)\nprint(records[selected_position] is records_copy[selected_position])\n",
+    },
+    {
+        "title": "Поместим отдельную запись во второй список",
+        "level": "easy",
+        "mode": "script",
+        "prompt": "Скопируем внешний список и выбранный плоский словарь. Поместим копию словаря в ту же позицию второго списка, изменим её title и проверим исходную запись и соседа.",
+        "contract": {
+            "given": "Платформа задаёт две записи, выбранную позицию, позицию соседа и новое название.",
+            "given_items": [
+                "В каждой записи есть поля `code` и `title`.",
+                "`selected_position` и `neighbor_position` равны 0 или 1, но указывают на разные записи.",
+                "`new_title` содержит текст для отдельной копии записи.",
+            ],
+            "todo": "Создадим отдельную копию выбранного словаря и заменим ею запись во втором списке.",
+            "todo_items": [
+                "Создадим `records_copy` методом `records.copy()`.",
+                "Сохраним выбранный словарь в `selected_record` и создадим `record_copy` методом `copy()`.",
+                "Выполним `records_copy[selected_position] = record_copy`, чтобы поместить её на эту позицию.",
+                "Изменим поле `record_copy[\"title\"]` на `new_title`.",
+                "Выведем исходное поле, поле копии, проверку `is` для записей и поле соседа.",
+            ],
+            "check": "Проверяются обе позиции, разные новые названия, исходная запись и неизменность соседа.",
+        },
+        "requirements": {"names": ["records", "records_copy", "selected_position", "neighbor_position", "selected_record", "record_copy", "new_title"], "attributes": ["copy"], "nodes": ["Subscript"], "calls": ["print"]},
+        "hints": [
+            "Создайте records_copy отдельно от records.",
+            "Получите selected_record по выбранной позиции и вызовите copy у словаря.",
+            "Присвойте record_copy элементу records_copy[selected_position], затем измените его title.",
+            "Сравните исходное поле, новое поле, идентичность записей и запись-соседа.",
+        ],
+        "starter_code": "records_copy = records.copy()\nselected_record = records[selected_position]\nrecord_copy = selected_record.copy()\n# Поместите record_copy в нужную позицию второго списка\n# Измените title отдельной записи\nprint(records[selected_position][\"title\"])\nprint(records_copy[selected_position][\"title\"])\nprint(records[selected_position] is records_copy[selected_position])\nprint(records_copy[neighbor_position][\"title\"])\n",
+        "tests": [
+            {"name": "Копия первой записи", "namespace": {"records": [{"code": "P5", "title": "Сосновая аллея"}, {"code": "P8", "title": "Площадка у ручья"}], "selected_position": 0, "neighbor_position": 1, "new_title": "Берёзовая роща"}, "expected": "Сосновая аллея\nБерёзовая роща\nFalse\nПлощадка у ручья", "assert": "stdout"},
+            {"name": "Копия второй записи", "namespace": {"records": [{"code": "P5", "title": "Сосновая аллея"}, {"code": "P8", "title": "Площадка у ручья"}], "selected_position": 1, "neighbor_position": 0, "new_title": "Площадь у вокзала"}, "expected": "Площадка у ручья\nПлощадь у вокзала\nFalse\nСосновая аллея", "assert": "stdout"},
+        ],
+        "reference_code": "records_copy = records.copy()\nselected_record = records[selected_position]\nrecord_copy = selected_record.copy()\nrecords_copy[selected_position] = record_copy\nrecord_copy[\"title\"] = new_title\nprint(records[selected_position][\"title\"])\nprint(records_copy[selected_position][\"title\"])\nprint(records[selected_position] is records_copy[selected_position])\nprint(records_copy[neighbor_position][\"title\"])\n",
+    },
+]
+
+CODE_TASKS["9.1"] = [
+    {
+        "title": "Сложим длительность маршрутов",
+        "level": "easy",
+        "mode": "script",
+        "prompt": "Складываем длительности маршрутов.",
+        "contract": {
+            "given": "В `route_minutes` уже лежит список длительностей маршрутов в минутах. Список может быть пустым.",
+            "todo": "Цикл `for` складывает минуты в `total_minutes`, а после цикла программа выводит сумму одной строкой.",
+            "check": "Автопроверка сверяет вывод для нескольких маршрутов, нулевого значения и пустого списка.",
+        },
+        "requirements": {
+            "items": [
+                "Начальное состояние суммы задано до цикла.",
+                "Каждое значение добавляется к прежнему итогу.",
+                "После прохода выводится общий итог.",
+            ],
+            "names": ["route_minutes", "total_minutes"],
+            "nodes": ["For"],
+            "calls": ["print"],
+        },
+        "hints": [
+            "Сначала вспомним начальное состояние: `total_minutes` равно нулю до цикла.",
+            "На каждом проходе прибавим минуты текущего маршрута к уже сохранённой сумме.",
+            "Оставим `print` после цикла. Если список пуст, сумма останется равна нулю.",
+        ],
+        "starter_code": (
+            "total_minutes = 0\n"
+            "for minutes in route_minutes:\n"
+            "    # Прибавим текущие минуты к прежней сумме\n"
+            "    pass\n"
+            "print(total_minutes)\n"
+        ),
+        "tests": [
+            {"name": "Два участка", "namespace": {"route_minutes": [12, 5]}, "expected": "17", "assert": "stdout"},
+            {"name": "Один участок", "namespace": {"route_minutes": [9]}, "expected": "9", "assert": "stdout"},
+            {"name": "Нулевое и положительное значение", "namespace": {"route_minutes": [0, 7]}, "expected": "7", "assert": "stdout"},
+            {"name": "Пустой список", "namespace": {"route_minutes": []}, "expected": "0", "assert": "stdout"},
+        ],
+        "reference_code": (
+            "total_minutes = 0\n"
+            "for minutes in route_minutes:\n"
+            "    total_minutes += minutes\n"
+            "print(total_minutes)\n"
+        ),
+    },
+    {
+        "title": "Посчитаем названия маршрутов",
+        "level": "easy",
+        "mode": "script",
+        "prompt": "Считаем названия в списке, не складывая сами слова.",
+        "contract": {
+            "given": "В `route_names` уже лежит список названий. Список может быть пустым.",
+            "todo": "Цикл `for` увеличивает `route_count` на один для каждого названия. После цикла программа выводит это количество одной строкой.",
+            "check": "Автопроверка сверяет число названий в пустом, одноэлементном и заполненном списках.",
+        },
+        "requirements": {
+            "items": [
+                "Счётчик начинается с нуля до прохода.",
+                "На каждом проходе счётчик увеличивается на единицу.",
+                "Итог выводится после прохода.",
+            ],
+            "names": ["route_names", "route_count"],
+            "nodes": ["For"],
+            "calls": ["print"],
+        },
+        "hints": [
+            "Текст названий не складывается. На каждом проходе считаем одно название.",
+            "Начнём с `route_count = 0` до цикла. На каждом проходе добавим к счёту ещё одну единицу.",
+            "Если список пуст, тело цикла не запустится и счётчик останется равен нулю.",
+        ],
+        "starter_code": (
+            "route_count = 0\n"
+            "for route_name in route_names:\n"
+            "    # Увеличим счётчик на один\n"
+            "    pass\n"
+            "print(route_count)\n"
+        ),
+        "tests": [
+            {"name": "Три названия", "namespace": {"route_names": ["Лес", "Берег", "Парк"]}, "expected": "3", "assert": "stdout"},
+            {"name": "Одно название", "namespace": {"route_names": ["Сад"]}, "expected": "1", "assert": "stdout"},
+            {"name": "Нет записей", "namespace": {"route_names": []}, "expected": "0", "assert": "stdout"},
+        ],
+        "reference_code": (
+            "route_count = 0\n"
+            "for route_name in route_names:\n"
+            "    route_count += 1\n"
+            "print(route_count)\n"
+        ),
+    },
+    {
+        "title": "Посчитаем завершённые маршруты",
+        "level": "easy",
+        "mode": "script",
+        "prompt": "Считаем маршруты, у которых поле `completed` равно `True`.",
+        "contract": {
+            "given": "Платформа заранее передаёт список `routes`. Список может быть пустым.",
+            "given_items": [
+                "В каждой записи есть поле `completed`: `True`, если маршрут завершён, и `False`, если ещё нет.",
+            ],
+            "todo": "Цикл `for` проходит по маршрутам, а условие `if` учитывает только завершённые. `completed_count` хранит их число, и программа выводит его одной строкой.",
+            "check": "Автопроверка сверяет вывод, когда завершённых маршрутов нет, есть один или есть несколько.",
+            "check_items": [
+                "Отдельно проверяется пустой список маршрутов.",
+            ],
+        },
+        "requirements": {
+            "items": [
+                "Цикл проходит по каждой записи.",
+                "Значение счётчика меняется только для завершённого маршрута.",
+                "Вывод показывает количество подходящих записей.",
+            ],
+            "names": ["routes", "completed_count"],
+            "nodes": ["For", "If"],
+            "calls": ["print"],
+        },
+        "hints": [
+            "Начнём с `completed_count = 0` до цикла. Переменная `route` обозначает текущую запись.",
+            "Через `if` проверим `route[\"completed\"]`. Счётчик увеличится, только если там `True`.",
+            "После цикла программа выводит счётчик. Если завершённых маршрутов нет, он равен нулю.",
+        ],
+        "starter_code": (
+            "completed_count = 0\n"
+            "for route in routes:\n"
+            "    # Проверим, завершён ли текущий маршрут\n"
+            "    pass\n"
+            "print(completed_count)\n"
+        ),
+        "tests": [
+            {"name": "Ни один маршрут не завершён", "namespace": {"routes": [{"completed": False}, {"completed": False}]}, "expected": "0", "assert": "stdout"},
+            {"name": "Один маршрут завершён", "namespace": {"routes": [{"completed": True}, {"completed": False}]}, "expected": "1", "assert": "stdout"},
+            {"name": "Завершены два маршрута", "namespace": {"routes": [{"completed": True}, {"completed": True}, {"completed": False}]}, "expected": "2", "assert": "stdout"},
+            {"name": "Маршрутов нет", "namespace": {"routes": []}, "expected": "0", "assert": "stdout"},
+        ],
+        "reference_code": (
+            "completed_count = 0\n"
+            "for route in routes:\n"
+            "    if route[\"completed\"]:\n"
+            "        completed_count += 1\n"
+            "print(completed_count)\n"
+        ),
+    },
+    {
+        "title": "Получим три итога за один проход",
+        "level": "easy",
+        "mode": "script",
+        "prompt": "Получаем три независимых итога по одному списку маршрутов.",
+        "contract": {
+            "given": "Платформа заранее передаёт список `routes`. Список может быть пустым.",
+            "given_items": [
+                "Поле `minutes` хранит длительность маршрута в минутах.",
+                "Поле `completed` равно `True` для завершённого маршрута и `False` для незавершённого.",
+            ],
+            "todo": "Один цикл `for` проходит маршруты и формирует три результата:",
+            "todo_items": [
+                "`total_minutes` хранит сумму минут всех маршрутов.",
+                "`route_count` хранит число всех маршрутов.",
+                "Условие `if` увеличивает `completed_count` только для завершённого маршрута. Программа выводит эти три числа по одному в строке: сумма, все маршруты, завершённые маршруты.",
+            ],
+            "check": "Автопроверка сверяет все три строки на заполненном и пустом списках.",
+        },
+        "requirements": {
+            "items": [
+                "Сумма и оба счётчика начинаются с нуля до цикла.",
+                "Общая сумма и количество обновляются для каждой записи.",
+                "Условный счётчик обновляется только для завершённого маршрута.",
+                "Три значения выводятся в установленном порядке.",
+            ],
+            "names": ["routes", "total_minutes", "route_count", "completed_count"],
+            "nodes": ["For", "If"],
+            "calls": ["print"],
+        },
+        "hints": [
+            "Сначала заведём три переменные: для минут, всех маршрутов и завершённых.",
+            "В каждом проходе добавим минуты и увеличим число всех маршрутов на один.",
+            "Отдельный `if` увеличивает число завершённых маршрутов только при `completed == True`.",
+        ],
+        "starter_code": (
+            "total_minutes = 0\n"
+            "route_count = 0\n"
+            "completed_count = 0\n"
+            "for route in routes:\n"
+            "    # Здесь обновим сумму и число всех маршрутов\n"
+            "    # Отдельно посчитаем завершённые маршруты\n"
+            "    pass\n"
+            "print(total_minutes)\n"
+            "print(route_count)\n"
+            "print(completed_count)\n"
+        ),
+        "tests": [
+            {
+                "name": "Два маршрута, один завершён",
+                "namespace": {"routes": [{"minutes": 12, "completed": False}, {"minutes": 8, "completed": True}]},
+                "expected": "20\n2\n1",
+                "assert": "stdout",
+            },
+            {
+                "name": "Маршрут с нулевой длительностью тоже считается",
+                "namespace": {"routes": [{"minutes": 0, "completed": True}]},
+                "expected": "0\n1\n1",
+                "assert": "stdout",
+            },
+            {"name": "Пустой список", "namespace": {"routes": []}, "expected": "0\n0\n0", "assert": "stdout"},
+        ],
+        "reference_code": (
+            "total_minutes = 0\n"
+            "route_count = 0\n"
+            "completed_count = 0\n"
+            "for route in routes:\n"
+            "    total_minutes += route[\"minutes\"]\n"
+            "    route_count += 1\n"
+            "    if route[\"completed\"]:\n"
+            "        completed_count += 1\n"
+            "print(total_minutes)\n"
+            "print(route_count)\n"
+            "print(completed_count)\n"
+        ),
+    },
+    {
+        "title": "Найдём максимум, в том числе среди отрицательных чисел",
+        "level": "easy",
+        "mode": "script",
+        "prompt": "Находим самое большое число, даже если все числа отрицательные.",
+        "contract": {
+            "given": "Платформа заранее передаёт список чисел `measurements`.",
+            "given_items": [
+                "Чисел может не быть вовсе.",
+                "Числа могут быть отрицательными и расположены в любом порядке.",
+            ],
+            "todo": "Цикл `for` находит и выводит наибольшее число. Если список пуст, в `best` остаётся `None`.",
+            "todo_items": [
+                "Если `best` равен `None`, условие `if` сохраняет первое число как кандидата.",
+                "`elif` заменяет кандидата, только если следующее число больше.",
+                "Программа выводит `best` после цикла.",
+            ],
+            "check": "Автопроверка сверяет положительные и отрицательные числа, разный порядок и пустой список.",
+        },
+        "requirements": {
+            "items": [
+                "До цикла отсутствие кандидата записано как None.",
+                "Первое число становится кандидатом без сравнения с None.",
+                "Следующее число заменяет кандидата только при большем значении.",
+                "После цикла выводится кандидат или None.",
+            ],
+            "names": ["measurements", "best"],
+            "nodes": ["For", "If"],
+            "calls": ["print"],
+        },
+        "hints": [
+            "Сначала проверим, есть ли уже число в `best`. `None` означает, что кандидата пока нет.",
+            "Первое число станет кандидатом. Для следующих чисел сравним его с новым значением через `elif`.",
+            "Не будем начинать с нуля: все числа могут быть меньше него. В пустом списке `best` останется равен `None`.",
+        ],
+        "starter_code": (
+            "best = None\n"
+            "for value in measurements:\n"
+            "    # Сначала обработаем отсутствие кандидата\n"
+            "    # Затем сравним числа, если кандидат уже есть\n"
+            "    pass\n"
+            "print(best)\n"
+        ),
+        "tests": [
+            {"name": "Неупорядоченные положительные значения", "namespace": {"measurements": [4, 9, 6]}, "expected": "9", "assert": "stdout"},
+            {"name": "Все значения отрицательные", "namespace": {"measurements": [-8, -3, -6]}, "expected": "-3", "assert": "stdout"},
+            {"name": "Единственное значение", "namespace": {"measurements": [-4]}, "expected": "-4", "assert": "stdout"},
+            {"name": "Пустой список", "namespace": {"measurements": []}, "expected": "None", "assert": "stdout"},
+        ],
+        "reference_code": (
+            "best = None\n"
+            "for value in measurements:\n"
+            "    if best is None:\n"
+            "        best = value\n"
+            "    elif value > best:\n"
+            "        best = value\n"
+            "print(best)\n"
+        ),
+    },
+    {
+        "title": "Исправим состояние суммы",
+        "level": "easy",
+        "mode": "script",
+        "prompt": "Исправляем строку, которая стирает прежнюю сумму.",
+        "contract": {
+            "given": "Платформа заранее передаёт список чисел `measurements`, возможно пустой. В стартовом коде сумма начинается с нуля, но строка внутри цикла заменяет её текущим числом.",
+            "todo": "В цикле `for` программа сохраняет сумму всех чисел, а после цикла выводит её одной строкой.",
+            "check": "Автопроверка сверяет сумму для нескольких последовательностей и пустого списка.",
+        },
+        "requirements": {
+            "items": [
+                "Цикл проходит по каждому значению.",
+                "Итог продолжает прежнее состояние, добавляя текущее число.",
+                "Общий результат выводится после цикла.",
+            ],
+            "names": ["measurements", "total"],
+            "nodes": ["For"],
+            "calls": ["print"],
+        },
+        "hints": [
+            "Сравним строку внутри цикла с правилом суммы: новый итог использует прежнюю сумму.",
+            "Начальное значение и итоговый `print` уже стоят на своих местах.",
+            "На двух списках проверим, что прежние значения не теряются. Для пустого списка тело не запускается.",
+        ],
+        "starter_code": (
+            "total = 0\n"
+            "for value in measurements:\n"
+            "    total = value\n"
+            "print(total)\n"
+        ),
+        "tests": [
+            {"name": "Несколько значений", "namespace": {"measurements": [3, 8, 2]}, "expected": "13", "assert": "stdout"},
+            {"name": "Другая последовательность", "namespace": {"measurements": [5, 2]}, "expected": "7", "assert": "stdout"},
+            {"name": "Пустой список", "namespace": {"measurements": []}, "expected": "0", "assert": "stdout"},
+        ],
+        "reference_code": (
+            "total = 0\n"
+            "for value in measurements:\n"
+            "    total += value\n"
+            "print(total)\n"
+        ),
+    },
+    {'title': 'Самостоятельно построим накопление',
+     'level': 'medium',
+     'mode': 'script',
+     'prompt': 'Для measurements выведите сумму всех значений, количество значений не ниже threshold и максимум '
+               'всего списка, по одному на строке. Для пустого списка нужны 0, 0 и None. Список не меняется. '
+               'Самостоятельно выберите переменные, начальные значения и расположение обновлений; используйте for.',
+     'contract': {'given': 'measurements — список целых чисел, включая отрицательные и ноль; threshold — целое '
+                           'число.',
+                  'todo': 'Для measurements выведите сумму всех значений, количество значений не ниже threshold и '
+                          'максимум всего списка, по одному на строке. Для пустого списка нужны 0, 0 и None. '
+                          'Список не меняется. Самостоятельно выберите переменные, начальные значения и '
+                          'расположение обновлений; используйте for.',
+                  'check': 'Проверяется весь вывод на разных данных, включая граничные случаи. Исходные данные '
+                           'заданы платформой.'},
+     'requirements': {'nodes': ['For'], 'calls': ['print']},
+     'starter_code': '# Исходные данные заданы платформой. Напишите программу самостоятельно.\n',
+     'hints': ['До кода назовите три независимых результата и ответ для пустого входа.',
+               'Сумма и число совпадений начинают с нуля. У максимума до первого элемента кандидата нет.',
+               'Создайте состояния до for. В теле обновляйте каждое по своему правилу, затем выведите результаты '
+               'после цикла.'],
+     'tests': [{'name': 'Пусто',
+                'namespace': {'measurements': [], 'threshold': 0},
+                'expected': '0\n0\nNone',
+                'assert': 'stdout'},
+               {'name': 'Отрицательные',
+                'namespace': {'measurements': [-8, -3, -6], 'threshold': -6},
+                'expected': '-17\n2\n-3',
+                'assert': 'stdout'},
+               {'name': 'Ноль и точная граница',
+                'namespace': {'measurements': [0, 4, 2], 'threshold': 2},
+                'expected': '6\n2\n4',
+                'assert': 'stdout'},
+               {'name': 'Один элемент',
+                'namespace': {'measurements': [7], 'threshold': 8},
+                'expected': '7\n0\n7',
+                'assert': 'stdout'},
+               {'name': 'Максимум не последний',
+                'namespace': {'measurements': [2, 9, 1, 4], 'threshold': 4},
+                'expected': '16\n2\n9',
+                'assert': 'stdout'}],
+     'reference_code': 'total = 0\n'
+                       'accepted = 0\n'
+                       'best = None\n'
+                       'for value in measurements:\n'
+                       '    total += value\n'
+                       '    if value >= threshold:\n'
+                       '        accepted += 1\n'
+                       '    if best is None:\n'
+                       '        best = value\n'
+                       '    elif value > best:\n'
+                       '        best = value\n'
+                       'print(total)\n'
+                       'print(accepted)\n'
+                       'print(best)\n'},
+]
+
+CODE_TASKS[10] = [
+    {
+        "title": "Пропустим значение и остановим проход",
+        "level": "easy",
+        "mode": "script",
+        "prompt": "Пройдём список измерений по порядку: ноль пропустим, на числе 8 или больше остановимся, остальные числа выведем. После цикла напечатаем одну строку о завершении.",
+        "contract": {
+            "given": "Платформа передаст список `stops`. Пройдём его числа по порядку.",
+            "given_items": [
+                "Ноль означает пустое измерение.",
+                "Число 8 или больше отмечает границу: на нём цикл остановится.",
+            ],
+            "todo": "Обработаем каждое число по очереди.",
+            "todo_items": [
+                "Ноль пропустим и перейдём к следующему числу.",
+                "На числе 8 или больше остановим цикл. Это число и следующие не выведем.",
+                "Каждое ненулевое число меньше 8 выведем отдельной строкой.",
+                "После цикла один раз выведем `Проверка завершена`.",
+            ],
+            "check": "Проверка использует ноль, значение на границе, элементы после границы и пустой список.",
+        },
+        "requirements": {
+            "items": [
+                "Цикл проверяет значения по порядку.",
+                "continue пропускает только ноль и переводит for к следующему элементу.",
+                "break завершает цикл при значении 8 или больше.",
+                "Строка после цикла выводится ровно один раз.",
+            ],
+            "names": ["stops"],
+            "nodes": ["For", "If", "Continue", "Break"],
+            "calls": ["print"],
+        },
+        "hints": [
+            "В начале цикла проверим, равен ли `stop` нулю. Если да, `continue` сразу перейдёт к следующему числу.",
+            "Следом сравним `stop` с 8. Если число достигло границы, `break` закончит цикл.",
+            "Общую фразу поставим после цикла. Тогда она появится и после `break`, и при пустом списке.",
+        ],
+        "starter_code": (
+            "for stop in stops:\n"
+            "    # Пропустите нулевое измерение\n"
+            "    # Остановите цикл на границе\n"
+            "    print(stop)\n"
+            "print(\"Проверка завершена\")\n"
+        ),
+        "tests": [
+            {
+                "name": "Ноль и значение на границе",
+                "namespace": {"stops": [3, 0, 5, 8, 2]},
+                "expected": "3\n5\nПроверка завершена",
+                "assert": "stdout",
+            },
+            {
+                "name": "До границы дошли не сразу",
+                "namespace": {"stops": [0, 2, 7]},
+                "expected": "2\n7\nПроверка завершена",
+                "assert": "stdout",
+            },
+            {
+                "name": "Граница встретилась первой",
+                "namespace": {"stops": [9, 4]},
+                "expected": "Проверка завершена",
+                "assert": "stdout",
+            },
+            {
+                "name": "Нет значений",
+                "namespace": {"stops": []},
+                "expected": "Проверка завершена",
+                "assert": "stdout",
+            },
+        ],
+        "reference_code": (
+            "for stop in stops:\n"
+            "    if stop == 0:\n"
+            "        continue\n"
+            "    if stop >= 8:\n"
+            "        break\n"
+            "    print(stop)\n"
+            "print(\"Проверка завершена\")\n"
+        ),
+    },
+    {
+        "title": "Найдём первую запись по коду",
+        "level": "easy",
+        "mode": "script",
+        "prompt": "Найдём первую запись с нужным кодом. Если совпадения нет, выведем `Запись не найдена`; иначе выведем её название.",
+        "contract": {
+            "given": "Платформа передаст список записей `entries` и код для поиска `wanted_code`.",
+            "given_items": [
+                "В каждой записи есть код `code` и название `title`.",
+                "Нужного кода может не быть. Он также может встретиться несколько раз.",
+            ],
+            "todo": "Будем искать записи по порядку.",
+            "todo_items": [
+                "До цикла зададим `found_entry = None`: пока запись не найдена.",
+                "При первом совпадении сохраним всю запись и остановим цикл.",
+                "Если запись не найдена, выведем `Запись не найдена`.",
+                "Иначе выведем её название из поля `title`.",
+            ],
+            "check": "Проверка включает пустой список, отсутствующий код и несколько записей с одинаковым кодом.",
+        },
+        "requirements": {
+            "items": [
+                "Поиск начинается со значения None.",
+                "Совпадение проверяется по ключу code текущей записи.",
+                "При первом совпадении сохраняется исходный словарь и завершается ближайший цикл.",
+                "Перед чтением title проверяется, остался ли результат равен None.",
+            ],
+            "names": ["entries", "wanted_code", "found_entry"],
+            "nodes": ["For", "If", "Break", "Is"],
+            "calls": ["print"],
+        },
+        "hints": [
+            "До цикла запишем в `found_entry` значение `None`. Оно будет означать, что совпадения пока нет.",
+            "В цикле сравним `entry[\"code\"]` с `wanted_code`. При совпадении сохраним весь словарь и выполним `break`.",
+            "После цикла проверим, остался ли `found_entry` равен `None`. Только если запись найдена, прочитаем её `title`.",
+        ],
+        "starter_code": (
+            "found_entry = None\n"
+            "for entry in entries:\n"
+            "    # Сравните код текущей записи с wanted_code\n"
+            "    pass\n"
+            "\n"
+            "if found_entry is None:\n"
+            "    print(\"Запись не найдена\")\n"
+            "else:\n"
+            "    print(found_entry[\"title\"])\n"
+        ),
+        "tests": [
+            {
+                "name": "Код отсутствует",
+                "namespace": {
+                    "entries": [{"code": "N1", "title": "Северный зал"}],
+                    "wanted_code": "X9",
+                },
+                "expected": "Запись не найдена",
+                "assert": "stdout",
+            },
+            {
+                "name": "Одно совпадение",
+                "namespace": {
+                    "entries": [
+                        {"code": "N1", "title": "Северный зал"},
+                        {"code": "S2", "title": "Южный зал"},
+                    ],
+                    "wanted_code": "S2",
+                },
+                "expected": "Южный зал",
+                "assert": "stdout",
+            },
+            {
+                "name": "Повторяющийся код",
+                "namespace": {
+                    "entries": [
+                        {"code": "A2", "title": "Первая площадка"},
+                        {"code": "B4", "title": "Другая площадка"},
+                        {"code": "A2", "title": "Поздняя площадка"},
+                    ],
+                    "wanted_code": "A2",
+                },
+                "expected": "Первая площадка",
+                "assert": "stdout",
+            },
+            {
+                "name": "Пустой список",
+                "namespace": {"entries": [], "wanted_code": "N1"},
+                "expected": "Запись не найдена",
+                "assert": "stdout",
+            },
+        ],
+        "reference_code": (
+            "found_entry = None\n"
+            "for entry in entries:\n"
+            "    if entry[\"code\"] == wanted_code:\n"
+            "        found_entry = entry\n"
+            "        break\n"
+            "if found_entry is None:\n"
+            "    print(\"Запись не найдена\")\n"
+            "else:\n"
+            "    print(found_entry[\"title\"])\n"
+        ),
+    },
+    {
+        "title": "Соберём все активные записи",
+        "level": "easy",
+        "mode": "script",
+        "prompt": "Соберём все записи с отметкой `is_active` и выведем их названия по порядку. В конце выведем и исходные отметки, чтобы проверить, что они не изменились.",
+        "contract": {
+            "given": "Платформа передаст список записей `records`.",
+            "given_items": [
+                "У каждой записи есть название `title` и отметка `is_active`.",
+                "`True` означает, что запись активна; `False` означает, что она не активна.",
+            ],
+            "todo": "Соберём подходящие записи в новый список `active_records`.",
+            "todo_items": [
+                "До цикла создадим пустой `active_records`.",
+                "Добавим в него каждую запись с `is_active == True`, сохраняя порядок исходного списка.",
+                "Выведем количество и названия найденных записей.",
+                "Затем выведем отметки исходных записей, чтобы проверить, что мы их не изменили.",
+            ],
+            "check": "Проверка сравнивает пустой результат, несколько совпадений и сохранность исходного порядка и отметок.",
+        },
+        "requirements": {
+            "items": [
+                "Список результата создаётся до обхода.",
+                "Каждая запись с истинной отметкой добавляется в новый список.",
+                "Обход продолжается после совпадения и сохраняет исходный порядок.",
+                "После отбора исходные отметки читаются без изменения.",
+            ],
+            "names": ["records", "active_records"],
+            "nodes": ["For", "If"],
+            "calls": ["print", "len"],
+            "attributes": ["append"],
+        },
+        "hints": [
+            "Создадим пустой `active_records` до цикла, чтобы собирать в нём результаты.",
+            "Внутри цикла проверим `record[\"is_active\"]`. Если там `True`, добавим запись через `append`.",
+            "Нужно проверить весь список, поэтому не будем останавливать цикл после первой находки. После него выведем результат и исходные отметки.",
+        ],
+        "starter_code": (
+            "active_records = []\n"
+            "for record in records:\n"
+            "    # Добавьте каждую запись с отметкой is_active\n"
+            "    pass\n"
+            "print(len(active_records))\n"
+            "for record in active_records:\n"
+            "    print(record[\"title\"])\n"
+            "print(\"Исходные отметки:\")\n"
+            "for record in records:\n"
+            "    print(record[\"title\"], record[\"is_active\"])\n"
+        ),
+        "tests": [
+            {
+                "name": "Две подходящие записи",
+                "namespace": {
+                    "records": [
+                        {"code": "N1", "title": "Северный зал", "is_active": True},
+                        {"code": "S2", "title": "Южный зал", "is_active": False},
+                        {"code": "P3", "title": "Летний двор", "is_active": True},
+                    ]
+                },
+                "expected": "2\nСеверный зал\nЛетний двор\nИсходные отметки:\nСеверный зал True\nЮжный зал False\nЛетний двор True",
+                "assert": "stdout",
+            },
+            {
+                "name": "Нет активных записей",
+                "namespace": {
+                    "records": [
+                        {"code": "N1", "title": "Северный зал", "is_active": False},
+                        {"code": "S2", "title": "Южный зал", "is_active": False},
+                    ]
+                },
+                "expected": "0\nИсходные отметки:\nСеверный зал False\nЮжный зал False",
+                "assert": "stdout",
+            },
+            {
+                "name": "Одна подходящая запись",
+                "namespace": {
+                    "records": [
+                        {"code": "P3", "title": "Летний двор", "is_active": True},
+                    ]
+                },
+                "expected": "1\nЛетний двор\nИсходные отметки:\nЛетний двор True",
+                "assert": "stdout",
+            },
+        ],
+        "reference_code": (
+            "active_records = []\n"
+            "for record in records:\n"
+            "    if record[\"is_active\"]:\n"
+            "        active_records.append(record)\n"
+            "print(len(active_records))\n"
+            "for record in active_records:\n"
+            "    print(record[\"title\"])\n"
+            "print(\"Исходные отметки:\")\n"
+            "for record in records:\n"
+            "    print(record[\"title\"], record[\"is_active\"])\n"
+        ),
+    },
+    {
+        "title": "Найдём все названия, где есть запрос",
+        "level": "easy",
+        "mode": "script",
+        "prompt": "Уберём пробелы до и после запроса. Найдём все названия, где встречается этот текст, даже если заглавные и строчные буквы отличаются. Пустой запрос даст ноль совпадений.",
+        "contract": {
+            "given": "Платформа передаст список записей `entries` и текст для поиска `raw_query`.",
+            "given_items": [
+                "В каждой записи есть название `title`.",
+                "В запросе и названиях могут быть пробелы по краям и заглавные буквы.",
+            ],
+            "todo": "Найдём все названия, в которых встречается запрос.",
+            "todo_items": [
+                "Уберём пробелы по краям и запишем запрос в нижнем регистре в `query`.",
+                "Создадим пустой список `matches`. Если `query` пустой, оставим список пустым.",
+                "Иначе проверим каждую запись и добавим все совпадения по порядку.",
+                "Выведем количество совпадений и названия в том виде, как они записаны в исходном списке.",
+            ],
+            "check": "Проверка использует пробелы по краям, разный регистр, пустой запрос и отсутствие совпадений. Исходные названия сохраняют свой регистр.",
+        },
+        "requirements": {
+            "items": [
+                "Запрос очищается методом strip и сравнивается в нижнем регистре.",
+                "Пустой запрос не запускает поиск и оставляет пустой список.",
+                "Проверяются все записи, а continue пропускает только неподходящую запись.",
+                "Совпадения сохраняют порядок, а исходные названия не переписываются.",
+            ],
+            "names": ["entries", "raw_query", "query", "matches"],
+            "nodes": ["For", "If", "Continue"],
+            "calls": ["print", "len"],
+            "attributes": ["strip", "lower", "append"],
+        },
+        "hints": [
+            "Для `query` соединим две операции: `raw_query.strip().lower()`. Они уберут крайние пробелы и приведут буквы к нижнему регистру.",
+            "До цикла проверим, что `query` не пустой. Иначе пустой текст подошёл бы к каждому названию.",
+            "Сравним `query` с `entry[\"title\"].lower()`. Если текст не найден, перейдём к следующей записи; если найден, добавим запись в `matches`.",
+        ],
+        "starter_code": (
+            "query = raw_query\n"
+            "matches = []\n"
+            "if query != \"\":\n"
+            "    for entry in entries:\n"
+            "        if query not in entry[\"title\"].lower():\n"
+            "            # Перейдите к следующей записи\n"
+            "            pass\n"
+            "        # Добавьте все совпавшие записи\n"
+            "        pass\n"
+            "print(len(matches))\n"
+            "for entry in matches:\n"
+            "    print(entry[\"title\"])\n"
+        ),
+        "tests": [
+            {
+                "name": "Крайние пробелы и другой регистр",
+                "namespace": {
+                    "entries": [
+                        {"code": "S1", "title": "Летний спорт"},
+                        {"code": "R2", "title": "Рисование"},
+                        {"code": "S3", "title": "Спорт для всех"},
+                    ],
+                    "raw_query": "  СПОРТ ",
+                },
+                "expected": "2\nЛетний спорт\nСпорт для всех",
+                "assert": "stdout",
+            },
+            {
+                "name": "Пустой запрос",
+                "namespace": {
+                    "entries": [
+                        {"code": "S1", "title": "Летний спорт"},
+                        {"code": "R2", "title": "Рисование"},
+                    ],
+                    "raw_query": "   ",
+                },
+                "expected": "0",
+                "assert": "stdout",
+            },
+            {
+                "name": "Нет совпадений",
+                "namespace": {
+                    "entries": [
+                        {"code": "S1", "title": "Летний спорт"},
+                        {"code": "R2", "title": "Рисование"},
+                    ],
+                    "raw_query": "горы",
+                },
+                "expected": "0",
+                "assert": "stdout",
+            },
+            {
+                "name": "Одно совпадение и сохранение регистра",
+                "namespace": {
+                    "entries": [
+                        {"code": "S1", "title": "Летний спорт"},
+                        {"code": "R2", "title": "Лесная тропа"},
+                    ],
+                    "raw_query": "  лЕс  ",
+                },
+                "expected": "1\nЛесная тропа",
+                "assert": "stdout",
+            },
+            {
+                "name": "Полностью пустая строка",
+                "namespace": {
+                    "entries": [
+                        {"code": "S1", "title": "Летний спорт"},
+                        {"code": "R2", "title": "Рисование"},
+                    ],
+                    "raw_query": "",
+                },
+                "expected": "0",
+                "assert": "stdout",
+            },
+        ],
+        "reference_code": (
+            "query = raw_query.strip().lower()\n"
+            "matches = []\n"
+            "if query != \"\":\n"
+            "    for entry in entries:\n"
+            "        if query not in entry[\"title\"].lower():\n"
+            "            continue\n"
+            "        matches.append(entry)\n"
+            "print(len(matches))\n"
+            "for entry in matches:\n"
+            "    print(entry[\"title\"])\n"
+        ),
+    },
+]
+
+CODE_TASKS["10.2"] = [
+    {
+        "title": "Найдём и отметим одну запись",
+        "level": "easy",
+        "mode": "script",
+        "prompt": "Найдём запись по её коду, отметим её завершённой и проверим весь список.",
+        "contract": {
+            "given": "Перед запуском платформа задаёт данные. Вводить значения не нужно.",
+            "given_items": [
+                "records содержит записи с полями code, title, minutes и is_done. Код каждой записи уникален.",
+                "target_code равен коду одной записи или коду, которого нет в списке.",
+            ],
+            "todo": "Найдём запись по target_code и изменим только её состояние.",
+            "todo_items": [
+                "Найдём запись с совпавшим code и прекратим поиск.",
+                "Если запись найдена, зададим её полю is_done значение True. Если кода нет, список останется без изменений.",
+                "Напечатаем весь список records одной командой print(records).",
+            ],
+            "check": "Проверка сравнит весь список для найденного кода, уже завершённой записи и отсутствующего кода.",
+        },
+        "requirements": {
+            "items": [
+                "До прохода найденная запись обозначена значением None.",
+                "Поиск сравнивает code каждой записи с target_code и прекращается после совпадения.",
+                "Поле is_done читается или меняется только после проверки, что запись найдена.",
+                "В конце печатается records, чтобы увидеть сохранность соседних данных.",
+            ],
+            "names": ["records", "target_code", "record", "found"],
+            "nodes": ["For", "If", "Break", "IsNot"],
+            "calls": ["print"],
+            "attributes": [],
+        },
+        "hints": [
+            "До цикла запишем found = None. Это означает, что нужная запись пока не найдена.",
+            "Сравним code каждой записи с target_code. При совпадении сохраним запись в found и остановим поиск.",
+            "После цикла сначала проверим found, затем при необходимости изменим поле. В конце покажем records.",
+        ],
+        "starter_code": (
+            "# records и target_code подготовлены платформой\n"
+            "found = None\n"
+            "for record in records:\n"
+            "    # Если code совпал, сохраним запись и прекратим поиск\n"
+            "    pass\n"
+            "\n"
+            "# Только после проверки found можно читать его поля\n"
+            "if found is not None:\n"
+            "    # Отметим найденную запись завершённой\n"
+            "    pass\n"
+            "\n"
+            "print(records)\n"
+        ),
+        "tests": [
+            {
+                "name": "Найдена открытая запись",
+                "namespace": {
+                    "records": [
+                        {"code": "M-1", "title": "Заметки", "minutes": 20, "is_done": False},
+                        {"code": "M-2", "title": "Таблицы", "minutes": 35, "is_done": False},
+                        {"code": "M-3", "title": "Повтор", "minutes": 15, "is_done": True},
+                    ],
+                    "target_code": "M-2",
+                },
+                "expected": "[{'code': 'M-1', 'title': 'Заметки', 'minutes': 20, 'is_done': False}, {'code': 'M-2', 'title': 'Таблицы', 'minutes': 35, 'is_done': True}, {'code': 'M-3', 'title': 'Повтор', 'minutes': 15, 'is_done': True}]",
+                "assert": "stdout",
+            },
+            {
+                "name": "Запись уже завершена",
+                "namespace": {
+                    "records": [{"code": "M-4", "title": "Архив", "minutes": 10, "is_done": True}],
+                    "target_code": "M-4",
+                },
+                "expected": "[{'code': 'M-4', 'title': 'Архив', 'minutes': 10, 'is_done': True}]",
+                "assert": "stdout",
+            },
+            {
+                "name": "Код отсутствует",
+                "namespace": {
+                    "records": [
+                        {"code": "M-1", "title": "Заметки", "minutes": 20, "is_done": False},
+                        {"code": "M-3", "title": "Повтор", "minutes": 15, "is_done": True},
+                    ],
+                    "target_code": "M-9",
+                },
+                "expected": "[{'code': 'M-1', 'title': 'Заметки', 'minutes': 20, 'is_done': False}, {'code': 'M-3', 'title': 'Повтор', 'minutes': 15, 'is_done': True}]",
+                "assert": "stdout",
+            },
+        ],
+        "reference_code": (
+            "found = None\n"
+            "for record in records:\n"
+            "    if record[\"code\"] == target_code:\n"
+            "        found = record\n"
+            "        break\n"
+            "if found is not None:\n"
+            "    found[\"is_done\"] = True\n"
+            "print(records)\n"
+        ),
+    },
+    {
+        "title": "Отберём записи и посчитаем итоги",
+        "level": "easy",
+        "mode": "script",
+        "prompt": "Отберём все записи по части названия, посчитаем три итога и покажем исходный список.",
+        "contract": {
+            "given": "Перед запуском платформа задаёт записи и поисковый текст. Вводить их не нужно.",
+            "given_items": [
+                "records содержит словари с полями title и minutes.",
+                "fragment может содержать пробелы по краям, быть в другом регистре или оказаться пустым.",
+            ],
+            "todo": "Соберём совпадения и вычислим количество, сумму минут и максимум только по ним.",
+            "todo_items": [
+                "Очистим fragment от пробелов по краям, сравним названия без учёта регистра и сохраним все совпадения в matches.",
+                "По matches рассчитаем count, total и best. Для пустого результата получим 0, 0 и None.",
+                "Напечатаем title и minutes каждой записи по строке, затем count, total, best и исходный records, каждый отдельной строкой.",
+            ],
+            "check": "Проверка включает разный регистр, несколько совпадений, пустой фрагмент и отсутствие совпадений. Исходные записи должны остаться прежними.",
+        },
+        "requirements": {
+            "items": [
+                "Поисковый текст очищается от внешних пробелов и приводится к нижнему регистру.",
+                "Пустой поисковый текст не выбирает все записи; проход без break собирает каждое совпадение.",
+                "count и total начинаются до прохода по matches и обновляются для совпавших записей.",
+                "best начинается с None, первый элемент становится кандидатом без сравнения с числом.",
+                "Результаты и исходный records выводятся после расчётов.",
+            ],
+            "names": ["records", "fragment", "matches", "record", "count", "total", "best"],
+            "nodes": ["For", "If", "BoolOp", "And", "Is", "AugAssign"],
+            "calls": ["print"],
+            "attributes": ["strip", "lower", "append"],
+        },
+        "hints": [
+            "Уберём пробелы по краям fragment и приведём буквы к нижнему регистру. Пустая строка не должна выбирать все записи.",
+            "Сначала соберём подходящие записи в matches. Потом пройдём только этот список: count и total начнём с нуля, best с None.",
+        ],
+        "starter_code": (
+            "# records и fragment подготовлены платформой\n"
+            "normalized_fragment = fragment.strip().lower()\n"
+            "matches = []\n"
+            "for record in records:\n"
+            "    # Добавим запись, если очищенный фрагмент есть в названии\n"
+            "    pass\n"
+            "\n"
+            "count = 0\n"
+            "total = 0\n"
+            "best = None\n"
+            "for record in matches:\n"
+            "    # Обновим количество, сумму и максимум\n"
+            "    pass\n"
+            "\n"
+            "for record in matches:\n"
+            "    print(record[\"title\"], record[\"minutes\"])\n"
+            "print(count)\n"
+            "print(total)\n"
+            "print(best)\n"
+            "print(records)\n"
+        ),
+        "tests": [
+            {
+                "name": "Несколько названий с разным регистром",
+                "namespace": {
+                    "records": [
+                        {"title": "Python основы", "minutes": 12},
+                        {"title": "Заметки по чтению", "minutes": 7},
+                        {"title": "PYTHON циклы", "minutes": 20},
+                    ],
+                    "fragment": " python ",
+                },
+                "expected": "Python основы 12\nPYTHON циклы 20\n2\n32\n20\n[{'title': 'Python основы', 'minutes': 12}, {'title': 'Заметки по чтению', 'minutes': 7}, {'title': 'PYTHON циклы', 'minutes': 20}]",
+                "assert": "stdout",
+            },
+            {
+                "name": "Нет совпадений",
+                "namespace": {
+                    "records": [
+                        {"title": "Сад", "minutes": 5},
+                        {"title": "Парк", "minutes": 9},
+                    ],
+                    "fragment": "музей",
+                },
+                "expected": "0\n0\nNone\n[{'title': 'Сад', 'minutes': 5}, {'title': 'Парк', 'minutes': 9}]",
+                "assert": "stdout",
+            },
+            {
+                "name": "Пустой поисковый текст и пустой список",
+                "namespace": {"records": [], "fragment": "   "},
+                "expected": "0\n0\nNone\n[]",
+                "assert": "stdout",
+            },
+        ],
+        "reference_code": (
+            "normalized_fragment = fragment.strip().lower()\n"
+            "matches = []\n"
+            "for record in records:\n"
+            "    if normalized_fragment != \"\" and normalized_fragment in record[\"title\"].lower():\n"
+            "        matches.append(record)\n"
+            "count = 0\n"
+            "total = 0\n"
+            "best = None\n"
+            "for record in matches:\n"
+            "    count += 1\n"
+            "    total += record[\"minutes\"]\n"
+            "    if best is None:\n"
+            "        best = record[\"minutes\"]\n"
+            "    elif record[\"minutes\"] > best:\n"
+            "        best = record[\"minutes\"]\n"
+            "for record in matches:\n"
+            "    print(record[\"title\"], record[\"minutes\"])\n"
+            "print(count)\n"
+            "print(total)\n"
+            "print(best)\n"
+            "print(records)\n"
+        ),
+    },
+    {
+        "title": "Обработаем конечный список сигналов",
+        "level": "easy",
+        "mode": "script",
+        "prompt": "Обработаем конечный список сигналов: сохраним next, пропустим skip и остановимся на stop или в конце списка.",
+        "contract": {
+            "given": "Платформа задаёт signals. Заготовка уже начинает с index = 0 и пустого списка handled.",
+            "given_items": [
+                "signals содержит только next, skip и stop. Список может быть пустым.",
+            ],
+            "todo": "Пройдём по сигналам до stop или конца списка.",
+            "todo_items": [
+                "Проверим границу списка до чтения signals[index].",
+                "После чтения увеличим index до проверок stop и skip. Обычный сигнал добавим в handled.",
+                "Напечатаем handled, затем index, каждый результат с новой строки.",
+            ],
+            "check": "Проверка включает пустой список, пропуск, остановку и сигналы после stop. Порядок проверок stop и skip не влияет на ответ.",
+        },
+        "requirements": {
+            "items": [
+                "Условие while проверяет границу до чтения signals[index].",
+                "После чтения index увеличивается до ветвей break и continue.",
+                "stop завершает цикл, skip пропускает добавление, другой сигнал добавляется в handled.",
+                "После цикла печатаются handled и index.",
+            ],
+            "names": ["signals", "index", "signal", "handled"],
+            "nodes": ["While", "If", "Break", "Continue", "AugAssign"],
+            "calls": ["len", "print"],
+            "attributes": ["append"],
+        },
+        "hints": [
+            "Перед чтением проверим, что index меньше длины signals.",
+            "Сразу после чтения передвинем index. Тогда continue перейдёт к следующему сигналу.",
+            "Stop завершает цикл, skip пропускает добавление, а next попадает в handled.",
+        ],
+        "starter_code": (
+            "# signals подготовлены платформой\n"
+            "index = 0\n"
+            "handled = []\n"
+            "while index < len(signals):\n"
+            "    signal = signals[index]\n"
+            "    # Продвинем указатель до возможного continue\n"
+            "    pass\n"
+            "    if signal == \"stop\":\n"
+            "        break\n"
+            "    if signal == \"skip\":\n"
+            "        continue\n"
+            "    # Сохраним обычный сигнал\n"
+            "    pass\n"
+            "print(handled)\n"
+            "print(index)\n"
+        ),
+        "tests": [
+            {
+                "name": "Пропуск и остановка",
+                "namespace": {"signals": ["next", "skip", "stop", "next"]},
+                "expected": "['next']\n3",
+                "assert": "stdout",
+            },
+            {
+                "name": "Пустой список",
+                "namespace": {"signals": []},
+                "expected": "[]\n0",
+                "assert": "stdout",
+            },
+            {
+                "name": "Продолжаем после skip до конца списка",
+                "namespace": {"signals": ["skip", "next"]},
+                "expected": "['next']\n2",
+                "assert": "stdout",
+            },
+        ],
+        "reference_code": (
+            "index = 0\n"
+            "handled = []\n"
+            "while index < len(signals):\n"
+            "    signal = signals[index]\n"
+            "    index += 1\n"
+            "    if signal == \"stop\":\n"
+            "        break\n"
+            "    if signal == \"skip\":\n"
+            "        continue\n"
+            "    handled.append(signal)\n"
+            "print(handled)\n"
+            "print(index)\n"
+        ),
+    },
+    {'title': 'Итоговая работа: подберём помещения',
+     'level': 'medium',
+     'mode': 'script',
+     'prompt': 'Подберите помещения для встречи: помещение должно быть открыто и иметь не меньше needed_seats '
+               'мест. Выведите названия всех подходящих помещений в исходном порядке, сохраняя повторы. Затем '
+               'отдельными строками выведите число подходящих помещений, суммарное число мест, наибольшее число '
+               'мест среди подходящих и исходный rooms. Если совпадений нет, итоги равны 0, 0 и None. Исходные '
+               'записи не меняются. План, переменные и циклы выберите самостоятельно.',
+     'contract': {'given': 'rooms — список словарей с полями name (str), seats (неотрицательный int), is_open '
+                           '(bool); needed_seats — положительный int. Например, для одного открытого зала на 4 '
+                           'места и запроса 4 вывод: его название, 1, 4, 4 и исходный список.',
+                  'todo': 'Подберите помещения для встречи: помещение должно быть открыто и иметь не меньше '
+                          'needed_seats мест. Выведите названия всех подходящих помещений в исходном порядке, '
+                          'сохраняя повторы. Затем отдельными строками выведите число подходящих помещений, '
+                          'суммарное число мест, наибольшее число мест среди подходящих и исходный rooms. Если '
+                          'совпадений нет, итоги равны 0, 0 и None. Исходные записи не меняются. План, переменные '
+                          'и циклы выберите самостоятельно.',
+                  'check': 'Проверяется весь вывод на разных данных, включая граничные случаи. Исходные данные '
+                           'заданы платформой.'},
+     'requirements': {'nodes': ['For'], 'calls': ['print']},
+     'starter_code': '# Исходные данные заданы платформой. Напишите программу самостоятельно.\n',
+     'hints': ['Сначала запишите вход, правило подходящего помещения, нужные результаты и то, что нельзя менять. '
+               'Проверьте ожидаемый ответ вручную.',
+               'Совпадение требует двух условий сразу. Итоги относятся только к подходящим помещениям; пустой '
+               'результат тоже допустим.',
+               'Можно отдельно собрать подходящие исходные записи, затем получить итоги и вывести их. Можно '
+               'считать во время отбора. Выберите понятный вам вариант; максимум пустого набора обозначьте None.'],
+     'tests': [{'name': 'Пустой каталог',
+                'namespace': {'rooms': [], 'needed_seats': 4},
+                'expected': '0\n0\nNone\n[]',
+                'assert': 'stdout'},
+               {'name': 'Ровно граница',
+                'namespace': {'rooms': [{'name': 'Север', 'seats': 4, 'is_open': True}], 'needed_seats': 4},
+                'expected': "Север\n1\n4\n4\n[{'name': 'Север', 'seats': 4, 'is_open': True}]",
+                'assert': 'stdout'},
+               {'name': 'Все закрыты',
+                'namespace': {'rooms': [{'name': 'Запад', 'seats': 20, 'is_open': False}], 'needed_seats': 2},
+                'expected': "0\n0\nNone\n[{'name': 'Запад', 'seats': 20, 'is_open': False}]",
+                'assert': 'stdout'},
+               {'name': 'Слишком мало мест',
+                'namespace': {'rooms': [{'name': 'Юг', 'seats': 3, 'is_open': True}], 'needed_seats': 4},
+                'expected': "0\n0\nNone\n[{'name': 'Юг', 'seats': 3, 'is_open': True}]",
+                'assert': 'stdout'},
+               {'name': 'Позднее совпадение',
+                'namespace': {'rooms': [{'name': 'А', 'seats': 8, 'is_open': True},
+                                        {'name': 'Б', 'seats': 30, 'is_open': False},
+                                        {'name': 'В', 'seats': 12, 'is_open': True}],
+                              'needed_seats': 8},
+                'expected': 'А\n'
+                            'В\n'
+                            '2\n'
+                            '20\n'
+                            '12\n'
+                            "[{'name': 'А', 'seats': 8, 'is_open': True}, {'name': 'Б', 'seats': 30, 'is_open': "
+                            "False}, {'name': 'В', 'seats': 12, 'is_open': True}]",
+                'assert': 'stdout'},
+               {'name': 'Повторы и максимум в начале',
+                'namespace': {'rooms': [{'name': 'Зал', 'seats': 10, 'is_open': True},
+                                        {'name': 'Малый', 'seats': 1, 'is_open': True},
+                                        {'name': 'Зал', 'seats': 5, 'is_open': True}],
+                              'needed_seats': 5},
+                'expected': 'Зал\n'
+                            'Зал\n'
+                            '2\n'
+                            '15\n'
+                            '10\n'
+                            "[{'name': 'Зал', 'seats': 10, 'is_open': True}, {'name': 'Малый', 'seats': 1, "
+                            "'is_open': True}, {'name': 'Зал', 'seats': 5, 'is_open': True}]",
+                'assert': 'stdout'}],
+     'reference_code': 'selected = []\n'
+                       'for room in rooms:\n'
+                       '    if room["is_open"] and room["seats"] >= needed_seats:\n'
+                       '        selected.append(room)\n'
+                       'count = 0\n'
+                       'total = 0\n'
+                       'best = None\n'
+                       'for room in selected:\n'
+                       '    count += 1\n'
+                       '    total += room["seats"]\n'
+                       '    if best is None:\n'
+                       '        best = room["seats"]\n'
+                       '    elif room["seats"] > best:\n'
+                       '        best = room["seats"]\n'
+                       'for room in selected:\n'
+                       '    print(room["name"])\n'
+                       'print(count)\n'
+                       'print(total)\n'
+                       'print(best)\n'
+                       'print(rooms)\n'},
+]
+
+CODE_TASKS[8] = [
+    {'title': 'Спроектируем запись материала',
+     'level': 'medium',
+     'mode': 'script',
+     'prompt': 'Нужно хранить сведения об одном материале: его код, название и длительность. Создайте словарь '
+               'material, самостоятельно выбрав понятные имена полей. Выведите из словаря название, код и '
+               'длительность, каждое с новой строки. Перед кодом определите тип каждого поля.',
+     'contract': {'given': 'material_code, material_title — строки; material_minutes — целое число. Исходного '
+                           'словаря нет.',
+                  'todo': 'Нужно хранить сведения об одном материале: его код, название и длительность. Создайте '
+                          'словарь material, самостоятельно выбрав понятные имена полей. Выведите из словаря '
+                          'название, код и длительность, каждое с новой строки. Перед кодом определите тип каждого '
+                          'поля.',
+                  'check': 'Проверяется весь вывод на разных данных, включая граничные случаи. Исходные данные '
+                           'заданы платформой.'},
+     'requirements': {'names': ['material'], 'nodes': ['Dict', 'Subscript'], 'calls': ['print']},
+     'starter_code': '# Исходные данные заданы платформой. Напишите программу самостоятельно.\n',
+     'hints': ['Разделите сведения на три именованных поля. Значение каждого уже дано.',
+               'Ключами могут быть понятные строковые названия. Во всех чтениях используйте выбранные вами ключи.',
+               'Например: material = {"code": material_code, "title": material_title, "minutes": '
+               'material_minutes}. Затем читайте поля через квадратные скобки.'],
+     'tests': [{'name': 'Обычная запись',
+                'namespace': {'material_code': 'R7', 'material_title': 'Карта', 'material_minutes': 25},
+                'expected': 'Карта\nR7\n25',
+                'assert': 'stdout'},
+               {'name': 'Нулевая длительность',
+                'namespace': {'material_code': 'A0', 'material_title': 'Введение', 'material_minutes': 0},
+                'expected': 'Введение\nA0\n0',
+                'assert': 'stdout'}],
+     'reference_code': 'material = {"code": material_code, "title": material_title, "minutes": material_minutes}\n'
+                       'print(material["title"])\n'
+                       'print(material["code"])\n'
+                       'print(material["minutes"])\n'},
+    {'title': 'Изменим запись и добавим поле',
+     'level': 'medium',
+     'mode': 'script',
+     'prompt': 'У material есть code, title и minutes. Замените title значением new_title и добавьте поле format '
+               'со значением material_format. Выведите code, title, minutes и format. Прочие поля должны остаться '
+               'прежними.',
+     'contract': {'given': 'material — отдельная подготовленная запись этой задачи; new_title и material_format — '
+                           'строки.',
+                  'todo': 'У material есть code, title и minutes. Замените title значением new_title и добавьте '
+                          'поле format со значением material_format. Выведите code, title, minutes и format. '
+                          'Прочие поля должны остаться прежними.',
+                  'check': 'Проверяется весь вывод на разных данных, включая граничные случаи. Исходные данные '
+                           'заданы платформой.'},
+     'requirements': {'nodes': ['Subscript'], 'calls': ['print']},
+     'starter_code': '# Исходные данные заданы платформой. Напишите программу самостоятельно.\n',
+     'hints': ['Измените два поля по их ключам, не создавая запись заново.',
+               'Присваивание существующему ключу заменяет значение; новому ключу — добавляет поле.',
+               'Используйте material["title"] = new_title и material["format"] = material_format.'],
+     'tests': [{'name': 'Меняем два поля',
+                'namespace': {'material': {'code': 'M2', 'title': 'Черновик', 'minutes': 12},
+                              'new_title': 'План',
+                              'material_format': 'text'},
+                'expected': 'M2\nПлан\n12\ntext',
+                'assert': 'stdout'},
+               {'name': 'Сохраняем ноль',
+                'namespace': {'material': {'code': 'N0', 'title': 'До', 'minutes': 0},
+                              'new_title': 'После',
+                              'material_format': 'audio'},
+                'expected': 'N0\nПосле\n0\naudio',
+                'assert': 'stdout'}],
+     'reference_code': 'material["title"] = new_title\n'
+                       'material["format"] = material_format\n'
+                       'print(material["code"])\n'
+                       'print(material["title"])\n'
+                       'print(material["minutes"])\n'
+                       'print(material["format"])\n'},
+    {
+        "title": "Выберем чтение обязательного и необязательного поля",
+        "level": "easy",
+        "mode": "script",
+        "prompt": "Прочитаем обязательный title через квадратные скобки и необязательные поля через get, не подменяя сохранённые None, 0 и False.",
+        "contract": {
+            "given": "Платформа задаёт словарь material. В нём всегда есть title, duration равен 0 и available равен False; subtitle может отсутствовать или присутствовать со значением None.",
+            "todo": "Выведем title, subtitle с текстом по умолчанию, duration с запасным числом 60 и available с запасным значением True.",
+            "todo_items": [
+                "title читается как обязательное поле.",
+                "Для отсутствующего subtitle напечатан default, а для сохранённого None напечатан None.",
+                "Сохранённые 0 и False не заменены запасными значениями.",
+            ],
+            "check": "Проверка сравнит точный вывод для subtitle без ключа и subtitle со значением None.",
+        },
+        "requirements": {
+            "items": [
+                "Обязательное поле читается по ключу в квадратных скобках.",
+                "Необязательные поля читаются методом get с указанным default.",
+                "Результат сохраняет None, 0 и False, если такие значения уже записаны.",
+                "Каждое значение выводится на отдельной строке в установленном порядке.",
+            ],
+            "names": ["material", "print"],
+            "nodes": ["Subscript"],
+            "calls": ["print"],
+            "attributes": ["get"],
+        },
+        "hints": [
+            "Сначала определим, какое поле обязательно, а какое допускает отсутствие.",
+            "get использует default только когда ключа нет. Если ключ содержит None, 0 или False, вернётся это значение.",
+            "Не заменяйте квадратные скобки на get для обязательного title.",
+        ],
+        "starter_code": (
+            "# Выведите обязательный title\n"
+            "# Для subtitle укажите текст по умолчанию: подзаголовок не указан\n"
+            "# Для duration задайте запасное значение 60\n"
+            "# Для available задайте запасное значение True\n"
+        ),
+        "tests": [
+            {
+                "name": "Необязательный ключ отсутствует",
+                "namespace": {
+                    "material": {"title": "Словари", "duration": 0, "available": False},
+                },
+                "expected": "Словари\nподзаголовок не указан\n0\nFalse",
+                "assert": "stdout",
+            },
+            {
+                "name": "Необязательный ключ хранит None",
+                "namespace": {
+                    "material": {"title": "Записи", "subtitle": None, "duration": 0, "available": False},
+                },
+                "expected": "Записи\nNone\n0\nFalse",
+                "assert": "stdout",
+            },
+        ],
+        "reference_code": (
+            'print(material["title"])\n'
+            'print(material.get("subtitle", "подзаголовок не указан"))\n'
+            'print(material.get("duration", 60))\n'
+            'print(material.get("available", True))\n'
+        ),
+    },
+    {'title': 'Различим отсутствие ключа и значение',
+     'level': 'medium',
+     'mode': 'script',
+     'prompt': 'Выведите, есть ли ключ note в material. Затем выведите его значение, а при отсутствии — строку «не '
+               'задано». Сохранённые None, 0 и False являются данными и не заменяются запасным текстом.',
+     'contract': {'given': 'material — словарь с необязательным полем note.',
+                  'todo': 'Выведите, есть ли ключ note в material. Затем выведите его значение, а при отсутствии — '
+                          'строку «не задано». Сохранённые None, 0 и False являются данными и не заменяются '
+                          'запасным текстом.',
+                  'check': 'Проверяется весь вывод на разных данных, включая граничные случаи. Исходные данные '
+                           'заданы платформой.'},
+     'requirements': {'calls': ['print']},
+     'starter_code': '# Исходные данные заданы платформой. Напишите программу самостоятельно.\n',
+     'hints': ['Первый вопрос относится к ключу, второй — к значению.',
+               'in проверяет ключ. get выбирает запасной ответ только при отсутствии ключа.',
+               'Выведите "note" in material, затем material.get("note", "не задано").'],
+     'tests': [{'name': 'Нет ключа',
+                'namespace': {'material': {'title': 'План'}},
+                'expected': 'False\nне задано',
+                'assert': 'stdout'},
+               {'name': 'Явное отсутствие',
+                'namespace': {'material': {'note': None}},
+                'expected': 'True\nNone',
+                'assert': 'stdout'},
+               {'name': 'Ноль', 'namespace': {'material': {'note': 0}}, 'expected': 'True\n0', 'assert': 'stdout'},
+               {'name': 'False',
+                'namespace': {'material': {'note': False}},
+                'expected': 'True\nFalse',
+                'assert': 'stdout'},
+               {'name': 'Текст',
+                'namespace': {'material': {'note': 'Утро'}},
+                'expected': 'True\nУтро',
+                'assert': 'stdout'}],
+     'reference_code': 'print("note" in material)\nprint(material.get("note", "не задано"))\n'},
+    {'title': 'Сохраним исходную запись',
+     'level': 'medium',
+     'mode': 'script',
+     'prompt': 'Создайте отдельный вариант записи material, замените в нём title на new_title. Выведите название '
+               'исходной записи, название варианта и ответ на вопрос, один ли это словарь. Поля записи содержат '
+               'только строки, числа и bool.',
+     'contract': {'given': 'material — словарь; new_title — строка. Исходную запись менять нельзя.',
+                  'todo': 'Создайте отдельный вариант записи material, замените в нём title на new_title. Выведите '
+                          'название исходной записи, название варианта и ответ на вопрос, один ли это словарь. '
+                          'Поля записи содержат только строки, числа и bool.',
+                  'check': 'Проверяется весь вывод на разных данных, включая граничные случаи. Исходные данные '
+                           'заданы платформой.'},
+     'requirements': {'calls': ['print']},
+     'starter_code': '# Исходные данные заданы платформой. Напишите программу самостоятельно.\n',
+     'hints': ['Отдельное имя само по себе не отделяет запись.',
+               'Метод copy создаёт другой внешний словарь. Поля здесь не содержат вложенных изменяемых объектов.',
+               'Сначала variant = material.copy(), затем изменение variant["title"]. Сравните идентичность через '
+               'is.'],
+     'tests': [{'name': 'Разные названия',
+                'namespace': {'material': {'title': 'Лес', 'minutes': 10}, 'new_title': 'Берег'},
+                'expected': 'Лес\nБерег\nFalse',
+                'assert': 'stdout'},
+               {'name': 'Равные поля не означают один объект',
+                'namespace': {'material': {'title': 'План', 'minutes': 0}, 'new_title': 'План'},
+                'expected': 'План\nПлан\nFalse',
+                'assert': 'stdout'}],
+     'reference_code': 'variant = material.copy()\n'
+                       'variant["title"] = new_title\n'
+                       'print(material["title"])\n'
+                       'print(variant["title"])\n'
+                       'print(variant is material)\n'},
+]
+
+CODE_TASKS["10.1"] = [
+    {
+        "title": "Напишем конечный счётчик",
+        "level": "easy",
+        "mode": "script",
+        "prompt": "Платформа задаёт целые числа `start` и `limit`. Выведем числа от start до limit, не включая limit.",
+        "contract": {
+            "given": "Перед запуском платформа передаёт два целых числа:",
+            "given_items": [
+                "`start` задаёт первое число для вывода.",
+                "`limit` задаёт границу. Это число в вывод не входит.",
+            ],
+            "todo": "Код выводит числа от `start` до `limit`, не включая границу.",
+            "todo_items": [
+                "Счётчик `count` начинается со значения `start`.",
+                "Пока `count` меньше `limit`, программа выводит его отдельной строкой.",
+                "После вывода `count` увеличивается на 1.",
+            ],
+            "check": "При start = 1 и limit = 4 программа выводит 1, 2 и 3, каждое на своей строке. Если start равно limit или больше limit, вывода нет.",
+        },
+        "requirements": {
+            "items": [
+                "Начальное состояние счётчика задано до цикла.",
+                "Условие допускает значения до limit, не включая limit.",
+                "На каждом проходе выводится текущее число, затем счётчик увеличивается на единицу.",
+            ],
+            "names": ["start", "limit", "count"],
+            "nodes": ["While"],
+            "calls": ["print"],
+        },
+        "hints": [
+            "Сначала запишем `start` в `count`, чтобы первый проход начинался с нужного числа.",
+            "Условие проверяется до тела. Если `count` уже равен `limit`, цикл сразу закончится.",
+            "После вывода прибавим к `count` единицу. Тогда он дойдёт до границы, и условие станет ложным.",
+        ],
+        "starter_code": (
+            "count = start\n"
+            "while count < limit:\n"
+            "    # Выведите текущее число\n"
+            "    count += 1\n"
+        ),
+        "tests": [
+            {"name": "Три числа", "namespace": {"start": 1, "limit": 4}, "expected": "1\n2\n3", "assert": "stdout"},
+            {"name": "Один проход", "namespace": {"start": 3, "limit": 4}, "expected": "3", "assert": "stdout"},
+            {"name": "Начало уже на границе", "namespace": {"start": 4, "limit": 4}, "expected": "", "assert": "stdout"},
+            {"name": "Начало за границей", "namespace": {"start": 5, "limit": 4}, "expected": "", "assert": "stdout"},
+            {"name": "Счёт от отрицательного значения", "namespace": {"start": -1, "limit": 1}, "expected": "-1\n0", "assert": "stdout"},
+        ],
+        "reference_code": (
+            "count = start\n"
+            "while count < limit:\n"
+            "    print(count)\n"
+            "    count += 1\n"
+        ),
+    },
+    {
+        "title": "Прочитаем список по указателю",
+        "level": "easy",
+        "mode": "script",
+        "prompt": "Платформа задаёт список `items`. Покажем все названия по одному разу и в исходном порядке.",
+        "contract": {
+            "given": "Перед запуском платформа передаёт список названий `items`:",
+            "given_items": [
+                "Список может быть пустым.",
+                "Исходный порядок названий нужно сохранить.",
+            ],
+            "todo": "Код выводит каждое название отдельной строкой и сохраняет исходный порядок.",
+            "todo_items": [
+                "Указатель `index` начинается с позиции `0`.",
+                "Перед чтением `items[index]` код проверяет, что `index` меньше длины списка.",
+                "После вывода `index` увеличивается на 1.",
+            ],
+            "check": "Проверка использует пустой, одноэлементный и трёхэлементный списки. Все названия выводятся по одному разу, в исходном порядке; чтения за границей нет.",
+        },
+        "requirements": {
+            "items": [
+                "Индекс начинается с позиции 0 до первой проверки.",
+                "Цикл проверяет, что индекс меньше длины списка, до чтения элемента.",
+                "Каждый прочитанный элемент выводится, а индекс увеличивается на каждом проходе.",
+            ],
+            "names": ["items", "index"],
+            "nodes": ["While"],
+            "calls": ["len", "print"],
+        },
+        "hints": [
+            "Первый элемент находится на позиции `0`. Эту позицию сохраним в `index`.",
+            "До чтения `items[index]` сравним `index` с длиной списка. Для пустого списка условие сразу ложно.",
+            "После вывода увеличим `index` на 1. Когда он дойдёт до длины списка, цикл остановится.",
+        ],
+        "starter_code": (
+            "index = 0\n"
+            "while index < len(items):\n"
+            "    # Прочитайте и выведите существующий элемент\n"
+            "    index += 1\n"
+        ),
+        "tests": [
+            {"name": "Пустой список", "namespace": {"items": []}, "expected": "", "assert": "stdout"},
+            {"name": "Один элемент", "namespace": {"items": ["Берег"]}, "expected": "Берег", "assert": "stdout"},
+            {"name": "Три элемента", "namespace": {"items": ["Лес", "Парк", "Сад"]}, "expected": "Лес\nПарк\nСад", "assert": "stdout"},
+        ],
+        "reference_code": (
+            "index = 0\n"
+            "while index < len(items):\n"
+            "    print(items[index])\n"
+            "    index += 1\n"
+        ),
+    },
+    {
+        "title": "Обработаем сигналы и безопасно пропустим элемент",
+        "level": "easy",
+        "mode": "script",
+        "prompt": "Платформа задаёт список `signals` со значениями next, skip и stop. Выведем next до первого stop или до конца списка.",
+        "contract": {
+            "given": "Перед запуском платформа передаёт готовый список `signals`:",
+            "given_items": [
+                "В списке встречаются только `next`, `skip` и `stop`.",
+                "Список может быть пустым или закончиться до сигнала `stop`.",
+            ],
+            "todo": "Код выводит каждый сигнал `next` до первого `stop` или до конца списка.",
+            "todo_items": [
+                "Перед чтением `signals[index]` код проверяет, что `index` меньше длины списка.",
+                "Сигнал `stop` завершает цикл через `break`. Сам сигнал и следующие элементы не выводятся.",
+                "Сигнал `skip` не выводится. Перед `continue` индекс увеличивается на 1.",
+                "Сигнал `next` выводится отдельной строкой, затем индекс увеличивается на 1.",
+            ],
+            "check": "Проверка сверяет отдельные строки next, пропуск skip, выход на stop и завершение у конца списка без stop.",
+        },
+        "requirements": {
+            "items": [
+                "Граница списка проверяется до чтения текущего сигнала.",
+                "Сигнал stop завершает цикл через break без чтения следующих элементов.",
+                "В ветви skip индекс увеличивается до continue.",
+                "Сигнал next выводится, а индекс увеличивается перед следующей проверкой.",
+            ],
+            "names": ["signals", "index", "signal"],
+            "nodes": ["While", "If", "Break", "Continue"],
+            "calls": ["len", "print"],
+        },
+        "hints": [
+            "Сначала сравним `index` с длиной. Только после успешной проверки прочитаем `signals[index]`.",
+            "Для `stop` используем `break`. Для `skip` сначала увеличим `index`, потом выполним `continue`.",
+            "Для `next` выведем сигнал и увеличим `index`. Отдельно представим список, в котором `stop` не встретился: тогда цикл закончится у его границы.",
+        ],
+        "starter_code": (
+            "index = 0\n"
+            "while index < len(signals):\n"
+            "    signal = signals[index]\n"
+            "    if signal == \"stop\":\n"
+            "        break\n"
+            "    # Обработайте next и пропустите skip\n"
+            "    index += 1\n"
+        ),
+        "tests": [
+            {"name": "Skip и конец списка", "namespace": {"signals": ["next", "skip", "next"]}, "expected": "next\nnext", "assert": "stdout"},
+            {"name": "Stop раньше конца", "namespace": {"signals": ["skip", "next", "stop", "next"]}, "expected": "next", "assert": "stdout"},
+            {"name": "Stop первым", "namespace": {"signals": ["stop", "next"]}, "expected": "", "assert": "stdout"},
+            {"name": "Пустой список", "namespace": {"signals": []}, "expected": "", "assert": "stdout"},
+        ],
+        "reference_code": (
+            "index = 0\n"
+            "while index < len(signals):\n"
+            "    signal = signals[index]\n"
+            "    if signal == \"stop\":\n"
+            "        break\n"
+            "    if signal == \"skip\":\n"
+            "        index += 1\n"
+            "        continue\n"
+            "    print(signal)\n"
+            "    index += 1\n"
+        ),
+    },
+    {'title': 'Напишем весь while самостоятельно',
+     'level': 'medium',
+     'mode': 'script',
+     'prompt': 'Выведите обратный отсчёт от start до limit, не включая limit, затем строку «готово». Если start не '
+               'больше limit, выводится только «готово». Используйте while; весь код, включая начальное состояние '
+               'и изменение, напишите сами. До запуска объясните, почему цикл завершится.',
+     'contract': {'given': 'start и limit — целые неотрицательные числа.',
+                  'todo': 'Выведите обратный отсчёт от start до limit, не включая limit, затем строку «готово». '
+                          'Если start не больше limit, выводится только «готово». Используйте while; весь код, '
+                          'включая начальное состояние и изменение, напишите сами. До запуска объясните, почему '
+                          'цикл завершится.',
+                  'check': 'Проверяется весь вывод на разных данных, включая граничные случаи. Исходные данные '
+                           'заданы платформой.'},
+     'requirements': {'nodes': ['While'], 'calls': ['print']},
+     'starter_code': '# Исходные данные заданы платформой. Напишите программу самостоятельно.\n',
+     'hints': ['Назовите текущее число и момент, когда его уже не нужно печатать.',
+               'Нужно двигаться к меньшей границе. Проверка выполняется до тела, поэтому равные start и limit дают '
+               'ноль проходов.',
+               'Сохраните start в счётчик. Пока он больше limit, печатайте его и уменьшайте на один. После цикла '
+               'напечатайте «готово».'],
+     'tests': [{'name': 'Ноль проходов',
+                'namespace': {'start': 3, 'limit': 3},
+                'expected': 'готово',
+                'assert': 'stdout'},
+               {'name': 'Начало ниже границы',
+                'namespace': {'start': 1, 'limit': 4},
+                'expected': 'готово',
+                'assert': 'stdout'},
+               {'name': 'Один проход',
+                'namespace': {'start': 4, 'limit': 3},
+                'expected': '4\nготово',
+                'assert': 'stdout'},
+               {'name': 'Несколько проходов',
+                'namespace': {'start': 5, 'limit': 1},
+                'expected': '5\n4\n3\n2\nготово',
+                'assert': 'stdout'},
+               {'name': 'Граница ноль',
+                'namespace': {'start': 2, 'limit': 0},
+                'expected': '2\n1\nготово',
+                'assert': 'stdout'}],
+     'reference_code': 'remaining = start\n'
+                       'while remaining > limit:\n'
+                       '    print(remaining)\n'
+                       '    remaining -= 1\n'
+                       'print("готово")\n'},
+]
+
+CODE_TASKS["7.1"] = [
+    {
+        "title": "Сравним два способа разделить строку",
+        "level": "easy",
+        "mode": "script",
+        "prompt": (
+            "Платформа задаёт строку source_text. Получи список слов через split() без аргумента и список полей "
+            "через split(\" \"), затем выведи оба списка. Не удаляй пробелы из исходной строки вручную."
+        ),
+        "contract": {
+            "given": "Платформа задаёт строку `source_text`.",
+            "given_items": [
+                "В строке могут быть пробелы в начале и в конце, а также несколько пробелов подряд.",
+                "Строка может быть пустой.",
+            ],
+            "todo": "Сравни два способа разделить строку и покажи оба списка: сначала `words`, затем `fields`.",
+            "todo_items": [
+                "Сохрани результат `source_text.split()` в `words`.",
+                "Сохрани результат `source_text.split(\" \")` в `fields`.",
+            ],
+            "check": "Проверка подставит строки с разным количеством пробелов, обычную строку и пустую строку.",
+        },
+        "requirements": {
+            "items": [
+                "split() вызван без аргумента, его результат сохранён отдельно.",
+                "split(\" \") вызывается с одним точным пробелом.",
+                "Сначала выводится words, затем fields.",
+            ],
+            "names": ["source_text", "words", "fields"],
+            "attributes": ["split"],
+            "calls": ["print"],
+        },
+        "hints": [
+            "Для words вызови `source_text.split()` без аргумента.",
+            "Для fields передай в split один пробел: `source_text.split(\" \")`.",
+            "Оставь пустые строки в fields: они показывают место повторных пробелов.",
+        ],
+        "starter_code": (
+            "# Платформа задаёт source_text.\n"
+            "words = source_text\n"
+            "fields = source_text\n"
+            "print(words)\n"
+            "print(fields)\n"
+        ),
+        "tests": [
+            {
+                "name": "Повторные и крайние пробелы",
+                "namespace": {"source_text": "  лес   берег  "},
+                "expected": "['лес', 'берег']\n['', '', 'лес', '', '', 'берег', '', '']",
+                "assert": "stdout",
+            },
+            {
+                "name": "Один пробел между словами",
+                "namespace": {"source_text": "лес берег"},
+                "expected": "['лес', 'берег']\n['лес', 'берег']",
+                "assert": "stdout",
+            },
+            {
+                "name": "Пустая строка",
+                "namespace": {"source_text": ""},
+                "expected": "[]\n['']",
+                "assert": "stdout",
+            },
+        ],
+        "reference_code": (
+            "words = source_text.split()\n"
+            "fields = source_text.split(\" \")\n"
+            "print(words)\n"
+            "print(fields)\n"
+        ),
+    },
+    {
+        "title": "Изменим часть сообщения и соберём новое",
+        "level": "easy",
+        "mode": "script",
+        "prompt": (
+            "Платформа задаёт source_text из трёх или более слов и строку replacement. Раздели сообщение через split(), "
+            "замени известный второй элемент и собери новый текст с разделителем \" / \". Выведи исходное сообщение, "
+            "изменённый список и новую строку."
+        ),
+        "contract": {
+            "given": "Платформа задаёт исходное сообщение `source_text` и строку `replacement`.",
+            "given_items": [
+                "В `source_text` не меньше трёх слов, поэтому второй элемент списка существует.",
+                "`replacement` задаёт новое значение для второго слова.",
+            ],
+            "todo": "Создай список частей, замени второе слово и собери новое сообщение с разделителем `\" / \"`. Покажи исходное сообщение, список и результат.",
+            "todo_items": [
+                "Сохрани результат `source_text.split()` в `parts`.",
+                "Замени `parts[1]` на `replacement`.",
+                "Сохрани вызов `\" / \".join(parts)` в `new_message`.",
+                "Выведи `source_text`, `parts` и `new_message` по одному значению на строке.",
+            ],
+            "check": "Проверка подставит другие слова и замену. Исходная строка должна остаться прежней.",
+        },
+        "requirements": {
+            "items": [
+                "Список частей создаётся из source_text методом split().",
+                "Меняется только заранее известный элемент с индексом 1.",
+                "Новая строка собирается вызовом join у строки-разделителя.",
+                "Исходное сообщение, изменённый список и новая строка показаны отдельно.",
+            ],
+            "names": ["source_text", "replacement", "parts", "new_message"],
+            "attributes": ["split", "join"],
+            "nodes": ["Subscript"],
+            "calls": ["print"],
+        },
+        "hints": [
+            "Сначала создай список: `parts = source_text.split()`.",
+            "Индекс `1` означает второй элемент. Замени `parts[1]` на `replacement`.",
+            "Собери результат так: `new_message = \" / \".join(parts)`. Вызов `join` не меняет `parts`.",
+        ],
+        "starter_code": (
+            "# Платформа задаёт source_text и replacement.\n"
+            "parts = source_text\n"
+            "parts[1] = replacement\n"
+            "new_message = parts\n"
+            "print(source_text)\n"
+            "print(parts)\n"
+            "print(new_message)\n"
+        ),
+        "tests": [
+            {
+                "name": "Три части",
+                "namespace": {"source_text": "лето поезд город", "replacement": "велосипед"},
+                "expected": "лето поезд город\n['лето', 'велосипед', 'город']\nлето / велосипед / город",
+                "assert": "stdout",
+            },
+            {
+                "name": "Повторные пробелы в исходнике",
+                "namespace": {"source_text": "утро  лес   берег", "replacement": "парк"},
+                "expected": "утро  лес   берег\n['утро', 'парк', 'берег']\nутро / парк / берег",
+                "assert": "stdout",
+            },
+        ],
+        "reference_code": (
+            "parts = source_text.split()\n"
+            "parts[1] = replacement\n"
+            "new_message = \" / \".join(parts)\n"
+            "print(source_text)\n"
+            "print(parts)\n"
+            "print(new_message)\n"
+        ),
+    },
+    {
+        "title": "Подготовим число для join",
+        "level": "easy",
+        "mode": "script",
+        "prompt": (
+            "В списке parts есть число минут. Найди две причины, по которым заготовка не подходит: join вызван у списка, "
+            "а один элемент не является строкой. Создай отдельную строку для сообщения с явным str() и правильным "
+            "вызовом join. Не меняй parts и не используй цикл. Выведи исходный список, затем сообщение."
+        ),
+        "contract": {
+            "given": "Платформа задаёт целое число `minutes`. Заготовка собирает из него список `parts = [\"маршрут\", minutes, \"минут\"]`.",
+            "given_items": [
+                "Первая и третья части `parts` являются строками.",
+                "Вторая часть `parts` содержит число, его нужно явно подготовить для сообщения.",
+            ],
+            "todo": "Подготовь отдельный список из строк, соедини его одним пробелом и покажи исходный `parts` и сообщение.",
+            "todo_items": [
+                "Преобразуй `parts[1]` в строку с помощью `str(...)`.",
+                "Собери отдельный список для соединения, не меняя `parts`.",
+                "Вызови `\" \".join(...)` и сохрани результат в `message`.",
+                "Выведи сначала `parts`, затем `message`.",
+            ],
+            "check": "Проверка подставит несколько значений minutes. Исходный список должен сохранить число и прежний порядок.",
+        },
+        "requirements": {
+            "items": [
+                "join вызван у строкового разделителя, а не у списка.",
+                "Известное число преобразовано функцией str до соединения.",
+                "Исходный список parts не изменён.",
+                "Сначала выведен исходный список, затем собранная строка.",
+            ],
+            "names": ["parts", "minutes", "message"],
+            "attributes": ["join"],
+            "nodes": ["Subscript", "List"],
+            "calls": ["str", "print"],
+        },
+        "hints": [
+            "Строка-разделитель стоит перед точкой: `\" \".join(...)`.",
+            "Преобразуй только вторую часть: `str(parts[1])`.",
+            "Собери отдельный список для сообщения, чтобы число в `parts` осталось числом.",
+        ],
+        "starter_code": (
+            "# Платформа задаёт целое число minutes.\n"
+            "parts = [\"маршрут\", minutes, \"минут\"]\n"
+            "message = parts.join(\" \")\n"
+            "print(parts)\n"
+            "print(message)\n"
+        ),
+        "tests": [
+            {
+                "name": "Обычная длительность",
+                "namespace": {"minutes": 12},
+                "expected": "['маршрут', 12, 'минут']\nмаршрут 12 минут",
+                "assert": "stdout",
+            },
+            {
+                "name": "Нулевая длительность",
+                "namespace": {"minutes": 0},
+                "expected": "['маршрут', 0, 'минут']\nмаршрут 0 минут",
+                "assert": "stdout",
+            },
+            {
+                "name": "Другая длительность",
+                "namespace": {"minutes": 45},
+                "expected": "['маршрут', 45, 'минут']\nмаршрут 45 минут",
+                "assert": "stdout",
+            },
+        ],
+        "reference_code": (
+            "parts = [\"маршрут\", minutes, \"минут\"]\n"
+            "message = \" \".join([\"маршрут\", str(parts[1]), \"минут\"])\n"
+            "print(parts)\n"
+            "print(message)\n"
+        ),
+    },
+]
+
+CODE_TASKS[7] = [
+    {
+        "title": "Проследим общую ссылку и новое присваивание",
+        "level": "easy",
+        "mode": "script",
+        "prompt": "Платформа задаёт topics, extra_topic и draft_topic. Script показывает два состояния списка и результаты is до и после перепривязывания только второго имени. Элемент, добавленный через общее имя, виден в обоих связанных именах.",
+        "contract": {
+            "given": "Платформа задаёт плоский список строк topics, а также строки extra_topic и draft_topic.",
+            "todo": "Script связывает main_list и second_name с одним списком и добавляет extra_topic через second_name. Затем он назначает second_name новый список с draft_topic и выводит оба списка вместе с проверкой их идентичности до и после перепривязывания.",
+            "check": "Проверка использует несколько исходных списков, включая пустой. Элемент, добавленный через общую ссылку, должен появиться в main_list. После нового присваивания списки должны иметь разные связи.",
+        },
+        "requirements": {
+            "items": [
+                "main_list и second_name сначала обозначают один список.",
+                "append через second_name меняет общий список.",
+                "Новое присваивание меняет только связь second_name.",
+                "Проверка is показывает общую ссылку до и разные списки после перепривязывания.",
+            ],
+            "names": ["topics", "extra_topic", "draft_topic", "main_list", "second_name"],
+            "nodes": ["Is"],
+            "calls": ["print"],
+            "attributes": ["append"],
+        },
+        "hints": [
+            "Сначала свяжем main_list с topics, а затем назначим second_name уже существующее имя.",
+            "Добавление через second_name меняет общий список. Выведем обе переменные до перепривязывания.",
+            "После создания нового списка для second_name повторно проверим main_list is second_name.",
+        ],
+        "starter_code": (
+            "main_list = topics\n"
+            "# Создайте второе имя для того же списка.\n"
+            "# Добавьте extra_topic через второе имя.\n"
+            "# Выведите оба списка и результат is до перепривязывания.\n"
+            "# Назначьте second_name новый список с draft_topic.\n"
+            "# Снова выведите оба списка и результат is.\n"
+        ),
+        "tests": [
+            {
+                "name": "Два исходных элемента",
+                "namespace": {"topics": ["Чтение", "Практика"], "extra_topic": "Повторение", "draft_topic": "Черновик"},
+                "expected": "['Чтение', 'Практика', 'Повторение']\n['Чтение', 'Практика', 'Повторение']\nTrue\n['Чтение', 'Практика', 'Повторение']\n['Черновик']\nFalse",
+                "assert": "stdout",
+            },
+            {
+                "name": "Пустой исходный список",
+                "namespace": {"topics": [], "extra_topic": "Старт", "draft_topic": "План"},
+                "expected": "['Старт']\n['Старт']\nTrue\n['Старт']\n['План']\nFalse",
+                "assert": "stdout",
+            },
+        ],
+        "reference_code": (
+            "main_list = topics\n"
+            "second_name = main_list\n"
+            "second_name.append(extra_topic)\n"
+            "print(main_list)\n"
+            "print(second_name)\n"
+            "print(main_list is second_name)\n"
+            "second_name = [draft_topic]\n"
+            "print(main_list)\n"
+            "print(second_name)\n"
+            "print(main_list is second_name)\n"
+        ),
+    },
+    {
+        "title": "Создадим отдельную копию плоского списка",
+        "level": "easy",
+        "mode": "script",
+        "prompt": "Платформа задаёт source_items и new_item. Script создаёт отдельный внешний список, показывает равенство содержимого и проверяет is. После добавления new_item исходный список сохраняется, а копия содержит новую строку.",
+        "contract": {
+            "given": "source_items содержит плоский список строк. new_item содержит строку, которой пока нет в списке.",
+            "todo": "Script создаёт draft_items как копию source_items. До изменения он выводит source_items == draft_items и source_items is draft_items, добавляет new_item только в draft_items, затем показывает оба списка.",
+            "check": "Проверка повторит запуск на нескольких плоских списках. Содержимое копии сначала равно исходному, но это отдельный список. Добавление в копию не меняет исходник.",
+        },
+        "requirements": {
+            "items": [
+                "Копия создаётся из source_items и не заменяет исходный список.",
+                "До изменения содержимое списков сравнивается через ==.",
+                "Идентичность двух списков проверяется через is.",
+                "Новый элемент добавляется только в draft_items.",
+            ],
+            "names": ["source_items", "new_item", "draft_items"],
+            "nodes": ["Eq", "Is"],
+            "calls": ["print"],
+            "attributes": ["append"],
+        },
+        "hints": [
+            "Для независимого внешнего списка применим source_items.copy(). Полный срез source_items[:] создаёт такой же внешний договор.",
+            "Сначала проверим равенство содержимого и идентичность до изменения.",
+            "Добавим new_item только в draft_items, после чего выведем исходник и копию.",
+        ],
+        "starter_code": (
+            "# Создайте отдельный список draft_items на основе source_items.\n"
+            "# Сравните содержимое и идентичность до изменения.\n"
+            "# Добавьте new_item только в копию.\n"
+            "# Покажите исходный список и копию после изменения.\n"
+        ),
+        "tests": [
+            {
+                "name": "Список из двух строк",
+                "namespace": {"source_items": ["Заметка", "План"], "new_item": "Итог"},
+                "expected": "True\nFalse\n['Заметка', 'План']\n['Заметка', 'План', 'Итог']",
+                "assert": "stdout",
+            },
+            {
+                "name": "Один элемент",
+                "namespace": {"source_items": ["Книга"], "new_item": "Курс"},
+                "expected": "True\nFalse\n['Книга']\n['Книга', 'Курс']",
+                "assert": "stdout",
+            },
+        ],
+        "reference_code": (
+            "draft_items = source_items.copy()\n"
+            "print(source_items == draft_items)\n"
+            "print(source_items is draft_items)\n"
+            "draft_items.append(new_item)\n"
+            "print(source_items)\n"
+            "print(draft_items)\n"
+        ),
+    },
+    {
+        "title": "Выберем общую связь или копию по условию",
+        "level": "easy",
+        "mode": "script",
+        "prompt": "Платформа задаёт source_items, shared_addition и independent_addition. Script сохраняет одну общую связь с исходным списком и создаёт независимую копию. Вывод показывает, что общая строка меняет исходник, а отдельная строка появляется только в копии.",
+        "contract": {
+            "given": "Платформа задаёт плоский список source_items, строку shared_addition и строку independent_addition.",
+            "todo": "Script связывает shared_view с source_items и создаёт independent_view как копию до изменений. Он добавляет shared_addition через общую ссылку, а independent_addition только в копию. Вывод показывает исходный список, обе проверки is и независимый вариант.",
+            "check": "На новых данных общая ссылка должна изменить исходный список, а копия должна сохранить собственный набор элементов. Проверка сравнит пустой и непустой исходные списки.",
+        },
+        "requirements": {
+            "items": [
+                "shared_view связан с source_items без создания копии.",
+                "independent_view создаётся как отдельный внешний список до мутации.",
+                "Добавления к двум вариантам выполняются независимо.",
+                "Идентичность проверяется отдельно для общей ссылки и копии.",
+            ],
+            "names": ["source_items", "shared_addition", "independent_addition", "shared_view", "independent_view"],
+            "nodes": ["Is"],
+            "calls": ["print"],
+            "attributes": ["append"],
+        },
+        "hints": [
+            "Сначала сформулируем договор для каждого имени: одно должно быть общим, другое самостоятельным.",
+            "Создадим копию до изменения исходного списка.",
+            "Проверим source_items is shared_view и source_items is independent_view после двух добавлений.",
+        ],
+        "starter_code": (
+            "# Свяжите shared_view с исходным списком.\n"
+            "# Создайте отдельный список independent_view.\n"
+            "# Добавьте разные строки в общий и независимый варианты.\n"
+            "# Выведите source_items, две проверки is и independent_view.\n"
+        ),
+        "tests": [
+            {
+                "name": "Два исходных элемента",
+                "namespace": {"source_items": ["Список", "Текст"], "shared_addition": "Общее", "independent_addition": "Отдельное"},
+                "expected": "['Список', 'Текст', 'Общее']\nTrue\nFalse\n['Список', 'Текст', 'Отдельное']",
+                "assert": "stdout",
+            },
+            {
+                "name": "Пустой исходный список",
+                "namespace": {"source_items": [], "shared_addition": "Общее", "independent_addition": "Отдельное"},
+                "expected": "['Общее']\nTrue\nFalse\n['Отдельное']",
+                "assert": "stdout",
+            },
+        ],
+        "reference_code": (
+            "shared_view = source_items\n"
+            "independent_view = source_items.copy()\n"
+            "shared_view.append(shared_addition)\n"
+            "independent_view.append(independent_addition)\n"
+            "print(source_items)\n"
+            "print(source_items is shared_view)\n"
+            "print(source_items is independent_view)\n"
+            "print(independent_view)\n"
+        ),
+    },
+]
+
+CODE_TASKS["7.2"] = [
+    {
+        "title": "Создадим и распакуем пару",
+        "level": "easy",
+        "mode": "script",
+        "prompt": "Платформа задаёт два места и одно название. Сохраним места как упорядоченную пару, распакуем их в отдельные имена и сравним группировку скобками с tuple из одного значения.",
+        "contract": {
+            "given": "Переменные start_place, end_place и single_place содержат готовые строки.",
+            "given_items": [
+                "start_place содержит начало маршрута.",
+                "end_place содержит конец маршрута.",
+                "single_place содержит одно отдельное название.",
+            ],
+            "todo": "Создадим tuple route, распакуем его в start и finish, затем получим обычную строку grouped и одноэлементный tuple single.",
+            "todo_items": [
+                "Соберите route в порядке start_place, затем end_place.",
+                "Распакуйте route в имена start и finish.",
+                "Создайте grouped со скобками без запятой и single с запятой.",
+                "Выведите route, start, finish, grouped и single.",
+            ],
+            "check": "Проверка сравнит порядок пары, соответствие двух имён и различие скобок без запятой и tuple с запятой.",
+        },
+        "requirements": {
+            "items": [
+                "Пара содержит start_place перед end_place.",
+                "Два имени получают значения по соответствующим позициям.",
+                "Одно значение без запятой остаётся строкой, а завершающая запятая создаёт tuple.",
+                "Печатаются пара, распакованные значения, строка и одноэлементный tuple.",
+            ],
+            "names": ["start_place", "end_place", "single_place", "route", "start", "finish", "grouped", "single"],
+            "calls": ["print"],
+        },
+        "hints": [
+            "Tuple из двух значений записывается через запятую. Имена слева при распаковке тоже перечисляются в порядке значений.",
+            "Скобки вокруг одного значения его не меняют. Чтобы создать tuple из одного элемента, оставим запятую перед закрывающей скобкой.",
+            "Печатаем каждый результат, чтобы сравнить строку с tuple, не опираясь на объяснение.",
+        ],
+        "starter_code": (
+            "route = (start_place, start_place)  # Исправьте: вторым должно быть end_place\n"
+            "start, finish = route\n"
+            "grouped = (single_place,)  # Исправьте: для строки уберите запятую\n"
+            "single = (single_place)  # Исправьте: для tuple добавьте запятую\n"
+            "print(route)\n"
+            "print(start)\n"
+            "print(finish)\n"
+            "print(grouped)\n"
+            "print(single)\n"
+        ),
+        "tests": [
+            {
+                "name": "Два разных места",
+                "namespace": {"start_place": "Парк", "end_place": "Берег", "single_place": "Маяк"},
+                "expected": "('Парк', 'Берег')\nПарк\nБерег\nМаяк\n('Маяк',)",
+                "assert": "stdout",
+            },
+            {
+                "name": "Новые исходные строки",
+                "namespace": {"start_place": "Север", "end_place": "Юг", "single_place": "Площадь"},
+                "expected": "('Север', 'Юг')\nСевер\nЮг\nПлощадь\n('Площадь',)",
+                "assert": "stdout",
+            },
+        ],
+        "reference_code": (
+            "route = (start_place, end_place)\n"
+            "start, finish = route\n"
+            "grouped = (single_place)\n"
+            "single = (single_place,)\n"
+            "print(route)\n"
+            "print(start)\n"
+            "print(finish)\n"
+            "print(grouped)\n"
+            "print(single)\n"
+        ),
+    },
+    {
+        "title": "Оставим только уникальные названия",
+        "level": "easy",
+        "mode": "script",
+        "prompt": "Платформа задаёт список названий с возможными повторами. Получим множество разных названий и проверим наличие двух значений, не полагаясь на порядок печати.",
+        "contract": {
+            "given": "Переменные place_names, wanted_place и missing_place содержат готовые значения. Список может быть пустым.",
+            "given_items": [
+                "place_names содержит названия, в том числе возможные повторы.",
+                "wanted_place есть в списке, если он не пустой.",
+                "missing_place отсутствует в списке.",
+            ],
+            "todo": "Сохраним множество в unique_places, затем выведем число уникальных названий и результаты двух проверок принадлежности.",
+            "todo_items": [
+                "Создайте unique_places из place_names.",
+                "Выведите количество уникальных названий.",
+                "Проверьте через in, есть ли wanted_place и missing_place.",
+            ],
+            "check": "Проверка использует повторы, пустой и одноэлементный список. Критерий сравнивает число и членство, а не печатный порядок set.",
+        },
+        "requirements": {
+            "items": [
+                "Set создаётся из исходного списка.",
+                "Повторные строки представлены одним значением.",
+                "Проверяются присутствующее и отсутствующее значения.",
+            ],
+            "names": ["place_names", "wanted_place", "missing_place", "unique_places"],
+            "calls": ["set", "len", "print"],
+        },
+        "hints": [
+            "Вызов set получает исходную последовательность и создаёт коллекцию уникальных значений.",
+            "Для количества используем знакомую len. Для двух вопросов о наличии применяем in.",
+            "Не печатаем set для точного сравнения строк: проверка оценивает состав и членство.",
+        ],
+        "starter_code": (
+            "unique_places = set()  # Проверим, как получить множество из исходного списка\n"
+            "print(len(unique_places))\n"
+            "print(wanted_place in unique_places)\n"
+            "print(missing_place in unique_places)\n"
+        ),
+        "tests": [
+            {
+                "name": "Повторные и разные названия",
+                "namespace": {
+                    "place_names": ["Парк", "Берег", "Парк", "Маяк"],
+                    "wanted_place": "Берег",
+                    "missing_place": "Сад",
+                },
+                "expected": "3\nTrue\nFalse",
+                "assert": "stdout",
+            },
+            {
+                "name": "Пустой список",
+                "namespace": {"place_names": [], "wanted_place": "Берег", "missing_place": "Сад"},
+                "expected": "0\nFalse\nFalse",
+                "assert": "stdout",
+            },
+            {
+                "name": "Один повторяющийся вид",
+                "namespace": {
+                    "place_names": ["Площадь", "Площадь", "Площадь"],
+                    "wanted_place": "Площадь",
+                    "missing_place": "Мост",
+                },
+                "expected": "1\nTrue\nFalse",
+                "assert": "stdout",
+            },
+        ],
+        "reference_code": (
+            "unique_places = set(place_names)\n"
+            "print(len(unique_places))\n"
+            "print(wanted_place in unique_places)\n"
+            "print(missing_place in unique_places)\n"
+        ),
+    },
+    {'title': 'Сохраним историю посещений',
+     'level': 'medium',
+     'mode': 'script',
+     'prompt': 'Нужна изменяемая история посещений: порядок и повторные названия важны. Создайте отдельную историю '
+               'из visit_names, добавьте next_visit и выведите исходную историю, затем новую. Выберите подходящую '
+               'структуру самостоятельно.',
+     'contract': {'given': 'visit_names — список строк; next_visit — строка. Исходный список менять нельзя.',
+                  'todo': 'Нужна изменяемая история посещений: порядок и повторные названия важны. Создайте '
+                          'отдельную историю из visit_names, добавьте next_visit и выведите исходную историю, '
+                          'затем новую. Выберите подходящую структуру самостоятельно.',
+                  'check': 'Проверяется весь вывод на разных данных, включая граничные случаи. Исходные данные '
+                           'заданы платформой.'},
+     'requirements': {'calls': ['print']},
+     'starter_code': '# Исходные данные заданы платформой. Напишите программу самостоятельно.\n',
+     'hints': ['Сформулируйте требование: нужны ли повторы и изменение состава?',
+               'Отдельный список сохраняет порядок и допускает append. Обычное присваивание не отделяет историю.',
+               'Создайте копию перед добавлением. Выведите исходный и новый списки.'],
+     'tests': [{'name': 'Повтор важен',
+                'namespace': {'visit_names': ['Лес', 'Лес'], 'next_visit': 'Парк'},
+                'expected': "['Лес', 'Лес']\n['Лес', 'Лес', 'Парк']",
+                'assert': 'stdout'},
+               {'name': 'Пустая история',
+                'namespace': {'visit_names': [], 'next_visit': 'Дом'},
+                'expected': "[]\n['Дом']",
+                'assert': 'stdout'},
+               {'name': 'Повтор нового места',
+                'namespace': {'visit_names': ['Мост'], 'next_visit': 'Мост'},
+                'expected': "['Мост']\n['Мост', 'Мост']",
+                'assert': 'stdout'}],
+     'reference_code': 'history = visit_names.copy()\n'
+                       'history.append(next_visit)\n'
+                       'print(visit_names)\n'
+                       'print(history)\n'},
+    {'title': 'Зафиксируем начало и конец',
+     'level': 'medium',
+     'mode': 'script',
+     'prompt': 'Подготовьте фиксированную пару из departure и arrival. Распакуйте её в два имени и выведите '
+               'начало, конец, затем сравнение пары с expected_pair. Порядок ролей должен сохраниться даже при '
+               'одинаковых названиях.',
+     'contract': {'given': 'departure и arrival — строки; expected_pair — ожидаемая пара. Готовой заготовки нет.',
+                  'todo': 'Подготовьте фиксированную пару из departure и arrival. Распакуйте её в два имени и '
+                          'выведите начало, конец, затем сравнение пары с expected_pair. Порядок ролей должен '
+                          'сохраниться даже при одинаковых названиях.',
+                  'check': 'Проверяется весь вывод на разных данных, включая граничные случаи. Исходные данные '
+                           'заданы платформой.'},
+     'requirements': {'nodes': ['Tuple'], 'calls': ['print']},
+     'starter_code': '# Исходные данные заданы платформой. Напишите программу самостоятельно.\n',
+     'hints': ['Сначала выберите структуру с фиксированным порядком двух ролей.',
+               'В распаковке первое имя получает первый элемент.',
+               'Кортеж создаётся запятой: route = (departure, arrival).'],
+     'tests': [{'name': 'Разные роли',
+                'namespace': {'departure': 'Тула', 'arrival': 'Омск', 'expected_pair': ('Тула', 'Омск')},
+                'expected': 'Тула\nОмск\nTrue',
+                'assert': 'stdout'},
+               {'name': 'Одинаковые места',
+                'namespace': {'departure': 'Дом', 'arrival': 'Дом', 'expected_pair': ('Дом', 'Дом')},
+                'expected': 'Дом\nДом\nTrue',
+                'assert': 'stdout'}],
+     'reference_code': 'route = (departure, arrival)\n'
+                       'start, finish = route\n'
+                       'print(start)\n'
+                       'print(finish)\n'
+                       'print(route == expected_pair)\n'},
+    {'title': 'Выберем структуру по двум требованиям',
+     'level': 'medium',
+     'mode': 'script',
+     'prompt': 'Для маршрута нужны две фиксированные роли: начало first_stop, затем конец last_stop. Для отчёта '
+               'нужны только разные названия из place_names. Выберите структуры и сохраните результаты в '
+               'route_pair и unique_places. Выведите сравнения с expected_route и expected_unique, по одному на '
+               'строке. Обоснуйте выбор перед запуском.',
+     'contract': {'given': 'first_stop и last_stop — строки; place_names — список, включая пустой и повторяющийся. '
+                           'Ожидаемые результаты подготовлены платформой.',
+                  'todo': 'Для маршрута нужны две фиксированные роли: начало first_stop, затем конец last_stop. '
+                          'Для отчёта нужны только разные названия из place_names. Выберите структуры и сохраните '
+                          'результаты в route_pair и unique_places. Выведите сравнения с expected_route и '
+                          'expected_unique, по одному на строке. Обоснуйте выбор перед запуском.',
+                  'check': 'Проверяется весь вывод на разных данных, включая граничные случаи. Исходные данные '
+                           'заданы платформой.'},
+     'requirements': {'calls': ['print']},
+     'starter_code': '# Исходные данные заданы платформой. Напишите программу самостоятельно.\n',
+     'hints': ['Сформулируйте отдельно свойства двух результатов.',
+               'Фиксированная пара сохраняет порядок; набор разных значений не хранит повторов.',
+               'Пару создаёт tuple, уникальный состав — set(place_names).'],
+     'tests': [{'name': 'Порядок и повторы',
+                'namespace': {'first_stop': 'Лес',
+                              'last_stop': 'Мост',
+                              'place_names': ['Лес', 'Лес', 'Мост'],
+                              'expected_route': ('Лес', 'Мост'),
+                              'expected_unique': {'Мост', 'Лес'}},
+                'expected': 'True\nTrue',
+                'assert': 'stdout'},
+               {'name': 'Пустые названия',
+                'namespace': {'first_stop': 'Дом',
+                              'last_stop': 'Дом',
+                              'place_names': [],
+                              'expected_route': ('Дом', 'Дом'),
+                              'expected_unique': set()},
+                'expected': 'True\nTrue',
+                'assert': 'stdout'}],
+     'reference_code': 'route_pair = (first_stop, last_stop)\n'
+                       'unique_places = set(place_names)\n'
+                       'print(route_pair == expected_route)\n'
+                       'print(unique_places == expected_unique)\n'},
+]

@@ -19,7 +19,8 @@ from learning.course_content import (
     chapter_04 as database_api,
     chapter_02 as deeper,
     chapter_08 as deployment,
-    chapter_01 as foundations,
+    chapter_01_archive as foundations,
+    chapter_01 as foundations_12,
     chapter_09 as lms,
     chapter_05 as personal_api,
     chapter_03 as planner_api,
@@ -27,16 +28,20 @@ from learning.course_content import (
 )
 from learning.course_content.chapter_03 import block_09, block_10, block_11, block_12
 from learning.practice_helpers import merge_lesson_maps, validate_block
+from learning.course_content.chapter_01.numbering import legacy_filename as foundations_12_legacy_filename
+from learning.course_content.chapter_02.numbering import legacy_filename as deeper_legacy_filename
+from learning.course_content.chapter_04.numbering import legacy_filename as database_legacy_filename
 from routers.learning import routers
 
 
 class PracticeCatalogMigrationTests(unittest.TestCase):
     def test_every_course_uses_block_packages_and_keeps_legacy_exports(self):
         courses = (
-            ("chapter_01", "FOUNDATIONS", foundations, ((1, 5, "block_01"), (6, 10, "block_02"), (11, 15, "block_03"), (16, 20, "block_04"))),
-            ("chapter_02", "DEEPER", deeper, ((21, 27, "block_05"), (28, 35, "block_06"), (36, 38, "block_07"), (39, 44, "block_08"))),
+            ("chapter_01_archive", "FOUNDATIONS", foundations, ((1, 5, "block_01"), (6, 10, "block_02"), (11, 15, "block_03"), (16, 20, "block_04"))),
+            ("chapter_01", "FOUNDATIONS_12", foundations_12, ((1, 5, "block_01"), (6, 10, "block_02"), (11, 15, "block_03"), (16, 20, "block_04"))),
+            ("chapter_02", "DEEPER", deeper, ((21, 25, "block_05"), (26, 30, "block_06"), (31, 35, "block_07"), (36, 40, "block_08"))),
             ("chapter_03", "PLANNER_API", planner_api, ((45, 50, "block_09"), (51, 56, "block_10"), (57, 62, "block_11"), (63, 68, "block_12"))),
-            ("chapter_04", "DATABASE_API", database_api, ((69, 77, "block_13"), (78, 89, "block_14"), (90, 99, "block_15"), (100, 105, "block_16"))),
+            ("chapter_04", "DATABASE_API", database_api, ((61, 65, "block_13"), (66, 70, "block_14"), (71, 75, "block_15"), (76, 80, "block_16"))),
             ("chapter_05", "PERSONAL_API", personal_api, ((93, 98, "block_17"), (99, 104, "block_18"), (105, 110, "block_19"), (111, 116, "block_20"))),
             ("chapter_06", "POSTGRESQL", postgresql, ((117, 122, "block_21"), (123, 128, "block_22"), (129, 134, "block_23"), (135, 140, "block_24"))),
             ("chapter_07", "ASYNC", async_api, ((141, 146, "block_25"), (147, 152, "block_26"), (153, 158, "block_27"), (159, 164, "block_28"))),
@@ -49,7 +54,8 @@ class PracticeCatalogMigrationTests(unittest.TestCase):
                 self.assertTrue(course_dir.is_dir())
                 metadata = content._load_track_meta(course_dir)
                 self.assertEqual(package.TRACK_ID, metadata["id"])
-                self.assertTrue(metadata["title"].startswith(f"Глава {int(slug[-2:])}: "))
+                chapter_number = "1" if slug == "chapter_01_archive" else slug[-2:]
+                self.assertTrue(metadata["title"].startswith(f"Глава {int(chapter_number)}: "))
                 self.assertIn(package.TRACK_ID, package.TRACK_ALIASES)
                 self.assertIs(getattr(rich_practice, f"{prefix}_OVERVIEW_PRACTICE"), package.OVERVIEW_PRACTICE)
                 self.assertIs(getattr(rich_practice, f"{prefix}_PRACTICE"), package.MANUAL_PRACTICE)
@@ -87,6 +93,12 @@ class PracticeCatalogMigrationTests(unittest.TestCase):
                 identity_filename = content.PLANNER_API_IDENTITY_FILENAMES.get(
                     Path(source).name, Path(source).name
                 ) if source.startswith("chapter_03/block_12/") else Path(source).name
+                if source.startswith("chapter_01/"):
+                    identity_filename = foundations_12_legacy_filename(identity_filename)
+                if source.startswith("chapter_02/"):
+                    identity_filename = deeper_legacy_filename(identity_filename)
+                if source.startswith("chapter_04/"):
+                    identity_filename = database_legacy_filename(identity_filename)
                 expected_source = "/".join(
                     part for part in (layout["track_id"], legacy_module, identity_filename) if part
                 )
@@ -100,7 +112,7 @@ class PracticeCatalogMigrationTests(unittest.TestCase):
                     self.assertEqual(expected_module, lesson["module"])
                     self.assertEqual(expected_id, lesson["id"])
                     self.assertTrue((content.COURSE_ROOT / source).is_file())
-        first_course = content.find_track(foundations.TRACK_ID)
+        first_course = content.find_track(foundations_12.TRACK_ID)
         self.assertEqual("free", first_course["lessons"][0]["access"])
         numbered = [
             (int(match.group(1)), lesson)
@@ -110,7 +122,7 @@ class PracticeCatalogMigrationTests(unittest.TestCase):
         self.assertTrue(all(lesson["access"] == "free" for number, lesson in numbered if 1 <= number <= 5))
         self.assertTrue(all(lesson["access"] == "registered" for number, lesson in numbered if 6 <= number <= 10))
         for track in content.TRACKS:
-            if track["id"] == foundations.TRACK_ID:
+            if track["id"] in {foundations.TRACK_ID, foundations_12.TRACK_ID}:
                 continue
             for lesson in track["lessons"]:
                 expected_access = "free" if Path(lesson["source_file"]).name == "План обучения.md" else "subscription"
@@ -257,7 +269,7 @@ class PracticeMigrationAPITests(unittest.TestCase):
     def test_first_course_keeps_free_overview_and_first_block(self):
         with patch.object(routers, "get_optional_user", Mock(return_value=None)):
             status, response = self.request(
-                "/learning/lessons", params={"track": foundations.TRACK_ID}
+                "/learning/lessons", params={"track": foundations_12.TRACK_ID}
             )
         self.assertEqual(200, status)
         available = {
@@ -267,7 +279,7 @@ class PracticeMigrationAPITests(unittest.TestCase):
         }
         expected = {
             lesson["source_file"]
-            for lesson in content.find_track(foundations.TRACK_ID)["lessons"]
+            for lesson in content.find_track(foundations_12.TRACK_ID)["lessons"]
             if Path(lesson["source_file"]).name in {"План обучения.md", "Теория месяца.md"}
             or (match := re.match(r"^(\d+)", Path(lesson["source_file"]).name))
             and 1 <= int(match.group(1)) <= 5

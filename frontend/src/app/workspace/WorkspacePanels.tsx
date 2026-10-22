@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import type { IDockviewPanelProps } from "dockview-react";
 import { AccountWorkspace } from "../../features/account";
 import { AdminScreen } from "../../features/admin";
@@ -37,6 +37,7 @@ export function LessonsDrawerContent() {
   const [openModules, setOpenModules] = useState<Set<string>>(() => new Set(course.lessonModules));
   useEffect(() => { setOpenModules(new Set(course.lessonModules)); }, [course.lessonModules]);
   const entry = course.courses[course.activeTrackId];
+  if (!course.tracksLoaded && !course.tracksError) return <div className="dock-explorer"><LessonLoading /></div>;
   return <div className="dock-explorer">
     {(course.tracksError || entry?.error) && <div className="panel-message" role="alert">
       <p>{course.tracksError || entry?.error}</p>
@@ -59,9 +60,14 @@ function LearningPanel({ kind, ...props }: IDockviewPanelProps & { kind: LessonP
   const target = isLessonTarget(props.params) ? props.params : null;
   const trackId = target?.trackId ?? "";
   const lessonId = target?.lessonId ?? "";
-  useEffect(() => { if (opened && trackId) void course.ensureTrack(trackId); }, [opened, trackId, course.ensureTrack]);
   const entry = course.courses[trackId];
-  const lesson = entry?.lessons.find((item) => item.id === lessonId);
+  const summary = entry?.lessons.find((item) => item.id === lessonId);
+  const material = course.materials[lessonId];
+  const lesson = useMemo(() => summary ? { ...material?.lesson, ...summary } : undefined, [summary, material?.lesson]);
+  const locked = Boolean(summary && (isLessonUnavailable(summary) || (summary.access === "registered" && !user) || (summary.access === "subscription" && !user?.has_active_subscription)));
+  useEffect(() => {
+    if (opened && summary && !locked) void course.ensureLesson(trackId, lessonId);
+  }, [opened, Boolean(summary), locked, trackId, lessonId, course.ensureLesson]);
   const lessonNumber = lesson?.title.match(/^(\d+(?:\.\d+)*)\s*\./)?.[1];
   useEffect(() => {
     if (lesson) props.api.setTitle(`${lessonNumber ? `${lessonNumber} ` : ""}${kind === "theory" ? "Теория" : "Практика"}`);
@@ -69,6 +75,9 @@ function LearningPanel({ kind, ...props }: IDockviewPanelProps & { kind: LessonP
 
   if (!opened) return null;
   if (!target) return <div className="panel-message">Материал недоступен.</div>;
+  if (!entry && course.tracksError) return <div className="panel-message" role="alert">
+    <p>{course.tracksError}</p><button className="secondary-action" onClick={() => void course.loadTracks()}>Повторить загрузку</button>
+  </div>;
   if (!entry || (entry.loading && !lesson)) return <LessonLoading />;
   if (entry.error) return <div className="panel-message" role="alert">
     <p>{entry.error}</p><button className="secondary-action" onClick={() => void course.ensureTrack(trackId, true)}>Повторить загрузку</button>
@@ -77,6 +86,10 @@ function LearningPanel({ kind, ...props }: IDockviewPanelProps & { kind: LessonP
     <h2>Материал недоступен</h2><p>Урок удалён или больше не входит в этот курс.</p>
     <button className="secondary-action" onClick={() => props.api.close()}>Закрыть вкладку</button>
   </div>;
+  if (!locked && material?.error) return <div className="panel-message" role="alert">
+    <p>{material.error}</p><button className="secondary-action" onClick={() => void course.ensureLesson(trackId, lessonId, true)}>Повторить загрузку</button>
+  </div>;
+  if (!locked && !material?.lesson) return <LessonLoading />;
   const nextLesson = entry.lessons[entry.lessons.findIndex((item) => item.id === lessonId) + 1];
   return <article className="lesson-stage dock-lesson" aria-label={`${kind === "theory" ? "Теория" : "Практика"}: ${lesson.title}`}>
     <LessonTransition key={`${kind}:${trackId}:${lessonId}`}>{isLessonUnavailable(lesson) || (lesson.access === "registered" && !user) || (lesson.access === "subscription" && !user?.has_active_subscription) ? <LockedLessonView lesson={lesson} onRequireAuth={onRequireAuth} isGuest={!user} /> :
@@ -86,7 +99,7 @@ function LearningPanel({ kind, ...props }: IDockviewPanelProps & { kind: LessonP
       </LessonNavigationProvider></AsyncBoundary> :
       <AsyncBoundary key={`practice:${trackId}:${lessonId}`} fallback={<LessonLoading />}>
       <LearningPracticeView key={`${trackId}:${lessonId}`} lesson={lesson} isAuthenticated={Boolean(user)} onRequireAuth={onRequireAuth}
-        onLessonCompleted={() => course.handleLessonCompleted(trackId)} progressOwnerKey={user ? String(user.id) : "guest"} /></AsyncBoundary>}</LessonTransition>
+        onLessonCompleted={() => course.handleLessonCompleted(trackId, lessonId)} progressOwnerKey={user ? String(user.id) : "guest"} /></AsyncBoundary>}</LessonTransition>
   </article>;
 }
 function TheoryPanel(props: IDockviewPanelProps) { return <LearningPanel {...props} kind="theory" />; }

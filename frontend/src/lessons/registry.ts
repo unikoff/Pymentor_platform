@@ -7,7 +7,6 @@ import { pages as plannerApi } from "./chapter_03";
 import { pages as postgresqlStudyhub } from "./chapter_06";
 import { pages as pythonDeeper } from "./chapter_02";
 import { pages as pythonFoundations } from "./chapter_01";
-import { pages as pythonFoundations12 } from "./chapter_01_2";
 import { pages as studyhubLmsRelease } from "./chapter_09";
 
 /**
@@ -22,7 +21,6 @@ import { pages as studyhubLmsRelease } from "./chapter_09";
  */
 export const richLessonPages: Record<string, ComponentType<{ module?: string }>> = {
   ...pythonFoundations,
-  ...pythonFoundations12,
   ...pythonDeeper,
   ...plannerApi,
   ...fastapiSqlalchemy,

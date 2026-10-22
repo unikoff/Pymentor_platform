@@ -6,8 +6,8 @@ import re
 from typing import Any
 
 from learning.course_content import chapter_03 as _planner_api
-from learning.course_content import chapter_01 as _foundations
-from learning.course_content import chapter_01_2 as _foundations_12
+from learning.course_content import chapter_01_archive as _foundations
+from learning.course_content import chapter_01 as _foundations_12
 from learning.course_content import chapter_02 as _deeper
 from learning.course_content import chapter_04 as _database_api
 from learning.course_content import chapter_05 as _personal_api

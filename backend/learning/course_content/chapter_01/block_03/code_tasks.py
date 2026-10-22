@@ -1,990 +1,857 @@
 from typing import Any
 
-CODE_TASKS: dict[int | str, list[dict[str, Any]]] = {
-    11: [
-        {
-            "title": "Изменяем список и читаем результат pop",
-            "level": "easy",
-            "mode": "script",
-            "prompt": (
-                "В программе заданы values, replacement, added, target и absent. Добавим added одним элементом, "
-                "заменим позицию 0, сохраним результат pop(1), а remove вызовем только после проверки наличия target. "
-                "Выведем изменённый список, удалённое значение, длину списка и проверку отсутствия absent."
-            ),
-            "contract": {
-                "given": "values содержит не менее трёх целых чисел; added является отдельным списком. Остальные имена содержат значения для операций и проверки.",
-                "todo": "Последовательно добавим один объект, заменим существующую позицию, удалим элемент по индексу и безопасно удалим первое совпадение target.",
-                "check": "Два набора данных проверяют повторяющееся значение и отсутствующее target. Вывод показывает конечное состояние и результат pop.",
-            },
-            "requirements": {
-                "items": [
-                    "Список получает added одним элементом, позиция 0 заменяется, а результат pop(1) сохраняется в removed",
-                    "remove применяется только при наличии target и удаляет первое совпадение",
-                    "В конце выводятся values, removed, длина списка и результат проверки absent not in values",
-                ],
-                "calls": ["print", "len"],
-                "attributes": ["append", "pop", "remove"],
-                "nodes": ["If"],
-            },
-            "hints": [
-                "Сохраним порядок операций: добавление, замена, pop, затем условное удаление.",
-                "append добавляет объект целиком; здесь added сам является списком.",
-                "Для последнего значения сравним результат проверки absent not in values с True.",
+# Add interpreter/code tasks for each lesson after authoring its concept-based material.
+CODE_TASKS: dict[int | str, list[dict[str, Any]]] = {number: [] for number in (11, "11.1", "11.2", 12, "12.1", 13, "13.1", "13.2", 14, "14.1", "14.2", 15, "15.1")}
+
+CODE_TASKS["11.1"] = [
+    {
+        "title": "Проследим два вызова и сохраним результат",
+        "level": "easy",
+        "mode": "script",
+        "prompt": "Платформа задаёт числа minutes, first_part, second_part и extra. Определите функцию add_pause(minutes, extra), вызовите её для обеих частей и сохраните результаты под разными внешними именами. Выведите два результата по порядку, затем выведите исходное внешнее minutes.",
+        "contract": {
+            "given": "Платформа задаёт целые числа minutes, first_part, second_part и extra. Внешнее minutes имеет то же написание, что и параметр функции.",
+            "given_items": [
+                "first_part и second_part содержат разные значения для двух вызовов.",
+                "extra содержит число, которое добавляется к каждому аргументу.",
+                "Внешнее minutes нужно вывести после результатов вызовов.",
             ],
-            "starter_code": (
-                "# values, replacement, added, target и absent уже заданы\n"
-                "# Выполним операции и выведем их результат\n"
-            ),
-            "tests": [
-                {
-                    "name": "повторы и удаление первого совпадения",
-                    "namespace": {
-                        "values": [1, 15, 15, 15, 40],
-                        "replacement": 2,
-                        "added": [25, 35],
-                        "target": 15,
-                        "absent": 99,
-                    },
-                    "expected": "[2, 15, 40, [25, 35]]\n15\n4\nTrue",
-                    "assert": "stdout",
-                },
-                {
-                    "name": "target отсутствует",
-                    "namespace": {
-                        "values": [8, 2, 9],
-                        "replacement": 4,
-                        "added": ["extra"],
-                        "target": 12,
-                        "absent": 2,
-                    },
-                    "expected": "[4, 9, ['extra']]\n2\n3\nTrue",
-                    "assert": "stdout",
-                },
+            "todo": "Определим add_pause(minutes, extra), вернём сумму параметров и сохраним ответы двух вызовов раздельно.",
+            "todo_items": [
+                "Вызовем функцию сначала с first_part и extra, затем с second_part и extra.",
+                "Сохраним результаты вызовов под именами first_total и second_total.",
+                "Выведем first_total, second_total и внешнее minutes в указанном порядке.",
             ],
-            "reference_code": (
-                "values.append(added)\n"
-                "values[0] = replacement\n"
-                "removed = values.pop(1)\n"
-                "if target in values:\n"
-                "    values.remove(target)\n"
-                "print(values)\n"
-                "print(removed)\n"
-                "print(len(values))\n"
-                "print(absent not in values)\n"
-            ),
-        }
-    ],
-    "11.1": [
-        {
-            "title": "Сравниваем кортеж и множество",
-            "level": "easy",
-            "mode": "script",
-            "prompt": (
-                "Программа получает список values с повторяющимся значением. Вывод показывает упорядоченный результат, число уникальных значений, наличие 7 и исходный список после преобразования."
-            ),
-            "contract": {
-                "given": "В редакторе подготовлен список values = [7, 2, 7, 4].",
-                "todo": "Программа показывает оба представления, результаты проверок и исходный список.",
-                "check": "Проверка подтверждает порядок и повторы в ordered, количество разных значений, наличие 7 и сохранность values.",
-            },
-            "requirements": {
-                "items": [
-                    "ordered получается из values вызовом tuple.",
-                    "unique получается из values вызовом set.",
-                    "Наличие 7 проверяется оператором in.",
-                ],
-                "calls": ["tuple", "set", "len", "print"],
-            },
-            "hints": [
-                "Сначала назовём свойства исходного списка: порядок, повторы и возможность изменения.",
-                "Для сравнения используем порядок кортежа, а уникальность множества проверим длиной и принадлежностью.",
-                "Отдельно выведем исходный список после преобразований.",
-            ],
-            "starter_code": (
-                "values = [7, 2, 7, 4]\n"
-                "\n"
-                "# Создадим ordered и unique, затем выведем результаты проверок\n"
-            ),
-            "tests": [
-                {
-                    "name": "повтор и исходный список",
-                    "expected": "(7, 2, 7, 4)\n3\nTrue\n[7, 2, 7, 4]",
-                    "assert": "stdout",
-                }
-            ],
-            "reference_code": (
-                "values = [7, 2, 7, 4]\n"
-                "ordered = tuple(values)\n"
-                "unique = set(values)\n"
-                "print(ordered)\n"
-                "print(len(unique))\n"
-                "print(7 in unique)\n"
-                "print(values)\n"
-            ),
+            "check": "Данные меняются между тестами. Оба результата должны соответствовать своим аргументам, а внешнее minutes должно остаться прежним.",
         },
-        {
-            "title": "Исправляем выбор операции",
-            "level": "easy",
-            "mode": "script",
-            "prompt": (
-                "В завершённой программе ordered допускает замену значения по позиции, а unique сохраняет только разные значения. Вывод показывает новое упорядоченное содержимое, размер множества и наличие 20."
-            ),
-            "contract": {
-                "given": "Изначально ordered содержит кортеж (12, 18), а unique множество {12, 18}.",
-                "todo": "После исправления первое значение ordered равно 20, а unique содержит 20.",
-                "check": "Программа выводит [20, 18], число 3 и True. Проверка не зависит от порядка вывода множества.",
-            },
-            "requirements": {
-                "items": [
-                    "Для замены позиции используется изменяемый список.",
-                    "Новое уникальное значение добавляется методом множества add.",
-                    "Порядок элементов множества не входит в результат.",
-                ],
-                "calls": ["len", "print"],
-            },
-            "hints": [
-                "Сопоставим каждую операцию с требованием: заменить позицию или добавить уникальное значение.",
-                "Первое исправление должно дать возможность замены по индексу, второе использует метод множества.",
-                "Запустим ещё раз после первой ошибки, чтобы увидеть и проверить следующую операцию.",
+        "requirements": {
+            "items": [
+                "Функция add_pause принимает minutes и extra и передаёт их сумму через return.",
+                "Два вызова получают first_part и second_part по отдельности.",
+                "Оба возвращённых значения сохраняются под разными внешними именами.",
+                "После вызовов выводятся оба результата и неизменённое внешнее minutes.",
             ],
-            "starter_code": (
-                "ordered = (12, 18)\n"
-                "ordered[0] = 20\n"
-                "\n"
-                "unique = {12, 18}\n"
-                "unique[0] = 20\n"
-                "\n"
-                "print(ordered)\n"
-                "print(len(unique))\n"
-                "print(20 in unique)\n"
-            ),
-            "tests": [
-                {
-                    "name": "замена и добавление",
-                    "expected": "[20, 18]\n3\nTrue",
-                    "assert": "stdout",
-                }
-            ],
-            "reference_code": (
-                "ordered = [12, 18]\n"
-                "ordered[0] = 20\n"
-                "\n"
-                "unique = {12, 18}\n"
-                "unique.add(20)\n"
-                "\n"
-                "print(ordered)\n"
-                "print(len(unique))\n"
-                "print(20 in unique)\n"
-            ),
+            "names": ["add_pause", "minutes", "extra", "first_part", "second_part", "first_total", "second_total"],
+            "nodes": ["FunctionDef", "Return", "Assign", "Call"],
+            "calls": ["add_pause", "print"],
         },
-        {
-            "title": "Разделяем и соединяем строки",
-            "level": "easy",
-            "mode": "script",
-            "prompt": (
-                "Программа получает строки text и raw_fields. Она разделяет text по группам пробелов, raw_fields по символу | и соединяет слова строкой-разделителем \" / \". Пустой результат отображается как <empty>."
-            ),
-            "contract": {
-                "given": "Редактор передаёт строки text и raw_fields; они могут быть пустыми, пробельными или содержать соседние разделители.",
-                "todo": "Вывод содержит два результата разбиения и соединённую строку.",
-                "check": "Результаты показывают нормализацию пробелов, сохранение пустых полей у явного разделителя и обработку пустого joined.",
+        "hints": [
+            "Внутри add_pause имя minutes обозначает параметр этого вызова. Внешнее имя с таким написанием останется отдельным.",
+            "Чтобы передать результат наружу, используем return. Затем присваивание рядом с вызовом сохранит его под внешним именем.",
+            "Проверим два результата и только после них выведем исходное minutes.",
+        ],
+        "starter_code": (
+            "# Платформа задаёт minutes, first_part, second_part и extra.\n"
+            "# Определите add_pause(minutes, extra).\n"
+            "# Вызовите функцию дважды, сохраните ответы и выведите их вместе с minutes.\n"
+        ),
+        "tests": [
+            {
+                "name": "Два независимых вызова",
+                "namespace": {"minutes": 12, "first_part": 20, "second_part": 35, "extra": 5},
+                "expected": "25\n40\n12",
+                "assert": "stdout",
             },
-            "requirements": {
-                "items": [
-                    "Для пробельной строки используется split без аргумента.",
-                    "Для raw_fields задан явный разделитель |.",
-                    "Слова соединяются строкой-разделителем \" / \".",
-                ],
-                "calls": ["print"],
-                "attributes": ["split", "join"],
+            {
+                "name": "Изменённые числа",
+                "namespace": {"minutes": 30, "first_part": 3, "second_part": 9, "extra": 2},
+                "expected": "5\n11\n30",
+                "assert": "stdout",
             },
-            "hints": [
-                "Для пробельного текста начнём с split без аргумента.",
-                "Для raw_fields передадим символ | явно, тогда соседние разделители сохранят пустое поле.",
-                "Строка-разделитель вызывает join; пустое соединение сравним с пустой строкой.",
+        ],
+        "reference_code": (
+            "def add_pause(minutes, extra):\n"
+            "    total = minutes + extra\n"
+            "    return total\n"
+            "\n"
+            "first_total = add_pause(first_part, extra)\n"
+            "second_total = add_pause(second_part, extra)\n"
+            "print(first_total)\n"
+            "print(second_total)\n"
+            "print(minutes)\n"
+        ),
+    },
+    {
+        "title": "Шаг 1 из 4. Перепривяжем параметр",
+        "level": "easy",
+        "mode": "script",
+        "prompt": "Платформа задаёт список replace_source и строку replacement_topic. Определите replace_local(items, new_topic), чтобы внутри функции локальное имя items стало обозначать новый список с new_topic. Верните новый список, сохраните ответ вызова в replacement_result и выведите replace_source, затем replacement_result, каждое значение с новой строки.",
+        "contract": {
+            "given": "Платформа задаёт replace_source, отдельный список строк, и replacement_topic, новую строку.",
+            "todo": "Функция replace_local перепривязывает локальный параметр к новому списку и возвращает его вызывающему коду.",
+            "check": "При разных данных replace_source остаётся прежним, а replacement_result содержит только replacement_topic.",
+        },
+        "requirements": {
+            "items": [
+                "Функция заменяет связь локального items новым списком с replacement_topic.",
+                "Внешний код сохраняет возвращённый список в replacement_result.",
+                "Сначала печатается replace_source, затем replacement_result, по одному списку на строке.",
             ],
-            "starter_code": (
-                "# text и raw_fields уже созданы\n"
-                "# Разделим строки, соединим words и выведем результаты\n"
-            ),
-            "tests": [
-                {
-                    "name": "пробелы и пустые поля",
-                    "namespace": {"text": "  code   review  ", "raw_fields": "python|sql||"},
-                    "expected": "['code', 'review']\n['python', 'sql', '', '']\ncode / review",
-                    "assert": "stdout",
+            "names": ["replace_local", "items", "new_topic", "replace_source", "replacement_topic", "replacement_result"],
+            "nodes": ["FunctionDef", "Assign", "Return", "Call"],
+            "calls": ["replace_local", "print"],
+        },
+        "hints": [
+            "Присваивание новому списку меняет локальную связь items, но не имя replace_source снаружи.",
+            "Верните локальное items, затем отдельно сохраните результат вызова.",
+            "Сравните два списка выводом: сначала исходный, затем возвращённый.",
+        ],
+        "starter_code": (
+            "# Платформа задаёт replace_source и replacement_topic.\n"
+            "# Определите replace_local(items, new_topic), вызовите её и выведите оба списка.\n"
+        ),
+        "tests": [
+            {
+                "name": "Исходный список сохраняется",
+                "namespace": {
+                    "replace_source": ["Роман", "Стих"],
+                    "replacement_topic": "Очерк",
                 },
-                {
-                    "name": "пустой текст и соседние разделители",
-                    "namespace": {"text": "   ", "raw_fields": "a||b"},
-                    "expected": "[]\n['a', '', 'b']\n<empty>",
-                    "assert": "stdout",
+                "expected": "['Роман', 'Стих']\n['Очерк']",
+                "assert": "stdout",
+            },
+            {
+                "name": "Пустой исходный список",
+                "namespace": {"replace_source": [], "replacement_topic": "Очерк"},
+                "expected": "[]\n['Очерк']",
+                "assert": "stdout",
+            },
+        ],
+        "reference_code": (
+            "def replace_local(items, new_topic):\n"
+            "    items = [new_topic]\n"
+            "    return items\n"
+            "\n"
+            "replacement_result = replace_local(replace_source, replacement_topic)\n"
+            "print(replace_source)\n"
+            "print(replacement_result)\n"
+        ),
+    },
+    {
+        "title": "Шаг 2 из 4. Изменим переданный список",
+        "level": "easy",
+        "mode": "script",
+        "prompt": "Платформа задаёт список shared_source и строку shared_topic. Определите append_shared(items, new_topic), чтобы функция добавила новую строку в переданный список методом append. Вызовите функцию и выведите изменённый shared_source.",
+        "contract": {
+            "given": "Платформа задаёт shared_source, список строк, и shared_topic, новую строку.",
+            "todo": "Вызов append_shared добавляет shared_topic в переданный список.",
+            "check": "Тестовые данные меняются; после вызова shared_source содержит прежние элементы и shared_topic в конце.",
+        },
+        "requirements": {
+            "items": [
+                "Функция append_shared изменяет переданный список методом append.",
+                "После вызова печатается shared_source, включая добавленную строку.",
+            ],
+            "names": ["append_shared", "items", "new_topic", "shared_source", "shared_topic"],
+            "nodes": ["FunctionDef", "Call"],
+            "calls": ["append_shared", "print"],
+            "attributes": ["append"],
+        },
+        "hints": [
+            "В этой функции меняется сам объект списка, который уже обозначает shared_source.",
+            "Вызовите append_shared с исходным списком и новой строкой, затем выведите исходное имя.",
+        ],
+        "starter_code": (
+            "# Платформа задаёт shared_source и shared_topic.\n"
+            "# Определите append_shared(items, new_topic), вызовите её и выведите shared_source.\n"
+        ),
+        "tests": [
+            {
+                "name": "Добавляем к двум элементам",
+                "namespace": {"shared_source": ["Роман", "Стих"], "shared_topic": "Рассказ"},
+                "expected": "['Роман', 'Стих', 'Рассказ']",
+                "assert": "stdout",
+            },
+            {
+                "name": "Добавляем в пустой список",
+                "namespace": {"shared_source": [], "shared_topic": "Рисунок"},
+                "expected": "['Рисунок']",
+                "assert": "stdout",
+            },
+        ],
+        "reference_code": (
+            "def append_shared(items, new_topic):\n"
+            "    items.append(new_topic)\n"
+            "\n"
+            "append_shared(shared_source, shared_topic)\n"
+            "print(shared_source)\n"
+        ),
+    },
+    {
+        "title": "Шаг 3 из 4. Создадим отдельную копию",
+        "level": "easy",
+        "mode": "script",
+        "prompt": "Платформа задаёт список copy_source и строку copy_topic. Определите make_variant(items, new_topic), чтобы функция скопировала список, добавила строку в копию и вернула её. Сохраните ответ вызова в copy_result и выведите copy_source, затем copy_result, каждое значение с новой строки.",
+        "contract": {
+            "given": "Платформа задаёт copy_source, список строк, и copy_topic, новую строку.",
+            "todo": "Функция make_variant возвращает отдельную копию с добавленным copy_topic.",
+            "check": "На разных входах copy_source сохраняет прежние элементы, а copy_result содержит те же элементы и новую строку в конце.",
+        },
+        "requirements": {
+            "items": [
+                "Функция создаёт копию внешнего списка методом copy и добавляет строку в копию методом append.",
+                "Функция возвращает копию, а внешний код сохраняет её в copy_result.",
+                "Сначала печатается неизменённый copy_source, затем copy_result.",
+            ],
+            "names": ["make_variant", "items", "new_topic", "variant", "copy_source", "copy_topic", "copy_result"],
+            "nodes": ["FunctionDef", "Assign", "Return", "Call"],
+            "calls": ["make_variant", "print"],
+            "attributes": ["copy", "append"],
+        },
+        "hints": [
+            "Сначала свяжите новое локальное имя с копией items.",
+            "Добавьте строку в копию, верните её и сохраните результат вызова отдельно от copy_source.",
+        ],
+        "starter_code": (
+            "# Платформа задаёт copy_source и copy_topic.\n"
+            "# Определите make_variant(items, new_topic), вызовите её и выведите оба списка.\n"
+        ),
+        "tests": [
+            {
+                "name": "Исходник и копия",
+                "namespace": {"copy_source": ["Эскиз", "Краски"], "copy_topic": "Плакат"},
+                "expected": "['Эскиз', 'Краски']\n['Эскиз', 'Краски', 'Плакат']",
+                "assert": "stdout",
+            },
+            {
+                "name": "Копируем пустой список",
+                "namespace": {"copy_source": [], "copy_topic": "Портрет"},
+                "expected": "[]\n['Портрет']",
+                "assert": "stdout",
+            },
+        ],
+        "reference_code": (
+            "def make_variant(items, new_topic):\n"
+            "    variant = items.copy()\n"
+            "    variant.append(new_topic)\n"
+            "    return variant\n"
+            "\n"
+            "copy_result = make_variant(copy_source, copy_topic)\n"
+            "print(copy_source)\n"
+            "print(copy_result)\n"
+        ),
+    },
+    {
+        "title": "Шаг 4 из 4. Сравним результаты",
+        "level": "easy",
+        "mode": "script",
+        "prompt": (
+            "Заготовка содержит три функции из предыдущих шагов. Платформа задаёт три независимых списка с одинаковыми начальными элементами и три новые строки. "
+            "Вызовите каждую функцию со своим списком и выведите три строки сравнения: пару replace_source и replacement_result, shared_source после изменения, затем пару copy_source и copy_result. "
+            "В паре списки печатаются через один пробел. Пример вывода:\n"
+            "['Роман', 'Стих'] ['Очерк']\n"
+            "['Роман', 'Стих', 'Рассказ']\n"
+            "['Роман', 'Стих'] ['Роман', 'Стих', 'Сказка']"
+        ),
+        "contract": {
+            "given": "Заготовка содержит replace_local, append_shared и make_variant. Платформа задаёт отдельные replace_source, shared_source и copy_source с одинаковыми начальными элементами, а также replacement_topic, shared_topic и copy_topic.",
+            "todo": "Вызовем каждую функцию на своём списке и выведем три строки, чтобы сопоставить перепривязку, изменение исходного объекта и работу с копией.",
+            "todo_items": [
+                "Сохраним ответы replace_local и make_variant, а append_shared вызовем для shared_source.",
+                "Напечатаем три строки с парами и порядком, указанными в условии.",
+            ],
+            "check": "Тесты меняют все начальные элементы и новые строки. replace_source и copy_source остаются прежними, shared_source получает новую строку, а copy_result содержит её вместе с прежними элементами.",
+        },
+        "requirements": {
+            "items": [
+                "Каждая готовая функция вызывается со своим списком и соответствующей строкой.",
+                "Результат перепривязки сохраняется отдельно, а результат копирования не изменяет copy_source.",
+                "Три строки выводятся в формате и порядке из условия.",
+            ],
+            "names": [
+                "replace_local",
+                "append_shared",
+                "make_variant",
+                "replace_source",
+                "replacement_topic",
+                "replacement_result",
+                "shared_source",
+                "shared_topic",
+                "copy_source",
+                "copy_topic",
+                "copy_result",
+            ],
+            "nodes": ["FunctionDef", "Assign", "Return", "Call"],
+            "calls": ["replace_local", "append_shared", "make_variant", "print"],
+            "attributes": ["append", "copy"],
+        },
+        "hints": [
+            "Сохраните возвращаемые списки только для replace_local и make_variant.",
+            "Напечатайте пары исходника и результата рядом, а список после append выведите отдельной строкой.",
+        ],
+        "starter_code": (
+            "def replace_local(items, new_topic):\n"
+            "    items = [new_topic]\n"
+            "    return items\n"
+            "\n"
+            "def append_shared(items, new_topic):\n"
+            "    items.append(new_topic)\n"
+            "\n"
+            "def make_variant(items, new_topic):\n"
+            "    variant = items.copy()\n"
+            "    variant.append(new_topic)\n"
+            "    return variant\n"
+            "\n"
+            "# Платформа задаёт три исходных списка и три новые строки.\n"
+            "# В парной строке print(first_list, second_list) разделяет списки пробелом.\n"
+            "# Вызовите функции и выведите три строки сравнения по условию.\n"
+        ),
+        "tests": [
+            {
+                "name": "Сравниваем списки тем",
+                "namespace": {
+                    "replace_source": ["Роман", "Стих"],
+                    "shared_source": ["Роман", "Стих"],
+                    "copy_source": ["Роман", "Стих"],
+                    "replacement_topic": "Очерк",
+                    "shared_topic": "Рассказ",
+                    "copy_topic": "Сказка",
                 },
-                {
-                    "name": "пустые строки",
-                    "namespace": {"text": "", "raw_fields": ""},
-                    "expected": "[]\n['']\n<empty>",
-                    "assert": "stdout",
+                "expected": "['Роман', 'Стих'] ['Очерк']\n['Роман', 'Стих', 'Рассказ']\n['Роман', 'Стих'] ['Роман', 'Стих', 'Сказка']",
+                "assert": "stdout",
+            },
+            {
+                "name": "Сравниваем другие значения",
+                "namespace": {
+                    "replace_source": ["Эскиз", "Краски"],
+                    "shared_source": ["Эскиз", "Краски"],
+                    "copy_source": ["Эскиз", "Краски"],
+                    "replacement_topic": "Плакат",
+                    "shared_topic": "Рисунок",
+                    "copy_topic": "Портрет",
                 },
-            ],
-            "reference_code": (
-                "words = text.split()\n"
-                "fields = raw_fields.split('|')\n"
-                "joined = ' / '.join(words)\n"
-                "print(words)\n"
-                "print(fields)\n"
-                "if joined != '':\n"
-                "    print(joined)\n"
-                "else:\n"
-                "    print('<empty>')\n"
-            ),
+                "expected": "['Эскиз', 'Краски'] ['Плакат']\n['Эскиз', 'Краски', 'Рисунок']\n['Эскиз', 'Краски'] ['Эскиз', 'Краски', 'Портрет']",
+                "assert": "stdout",
+            },
+        ],
+        "reference_code": (
+            "def replace_local(items, new_topic):\n"
+            "    items = [new_topic]\n"
+            "    return items\n"
+            "\n"
+            "def append_shared(items, new_topic):\n"
+            "    items.append(new_topic)\n"
+            "\n"
+            "def make_variant(items, new_topic):\n"
+            "    variant = items.copy()\n"
+            "    variant.append(new_topic)\n"
+            "    return variant\n"
+            "\n"
+            "replacement_result = replace_local(replace_source, replacement_topic)\n"
+            "append_shared(shared_source, shared_topic)\n"
+            "copy_result = make_variant(copy_source, copy_topic)\n"
+            "print(replace_source, replacement_result)\n"
+            "print(shared_source)\n"
+            "print(copy_source, copy_result)\n"
+        ),
+    },
+]
+
+CODE_TASKS["11.2"] = [
+    {
+        "title": "Исправляем ключ в созданной записи",
+        "level": "easy",
+        "mode": "script",
+        "prompt": "В первом вызове запись читается правильно, затем появляется KeyError. Сверим подготовленную трассу с исходником и исправим источник записи, чтобы все три чтения завершились.",
+        "contract": {
+            "given": "read_points получает готовую запись и две записи от make_points. В каждой должен быть обязательный ключ points.",
+            "todo": "Исправим причину KeyError, сохранив чтение готовой записи и два новых значения.",
+            "check": "Вывод содержит 4, 8 и 0 по одному числу на строке.",
         },
-        {
-            "title": "Распаковываем последовательность пар",
-            "level": "easy",
-            "mode": "script",
-            "prompt": (
-                "Каждая запись pairs содержит название и целое число минут. Программа выводит одну строку вида \"Python: 25 мин.\" для каждой пары; пустой список не даёт строк."
-            ),
-            "contract": {
-                "given": "Каждый элемент pairs содержит ровно два значения: строку и целое число.",
-                "todo": "Для каждой исходной записи появляется одна строка, порядок остаётся прежним.",
-                "check": "Проверяются повторные названия, пустой список и отдельная пара.",
-            },
-            "requirements": {
-                "items": [
-                    "Два значения каждой записи распаковываются в заголовке одного цикла for.",
-                    "В выводе используются оба значения текущей пары.",
-                ],
-                "nodes": ["For"],
-            },
-            "hints": [
-                "В каждом элементе pairs значения идут в одном и том же порядке.",
-                "Запишем два имени в заголовке одного цикла for.",
-                "Проверим одну пару и пустой список: пустое тело цикла не печатает строк.",
-            ],
-            "starter_code": (
-                "# pairs уже создан\n"
-                "# Пройдём пары одним циклом и выведем их значения\n"
-            ),
-            "tests": [
-                {
-                    "name": "пары с повтором",
-                    "namespace": {"pairs": [("Python", 25), ("Python", 25), ("SQL", 30)]},
-                    "expected": "Python: 25 мин.\nPython: 25 мин.\nSQL: 30 мин.",
-                    "assert": "stdout",
-                },
-                {
-                    "name": "пустой список",
-                    "namespace": {"pairs": []},
-                    "expected": "",
-                    "assert": "stdout",
-                },
-                {
-                    "name": "одна пара",
-                    "namespace": {"pairs": [("Git", 15)]},
-                    "expected": "Git: 15 мин.",
-                    "assert": "stdout",
-                },
-            ],
-            "reference_code": (
-                "for title, minutes in pairs:\n"
-                "    print(f'{title}: {minutes} мин.')\n"
-            ),
+        "requirements": {"nodes": ["FunctionDef"], "calls": ["print"]},
+        "starter_code": (
+            "def make_points(value):\n"
+            "    return {\"poitns\": value}\n"
+            "\n"
+            "def read_points(record):\n"
+            "    return record[\"points\"]\n"
+            "\n"
+            "print(read_points({\"points\": 4}))\n"
+            "print(read_points(make_points(8)))\n"
+            "print(read_points(make_points(0)))\n"
+        ),
+        "hints": [
+            "Сравним имя ключа, которое читает read_points, с именем в записи от make_points.",
+            "Строка чтения показывает место проявления. Проверим, где словарь получает свои поля.",
+            "После минимальной правки снова запустим все три вызова, включая уже рабочий.",
+        ],
+        "tests": [
+            {
+                "name": "Правильная запись и два новых значения",
+                "expected": "4\n8\n0",
+                "assert": "stdout",
+            }
+        ],
+        "reference_code": (
+            "def make_points(value):\n"
+            "    return {\"points\": value}\n"
+            "\n"
+            "def read_points(record):\n"
+            "    return record[\"points\"]\n"
+            "\n"
+            "print(read_points({\"points\": 4}))\n"
+            "print(read_points(make_points(8)))\n"
+            "print(read_points(make_points(0)))\n"
+        ),
+    },
+    {
+        "title": "Восстанавливаем результат функции",
+        "level": "easy",
+        "mode": "script",
+        "prompt": "Программа печатает правильный результат для положительного числа, но останавливается на следующем вызове. Найдём первопричину и исправим только её, не меняя вычисление в show_total.",
+        "contract": {
+            "given": "show_total добавляет 1 к результату add_bonus. Для значений 4 и 0 ожидаются числа 8 и 4.",
+            "todo": "Найдём первопричину остановки и внесём минимальную правку, сохранив оба вычисления.",
+            "check": "После запуска появляются 8 и 4 по порядку, без ошибки выполнения.",
         },
-        {
-            "title": "Диагностируем длину пары",
-            "level": "easy",
-            "mode": "script",
-            "prompt": (
-                "В списке pairs есть запись SQL с длительностью 30 и лишним третьим значением. В согласованном варианте запись соответствует двум полям, а программа выводит SQL: 30 мин.; причина ошибки устранена в данных, а не скрыта."
-            ),
-            "contract": {
-                "given": "В исходных данных одна учебная запись содержит название SQL, число 30 и лишнее значение.",
-                "todo": "В итоговом pairs каждая запись соответствует договору «название и длительность».",
-                "check": "После исправления появляется одна строка SQL: 30 мин.; ошибка распаковки не скрывается.",
-            },
-            "requirements": {
-                "items": [
-                    "Причина определяется сравнением числа значений и имён.",
-                    "Исправляется запись в источнике данных.",
-                    "Для диагностики не используется try/except.",
-                ],
-                "calls": ["print"],
-                "nodes": ["For"],
-            },
-            "hints": [
-                "Сравним число значений в кортеже с числом имён в заголовке цикла.",
-                "Уберём из данных лишнее значение, которое не входит в договор пары.",
-                "После исправления снова запустим тот же цикл и проверим строку результата.",
-            ],
-            "starter_code": (
-                "pairs = [(\"SQL\", 30, \"лишнее значение\")]\n"
-                "for title, minutes in pairs:\n"
-                "    print(f'{title}: {minutes} мин.')\n"
-            ),
-            "tests": [
-                {
-                    "name": "исправленная пара",
-                    "expected": "SQL: 30 мин.",
-                    "assert": "stdout",
-                }
-            ],
-            "reference_code": (
-                "pairs = [(\"SQL\", 30)]\n"
-                "for title, minutes in pairs:\n"
-                "    print(f'{title}: {minutes} мин.')\n"
-            ),
+        "requirements": {"nodes": ["FunctionDef"], "calls": ["print"]},
+        "starter_code": (
+            "def add_bonus(value):\n"
+            "    if value > 0:\n"
+            "        return value + 3\n"
+            "    total = value + 3\n"
+            "\n"
+            "def show_total(value):\n"
+            "    updated_total = add_bonus(value)\n"
+            "    print(updated_total + 1)\n"
+            "\n"
+            "show_total(4)\n"
+            "show_total(0)\n"
+        ),
+        "hints": [
+            "Сверим, какое значение получает updated_total во втором вызове.",
+            "Сравним, что add_bonus вычисляет на каждом пути и что передаёт наружу.",
+            "После изменения проверим положительное число и ноль.",
+        ],
+        "tests": [
+            {
+                "name": "Оба пути передают число вызывающему коду",
+                "expected": "8\n4",
+                "assert": "stdout",
+            }
+        ],
+        "reference_code": (
+            "def add_bonus(value):\n"
+            "    if value > 0:\n"
+            "        return value + 3\n"
+            "    total = value + 3\n"
+            "    return total\n"
+            "\n"
+            "def show_total(value):\n"
+            "    updated_total = add_bonus(value)\n"
+            "    print(updated_total + 1)\n"
+            "\n"
+            "show_total(4)\n"
+            "show_total(0)\n"
+        ),
+    },
+    {
+        "title": "Считаем только длинные занятия",
+        "level": "easy",
+        "mode": "script",
+        "prompt": "Для каждой длительности от 20 минут нужно посчитать один элемент. Сверим фактический вывод с правилом, найдём причину расхождения и проверим обычный, пустой и безрезультатный случаи.",
+        "contract": {
+            "given": "Функция перебирает список длительностей и накапливает количество. Подходят значения не меньше 20.",
+            "todo": "Изменим проверку одного значения, сохранив цикл, счётчик и четыре вызова.",
+            "check": "Результаты по порядку: 2, 0, 2 и 0, включая граничное значение 20.",
         },
-        {
-            "title": "Сопоставляем позицию и элемент",
-            "level": "easy",
-            "mode": "script",
-            "prompt": (
-                "Программа печатает позицию каждого topic начиная с 1 и его значение. Повторы получают разные позиции, пустой список не даёт строк, а номер используется только для этого вывода."
-            ),
-            "contract": {
-                "given": "Редактор передаёт topics с повторами, одним элементом или без элементов.",
-                "todo": "Строки показывают каждую тему вместе с отображаемым номером от 1.",
-                "check": "Проверяются позиции с 1 для повторов и одного элемента, а пустой список даёт пустой вывод.",
-            },
-            "requirements": {
-                "items": [
-                    "Пара позиции и значения формируется через enumerate(topics, start=1).",
-                    "position выводится рядом с текущим topic.",
-                    "Позиция относится к текущему обходу и не становится id задачи.",
-                ],
-                "calls": ["enumerate", "print"],
-            },
-            "hints": [
-                "Сопоставим ручной счётчик и текущий элемент с двумя значениями каждой пары.",
-                "Позицию запишем первой, название второй, а начало зададим равным 1.",
-                "После проверки пустого и повторного списка проверим две независимые сессии прежнего calc.",
+        "requirements": {"nodes": ["FunctionDef", "For", "If"], "calls": ["print"]},
+        "starter_code": (
+            "def count_long_sessions(durations):\n"
+            "    count = 0\n"
+            "    for minutes in durations:\n"
+            "        if minutes > 0:\n"
+            "            count = count + 1\n"
+            "    return count\n"
+            "\n"
+            "print(count_long_sessions([8, 22, 0, 31]))\n"
+            "print(count_long_sessions([0, 14, 19]))\n"
+            "print(count_long_sessions([20, 27]))\n"
+            "print(count_long_sessions([]))\n"
+        ),
+        "hints": [
+            "Сформулируем порог словами и проверим каждое значение относительно 20.",
+            "Сверим отдельно значение ниже порога и само граничное значение.",
+            "Запустим вызов без подходящих значений и пустой список.",
+        ],
+        "tests": [
+            {
+                "name": "Обычный, пустой, граничный и безрезультатный случаи",
+                "expected": "2\n0\n2\n0",
+                "assert": "stdout",
+            }
+        ],
+        "reference_code": (
+            "def count_long_sessions(durations):\n"
+            "    count = 0\n"
+            "    for minutes in durations:\n"
+            "        if minutes >= 20:\n"
+            "            count = count + 1\n"
+            "    return count\n"
+            "\n"
+            "print(count_long_sessions([8, 22, 0, 31]))\n"
+            "print(count_long_sessions([0, 14, 19]))\n"
+            "print(count_long_sessions([20, 27]))\n"
+            "print(count_long_sessions([]))\n"
+        ),
+    },
+    {'title': 'Самостоятельная диагностика отчёта',
+     'level': 'medium',
+     'mode': 'script',
+     'prompt': 'Отчёт должен показать три строки: число доступных книг, сумму страниц доступных книг и сумму '
+               'страниц всех книг. Программа завершается, но на некоторых входах отчёт неверен. Самостоятельно '
+               'найдите первопричину, внесите минимальную правку и сохраните смысл обоих действий: отбор по '
+               'доступности и сумма переданного набора. До правки запишите ожидание, факт, предположение и '
+               'проверку. Например, для доступной книги на 12 страниц и недоступной на 90 нужны строки 1, 12, 102.',
+     'contract': {'given': 'books — список записей с pages (неотрицательный int) и available (bool). Исходный '
+                           'список не меняется.',
+                  'todo': 'Отчёт должен показать три строки: число доступных книг, сумму страниц доступных книг и '
+                          'сумму страниц всех книг. Программа завершается, но на некоторых входах отчёт неверен. '
+                          'Самостоятельно найдите первопричину, внесите минимальную правку и сохраните смысл обоих '
+                          'действий: отбор по доступности и сумма переданного набора. До правки запишите ожидание, '
+                          'факт, предположение и проверку. Например, для доступной книги на 12 страниц и '
+                          'недоступной на 90 нужны строки 1, 12, 102.',
+                  'check': 'Проверяется весь вывод на разных данных, включая граничные случаи. Исходные данные '
+                           'заданы платформой.'},
+     'requirements': {'nodes': ['FunctionDef', 'For'], 'calls': ['print']},
+     'starter_code': 'def available_books(books):\n'
+                     '    selected = []\n'
+                     '    for book in books:\n'
+                     '        if book["available"]:\n'
+                     '            selected.append(book)\n'
+                     '    return selected\n'
+                     '\n'
+                     'def total_pages(books):\n'
+                     '    total = 0\n'
+                     '    for book in books:\n'
+                     '        total += book["pages"]\n'
+                     '    return total\n'
+                     '\n'
+                     'selected = available_books(books)\n'
+                     'print(len(selected))\n'
+                     'print(total_pages(books))\n'
+                     'print(total_pages(books))\n',
+     'hints': ['Найдите самый ранний результат, который отличается от ожидаемого. Запишите фактические входы '
+               'функций, не меняя код наугад.',
+               'Сравните, какие записи нужны для каждого показателя и какие реально получает вычисление. Проверьте '
+               'также случай, где все книги доступны.',
+               'Для второй строки суммируются отобранные книги, для третьей — все. Исправьте соответствующий '
+               'аргумент вызова, сохранив общую функцию суммы.'],
+     'tests': [{'name': 'Разные наборы',
+                'namespace': {'books': [{'pages': 12, 'available': True},
+                                        {'pages': 90, 'available': False},
+                                        {'pages': 8, 'available': True}]},
+                'expected': '2\n20\n110',
+                'assert': 'stdout'},
+               {'name': 'Нет доступных',
+                'namespace': {'books': [{'pages': 7, 'available': False}]},
+                'expected': '0\n0\n7',
+                'assert': 'stdout'},
+               {'name': 'Все доступны',
+                'namespace': {'books': [{'pages': 3, 'available': True}, {'pages': 5, 'available': True}]},
+                'expected': '2\n8\n8',
+                'assert': 'stdout'},
+               {'name': 'Пусто', 'namespace': {'books': []}, 'expected': '0\n0\n0', 'assert': 'stdout'},
+               {'name': 'Один поздний доступный',
+                'namespace': {'books': [{'pages': 0, 'available': False}, {'pages': 14, 'available': True}]},
+                'expected': '1\n14\n14',
+                'assert': 'stdout'}],
+     'reference_code': 'def available_books(books):\n'
+                       '    selected = []\n'
+                       '    for book in books:\n'
+                       '        if book["available"]:\n'
+                       '            selected.append(book)\n'
+                       '    return selected\n'
+                       '\n'
+                       'def total_pages(books):\n'
+                       '    total = 0\n'
+                       '    for book in books:\n'
+                       '        total += book["pages"]\n'
+                       '    return total\n'
+                       '\n'
+                       'selected = available_books(books)\n'
+                       'print(len(selected))\n'
+                       'print(total_pages(selected))\n'
+                       'print(total_pages(books))\n'},
+]
+
+CODE_TASKS[11] = [
+    {
+        "title": "Назовём и вызовем повторяемое действие",
+        "level": "easy",
+        "mode": "script",
+        "prompt": "Функция open_plan выводит заданную строку при каждом вызове.",
+        "contract": {
+            "given": "Отдельный ввод не нужен. Мы работаем с коротким script на платформе.",
+            "todo": "Определение функции само не запускает её тело; два вызова выводят сообщение два раза.",
+            "todo_items": [
+                "Функция open_plan определена без параметров; её тело содержит print(\"Открываем план\").",
+                "После определения располагаются два вызова open_plan().",
             ],
-            "starter_code": (
-                "# topics уже создан\n"
-                "counter = 1\n"
-                "for topic in topics:\n"
-                "    print(counter, topic)\n"
-                "    counter += 1\n"
-            ),
-            "tests": [
-                {
-                    "name": "повторяющиеся элементы",
-                    "namespace": {"topics": ["Python", "Python", "SQL"]},
-                    "expected": "1: Python\n2: Python\n3: SQL",
-                    "assert": "stdout",
-                },
-                {
-                    "name": "один элемент",
-                    "namespace": {"topics": ["Git"]},
-                    "expected": "1: Git",
-                    "assert": "stdout",
-                },
-                {
-                    "name": "пустой список",
-                    "namespace": {"topics": []},
-                    "expected": "",
-                    "assert": "stdout",
-                },
-            ],
-            "reference_code": (
-                "for position, topic in enumerate(topics, start=1):\n"
-                "    print(f'{position}: {topic}')\n"
-            ),
+            "check": "Проверка сравнит две одинаковые строки в ожидаемом порядке.",
         },
-    ],
-    12: [
-        {
-            "title": "Полная запись одной задачи",
-            "level": "easy",
-            "mode": "script",
-            "prompt": (
-                "task содержит четыре обязательных поля; два последовательных вывода показывают исходное и новое состояние is_done."
-            ),
-            "contract": {
-                "given": "Платформа задаёт положительный task_id, непустую строку title, priority от 1 до 5 и bool new_done.",
-                "todo": "Созданная запись содержит полный договор полей, а присваивание new_done меняет только is_done.",
-                "todo_items": [
-                    "task содержит id, title, priority и is_done=False.",
-                    "Первый блок вывода показывает значения четырёх полей по порядку.",
-                    "После присваивания new_done второй блок показывает новое is_done; id, title и priority сохраняются.",
-                ],
-                "check": "Тесты проверяют начальное состояние и состояние после присваивания new_done на двух наборах данных; id, title и priority остаются прежними.",
-            },
-            "requirements": {
-                "names": ["task_id", "title", "priority", "new_done", "task"],
-                "calls": ["print"],
-                "nodes": ["Dict"],
-            },
-            "hints": [
-                "Сопоставим имена ключей договора с переменными из стартового кода.",
-                "Прочитаем task по четырём обязательным ключам в указанном порядке.",
-                "После первого вывода заменим значение только в поле is_done и повторим те же чтения.",
+        "requirements": {
+            "items": [
+                "Определение находится выше обоих вызовов.",
+                "Команда print расположена в теле функции.",
             ],
-            "starter_code": (
-                "# task_id, title, priority и new_done уже заданы\n"
-                "# Создадим запись и выведем её поля до и после изменения is_done\n"
-            ),
-            "tests": [
-                {
-                    "name": "флаг становится True",
-                    "namespace": {
-                        "task_id": 10,
-                        "title": "Проверить план",
-                        "priority": 3,
-                        "new_done": True,
-                    },
-                    "expected": (
-                        "10\nПроверить план\n3\nFalse\n"
-                        "10\nПроверить план\n3\nTrue"
-                    ),
-                    "assert": "stdout",
-                },
-                {
-                    "name": "флаг остаётся False",
-                    "namespace": {
-                        "task_id": 22,
-                        "title": "Записать вывод",
-                        "priority": 1,
-                        "new_done": False,
-                    },
-                    "expected": (
-                        "22\nЗаписать вывод\n1\nFalse\n"
-                        "22\nЗаписать вывод\n1\nFalse"
-                    ),
-                    "assert": "stdout",
-                },
-            ],
-            "reference_code": (
-                "task = {'id': task_id, 'title': title, 'priority': priority, 'is_done': False}\n"
-                "print(task['id'])\n"
-                "print(task['title'])\n"
-                "print(task['priority'])\n"
-                "print(task['is_done'])\n"
-                "task['is_done'] = new_done\n"
-                "print(task['id'])\n"
-                "print(task['title'])\n"
-                "print(task['priority'])\n"
-                "print(task['is_done'])\n"
-            ),
+            "names": ["open_plan"],
+            "nodes": ["FunctionDef"],
+            "calls": ["open_plan", "print"],
         },
-        {
-            "title": "Повторный ключ и проверка принадлежности",
-            "level": "easy",
-            "mode": "script",
-            "prompt": (
-                "settings хранит последнее значение повторно заданного ключа; in проверяет наличие ключа, а не значения."
-            ),
-            "contract": {
-                "given": "В словаре settings ключ theme записан со значениями light и dark.",
-                "todo": "settings содержит последнее значение theme, а два результата in показывают проверку ключа и значения.",
-                "todo_items": [
-                    "После повторной записи theme словарь содержит одно значение dark.",
-                    "Вывод settings показывает итоговый словарь; проверки theme in settings и dark in settings дают True и False.",
-                ],
-                "check": "Проверяется вывод {'theme': 'dark'}, затем True для ключа theme и False для значения dark.",
+        "hints": [
+            "Сначала мы записываем def, имя open_plan, пустые скобки и двоеточие.",
+            "Далее мы переносим print внутрь тела отступом, а вызовы располагаем ниже определения.",
+            "Мы сверяем сообщение в теле и два вызова с двумя одинаковыми строками вывода.",
+        ],
+        "starter_code": (
+            "# Здесь мы задаём open_plan без параметров\n"
+            "# В теле появляется сообщение Открываем план\n"
+            "# После определения располагаются два вызова\n"
+        ),
+        "tests": [
+            {
+                "name": "Два вызова",
+                "expected": "Открываем план\nОткрываем план",
+                "assert": "stdout",
             },
-            "requirements": {
-                "calls": ["print"],
-                "nodes": ["Dict"],
-            },
-            "hints": [
-                "Повторный ключ не создаёт второе поле; перед запуском оставим в прогнозе последнее значение.",
-                "Оператор in для словаря проверяет ключи, поэтому проверим и ключ, и строку-значение.",
+        ],
+        "reference_code": (
+            "def open_plan():\n"
+            "    print(\"Открываем план\")\n"
+            "\n"
+            "open_plan()\n"
+            "open_plan()\n"
+        ),
+    },
+    {
+        "title": "Передадим входы и используем ответ",
+        "level": "easy",
+        "mode": "script",
+        "prompt": "Функция minutes_left возвращает оставшееся время, а внешний script показывает его после вызова.",
+        "contract": {
+            "given": "Платформа задаёт total_minutes и used_minutes. Первое значение означает всё доступное время, второе уже прошедшее.",
+            "given_items": [
+                "total_minutes не меньше used_minutes.",
+                "Значения меняются между проверками.",
             ],
-            "starter_code": (
-                "# Создадим словарь с повторным ключом и проверим его содержимое\n"
-            ),
-            "tests": [
-                {
-                    "name": "повторный ключ и in",
-                    "expected": "{'theme': 'dark'}\nTrue\nFalse",
-                    "assert": "stdout",
-                }
+            "todo": "Результат содержит метку и разность total_minutes - used_minutes.",
+            "todo_items": [
+                "Функция minutes_left объявляет параметры total_minutes и used_minutes в указанном порядке и возвращает total_minutes - used_minutes.",
+                "Вызов функции с заданными значениями сохраняется в remaining.",
+                "Вывод содержит Осталось: и значение remaining.",
             ],
-            "reference_code": (
-                "settings = {'theme': 'light', 'theme': 'dark'}\n"
-                "print(settings)\n"
-                "print('theme' in settings)\n"
-                "print('dark' in settings)\n"
-            ),
+            "check": "Проверка сравнит результат на двух парах значений, которые дают разные ответы при перестановке.",
         },
-        {
-            "title": "Обязательный ключ и KeyError",
-            "level": "easy",
-            "mode": "script",
-            "prompt": (
-                "Чтение created['title'] успешно после исправления опечатки в обязательном ключе при создании записи."
-            ),
-            "contract": {
-                "given": "В created ключ title записан с опечаткой titel.",
-                "todo": "Ключ created совпадает с обязательным именем title, поэтому чтение через [] выводит значение поля.",
-                "todo_items": [
-                    "created содержит точный ключ title, который запрашивает программа.",
-                    "Чтение created['title'] выводит значение Проверить план.",
-                ],
-                "check": "Единственная строка вывода — Проверить план.",
-            },
-            "requirements": {
-                "calls": ["print"],
-                "nodes": ["Dict"],
-            },
-            "hints": [
-                "Сопоставим точное написание ключа в created с именем, которое запрашивает чтение.",
-                "Обязательный ключ исправим в месте создания записи.",
+        "requirements": {
+            "items": [
+                "Вычисление возвращается из функции, а не печатается внутри неё.",
+                "Внешняя команда использует значение, полученное от вызова.",
             ],
-            "starter_code": (
-                "created = {'titel': 'Проверить план'}\n"
-                "print(created['title'])\n"
-            ),
-            "tests": [
-                {
-                    "name": "ключ после исправления producer",
-                    "expected": "Проверить план",
-                    "assert": "stdout",
-                }
-            ],
-            "reference_code": (
-                "created = {'title': 'Проверить план'}\n"
-                "print(created['title'])\n"
-            ),
+            "names": ["total_minutes", "used_minutes", "remaining"],
+            "nodes": ["FunctionDef", "Return"],
+            "calls": ["minutes_left", "print"],
         },
-        {
-            "title": "Чтение существующей и отсутствующей настройки",
-            "level": "easy",
-            "mode": "script",
-            "prompt": (
-                "settings содержит notifications=False и не содержит theme; [] и get() показывают различие между сохранённым False и отсутствующим ключом."
-            ),
-            "contract": {
-                "given": "В settings есть notifications=False и нет theme.",
-                "todo": "Ключ notifications хранит False, а theme отсутствует; запасное значение для theme появляется только в результате чтения через get().",
-                "todo_items": [
-                    "settings['notifications'] и settings.get('notifications', True) возвращают False.",
-                    "settings.get('theme') возвращает None, а settings.get('theme', 'system') возвращает system.",
-                    "Проверка 'theme' in settings возвращает False; исходный settings остаётся без изменений.",
-                ],
-                "check": "Тест проверяет вывод False, False, None, system, False и неизменный settings={'notifications': False}.",
+        "hints": [
+            "Сначала мы сверяем порядок двух входных значений с именами в определении.",
+            "Мы вычитаем прошедшее время из общего и возвращаем полученное число.",
+            "Затем мы сохраняем ответ вызова в remaining и выводим метку вместе с этим значением.",
+        ],
+        "starter_code": (
+            "# total_minutes и used_minutes заданы платформой\n"
+            "# Здесь мы определяем функцию и возвращаем оставшееся время\n"
+            "# Внешняя команда сохраняет результат вызова и выводит его\n"
+        ),
+        "tests": [
+            {
+                "name": "90 минут, прошло 25",
+                "namespace": {"total_minutes": 90, "used_minutes": 25},
+                "expected": "Осталось: 65",
+                "assert": "stdout",
             },
-            "requirements": {
-                "calls": ["print"],
-                "attributes": ["get"],
-                "nodes": ["Dict"],
+            {
+                "name": "48 минут, прошло 13",
+                "namespace": {"total_minutes": 48, "used_minutes": 13},
+                "expected": "Осталось: 35",
+                "assert": "stdout",
             },
-            "hints": [
-                "Для существующего ключа get() возвращает записанное False, даже если передан default=True.",
-                "Для отсутствующего theme сравним get() без default и с default.",
-                "В конце проверим in и напечатаем исходный словарь.",
-            ],
-            "starter_code": (
-                "settings = {'notifications': False}\n"
-                "# Прочитаем существующее и отсутствующее значения, затем выведем словарь\n"
-            ),
-            "tests": [
-                {
-                    "name": "значение False и отсутствующее поле",
-                    "expected": "False\nFalse\nNone\nsystem\nFalse\n{'notifications': False}",
-                    "assert": "stdout",
-                }
-            ],
-            "reference_code": (
-                "settings = {'notifications': False}\n"
-                "print(settings['notifications'])\n"
-                "print(settings.get('notifications', True))\n"
-                "print(settings.get('theme'))\n"
-                "print(settings.get('theme', 'system'))\n"
-                "print('theme' in settings)\n"
-                "print(settings)\n"
-            ),
+        ],
+        "reference_code": (
+            "def minutes_left(total_minutes, used_minutes):\n"
+            "    return total_minutes - used_minutes\n"
+            "\n"
+            "remaining = minutes_left(total_minutes, used_minutes)\n"
+            "print(\"Осталось:\", remaining)\n"
+        ),
+    },
+    {
+        "title": "Вернём сумму вызывающему коду",
+        "level": "easy",
+        "mode": "script",
+        "prompt": "Функция double_points передаёт удвоенное значение наружу, а внешний print показывает его один раз.",
+        "contract": {
+            "given": "Платформа задаёт число value. Функция уже вычисляет его удвоенное значение.",
+            "todo": "После исправления answer содержит результат вызова, а вывод состоит из одной строки После вызова: и этого числа.",
+            "check": "Проверка обнаружит лишний вывод из тела и значение None вместо ответа.",
         },
-        {
-            "title": "Общая ссылка и копия задачи",
-            "level": "easy",
-            "mode": "script",
-            "prompt": (
-                "Изменение draft влияет только на копию задачи; alias остаётся общей ссылкой на исходный словарь."
-            ),
-            "contract": {
-                "given": "Создадим полную задачу с id=10, title=Проверить план, priority=3 и is_done=False.",
-                "todo": "task и alias сохраняют False, draft получает True; проверка is различает общий объект и копию.",
-                "todo_items": [
-                    "alias и task указывают на один словарь, а draft создан через task.copy().",
-                    "У draft поле is_done равно True, а исходное поле остаётся False.",
-                    "Вывод флагов равен False False True, а task is alias и task is draft дают True и False.",
-                ],
-                "check": "Тест проверяет вывод False False True и результаты идентичности True False.",
-            },
-            "requirements": {
-                "calls": ["print"],
-                "attributes": ["copy"],
-                "nodes": ["Dict"],
-            },
-            "hints": [
-                "Перед изменением сохраним исходный словарь под двумя именами и отдельно вызовем copy().",
-                "После изменения прочитаем is_done через task, alias и draft.",
+        "requirements": {
+            "items": [
+                "Функция возвращает удвоенное значение.",
+                "Внешний код сохраняет результат и печатает его после вызова.",
             ],
-            "starter_code": (
-                "# Создадим полную запись, alias и копию, затем сравним их состояние\n"
-            ),
-            "tests": [
-                {
-                    "name": "независимость верхней копии",
-                    "expected": "False False True\nTrue False",
-                    "assert": "stdout",
-                }
-            ],
-            "reference_code": (
-                "task = {'id': 10, 'title': 'Проверить план', 'priority': 3, 'is_done': False}\n"
-                "alias = task\n"
-                "draft = task.copy()\n"
-                "draft['is_done'] = True\n"
-                "print(task['is_done'], alias['is_done'], draft['is_done'])\n"
-                "print(task is alias, task is draft)\n"
-            ),
-        }
-    ],
-    13: [
-        {
-            "title": "Форматируем полную задачу",
-            "level": "easy",
-            "mode": "solve",
-            "prompt": (
-                "format_task(task) возвращает строку [<id>] <title> | приоритет: <priority> | <состояние> для "
-                "полной модели задачи. Значение is_done определяет текст состояния, а id берётся из словаря, не из "
-                "позиции списка. Адаптер solve(task) уже вызывает предметную функцию для проверки."
-            ),
-            "contract": {
-                "given": (
-                    "Автопроверка передаёт solve(task) полный словарь с ключами id, title, priority и is_done. "
-                    "В стартовом коде solve(task) уже вызывает format_task(task)."
-                ),
-                "todo": (
-                    "Функция format_task(task) возвращает строку вида "
-                    "[10] Изучить SQL | приоритет: 3 | открыта по полям id, title, priority и is_done. "
-                    "Исходный словарь остаётся прежним, а текст выводит вызывающий код."
-                ),
-                "check": (
-                    "Проверяются оба значения is_done, приоритеты 1 и 5, точный id из словаря, неизменность входа "
-                    "и отсутствие вывода из функции. solve(task) остаётся адаптером проверки."
-                ),
-            },
-            "requirements": {
-                "items": [
-                    "format_task(task) возвращает строку через return, используя все четыре ключа",
-                    "if/else и f-строка дают текст состояния и включают id, title и priority",
-                    "formatter не вызывает print(), не меняет вход, а solve(task) остаётся только адаптером",
-                ],
-                "names": ["task", "format_task"],
-                "calls": ["format_task"],
-                "nodes": ["FunctionDef", "JoinedStr", "If"],
-            },
-            "hints": [
-                "Сначала выберем по ключу is_done одно из двух текстовых состояний в локальную переменную.",
-                "В f-строке возьмём id, title и priority по ключам словаря. Позиция записи здесь не нужна.",
-                "Вернём строку из format_task: её проверит адаптер solve(task), а print останется снаружи.",
-            ],
-            "starter_code": (
-                "def format_task(task):\n"
-                "    pass\n"
-                "\n"
-                "def solve(task):\n"
-                "    return format_task(task)\n"
-            ),
-            "tests": [
-                {
-                    "name": "открытая задача с минимальным приоритетом",
-                    "args": [{"id": 21, "title": "Повторить цикл", "priority": 1, "is_done": False}],
-                    "expected": "[21] Повторить цикл | приоритет: 1 | открыта",
-                    "preserve_inputs": True,
-                    "no_stdout": True,
-                },
-                {
-                    "name": "выполненная задача с максимальным приоритетом",
-                    "args": [{"id": 42, "title": "Изучить типы", "priority": 5, "is_done": True}],
-                    "expected": "[42] Изучить типы | приоритет: 5 | выполнена",
-                    "preserve_inputs": True,
-                    "no_stdout": True,
-                },
-            ],
-            "reference_code": (
-                "def format_task(task):\n"
-                "    if task['is_done']:\n"
-                "        state = 'выполнена'\n"
-                "    else:\n"
-                "        state = 'открыта'\n"
-                "    return f\"[{task['id']}] {task['title']} | приоритет: {task['priority']} | {state}\"\n"
-                "\n"
-                "def solve(task):\n"
-                "    return format_task(task)\n"
-            ),
+            "names": ["value", "answer"],
+            "nodes": ["FunctionDef", "Return"],
+            "calls": ["double_points", "print"],
         },
-        {
-            "title": "Восстановим обязательное поле у создателя записи",
-            "level": "easy",
-            "mode": "script",
-            "prompt": (
-                "Разберём traceback форматирования неполной записи. Установим, какая функция создала неверную модель, "
-                "и восстановим обязательное поле там. Функция format_task должна читать согласованную модель напрямую, "
-                "а не заменять пропуск запасным значением."
-            ),
-            "contract": {
-                "given": (
-                    "make_task возвращает словарь, который сразу передаётся в format_task. Модель задачи содержит "
-                    "id, title, priority и is_done."
-                ),
-                "todo": "Вернём все обязательные поля из make_task и сохраним форматирование и исходные правила модели.",
-                "check": "Функция выводит [7] Изучить SQL | приоритет: 3 | открыта.",
+        "hints": [
+            "Мы сопоставляем вывод на экране и значение, которое должно попасть в answer.",
+            "Print внутри функции показывает сумму, но не передаёт её вызывающему коду.",
+            "Мы заменяем внутренний вывод передачей вычисленного значения. Внешняя строка уже показывает answer.",
+        ],
+        "starter_code": (
+            "# value задан платформой\n"
+            "def double_points(value):\n"
+            "    print(value * 2)\n"
+            "\n"
+            "answer = double_points(value)\n"
+            "print(\"После вызова:\", answer)\n"
+        ),
+        "tests": [
+            {
+                "name": "Удваиваем 7",
+                "namespace": {"value": 7},
+                "expected": "После вызова: 14",
+                "assert": "stdout",
             },
-            "requirements": {
-                "items": [
-                    "В traceback найдены строка проявления и кадры цепочки вызовов",
-                    "Причина исправлена в make_task, который создаёт запись",
-                    "format_task продолжает читать обязательное поле напрямую",
-                    "Созданная запись содержит ровно id, title, priority и is_done",
-                ],
-                "names": ["make_task", "format_task", "task"],
-                "calls": ["print"],
+            {
+                "name": "Удваиваем 10",
+                "namespace": {"value": 10},
+                "expected": "После вызова: 20",
+                "assert": "stdout",
             },
-            "hints": [
-                "Начнём с последней строки traceback, затем найдём вызов format_task и источник task.",
-                "Проверим ключи фактического словаря перед форматированием.",
-                "Если поле обязательно по модели, вернём его в словарь, который создаётся раньше.",
-            ],
-            "starter_code": (
-                "def make_task():\n"
-                "    return {\n"
-                "        'id': 7,\n"
-                "        'title': 'Изучить SQL',\n"
-                "        'is_done': False,\n"
-                "    }\n"
-                "\n"
-                "def format_task(task):\n"
-                "    if task['is_done']:\n"
-                "        state = 'выполнена'\n"
-                "    else:\n"
-                "        state = 'открыта'\n"
-                "    return f\"[{task['id']}] {task['title']} | приоритет: {task['priority']} | {state}\"\n"
-                "\n"
-                "def show_task():\n"
-                "    task = make_task()\n"
-                "    print(task)\n"
-                "    print(format_task(task))\n"
-                "\n"
-                "show_task()\n"
-            ),
-            "tests": [
-                {
-                    "name": "полная модель форматируется",
-                    "expected": (
-                        "{'id': 7, 'title': 'Изучить SQL', 'priority': 3, 'is_done': False}\n"
-                        "[7] Изучить SQL | приоритет: 3 | открыта"
-                    ),
-                    "assert": "stdout",
-                }
-            ],
-            "reference_code": (
-                "def make_task():\n"
-                "    return {\n"
-                "        'id': 7,\n"
-                "        'title': 'Изучить SQL',\n"
-                "        'priority': 3,\n"
-                "        'is_done': False,\n"
-                "    }\n"
-                "\n"
-                "def format_task(task):\n"
-                "    if task['is_done']:\n"
-                "        state = 'выполнена'\n"
-                "    else:\n"
-                "        state = 'открыта'\n"
-                "    return f\"[{task['id']}] {task['title']} | приоритет: {task['priority']} | {state}\"\n"
-                "\n"
-                "def show_task():\n"
-                "    task = make_task()\n"
-                "    print(task)\n"
-                "    print(format_task(task))\n"
-                "\n"
-                "show_task()\n"
-            ),
+        ],
+        "reference_code": (
+            "def double_points(value):\n"
+            "    return value * 2\n"
+            "\n"
+            "answer = double_points(value)\n"
+            "print(\"После вызова:\", answer)\n"
+        ),
+    },
+    {
+        "title": "Вернём значение в каждой ветви",
+        "level": "easy",
+        "mode": "script",
+        "prompt": "Функция pause_minutes возвращает число для обоих значений is_weekend.",
+        "contract": {
+            "given": "Платформа задаёт is_weekend как True или False. В готовой функции один путь доходит до конца без возврата.",
+            "todo": "Для выходного результат равен 15, для обычного дня равен 8.",
+            "check": "Проверка пройдёт по обоим путям и сравнит значение, которое получил внешний код.",
         },
-        {
-            "title": "Не читаем локальное имя снаружи функции",
-            "level": "easy",
-            "mode": "script",
-            "prompt": (
-                "Функция создаёт локальное имя result, а следующая строка пытается прочитать его снаружи. "
-                "Передадим значение по контракту функции и используем результат её вызова."
-            ),
-            "contract": {
-                "given": "double получает целое число и вычисляет удвоенное значение в локальном имени result.",
-                "todo": "Передадим число из функции и покажем результат вызова снаружи.",
-                "check": "Для входа 4 программа печатает 8 без чтения локального имени за пределами функции.",
-            },
-            "requirements": {
-                "items": [
-                    "Локальное имя result не читается напрямую за пределами double",
-                    "Функция возвращает вычисленное значение оператором return",
-                    "Вызывающая строка получает значение через вызов функции",
-                ],
-                "names": ["double", "value", "result"],
-                "calls": ["print"],
-            },
-            "hints": [
-                "Локальное имя существует только внутри вызова, где оно присвоено.",
-                "Функция может передать вычисленное значение через return.",
-                "Снаружи печатаем результат вызова, а не локальное имя.",
+        "requirements": {
+            "items": [
+                "Каждая ветвь передаёт выбранное число через return.",
+                "Результат вызова сохраняется и выводится после завершения функции.",
             ],
-            "starter_code": (
-                "def double(value):\n"
-                "    result = value * 2\n"
-                "\n"
-                "print(result)\n"
-            ),
-            "tests": [{"name": "функция передаёт значение наружу", "expected": "8", "assert": "stdout"}],
-            "reference_code": (
-                "def double(value):\n"
-                "    result = value * 2\n"
-                "    return result\n"
-                "\n"
-                "print(double(4))\n"
-            ),
+            "names": ["is_weekend", "weekday_pause"],
+            "nodes": ["FunctionDef", "If", "Return"],
+            "calls": ["pause_minutes", "print"],
         },
-        {
-            "title": "Вернём сумму, а не None",
-            "level": "easy",
-            "mode": "script",
-            "prompt": (
-                "Сумма вычисляется, но calculate_study_minutes не передаёт её вызывающему коду. Проверим результат "
-                "обычного и пустого входа, добавим возвращаемое значение и убедимся, что исходный список не меняется."
-            ),
-            "contract": {
-                "given": "Функция получает последовательность длительностей и складывает её в локальном total.",
-                "todo": "Сделаем вычисленную сумму результатом функции, включая пустой список.",
-                "check": "Для [20, 35] напечатается 55, для [] напечатается 0, исходный список останется прежним.",
+        "hints": [
+            "Мы прослеживаем is_weekend=False и отмечаем, до какой строки доходит эта ветвь.",
+            "Число 8 записано как выражение, но ещё не стало ответом функции.",
+            "Мы повторяем показанную правку и передаём число из второй ветви тем же способом, что и из первой.",
+        ],
+        "starter_code": (
+            "# is_weekend задан платформой\n"
+            "def pause_minutes(is_weekend):\n"
+            "    if is_weekend:\n"
+            "        return 15\n"
+            "    else:\n"
+            "        8\n"
+            "\n"
+            "weekday_pause = pause_minutes(is_weekend)\n"
+            "print(weekday_pause)\n"
+        ),
+        "tests": [
+            {
+                "name": "Обычный день",
+                "namespace": {"is_weekend": False},
+                "expected": "8",
+                "assert": "stdout",
             },
-            "requirements": {
-                "items": [
-                    "Вычисленная сумма возвращается из calculate_study_minutes",
-                    "Пустой список даёт 0 внутри правила суммы, а не через подстановку вместо None",
-                    "Список длительностей не меняется после вызова",
-                ],
-                "names": ["calculate_study_minutes", "durations", "total"],
-                "calls": ["print"],
+            {
+                "name": "Выходной",
+                "namespace": {"is_weekend": True},
+                "expected": "15",
+                "assert": "stdout",
             },
-            "hints": [
-                "Если программа печатает None, проверим не только цикл, но и значение вызова функции.",
-                "Проследим, на каком уровне закончился цикл и когда можно вернуть total.",
-                "Сравним исходный список до и после вычисления.",
-            ],
-            "starter_code": (
-                "def calculate_study_minutes(durations):\n"
-                "    total = 0\n"
-                "    for duration in durations:\n"
-                "        total = total + duration\n"
-                "\n"
-                "durations = [20, 35]\n"
-                "print(calculate_study_minutes(durations))\n"
-                "print(calculate_study_minutes([]))\n"
-                "print(durations)\n"
-            ),
-            "tests": [
-                {
-                    "name": "сумма, пустой список и сохранность входа",
-                    "expected": "55\n0\n[20, 35]",
-                    "assert": "stdout",
-                }
-            ],
-            "reference_code": (
-                "def calculate_study_minutes(durations):\n"
-                "    total = 0\n"
-                "    for duration in durations:\n"
-                "        total = total + duration\n"
-                "    return total\n"
-                "\n"
-                "durations = [20, 35]\n"
-                "print(calculate_study_minutes(durations))\n"
-                "print(calculate_study_minutes([]))\n"
-                "print(durations)\n"
-            ),
+        ],
+        "reference_code": (
+            "def pause_minutes(is_weekend):\n"
+            "    if is_weekend:\n"
+            "        return 15\n"
+            "    else:\n"
+            "        return 8\n"
+            "\n"
+            "weekday_pause = pause_minutes(is_weekend)\n"
+            "print(weekday_pause)\n"
+        ),
+    },
+    {
+        "title": "Передадим все обязательные аргументы",
+        "level": "easy",
+        "mode": "script",
+        "prompt": "Вызов total_after_break передаёт оба значения в порядке параметров.",
+        "contract": {
+            "given": "Платформа задаёт total_minutes и break_minutes. Функция принимает оба значения и печатает сообщение только после начала тела.",
+            "todo": "Внешний код передаёт общее и прошедшее время, сохраняет разницу и выводит её после сообщения из тела.",
+            "check": "Если аргументов недостаточно, тело не запускается. Проверка сравнит вывод на двух парах значений.",
         },
-        {
-            "title": "Проверим обещание вернуть отдельную копию",
-            "level": "medium",
-            "mode": "script",
-            "prompt": (
-                "Функция with_new_title обещает вернуть обновлённую задачу, оставив исходную без изменений. "
-                "Исправим именно это поведение и отдельно проверим исходное значение, новую запись и идентичность объектов."
-            ),
-            "contract": {
-                "given": (
-                    "В with_new_title передаётся плоский словарь с четырьмя полями. Сейчас функция изменяет его "
-                    "на месте и возвращает тот же объект."
-                ),
-                "todo": (
-                    "Вернём новый словарь с новым title и проверим отдельно исходное значение, возвращённое значение "
-                    "и идентичность объектов."
-                ),
-                "check": (
-                    "Исходная запись останется прежней, новая сохранит остальные три поля и будет отдельным объектом."
-                ),
-            },
-            "requirements": {
-                "items": [
-                    "Исходная задача не изменяется функцией with_new_title",
-                    "Возвращённая копия содержит все четыре поля, включая новый title",
-                    "Исходный и возвращённый словари не являются одним объектом",
-                ],
-                "names": ["with_new_title", "task", "updated"],
-                "calls": ["print"],
-            },
-            "hints": [
-                "Сначала сравним title исходной записи до и после вызова.",
-                "Проверим поля новой записи и выражение original is updated.",
+        "requirements": {
+            "items": [
+                "Вызов передаёт total_minutes и break_minutes в свои позиции.",
+                "После запуска функции внешний код выводит сохранённую разницу.",
             ],
-            "starter_code": (
-                "def with_new_title(task, title):\n"
-                "    task['title'] = title\n"
-                "    return task\n"
-                "\n"
-                "original = {\n"
-                "    'id': 21,\n"
-                "    'title': 'Повторить цикл',\n"
-                "    'priority': 2,\n"
-                "    'is_done': False,\n"
-                "}\n"
-                "updated = with_new_title(original, 'Черновик')\n"
-                "print(original)\n"
-                "print(updated)\n"
-                "print(original is updated)\n"
-            ),
-            "tests": [
-                {
-                    "name": "исходная запись сохранена, копия отдельная",
-                    "expected": (
-                        "{'id': 21, 'title': 'Повторить цикл', 'priority': 2, 'is_done': False}\n"
-                        "{'id': 21, 'title': 'Черновик', 'priority': 2, 'is_done': False}\n"
-                        "False"
-                    ),
-                    "assert": "stdout",
-                }
-            ],
-            "reference_code": (
-                "def with_new_title(task, title):\n"
-                "    updated = task.copy()\n"
-                "    updated['title'] = title\n"
-                "    return updated\n"
-                "\n"
-                "original = {\n"
-                "    'id': 21,\n"
-                "    'title': 'Повторить цикл',\n"
-                "    'priority': 2,\n"
-                "    'is_done': False,\n"
-                "}\n"
-                "updated = with_new_title(original, 'Черновик')\n"
-                "print(original)\n"
-                "print(updated)\n"
-                "print(original is updated)\n"
-            ),
+            "names": ["total_minutes", "break_minutes", "remaining"],
+            "nodes": ["FunctionDef", "Return"],
+            "calls": ["total_after_break", "print"],
         },
-    ]
-}
+        "hints": [
+            "Мы сравниваем два параметра в определении с аргументами в вызове.",
+            "Сейчас вызов передаёт только total_minutes, хотя функции нужны два значения.",
+            "Мы добавляем break_minutes вторым аргументом и сверяем оба теста по сообщению из тела и разнице.",
+        ],
+        "starter_code": (
+            "# total_minutes и break_minutes заданы платформой\n"
+            "def total_after_break(total_minutes, break_minutes):\n"
+            "    print(\"Тело началось\")\n"
+            "    return total_minutes - break_minutes\n"
+            "\n"
+            "remaining = total_after_break(total_minutes)\n"
+            "print(remaining)\n"
+        ),
+        "tests": [
+            {
+                "name": "40 минут и 10 минут перерыва",
+                "namespace": {"total_minutes": 40, "break_minutes": 10},
+                "expected": "Тело началось\n30",
+                "assert": "stdout",
+            },
+            {
+                "name": "25 минут и 7 минут перерыва",
+                "namespace": {"total_minutes": 25, "break_minutes": 7},
+                "expected": "Тело началось\n18",
+                "assert": "stdout",
+            },
+        ],
+        "reference_code": (
+            "def total_after_break(total_minutes, break_minutes):\n"
+            "    print(\"Тело началось\")\n"
+            "    return total_minutes - break_minutes\n"
+            "\n"
+            "remaining = total_after_break(total_minutes, break_minutes)\n"
+            "print(remaining)\n"
+        ),
+    },
+]
