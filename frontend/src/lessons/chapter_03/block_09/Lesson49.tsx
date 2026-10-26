@@ -7,7 +7,7 @@ export function Lesson49({ module }: { module?: string }) {
     <RichLesson>
       <RichHero
         chip={module ?? "Месяц 3 · Блок 9 · Интернет и HTTP"}
-        title={"49. REST: ресурс, endpoint и URL"}
+        title={"REST: ресурс, endpoint и URL"}
         intro={"Метод уже подсказывает, какое действие хочет выполнить клиент. Теперь разберёмся, как адрес сообщает серверу, с каким объектом это действие связано. Мы соберём внешнюю карту Planner API, не переходя пока к реализации FastAPI."}
         tags={[
           { icon: <Layers size={14} />, label: "ресурс и представление" },

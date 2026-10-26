@@ -22,7 +22,7 @@ export function Lesson67({ module }: { module?: string }) {
       <RichHero
         variant="project"
         chip={module ?? BLOCK_TITLE}
-        title={"67. Engine и путь к базе"}
+        title={"Engine и путь к базе"}
         intro={"Добавим к существующему Planner понятное подключение SQLite. JSON останется рабочим хранилищем, а новая база пока понадобится только для отдельной проверки соединения."}
         tags={[
           { icon: <Settings size={14} />, label: "DATABASE_URL" },

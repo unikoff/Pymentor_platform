@@ -25,7 +25,7 @@ export function Lesson74_1({ module }: { module?: string }) {
       <RichHero
         variant="project"
         chip={module ?? BLOCK_TITLE}
-        title="74.1. Готовность к переходу"
+        title="Готовность к переходу"
         intro="Соберём доказательства, что API и CLI могут работать с одним SQL-хранилищем на изолированной копии данных. Штатный Planner пока остаётся на JSON."
         tags={[
           { icon: <FileCheck2 size={14} />, label: "приёмка пути" },

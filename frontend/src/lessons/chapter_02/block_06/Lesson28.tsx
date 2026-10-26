@@ -37,7 +37,7 @@ export function Lesson28({ module }: { module?: string }) {
     <RichLesson>
       <RichHero
         chip={module ?? "Месяц 2 · Модуль 6"}
-        title="28. Модули, import и безопасный запуск"
+        title="Модули, import и безопасный запуск"
         intro="Разложим знакомый Planner по файлам, свяжем их импортами и сохраним запуск CLI только для прямого старта программы."
         tags={[
           { icon: <FolderGit2 size={14} />, label: "модули и импорты" },

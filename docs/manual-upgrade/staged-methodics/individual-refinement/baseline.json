@@ -1,0 +1,90 @@
+{
+  "date": "2026-10-25",
+  "scope": "individual-refinement",
+  "model": "chatgpt-web/gpt-6-sol",
+  "thinking": "high",
+  "files": [
+    {
+      "path": "docs/manual/LES_PLAN/01_PLAN_FRAME.md",
+      "bytes": 32949,
+      "sha256": "B8256648994B4EBBCE187B71120328F9FA23B3CF292F032DC9DDFA7CBB03139B"
+    },
+    {
+      "path": "docs/manual/LES_PLAN/02_THEORY_ROUTE.md",
+      "bytes": 35968,
+      "sha256": "5E888DEC0CB51C281160FA895012AB0EB03C94AADBE6D35FB36D8C00CE159316"
+    },
+    {
+      "path": "docs/manual/LES_PLAN/03_PRACTICE_ROUTE.md",
+      "bytes": 34673,
+      "sha256": "946D7722DE095417F4BB509F6D5C2288180C1E449C7D5442C06432ED89015C94"
+    },
+    {
+      "path": "docs/manual/LES_PLAN/04_PLAN_ACCEPTANCE.md",
+      "bytes": 44095,
+      "sha256": "68DE868C42B5B682E7647C4AE3DAF25D48F975C8BB7426145208C33F2AF0EBFA"
+    },
+    {
+      "path": "docs/manual/LES_PLAN/README.md",
+      "bytes": 10732,
+      "sha256": "ECBE884A615B35964BE65373D01CC1419DE15F1E69EAE926220306095E70FC82"
+    },
+    {
+      "path": "docs/manual/LES_MAIN/01_THEORY_DRAFT.md",
+      "bytes": 52388,
+      "sha256": "290DF66C680D92D06CABB43724894BDE9D357019A610E4E2C6677082BDD7BD9A"
+    },
+    {
+      "path": "docs/manual/LES_MAIN/02_PRACTICE_DRAFT.md",
+      "bytes": 36740,
+      "sha256": "BF937EBA089FA72C1F1AADA3075A09EEF77B4E8771D549ADB396AA419095F067"
+    },
+    {
+      "path": "docs/manual/LES_MAIN/03_CONTENT_EDIT.md",
+      "bytes": 39415,
+      "sha256": "4679DC1606970A26472030448BB485A78CE6C561B4C679C9538DCA98B9D6332E"
+    },
+    {
+      "path": "docs/manual/LES_MAIN/04_VISUAL_INTERACTIVE.md",
+      "bytes": 62997,
+      "sha256": "51AD8D2EDE417EEFFE77415BE7B8CDBD7AEEA56BF3A593CD063CB6CA4A538D3C"
+    },
+    {
+      "path": "docs/manual/LES_MAIN/05_LESSON_ACCEPTANCE.md",
+      "bytes": 74547,
+      "sha256": "C979E042F99F24AED9E5CDC063407074CD8B4DD95F62A7B9B7A71C88D5DA5AE0"
+    },
+    {
+      "path": "docs/manual/LES_MAIN/README.md",
+      "bytes": 14696,
+      "sha256": "BBD47D11E1F24D2673AD5E25F0615F80717590A3B1B220EB26E902E82792CD15"
+    },
+    {
+      "path": "docs/manual/LESSON_PLAN_GUIDE.md",
+      "bytes": 5550,
+      "sha256": "F1C9AC9A1A6EAA5DC4FA8E0BB8C1483D001DF9912CB25AF94129AB6F4272B74F"
+    },
+    {
+      "path": "docs/manual/LESSON_AUTHORING_GUIDE.md",
+      "bytes": 14287,
+      "sha256": "924299A77639E42650E13ED92125FAF07EF2CE821E8CBBDF2895336B32EFB641"
+    },
+    {
+      "path": "docs/manual/README.md",
+      "bytes": 6599,
+      "sha256": "3201C2559BFB002BF1022A9A53EE1BD07306C1B21CC1B899DAB551133CBD0AF3"
+    }
+  ],
+  "git_status": [
+    " M docs/manual/BLOCK_CONCEPT_GUIDE.md",
+    " M docs/manual/COURSE_CONCEPT_GUIDE.md",
+    " M docs/manual/LESSON_AUTHORING_GUIDE.md",
+    " M docs/manual/LESSON_PLAN_GUIDE.md",
+    " D docs/manual/LESSON_REVIEW_FINDINGS.md",
+    " M docs/manual/LESSON_REVIEW_GUIDE.md",
+    " M docs/manual/README.md",
+    " M docs/manual/STUDYHUB_LEARNING_WORKFLOW.md",
+    "?? docs/manual/LES_MAIN/",
+    "?? docs/manual/LES_PLAN/"
+  ]
+}

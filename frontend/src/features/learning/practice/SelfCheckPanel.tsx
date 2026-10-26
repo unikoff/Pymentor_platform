@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, BookOpen, CheckCircle2, Lightbulb } from "lucide-react";
-import { completeLesson } from "../api";
+import { completeLesson, getManualPracticeAnswer } from "../api";
 import { formatManualPracticeResult, renderPracticeText } from "./text-format";
 import { usePracticeState } from "./session";
 import { useContentSwitch, focusTaskNavigation } from "./useContentSwitch";
 import { readStoredString, writeStoredValue } from "../../../shared/lib/storage";
-import type { Lesson } from "../types";
+import type { Lesson, ManualPracticeTaskAnswer } from "../types";
 
 function readStoredStringSet(key: string, signature: string): Set<string> {
   try {
@@ -45,6 +45,7 @@ export function SelfCheckPanel({
   completedTaskCount?: number;
 }) {
   const manualListRef = useRef<HTMLElement>(null);
+  const pendingAnswers = useRef(new Set<string>());
   const switchContent = useContentSwitch();
   const pendingFocus = useRef(new Map<string, "next" | "previous">());
   const manualPractice = lesson.manual_practice ?? [];
@@ -55,6 +56,9 @@ export function SelfCheckPanel({
     () => readStoredStringSet(progressStorageKey, manualPracticeSignature),
   );
   const [openTaskPanels, setOpenTaskPanels] = usePracticeState<Record<string, "hint" | "answer" | undefined>>(`${sessionKey}:panels`, () => ({}));
+  const [manualAnswers, setManualAnswers] = useState<Record<string, ManualPracticeTaskAnswer>>({});
+  const [loadingAnswer, setLoadingAnswer] = useState<string | null>(null);
+  const [answerErrors, setAnswerErrors] = useState<Record<string, string>>({});
   const [activeTaskIndexes, setActiveTaskIndexes] = usePracticeState<Record<string, number>>(`${sessionKey}:tasks`, () => ({}));
   const [isSaving, setIsSaving] = usePracticeState(`${sessionKey}:saving`, () => false);
   const [error, setError] = usePracticeState(`${sessionKey}:error`, () => "");
@@ -129,12 +133,54 @@ export function SelfCheckPanel({
     });
   }
 
-  function toggleTaskPanel(taskId: string, panel: "hint" | "answer") {
+  async function loadManualAnswer(taskId: string, exerciseIndex: number, taskIndex: number) {
+    if (manualAnswers[taskId] || pendingAnswers.current.has(taskId)) return;
+    pendingAnswers.current.add(taskId);
+    setLoadingAnswer(taskId);
+    setAnswerErrors((current) => ({ ...current, [taskId]: "" }));
+    try {
+      const response = await getManualPracticeAnswer(lesson.id, exerciseIndex, taskIndex);
+      setManualAnswers((current) => ({ ...current, [taskId]: response.answer }));
+    } catch (err: unknown) {
+      setAnswerErrors((current) => ({
+        ...current,
+        [taskId]: err instanceof Error ? err.message : "Не удалось загрузить разбор решения",
+      }));
+    } finally {
+      pendingAnswers.current.delete(taskId);
+      setLoadingAnswer((current) => current === taskId ? null : current);
+    }
+  }
+
+  function toggleTaskPanel(
+    taskId: string,
+    panel: "hint" | "answer",
+    exerciseIndex?: number,
+    taskIndex?: number,
+    hasInlineAnswer = false,
+  ) {
     setOpenTaskPanels((current) => ({
       ...current,
       [taskId]: current[taskId] === panel ? undefined : panel,
     }));
+    if (
+      panel === "answer" && !hasInlineAnswer && !manualAnswers[taskId] &&
+      exerciseIndex !== undefined && taskIndex !== undefined
+    ) {
+      void loadManualAnswer(taskId, exerciseIndex, taskIndex);
+    }
   }
+
+  useEffect(() => {
+    manualPractice.forEach((exercise, exerciseIndex) => {
+      exercise.tasks?.forEach((task, taskIndex) => {
+        const taskId = [lesson.id, exerciseIndex, taskIndex].join(":");
+        if (openTaskPanels[taskId] === "answer" && !task.answer && !manualAnswers[taskId]) {
+          void loadManualAnswer(taskId, exerciseIndex, taskIndex);
+        }
+      });
+    });
+  }, [lesson.id, manualPractice, manualAnswers, openTaskPanels]);
 
   useEffect(() => {
     pendingFocus.current.forEach((direction, exerciseId) => {
@@ -275,7 +321,7 @@ export function SelfCheckPanel({
                             className={["manual-practice-task__action", activePanel === "answer" ? "is-active" : ""].filter(Boolean).join(" ")}
                             type="button"
                             aria-pressed={activePanel === "answer"}
-                            onClick={() => toggleTaskPanel(taskId, "answer")}
+                            onClick={() => toggleTaskPanel(taskId, "answer", exerciseIndex, activeTaskIndex, Boolean(practiceTask.answer))}
                           >
                             <BookOpen size={16} />
                             Разбор
@@ -303,30 +349,38 @@ export function SelfCheckPanel({
 
                         {activePanel === "answer" && (
                           <aside className="manual-practice-task__panel manual-practice-task__panel--answer">
-                            <strong>Разбор решения</strong>
-                            <div className="manual-practice-task__text">
-                              {renderPracticeText(practiceTask.answer.explanation)}
-                            </div>
-                            <ol>
-                              {practiceTask.answer.steps.map((step) => (
-                                <li key={step}>{renderPracticeText(step)}</li>
-                              ))}
-                            </ol>
-                            {practiceTask.answer.code && (
-                              <pre className="manual-practice-task__code">
-                                <code>{practiceTask.answer.code}</code>
-                              </pre>
-                            )}
-                            {practiceTask.answer.checks && practiceTask.answer.checks.length > 0 && (
-                              <div className="manual-practice-task__checks">
-                                <strong>Самопроверка</strong>
-                                <ul>
-                                  {practiceTask.answer.checks.map((check) => (
-                                    <li key={check}>{renderPracticeText(check)}</li>
+                            {(() => {
+                              const answer = practiceTask.answer ?? manualAnswers[taskId];
+                              if (!answer) {
+                                return <p role="status">{loadingAnswer === taskId ? "Загружаем разбор…" : answerErrors[taskId] || "Разбор пока не загружен."}</p>;
+                              }
+                              return <>
+                                <strong>Разбор решения</strong>
+                                <div className="manual-practice-task__text">
+                                  {renderPracticeText(answer.explanation)}
+                                </div>
+                                <ol>
+                                  {answer.steps.map((step) => (
+                                    <li key={step}>{renderPracticeText(step)}</li>
                                   ))}
-                                </ul>
-                              </div>
-                            )}
+                                </ol>
+                                {answer.code && (
+                                  <pre className="manual-practice-task__code">
+                                    <code>{answer.code}</code>
+                                  </pre>
+                                )}
+                                {answer.checks && answer.checks.length > 0 && (
+                                  <div className="manual-practice-task__checks">
+                                    <strong>Самопроверка</strong>
+                                    <ul>
+                                      {answer.checks.map((check) => (
+                                        <li key={check}>{renderPracticeText(check)}</li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                )}
+                              </>;
+                            })()}
                           </aside>
                         )}
                       </article>

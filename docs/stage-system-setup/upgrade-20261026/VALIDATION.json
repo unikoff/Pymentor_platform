@@ -1,0 +1,13 @@
+{
+  "documents": 17,
+  "local_links": 145,
+  "missing_links": [],
+  "profiles": [
+    "pymentor_plan_worker",
+    "pymentor_lesson_worker"
+  ],
+  "python_compile": "PASS",
+  "lesson_execution": "NOT_RUN",
+  "hook_trust": "NOT_VERIFIED",
+  "token_saving": "NOT_MEASURED"
+}

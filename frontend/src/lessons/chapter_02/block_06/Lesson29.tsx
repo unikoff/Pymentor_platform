@@ -29,7 +29,7 @@ export function Lesson29({ module }: { module?: string }) {
     <RichLesson>
       <RichHero
         chip={module ?? "Глава 2 · Блок 6"}
-        title="29. Файл как ресурс: путь, режим, with и UTF-8"
+        title="Файл как ресурс: путь, режим, with и UTF-8"
         intro="Разберём, как программа находит файл, открывает его как ресурс, читает или меняет текст и закрывает после работы. Исследуем отдельный учебный файл; Planner пока остаётся без файлового хранения."
         tags={[
           { icon: <HardDrive size={14} />, label: "путь и файловая система" },
@@ -167,7 +167,7 @@ export function Lesson29({ module }: { module?: string }) {
               <p>Временный доступ внутри блока with</p>
             </DiagramNode>
             <DiagramArrow label="read() или write()" />
-            <DiagramNode title="Текстовая операция" shape="input-output">
+            <DiagramNode title="Текстовая операция" shape="process">
               <p>Получаем строку или передаём её для записи</p>
             </DiagramNode>
             <DiagramArrow label="выходим из with" />

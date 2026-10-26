@@ -26,7 +26,7 @@ export function Lesson33_1({ module }: { module?: string }) {
       <RichHero
         variant="project"
         chip={module ?? "Блок 7 · Модель и данные"}
-        title="33.1. Task на границе словаря"
+        title="Task на границе словаря"
         intro="Свяжем подготовленную Task с прежним форматом данных: явно представим объект словарной записью и восстановим новый объект через проверяемый конструктор."
         tags={[
           { icon: <FileJson size={14} />, label: "объект и запись" },
@@ -88,7 +88,7 @@ export function Lesson33_1({ module }: { module?: string }) {
               forward="to_dict(): собирает запись"
               reverse="from_dict(): создаёт Task"
             />
-            <DiagramNode title="Словарь записи" shape="input-output">
+            <DiagramNode title="Словарь записи" shape="process">
               <p>id · title · priority · is_done</p>
             </DiagramNode>
           </DiagramFlow>

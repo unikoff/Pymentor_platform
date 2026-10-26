@@ -26,7 +26,7 @@ export function Lesson37_3({ module }: { module?: string }) {
       <RichHero
         variant="project"
         chip={module ?? "Месяц 2 · Блок 8"}
-        title={"37.3. Виртуальное окружение проекта"}
+        title={"Виртуальное окружение проекта"}
         intro={"Подготовим уже работающий Planner к первой внешней зависимости, сохраняя его код, команды и данные."}
         tags={[
           { icon: <FolderOpen size={14} />, label: "Python для проекта" },

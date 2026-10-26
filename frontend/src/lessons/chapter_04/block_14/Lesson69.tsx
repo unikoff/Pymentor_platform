@@ -67,7 +67,7 @@ export function Lesson69({ module }: { module?: string }) {
       <RichHero
         variant="project"
         chip={module ?? BLOCK_TITLE}
-        title={"69. Граница чтения данных"}
+        title={"Граница чтения данных"}
         intro={
           "Planner уже хранит задачи в JSON и возвращает их через знакомые методы сервиса. Теперь отделим чтение от конкретного способа хранения, не меняя сами данные и не подключая базу к рабочему приложению."
         }
@@ -176,7 +176,7 @@ export function Lesson69({ module }: { module?: string }) {
             label={"От API или CLI к результату чтения"}
             className={"lesson85-reading-flow"}
           >
-            <DiagramNode title={"HTTP API и CLI"} shape={"input-output"}>
+            <DiagramNode title={"HTTP API и CLI"} shape={"process"}>
               <p>Вызывают прежний метод Planner</p>
             </DiagramNode>
             <DiagramArrow label={"сценарий"} />

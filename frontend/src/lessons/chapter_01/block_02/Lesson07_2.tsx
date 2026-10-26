@@ -30,7 +30,7 @@ export function Lesson07_2({ module }: { module?: string }) {
     <RichLesson>
       <RichHero
         chip={module ?? "Блок 2 · Условия, данные и циклы"}
-        title="7.2. Кортежи и множества"
+        title="Кортежи и множества"
         intro="List и tuple оба хранят порядок и повторы, но только list можно менять. Затем посмотрим, как set оставляет уникальные значения."
       />
 

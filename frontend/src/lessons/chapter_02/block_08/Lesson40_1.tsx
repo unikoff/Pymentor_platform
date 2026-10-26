@@ -28,7 +28,7 @@ export function Lesson40_1({ module }: { module?: string }) {
       <RichHero
         variant="project"
         chip={module ?? "Месяц 2 · Блок 8"}
-        title={"40.1. Воспроизводимость и передача проекта"}
+        title={"Воспроизводимость и передача проекта"}
         intro={"Persistent Planner уже собран и принят. Подготовим проверяемую версию, которую другой разработчик сможет запустить по README и понять без нашей переписки."}
         tags={[
           { icon: <FileText size={14} />, label: "README и чистая копия" },
@@ -158,7 +158,7 @@ export function Lesson40_1({ module }: { module?: string }) {
         </p>
         <Diagram caption={"Одна команда проходит через предметный слой к выбранному файлу"}>
           <DiagramFlow label={"Команда и правила одной задачи"}>
-            <DiagramNode title={"CLI"} shape={"input-output"}>
+            <DiagramNode title={"CLI"} shape={"process"}>
               <p>{"Принимает команду и показывает результат"}</p>
             </DiagramNode>
             <DiagramArrow label={"команда и аргументы"} />

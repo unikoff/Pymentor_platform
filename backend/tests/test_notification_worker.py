@@ -14,10 +14,10 @@ from unittest.mock import Mock, patch
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from DataBase.engine import Base
-from DataBase import model as models
-from routers.user import crud
-from services.notification_worker import (
+from db.engine import Base
+from db import models as models
+from routers.bookings import service as crud
+from notifications.delivery import (
     MAX_ATTEMPTS,
     _claim_next,
     drain_notifications,
@@ -25,7 +25,7 @@ from services.notification_worker import (
     _worker_lock,
     _release_worker_lock,
 )
-from services.telegram import TelegramDeliveryError
+from notifications.telegram import TelegramDeliveryError
 
 
 class NotificationOutboxTests(TestCase):
@@ -190,7 +190,7 @@ class NotificationOutboxTests(TestCase):
             )
         )
 
-        with patch("services.notification_worker.random.randint", return_value=0):
+        with patch("notifications.delivery.random.randint", return_value=0):
             drain_notifications(session_factory=self.sessions, send=sender, budget_seconds=5)
 
         saved = self._reload_event(event.id)
@@ -332,7 +332,7 @@ class NotificationWorkerProcessTests(TestCase):
             backend = Path(__file__).resolve().parents[1]
             backup = Path(directory) / "before-migration.sqlite3"
             result = subprocess.run(
-                [sys.executable, "-m", "services.notification_worker", "--backup-db", str(backup)],
+                [sys.executable, "-m", "notifications.worker", "--backup-db", str(backup)],
                 cwd=backend, env=env, capture_output=True, text=True, timeout=15,
             )
             self.assertEqual(result.returncode, 0, result.stderr)
@@ -344,7 +344,7 @@ class NotificationWorkerProcessTests(TestCase):
                 connection.close()
             for _ in range(2):
                 result = subprocess.run(
-                    [sys.executable, "-m", "services.notification_worker", "--stats"],
+                    [sys.executable, "-m", "notifications.worker", "--stats"],
                     cwd=backend, env=env, capture_output=True, text=True, timeout=15,
                 )
                 self.assertEqual(result.returncode, 0, result.stderr)
@@ -357,12 +357,12 @@ class NotificationWorkerProcessTests(TestCase):
         with tempfile.TemporaryDirectory(prefix="pymentor-outbox-lock-") as directory:
             path = Path(directory) / "worker.lock"
             code = (
-                "from pathlib import Path; import sys; from services import notification_worker as w; "
+                "from pathlib import Path; import sys; from notifications import delivery as w; "
                 "w.LOCK_PATH=Path(sys.argv[1]); handle=w._worker_lock(); "
                 "print('busy' if handle is None else 'acquired'); "
                 "w._release_worker_lock(handle) if handle is not None else None"
             )
-            with patch("services.notification_worker.LOCK_PATH", path):
+            with patch("notifications.delivery.LOCK_PATH", path):
                 lock = _worker_lock()
                 self.assertIsNotNone(lock)
                 try:

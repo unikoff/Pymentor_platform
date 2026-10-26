@@ -1,0 +1,4 @@
+interface:
+  display_name: "Pymentor Stage 1 Beta"
+  short_description: "Оркестрация концепта главы и четырёх блоков"
+  default_prompt: "Используй $pymentor-stage1-beta для Stage 1 выбранной главы: проверь вход, выполни C1–C4, B1–B4 для четырёх блоков и F1–F3."

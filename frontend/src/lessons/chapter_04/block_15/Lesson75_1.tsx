@@ -27,7 +27,7 @@ export function Lesson75_1({ module }: { module?: string }) {
       <RichHero
         variant={"project"}
         chip={module ?? BLOCK_TITLE}
-        title={"75.1. Убираем JSON-backend"}
+        title={"Убираем JSON-backend"}
         intro={"После перехода обоих интерфейсов на SQLite уберём старый файловый путь и проверим, что Planner больше от него не зависит."}
         tags={[
           { icon: <Search size={14} />, label: "граф зависимостей" },

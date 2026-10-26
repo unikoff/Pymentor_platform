@@ -8,7 +8,7 @@ export function Lesson55({ module }: { module?: string }) {
     <RichLesson>
       <RichHero
         chip={module ?? "Месяц 3 · Блок 10 · Первый FastAPI"}
-        title={"55. Query-параметры: фильтрация, сортировка и границы"}
+        title={"Query-параметры: фильтрация, сортировка и границы"}
         intro={"GET /tasks уже показывает реальные данные. Теперь научим тот же адрес отдавать удобную выборку, не меняя задачи в Planner."}
         tags={[
           { icon: <ListChecks size={14} />, label: "чтение коллекции" },

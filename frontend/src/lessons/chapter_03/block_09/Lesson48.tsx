@@ -9,7 +9,7 @@ export function Lesson48({ module }: { module?: string }) {
     <RichLesson>
       <RichHero
         chip={module ?? "Месяц 3 · Блок 9 · Интернет и HTTP"}
-        title="48. Методы GET, POST, PUT, PATCH, DELETE"
+        title="Методы GET, POST, PUT, PATCH, DELETE"
         intro="Ответ сервера мы уже научились читать. Теперь посмотрим, как клиент в запросе сообщает, что он хочет сделать с задачами: прочитать, создать, заменить, изменить часть или удалить."
         tags={[
           { icon: <GitBranch size={14} />, label: "намерение клиента" },

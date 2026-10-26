@@ -58,7 +58,7 @@ export type ManualPracticeTask = {
   task: string;
   requirements: string[];
   hint: string;
-  answer: ManualPracticeTaskAnswer;
+  answer?: ManualPracticeTaskAnswer;
   result?: string;
 };
 

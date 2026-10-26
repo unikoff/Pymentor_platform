@@ -22,7 +22,7 @@ VENV_PYTHON = os.path.join(PROJECT_DIR, ".venv", "bin", "python")
 if os.path.exists(VENV_PYTHON) and os.path.realpath(sys.executable) != os.path.realpath(VENV_PYTHON):
     os.execl(VENV_PYTHON, VENV_PYTHON, *sys.argv)
 
-# 2. Делаем пакеты backend импортируемыми (main.py, DataBase/, routers/).
+# 2. Делаем пакеты backend импортируемыми (main.py, db/, routers/, content/).
 sys.path.insert(0, BACKEND_DIR)
 
 # 3. Оборачиваем ASGI-приложение FastAPI в WSGI для Passenger.

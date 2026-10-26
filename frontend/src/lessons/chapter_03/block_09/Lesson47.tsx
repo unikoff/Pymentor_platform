@@ -8,7 +8,7 @@ export function Lesson47({ module }: { module?: string }) {
     <RichLesson>
       <RichHero
         chip={module ?? "Месяц 3 · Блок 9 · Интернет и HTTP"}
-        title={"47. HTTP response: status, headers, body и Content-Type"}
+        title={"HTTP response: status, headers, body и Content-Type"}
         intro={"В прошлом занятии мы собрали request. Теперь разберём ответ сервера: как status сообщает исход, headers описывают сообщение, а body передаёт результат или понятную ошибку."}
         tags={[
           { icon: <CheckCircle2 size={14} />, label: "структура response" },

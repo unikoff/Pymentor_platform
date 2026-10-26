@@ -1,0 +1,25 @@
+{
+  "files": [
+    {
+      "path": ".agents/skills/pymentor-stage-batch/SKILL.md",
+      "sha256": "3261ac64a74240c7287d99e40a9adbbf0651b826bb7ac62fe10e09dbb7a8fe5c",
+      "independent_report_matches": true
+    },
+    {
+      "path": ".codex/agents/pymentor-plan-worker.toml",
+      "sha256": "534b5dcfbbe5bf3ffb4c6f1d0961df66fd4b6610ae687f3d718a2874a0d132a6",
+      "independent_report_matches": true
+    },
+    {
+      "path": ".codex/agents/pymentor-lesson-worker.toml",
+      "sha256": "19fbf13630f2ffc120ca7fdf79793385a63921bfe30f64e306fe71de655393ac",
+      "independent_report_matches": true
+    }
+  ],
+  "markdown_files_checked": 22,
+  "local_links_checked": 157,
+  "missing_links": [],
+  "product_stage_runs": "NOT_RUN",
+  "worker_profile_spawn": "NOT_RUN",
+  "skill_discovery": "CONFIRMED_REPO_ENABLED"
+}

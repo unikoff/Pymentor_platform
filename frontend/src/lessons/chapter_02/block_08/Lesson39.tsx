@@ -29,7 +29,7 @@ export function Lesson39({ module }: { module?: string }) {
       <RichHero
         variant="project"
         chip={module ?? "Месяц 2 · Блок 8"}
-        title="39. Файловая интеграция через tmp_path"
+        title="Файловая интеграция через tmp_path"
         intro="Продолжим тесты готового Persistent Planner: проверим, как Task проходит через JsonStorage и возвращается в новом экземпляре сервиса, не касаясь пользовательского файла."
         tags={[
           { icon: <FolderOpen size={14} />, label: "tmp_path и JSON" },

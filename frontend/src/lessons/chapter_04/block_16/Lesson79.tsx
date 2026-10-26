@@ -25,7 +25,7 @@ export function Lesson79({ module }: { module?: string }) {
       <RichHero
         variant={"project"}
         chip={module ?? BLOCK_TITLE}
-        title={"79. Сквозная проверка"}
+        title={"Сквозная проверка"}
         intro={"Свяжем API, CLI и новое чтение из SQLite в одной приёмочной истории, сохраняя уже работающие договоры Planner."}
         tags={[
           { icon: <Activity size={14} />, label: "одна история" },

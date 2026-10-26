@@ -25,7 +25,7 @@ export function Lesson16({ module }: { module?: string }) {
     <RichLesson>
       <RichHero
         chip={module ?? "Блок 4 · Собираем свой Planner"}
-        title="16. Запускаем каркас Planner"
+        title="Запускаем каркас Planner"
         intro="Перейдём от подготовленных функций к программе, которая принимает команды в одном запуске и возвращает нас к меню."
       />
 

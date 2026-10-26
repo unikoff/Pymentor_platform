@@ -20,8 +20,16 @@ export type CalendarMonth = {
 
 export type ActivityCalendarResponse = {
   days: string[];
+  visits: { activity_date: string; visited_at: string | null }[];
 };
 
 export type ActivityVisitResponse = {
   activity_date: string;
+  visited_at: string | null;
+};
+
+export type ActivitySummaryResponse = {
+  current_streak: number;
+  visited_today: boolean;
+  total_active_days: number;
 };

@@ -1,0 +1,30 @@
+{
+  "profiles": "2/2 PASS",
+  "local_links": 62,
+  "missing_links": [],
+  "helper_checks": [
+    {
+      "stage": "2",
+      "expected_success": true,
+      "PASS": true
+    },
+    {
+      "stage": "3",
+      "expected_success": true,
+      "PASS": true
+    },
+    {
+      "stage": "2",
+      "expected_success": false,
+      "PASS": true
+    },
+    {
+      "stage": "4",
+      "expected_success": false,
+      "PASS": true
+    }
+  ],
+  "model_or_stage_execution": "NOT_RUN",
+  "cost_reduction": "NOT_MEASURED",
+  "final_review": "local structural check; author reports accepted; Web integration reviewer failed connector"
+}

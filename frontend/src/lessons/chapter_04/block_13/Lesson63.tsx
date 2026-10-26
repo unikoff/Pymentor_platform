@@ -26,7 +26,7 @@ export function Lesson63({ module }: { module?: string }) {
       <RichHero
         variant="project"
         chip={module ?? BLOCK_TITLE}
-        title={"63. Сервис через Depends"}
+        title={"Сервис через Depends"}
         intro={"HTTP-обработчики перестанут сами искать PlannerService в состоянии приложения. Мы вынесем получение уже собранного объекта в короткую функцию и подключим её к существующим маршрутам FastAPI."}
         tags={[
           { icon: <GitBranch size={14} />, label: "provider" },

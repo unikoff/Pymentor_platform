@@ -8,7 +8,7 @@ export function Lesson52({ module }: { module?: string }) {
     <RichLesson>
       <RichHero
         chip={module ?? "Месяц 3 · Блок 10 · Первый FastAPI"}
-        title={"52. Первое FastAPI-приложение, Uvicorn и Swagger"}
+        title={"Первое FastAPI-приложение, Uvicorn и Swagger"}
         intro={"В прошлом занятии мы увидели HTTP-запрос в Postman. Теперь тот же существующий Planner получит собственный серверный вход, не теряя привычный CLI."}
         tags={[
           { icon: <Wrench size={14} />, label: "FastAPI + Uvicorn" },

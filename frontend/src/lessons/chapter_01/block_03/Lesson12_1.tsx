@@ -34,7 +34,7 @@ export function Lesson12_1({ module }: { module?: string }) {
     <RichLesson>
       <RichHero
         chip={module ?? "Блок 3 · Функции и инструменты"}
-        title="12.1. Создаём проект и репозиторий"
+        title="Создаём проект и репозиторий"
         intro="Создадим одно рабочее место для будущего StudyHub: пустой личный remote, его единственный clone и первый запускаемый файл."
       />
 

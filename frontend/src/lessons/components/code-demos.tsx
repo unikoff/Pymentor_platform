@@ -106,9 +106,9 @@ export function FillBlank({
         </code>
       </pre>
       <div className="fill-options">
-        {options.map((option) => (
+        {options.map((option, index) => (
           <button
-            key={option}
+            key={index}
             type="button"
             className={`fill-option ${picked === option ? (isCorrect ? "is-correct" : "is-wrong") : ""}`}
             disabled={isCorrect}
@@ -173,7 +173,7 @@ export function BranchExplorer({ code, scenarios }: { code: string; scenarios: B
       <div className="branch-scenarios">
         {scenarios.map((item, index) => (
           <button
-            key={item.label}
+            key={index}
             type="button"
             className={`branch-chip ${active === index ? "is-active" : ""}`}
             onClick={() => setActive(index)}

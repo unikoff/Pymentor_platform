@@ -27,7 +27,7 @@ export function Lesson28_2({ module }: { module?: string }) {
     <RichLesson className="rich-lesson--lesson33">
       <RichHero
         chip={module ?? "Месяц 2 · Блок 6"}
-        title="28.2. Отделить CLI от сборки"
+        title="Отделить CLI от сборки"
         intro="Перенесём общение с пользователем в app.cli, оставим в app.main создание состояния и запуск, а предметные операции сохраним в своих модулях."
         variant="project"
         tags={[

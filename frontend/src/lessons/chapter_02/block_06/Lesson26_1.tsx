@@ -27,7 +27,7 @@ export function Lesson26_1({ module }: { module?: string }) {
     <RichLesson>
       <RichHero
         chip={module ?? "Месяц 2 · Модуль 6"}
-        title={"26.1. Конкретный try/except и общий ввод"}
+        title={"Конкретный try/except и общий ввод"}
         intro={"Разберём знакомый перехват ValueError и вынесем повторяющееся преобразование числа в один читатель, сохранив правила Planner."}
         tags={[
           { icon: <ShieldCheck size={14} />, label: "узкий try/except" },
@@ -250,7 +250,7 @@ print(parse_height("высоко"))`}
         <Diagram caption={"Общее преобразование, разные предметные проверки"}>
           <DiagramLane title={"Читатель приоритета"}>
             <DiagramFlow label={"Путь значения приоритета от приглашения к диапазону"}>
-              <DiagramNode title={"Приглашение"} shape="input-output">
+              <DiagramNode title={"Приглашение"} shape="process">
                 <p>{"Приоритет от 1 до 5"}</p>
               </DiagramNode>
               <DiagramArrow label={"получает строку"} />
@@ -265,7 +265,7 @@ print(parse_height("высоко"))`}
           </DiagramLane>
           <DiagramLane title={"Читатель номера задачи"}>
             <DiagramFlow label={"Путь номера задачи от приглашения к проверке положительности"}>
-              <DiagramNode title={"Приглашение"} shape="input-output">
+              <DiagramNode title={"Приглашение"} shape="process">
                 <p>{"Номер задачи"}</p>
               </DiagramNode>
               <DiagramArrow label={"получает строку"} />

@@ -23,7 +23,7 @@ export function Lesson15_1({ module }: { module?: string }) {
     <RichLesson>
       <RichHero
         chip={module ?? "Блок 3 · Функции и инструменты"}
-        title="15.1. Передаём проект дальше"
+        title="Передаём проект дальше"
         intro="Проверим опубликованную основу StudyHub в отдельной копии и выясним, что именно получает следующий блок."
       />
 

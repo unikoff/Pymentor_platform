@@ -83,6 +83,14 @@
   box-shadow: inset 3px 0 0 var(--accent);
 }
 
+.rich-lesson .tracer-line code {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  font-size: inherit;
+}
+
 .tracer-ln {
   color: var(--faint);
   user-select: none;

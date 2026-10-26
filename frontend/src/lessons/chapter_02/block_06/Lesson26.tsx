@@ -35,7 +35,7 @@ export function Lesson26({ module }: { module?: string }) {
     <RichLesson>
       <RichHero
         chip={module ?? "Месяц 2 · Модуль 6"}
-        title="26. Исключение и traceback своей цепочки"
+        title="Исключение и traceback своей цепочки"
         intro="Проследим отказ в знакомом Planner, прочитаем traceback и найдём нарушенное ожидание к данным, не меняя поведение приложения."
         tags={[
           { icon: <Bug size={14} />, label: "причина отказа" },

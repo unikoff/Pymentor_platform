@@ -33,7 +33,7 @@ export function Lesson30_2({ module }: { module?: string }) {
       <RichHero
         variant="project"
         chip={module ?? "Глава 2 · Блок 6"}
-        title="30.2. Ошибки хранения и сохранность данных"
+        title="Ошибки хранения и сохранность данных"
         intro="Разберём, как Planner отличает первый запуск от отказа чтения, передаёт ожидаемые ошибки через StorageError и честно завершает сессию, если запись не подтверждена."
         tags={[
           { icon: <Database size={14} />, label: "JSON и граница storage" },
@@ -181,7 +181,7 @@ export function Lesson30_2({ module }: { module?: string }) {
         <Diagram caption="Путь ошибки чтения до границы запуска" orientation="vertical">
           <DiagramLane title="Отказ чтения">
             <DiagramFlow label="StorageError поднимается из хранилища к сборке" orientation="vertical">
-              <DiagramNode title="Файловая система или JSON" shape="input-output">
+              <DiagramNode title="Файловая система или JSON" shape="process">
                 <p>OSError, ошибка декодирования или формы</p>
               </DiagramNode>
               <DiagramArrow label="ожидаемая причина" />

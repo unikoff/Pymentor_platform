@@ -26,7 +26,7 @@ export function Lesson70_1({ module }: { module?: string }) {
       <RichHero
         variant="project"
         chip={module ?? BLOCK_TITLE}
-        title={"70.1. Ресурс на один запрос"}
+        title={"Ресурс на один запрос"}
         intro={"Ограничим срок жизни SQLAlchemy Session одним запросом или одной CLI-командой, сохранив JSON рабочим путём Planner."}
         tags={[
           { icon: <Database size={14} />, label: "фабрика Session и Session" },

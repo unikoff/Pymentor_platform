@@ -30,7 +30,7 @@ export function Lesson28_1({ module }: { module?: string }) {
     <RichLesson>
       <RichHero
         chip={module ?? "Месяц 2 · Модуль 6"}
-        title="28.1. Пакет app и направление импортов"
+        title="Пакет app и направление импортов"
         intro="Соберём уже разделённые модули Planner в пакет app, настроим абсолютные импорты и проследим, почему обратная зависимость может остановить импорт."
         tags={[
           { icon: <Package size={14} />, label: "пакет app" },

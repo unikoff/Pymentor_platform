@@ -23,7 +23,7 @@ export function Lesson17_1({ module }: { module?: string }) {
     <RichLesson>
       <RichHero
         chip={module ?? "Блок 4 · Собираем свой Planner"}
-        title="17.1. Показываем список задач"
+        title="Показываем список задач"
         intro="Добавление уже создаёт задачи. Теперь мы научимся читать весь список и сохранять каждую карточку без изменений."
         variant="project"
       />

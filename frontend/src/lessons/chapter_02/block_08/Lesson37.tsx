@@ -27,7 +27,7 @@ export function Lesson37({ module }: { module?: string }) {
       <RichHero
         variant="project"
         chip={module ?? "Месяц 2 · Блок 8"}
-        title={"37. MemoryStorage и один договор"}
+        title={"MemoryStorage и один договор"}
         intro={"Добавим хранение в памяти к уже работающему файловому варианту. Сравним их через одинаковые действия и разберём, что именно копирует список."}
         tags={[
           { icon: <Database size={14} />, label: "два варианта хранения" },

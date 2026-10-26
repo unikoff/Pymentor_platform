@@ -5,6 +5,10 @@ import { getLocalDateKey } from "../../shared/lib/dates";
 // Workspace activity is recorded even when the account tab stays closed.
 export function useRecordActivityVisit(userId: number | null) {
   useEffect(() => {
-    if (userId !== null) void recordActivityVisit(getLocalDateKey()).catch(() => undefined);
+    if (userId !== null) {
+      void recordActivityVisit(getLocalDateKey())
+        .then(() => window.dispatchEvent(new Event("pymentor:activity-updated")))
+        .catch(() => undefined);
+    }
   }, [userId]);
 }

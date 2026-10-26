@@ -4,8 +4,8 @@ import contextlib
 import io
 import unittest
 
-from learning.code_runner import run_python_task
-from learning.course_content.chapter_01 import CODE_TASKS, MANUAL_PRACTICE
+from content.practice.runner.python import run_python_task
+from content.materials.chapter_01 import CODE_TASKS, MANUAL_PRACTICE
 
 
 class FoundationsReleaseContractsTests(unittest.TestCase):

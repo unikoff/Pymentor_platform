@@ -2,8 +2,8 @@
 
 import unittest
 
-from learning.code_runner import run_python_task
-from learning.course_content.chapter_01 import CODE_TASKS
+from content.practice.runner.python import run_python_task
+from content.materials.chapter_01 import CODE_TASKS
 
 
 def exercise(number, title):

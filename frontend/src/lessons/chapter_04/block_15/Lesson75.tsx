@@ -26,7 +26,7 @@ export function Lesson75({ module }: { module?: string }) {
       <RichHero
         variant={"project"}
         chip={module ?? BLOCK_TITLE}
-        title={"75. Переход на SQLite"}
+        title={"Переход на SQLite"}
         intro={"Перенесём актуальные задачи и направим обычные API и CLI в одну базу, сохранив прежнее поведение Planner."}
         tags={[
           { icon: <Archive size={14} />, label: "актуальный снимок" },
@@ -247,7 +247,7 @@ export function Lesson75({ module }: { module?: string }) {
               <p>{"Новых записей в JSON нет"}</p>
             </DiagramNode>
             <DiagramArrow label={"копия JSON_PATH"} />
-            <DiagramNode title={"Окончательный снимок"} shape={"input-output"}>
+            <DiagramNode title={"Окончательный снимок"} shape={"process"}>
               <p>{"Источник и время зафиксированы"}</p>
             </DiagramNode>
             <DiagramArrow label={"одна транзакция"} />

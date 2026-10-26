@@ -27,7 +27,7 @@ export function Lesson29_1({ module }: { module?: string }) {
       <RichHero
         variant="project"
         chip={module ?? "Глава 2 · Блок 6"}
-        title="29.1. JSON-представление настоящих задач"
+        title="JSON-представление настоящих задач"
         intro="Подготовим полный список задач к следующему шагу: переведём его в JSON-текст и восстановим значения обратно, пока не открывая файл."
         tags={[
           { icon: <Database size={14} />, label: "данные Planner" },

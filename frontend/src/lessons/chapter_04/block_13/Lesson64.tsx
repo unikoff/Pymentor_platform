@@ -26,7 +26,7 @@ export function Lesson64({ module }: { module?: string }) {
       <RichHero
         variant="project"
         chip={module ?? BLOCK_TITLE}
-        title={"64. Зависимости и тесты"}
+        title={"Зависимости и тесты"}
         intro={"Сгруппируем параметры существующего GET /tasks и передадим их вместе с Planner в provider только чтения: он вызывает выборку и не меняет задачи. Затем заменим provider в API-проверке, чтобы работать с отдельным JSON-файлом."}
         tags={[
           { icon: <GitBranch size={14} />, label: "небольшой граф" },

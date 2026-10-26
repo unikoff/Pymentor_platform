@@ -25,7 +25,7 @@ export function Lesson80({ module }: { module?: string }) {
       <RichHero
         variant="project"
         chip={module ?? BLOCK_TITLE}
-        title="80. Передача DB Planner"
+        title="Передача DB Planner"
         intro="Проверим, сможет ли новый разработчик получить тот же Planner из чистой копии и пройти документированный путь до работающих тестов, API и CLI."
         tags={[
           { icon: <FolderOpen size={14} />, label: "чистый checkout" },

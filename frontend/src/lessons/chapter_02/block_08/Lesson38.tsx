@@ -29,7 +29,7 @@ export function Lesson38({ module }: { module?: string }) {
       <RichHero
         variant="project"
         chip={module ?? "Месяц 2 · Блок 8"}
-        title={"38. Первые тесты через pytest"}
+        title={"Первые тесты через pytest"}
         intro={"Persistent Planner уже работает как единый продукт. Теперь мы закрепим известные договоры тестами, чтобы проверять модель, хранилище и сервис после изменений."}
         tags={[
           { icon: <CheckCircle2 size={14} />, label: "pytest и assert" },

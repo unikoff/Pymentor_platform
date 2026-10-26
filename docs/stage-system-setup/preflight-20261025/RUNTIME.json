@@ -1,0 +1,36 @@
+{
+  "date": "2026-10-25",
+  "verdict": "GO_TO_PILOT",
+  "scope": "infrastructure_preflight_only",
+  "real_pipeline": "NOT_RUN",
+  "evidence": {
+    "source": "DISCOVERY_LOCAL.json; read-only app-server initialization, skills/list(forceReload), model/list, config/read",
+    "cli_version": "0.160.0",
+    "skill": {"name": "pymentor-stage-batch", "enabled": true, "scope": "repo", "load_errors": 0},
+    "future_orchestrator": {"model": "gpt-6-luna", "reasoning_effort": "xhigh", "in_model_list": true, "invoked": false},
+    "workers": {"model": "chatgpt-web/gpt-6-sol", "reasoning_effort": "high", "in_model_list": true, "toml_parse": "2/2_PASS", "spawn": "NOT_TESTED", "custom_role_registration": "NOT_VERIFIED", "fallback": "full_current_developer_instructions_plus_explicit_web_model_high"},
+    "global_active_web_turn_cap": 5,
+    "five_worker_lesson_wave": "NOT_TESTED",
+    "links_checked": 60,
+    "broken_local_links": 0,
+    "source_files_checked": 10,
+    "methodic_passes_present": {"stage2": 4, "stage3": 5},
+    "flat_stage_directories": true,
+    "scenarios_reviewed": ["stage2", "stage3", "resume", "shared_file_and_runtime_blocker", "negative_control_docs_edit"],
+    "browser_api_runner": "NOT_RUN"
+  },
+  "source_sha256": {
+    ".agents/skills/pymentor-stage-batch/SKILL.md": "2ad2dbb9e8d3d51f9f620279dff37af6f3bbb8ec8c51d0e9f56b1a6b8ad6d082",
+    ".codex/agents/pymentor-plan-worker.toml": "0f6284b2ded81bbd3cb81c3bf528e8e99dd9e9a5946e4fb5fd7597595daa79e1",
+    ".codex/agents/pymentor-lesson-worker.toml": "19fbf13630f2ffc120ca7fdf79793385a63921bfe30f64e306fe71de655393ac",
+    "docs/make les stage/AGENTS.md": "c6e01634b4d12be705bbc8e2322ba1b42722ef92ea2e7265d8c63ab2d6292fa2",
+    "docs/make les stage/BATCH_WORKFLOW.md": "d6f53df9a813fb6705458d4ea80e90a94af26e6f78d3db9de8a161166a749831",
+    "docs/make les stage/RUN_TEMPLATE.md": "b7feb4b4fe60ae76528e62600b5d3aab7454baa449568179923c50b363d5a965",
+    "docs/make les stage/2 stage/AGENTS.md": "9fe46e97503cb7d8742fd6142a2bea0061f511bf67f9adefaa7f99108e946c97",
+    "docs/make les stage/2 stage/README.md": "81c3f96ae9eebc659f3c9c17496d863ac5918a6b8dac26541fde3d0311ab1367",
+    "docs/make les stage/3 stage/AGENTS.md": "d7b7770914e9802f7719613f4e3a6940777fa4d232ea872542459b9eab2d996b",
+    "docs/make les stage/3 stage/README.md": "54cb9851322754b008486e767d1c98dd073aeec90c9935928f3a84782dab60d5"
+  },
+  "pilot_preconditions": ["explicit_stage_and_string_lesson_range", "canonical_passports_and_for_stage3_accepted_plans", "write_scope_and_checks_access", "verified_runtime_selected_model_and_worker_ID", "available_global_web_slots"],
+  "changed_by_this_check": ["docs/stage-system-setup/preflight-20261025/READY.md", "docs/stage-system-setup/preflight-20261025/RUNTIME.json"]
+}

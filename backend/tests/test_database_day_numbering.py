@@ -5,9 +5,9 @@ import unittest
 from pathlib import Path
 from urllib.parse import unquote
 
-from learning import content
-from learning.course_content import chapter_04 as course
-from learning.course_content.chapter_04.numbering import LESSON_NUMBERS
+from content import catalog as content
+from content.materials import chapter_04 as course
+from content.materials.chapter_04.numbering import LESSON_NUMBERS
 
 
 NUMBERS = ["61","62","62.1","63","63.1","64","65","65.1","65.2","66","66.1","67","67.1","68","68.1","68.2","69","69.1","70","70.1","70.2","71","71.1","72","72.1","73","73.1","74","74.1","75","75.1","76","76.1","77","78","79","80"]
@@ -63,17 +63,17 @@ class DatabaseDayNumberingTests(unittest.TestCase):
             page = entries[relative]
             source = (root / f"{page}.tsx").read_text(encoding="utf-8")
             self.assertIn(f"export function {page.split('/')[-1]}", source)
-            self.assertRegex(source, rf'<RichHero\b[\s\S]*?\btitle=\{{?"{re.escape(number)}\. ')
+            self.assertRegex(source, r'<RichHero\b[\s\S]*?\btitle=')
             markdown = (content.COURSE_ROOT / lesson["source_file"]).read_text(encoding="utf-8")
             self.assertTrue(markdown.startswith(f"# {number}. "))
 
     def test_concept_passports_match_the_menu_and_mapping(self):
         numbers = []
         for block in range(13, 17):
-            text = (self.repo / f"docs/concept/chapter_04/BLOCK_{block}.md").read_text(encoding="utf-8")
+            text = (self.repo / f"docs/make les stage/1 stage/concept/chapter_04/BLOCK_{block}.md").read_text(encoding="utf-8")
             numbers.extend(re.findall(r"^### (\d+(?:\.\d+)*)\. ", text, re.M))
         self.assertEqual(numbers, NUMBERS)
-        text = (self.repo / "docs/concept/chapter_04/COURSE.md").read_text(encoding="utf-8")
+        text = (self.repo / "docs/make les stage/1 stage/concept/chapter_04/COURSE.md").read_text(encoding="utf-8")
         self.assertEqual(re.findall(r"^\| \*\*(\d+(?:\.\d+)*) / ", text, re.M), NUMBERS)
         self.assertEqual(list(LESSON_NUMBERS.values()), NUMBERS)
 

@@ -27,7 +27,7 @@ export function Lesson77({ module }: { module?: string }) {
       <RichHero
         variant="project"
         chip={module ?? BLOCK_TITLE}
-        title="77. SQL-запросы Planner"
+        title="SQL-запросы Planner"
         intro="Увидим SQL за уже знакомыми операциями Planner и соберём безопасные наблюдения, на которые можно опереться при решении об улучшении."
         tags={[
           { icon: <Eye size={14} />, label: "временное наблюдение" },
@@ -100,7 +100,7 @@ export function Lesson77({ module }: { module?: string }) {
               <p>Возвращает строки или агрегат</p>
             </DiagramNode>
             <DiagramArrow label="передаёт результат" />
-            <DiagramNode title="Session и mapping" shape="input-output">
+            <DiagramNode title="Session и mapping" shape="process">
               <p>Читают и преобразуют строки</p>
             </DiagramNode>
             <DiagramArrow label="возвращают значение" />

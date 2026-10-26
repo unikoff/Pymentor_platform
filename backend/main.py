@@ -1,141 +1,21 @@
-from pathlib import Path
-import asyncio
-import os
-from contextlib import asynccontextmanager
+from fastapi import FastAPI
 
-import uvicorn
-from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
-from fastapi.staticfiles import StaticFiles
-from sqlalchemy import inspect, text
-
-from DataBase.engine import Base, engine
-from DataBase import model
-from learning.content import get_legacy_lesson_id_map
-from routers.admin.routers import admin_router
-from routers.learning.routers import learning_router
-from routers.user.routers import user_router
-from services.local_notifications import LocalNotificationDispatcher
-
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    dispatcher = None
-    if os.getenv("PYMENTOR_LOCAL_NOTIFICATIONS", "1").lower() not in {"0", "false", "off"}:
-        dispatcher = LocalNotificationDispatcher()
-        dispatcher.start()
-    try:
-        yield
-    finally:
-        if dispatcher is not None:
-            await asyncio.to_thread(dispatcher.stop)
-
+from core.web import lifespan, configure_web, mount_frontend
+from db.bootstrap import ensure_schema
+from routers.admin.router import admin_router
+from routers.accounts.router import user_router
+from routers.bookings.router import booking_router
+from routers.courses.router import learning_router
 
 app = FastAPI(lifespan=lifespan)
-
-
-@app.middleware("http")
-async def prevent_api_caching(request, call_next):
-    response = await call_next(request)
-    path = request.url.path
-    root_path = request.scope.get("root_path", "").rstrip("/")
-    if root_path and path.startswith(f"{root_path}/"):
-        path = path[len(root_path) :]
-    if path.strip("/").split("/", 1)[0] in {"learning", "user", "admin"}:
-        response.headers["Cache-Control"] = "no-store"
-    return response
-
-
-def ensure_schema() -> None:
-    Base.metadata.create_all(bind=engine)
-
-    inspector = inspect(engine)
-    user_columns = {column["name"] for column in inspector.get_columns("users")}
-    if "subscription_until" not in user_columns:
-        with engine.begin() as connection:
-            connection.execute(text("ALTER TABLE users ADD COLUMN subscription_until DATETIME"))
-
-    # created_at в user_activity_days был избыточен: сам activity_date уже
-    # фиксирует день, а точное время визита нигде не используется.
-    activity_columns = {column["name"] for column in inspector.get_columns("user_activity_days")}
-    if "created_at" in activity_columns:
-        with engine.begin() as connection:
-            connection.execute(text("ALTER TABLE user_activity_days DROP COLUMN created_at"))
-
-    if "is_admin" not in user_columns:
-        with engine.begin() as connection:
-            connection.execute(text("ALTER TABLE users ADD COLUMN is_admin INTEGER NOT NULL DEFAULT 0"))
-
-    # С появлением треков id уроков получили префикс трека:
-    # lesson-04 -> python-basics-lesson-04. Переносим только прежние
-    # двухзначные позиционные ID, не затрагивая постоянные lesson-<hash>.
-    with engine.begin() as connection:
-        connection.execute(
-            text(
-                "UPDATE user_lesson_progress SET lesson_id = 'python-basics-' || lesson_id "
-                "WHERE lesson_id GLOB 'lesson-[0-9][0-9]'"
-            )
-        )
-
-    # До этого релиза ID зависел от места markdown-файла в отсортированном
-    # списке. Переносим сохранённый прогресс на ID исходного файла, чтобы
-    # последующее добавление материалов не меняло чужие отметки.
-    with engine.begin() as connection:
-        for legacy_id, stable_id in get_legacy_lesson_id_map().items():
-            connection.execute(
-                text(
-                    "DELETE FROM user_lesson_progress "
-                    "WHERE lesson_id = :legacy_id "
-                    "AND EXISTS ("
-                    "SELECT 1 FROM user_lesson_progress AS stable_progress "
-                    "WHERE stable_progress.user_id = user_lesson_progress.user_id "
-                    "AND stable_progress.lesson_id = :stable_id"
-                    ")"
-                ),
-                {"legacy_id": legacy_id, "stable_id": stable_id},
-            )
-            connection.execute(
-                text(
-                    "UPDATE user_lesson_progress SET lesson_id = :stable_id "
-                    "WHERE lesson_id = :legacy_id"
-                ),
-                {"legacy_id": legacy_id, "stable_id": stable_id},
-            )
-
-
 ensure_schema()
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://127.0.0.1:5173", "http://localhost:5173"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+configure_web(app)
 
 app.include_router(admin_router, prefix="/admin")
 app.include_router(user_router, prefix="/user")
+app.include_router(booking_router, prefix="/user")
 app.include_router(learning_router, prefix="/learning")
-
-# --- Раздача собранного фронтенда (production) ---
-# В деплое FastAPI сам отдаёт собранный React из frontend/dist: и ассеты, и SPA.
-# Тогда фронт и API живут на одном origin — cookie сессии работает без CORS.
-# В dev папки dist нет (фронт крутит Vite отдельно) → остаётся чистый API.
-_DIST_DIR = Path(__file__).resolve().parent.parent / "frontend" / "dist"
-if (_DIST_DIR / "index.html").exists():
-    app.mount("/assets", StaticFiles(directory=_DIST_DIR / "assets"), name="assets")
-
-    @app.get("/{full_path:path}")
-    async def spa(full_path: str):
-        if full_path.split("/", 1)[0] in {"learning", "user", "admin"}:
-            raise HTTPException(status_code=404, detail="API endpoint not found. Update the backend and retry.")
-        # Любой путь, не пойманный роутерами и /assets, отдаёт index.html (SPA-роутинг).
-        return FileResponse(_DIST_DIR / "index.html", headers={"Cache-Control": "no-cache"})
-else:
-    @app.get("/")
-    async def root():
-        return "Pymentor API working"
+mount_frontend(app)
 
 if __name__ == "__main__":
     import uvicorn

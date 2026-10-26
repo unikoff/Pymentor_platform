@@ -27,7 +27,7 @@ export function Lesson73({ module }: { module?: string }) {
       <RichHero
         variant="project"
         chip={module ?? BLOCK_TITLE}
-        title="73. SQL-фильтр и сводка"
+        title="SQL-фильтр и сводка"
         intro="Перенесём прежние фильтр, порядок и подсчёты Planner в SQL-репозиторий, сохранив ответы API и JSON как штатное хранилище."
         tags={[
           { icon: <Filter size={14} />, label: "WHERE · ORDER BY · LIMIT" },
@@ -150,7 +150,7 @@ export function Lesson73({ module }: { module?: string }) {
               <p>asc или desc</p>
             </DiagramNode>
             <DiagramArrow label="LIMIT · если задан" />
-            <DiagramNode title="Выбранные строки" shape="input-output">
+            <DiagramNode title="Выбранные строки" shape="process">
               <p>обычные Task после mapping</p>
             </DiagramNode>
           </DiagramFlow>

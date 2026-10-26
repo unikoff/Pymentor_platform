@@ -29,7 +29,7 @@ export function Lesson61({ module }: { module?: string }) {
       <RichHero
         variant="project"
         chip={module ?? BLOCK_TITLE}
-        title={"61. Пакет ресурса tasks"}
+        title={"Пакет ресурса tasks"}
         intro={"Сгруппируем уже знакомые HTTP-маршруты и схемы в пакет одного ресурса. Мы проследим реальные импорты и проверим, что API, CLI и договор задач остаются прежними."}
         tags={[
           { icon: <Layers size={14} />, label: "модуль → пакет" },
@@ -230,7 +230,7 @@ export function Lesson61({ module }: { module?: string }) {
               <p>{"Объявляет операции и использует схемы ресурса."}</p>
             </DiagramNode>
             <DiagramArrow label={"импорт схем"} />
-            <DiagramNode title={"tasks/schemas.py"} shape="input-output">
+            <DiagramNode title={"tasks/schemas.py"} shape="process">
               <p>{"Описывает входные данные и форму ответа."}</p>
             </DiagramNode>
           </DiagramFlow>

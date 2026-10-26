@@ -181,12 +181,6 @@
   text-align: center;
 }
 
-.lesson-diagram-node--input-output {
-  background: var(--diagram-data-bg);
-  clip-path: polygon(12% 0, 100% 0, 88% 100%, 0 100%);
-  padding-inline: 28px;
-}
-
 .lesson-diagram-node--database {
   border-radius: 50% / 14%;
   background: var(--diagram-data-bg);

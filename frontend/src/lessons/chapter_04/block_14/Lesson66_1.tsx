@@ -27,7 +27,7 @@ export function Lesson66_1({ module }: { module?: string }) {
       <RichHero
         variant="project"
         chip={module ?? BLOCK_TITLE}
-        title={"66.1. SQLite и основы SQL"}
+        title={"SQLite и основы SQL"}
         intro={"Познакомимся с таблицами и запросами на отдельной учебной базе. Действующий Planner пока продолжит читать и сохранять JSON."}
         tags={[
           { icon: <Database size={14} />, label: "SQLite в памяти" },
@@ -84,7 +84,7 @@ export function Lesson66_1({ module }: { module?: string }) {
         <Diagram caption={"Запрос проходит через открытое соединение и возвращает строки из базы."} orientation="horizontal">
           <DiagramFlow label={"Обмен Python и SQLite"} orientation="horizontal" className="lesson79-sqlite-flow">
             <DiagramLane title={"Код Python"}>
-              <DiagramNode title={"Connection"} shape="input-output">
+              <DiagramNode title={"Connection"} shape="process">
                 <p>{"Отправляет SQL и параметры"}</p>
               </DiagramNode>
             </DiagramLane>

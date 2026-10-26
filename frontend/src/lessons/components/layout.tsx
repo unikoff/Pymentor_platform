@@ -2,8 +2,49 @@ import React from "react";
 import { Check, Lightbulb, ListChecks } from "lucide-react";
 import { CodeBlock } from "../../shared/ui/code-editor/CodeEditor";
 
+function renderInlineCode(value: React.ReactNode, keyPrefix: string): React.ReactNode {
+  if (typeof value === "string") {
+    const parts = value.split(/(`[^`]+`)/g);
+    if (parts.length === 1) return value;
+    return parts.map((part, index) =>
+      part.startsWith("`") && part.endsWith("`")
+        ? <code key={`${keyPrefix}-${index}`}>{part.slice(1, -1)}</code>
+        : part,
+    );
+  }
+
+  if (Array.isArray(value)) {
+    return value.map((item, index) => renderInlineCode(item, `${keyPrefix}-${index}`));
+  }
+
+  if (!React.isValidElement<Record<string, unknown>>(value)) {
+    if (value && typeof value === "object") {
+      const prototype = Object.getPrototypeOf(value);
+      if (prototype === Object.prototype || prototype === null) {
+        return Object.fromEntries(
+          Object.entries(value).map(([name, propValue]) => [
+            name,
+            /^(?:code|fix|solution|initialCode|starterCode)$/i.test(name)
+              ? propValue
+              : renderInlineCode(propValue as React.ReactNode, `${keyPrefix}-${name}`),
+          ]),
+        ) as unknown as React.ReactNode;
+      }
+    }
+    return value;
+  }
+  if (value.type === "code" || value.type === "pre") return value;
+
+  const props = { ...value.props };
+  for (const [name, propValue] of Object.entries(props)) {
+    if (/^(?:code|fix|solution|initialCode|starterCode)$/i.test(name)) continue;
+    props[name] = renderInlineCode(propValue as React.ReactNode, `${keyPrefix}-${name}`);
+  }
+  return React.cloneElement(value, props);
+}
+
 export function RichLesson({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <div className={`rich-lesson${className ? ` ${className}` : ""}`}>{children}</div>;
+  return <div className={`rich-lesson${className ? ` ${className}` : ""}`}>{renderInlineCode(children, "rich-inline-code")}</div>;
 }
 
 export function RichHero({
@@ -26,8 +67,8 @@ export function RichHero({
       <p>{intro}</p>
       {tags && tags.length > 0 && (
         <div className="rich-hero-tags">
-          {tags.map((tag) => (
-            <span key={tag.label}>
+          {tags.map((tag, index) => (
+            <span key={index}>
               {tag.icon} {tag.label}
             </span>
           ))}
@@ -64,8 +105,8 @@ export function LinkedNotes({
 
   return (
     <ul className={`linked-notes${connected ? " linked-notes--connected" : ""}`}>
-      {items.map(({ title, description }) => (
-        <li className={`linked-note${connected ? " linked-note--connected" : ""}`} key={title}>
+      {items.map(({ title, description }, index) => (
+        <li className={`linked-note${connected ? " linked-note--connected" : ""}`} key={index}>
           <h3>{title}</h3>
           <p>{description}</p>
         </li>

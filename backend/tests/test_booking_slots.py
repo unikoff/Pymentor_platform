@@ -5,9 +5,9 @@ from fastapi import HTTPException
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from DataBase.engine import Base
-from DataBase import model as models
-from routers.user import crud
+from db.engine import Base
+from db import models as models
+from routers.bookings import service as crud
 
 
 MOSCOW_TZ = timezone(timedelta(hours=3))

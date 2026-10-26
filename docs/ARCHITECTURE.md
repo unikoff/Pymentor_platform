@@ -1,6 +1,6 @@
 # Архитектура и структура Pymentor Platform
 
-Этот документ описывает, где находится продуктовый код, как части приложения связаны друг с другом и куда вносить типичные изменения. Инструкции по наполнению уроков приведены в [руководстве по контенту](../backend/learning/course_content/README.md), а frontend-слои и темы — в [README фронтенда](../frontend/src/README.md).
+Этот документ описывает, где находится продуктовый код, как части приложения связаны друг с другом и куда вносить типичные изменения. Инструкции по наполнению уроков приведены в [руководстве по контенту](../backend/content/materials/README.md), а frontend-слои и темы — в [README фронтенда](../frontend/src/README.md).
 
 ## Слои приложения
 
@@ -12,14 +12,14 @@
        └─ cookie сессии
             ↓
 FastAPI (backend/main.py)
-  ├─ routers/ — HTTP, проверка доступа и API-схемы
-  ├─ learning/ — загрузка учебных материалов и запуск проверок
-  ├─ services/ — внешние уведомления и фоновые задачи
-  └─ DataBase/ — SQLAlchemy и постоянные данные
+  ├─ routers/ — функциональные модули: HTTP, схемы и сценарии
+  ├─ content/ — материалы, каталог, теория и проверка практики
+  ├─ notifications/ — доставка уведомлений и фоновые задачи
+  └─ db/ — SQLAlchemy и постоянные данные
        ├─ SQLite по умолчанию
-       └─ Redis helper в DataBase/session.py (не используется текущими user routes)
+       └─ Redis helper в db/session.py (не используется текущими user routes)
 
-Учебный каталог (backend/learning/course_content)
+Учебный каталог (backend/content/materials)
   ├─ Markdown — теория и исходные материалы
   └─ Python-каталоги — ручные и автоматически проверяемые задания
 ```
@@ -31,24 +31,26 @@ FastAPI (backend/main.py)
 ```text
 .
 ├── backend/
-│   ├── DataBase/                 модели, подключение и фабрика SQLAlchemy-сессий
-│   ├── learning/
-│   │   ├── course_content/       девять треков и каталоги практики
-│   │   │   └── chapter_NN/block_NN/
-│   │   │       ├── *.md          уроки и обзорные материалы
-│   │   │       ├── manual.py     задания с ручной отметкой
-│   │   │       └── code_tasks.py задания с автопроверкой
-│   │   ├── content.py            сборка каталога уроков для API
-│   │   ├── code_runner.py        проверка и запуск кода ученика
-│   │   ├── runner_executor.py    ограничение параллельных запусков
-│   │   └── runner_runtime.py     лимиты и протокол дочернего процесса
+│   ├── core/                     настройки, HTTP-зависимости и web lifecycle
+│   ├── db/                       подключение, ORM-модели и инициализация схемы
+│   ├── content/
+│   │   ├── catalog.py            сборка каталога и поиск материалов
+│   │   ├── identity.py           стабильные ID, ревизии и прежние пути
+│   │   ├── theory/markdown.py    чтение и разбор Markdown
+│   │   ├── practice/
+│   │   │   ├── catalog.py        ручные и автоматические задания
+│   │   │   ├── helpers.py        конструкторы учебных данных
+│   │   │   └── runner/           python.py, executor.py, runtime.py
+│   │   └── materials/            chapter_NN/block_NN: теория и практика рядом
 │   ├── routers/
-│   │   ├── admin/                API администрирования
-│   │   ├── learning/             API курсов, занятий и запуска кода
-│   │   └── user/                 регистрация, профиль, прогресс и записи
-│   ├── services/                 уведомления и интеграции
+│   │   ├── accounts/             аккаунты, сессии и активность
+│   │   ├── bookings/             слоты, квоты и бронирование
+│   │   ├── courses/              доступ, прохождение, решения и прогресс
+│   │   └── admin/                административные сценарии и отчёты
+│   ├── notifications/            Telegram, доставка, локальный цикл и CLI
+│   ├── scripts/                  make_admin.py, fill_booking_slots.py
 │   ├── tests/                    backend-регрессии
-│   └── main.py                   создание FastAPI-приложения и подключение областей
+│   └── main.py                   сборка FastAPI и подключение модулей
 ├── frontend/
 │   ├── config/                   конфигурация Vite и TypeScript
 │   ├── src/
@@ -69,41 +71,41 @@ FastAPI (backend/main.py)
 
 ## Backend
 
-### `backend/DataBase/`
+### Инфраструктура
 
-- `engine.py` загружает `backend/.env`, выбирает `DATABASE_URL` и создаёт SQLAlchemy `engine`, `SessionLocal` и базовый класс моделей. Без настройки используется SQLite-файл `backend/test.db`.
-- `model.py` описывает пользователей, сессии, отметки активности и прогресса, слоты и квоты записи, а также события outbox уведомлений.
-- `session.py` содержит Redis-функции сессий. Текущая HTTP-аутентификация из `routers/user/crud.py` работает с таблицей `Session` из `model.py`; `session.py` не импортируется активными роутами.
+- `main.py` создаёт приложение и подключает модули с прежними префиксами `/user`, `/learning`, `/admin`.
+- `core/config.py` задаёт базовые пути и загружает `backend/.env`; `dependencies.py` закрывает SQLAlchemy-сессию после запроса; `web.py` подключает lifespan, CORS, middleware и frontend.
+- `db/engine.py` создаёт `engine`, `SessionLocal` и `Base`; `models.py` содержит существующие ORM-модели; `bootstrap.py` выполняет прежнюю инициализацию и совместимые обновления схемы.
+- Физические пути SQLite (`backend/test.db`), `.env`, lock-файлов и логов сохранены.
+- `db/session.py` сохраняет неиспользуемый Redis-helper. HTTP-аутентификация работает с SQL-таблицей сессий через `routers/accounts/service.py`.
 
-### `backend/learning/`
+### Функциональные модули в `backend/routers/`
 
-- `content.py` читает каталоги курсов и формирует список треков, модулей, уроков, правил доступа, стабильных ID и ревизий заданий.
-- `course_content/` — источник учебного содержания. Каждый `chapter_NN/` содержит метаданные трека в `track.json`, подключение каталогов практики и папки `block_NN/` с Markdown и Python-файлами заданий. Подробная схема добавления треков и занятий описана в его [README](../backend/learning/course_content/README.md).
-- `practice_helpers.py` содержит общие конструкторы данных для каталогов практики.
-- `rich_practice.py` хранит ручную практику, а `rich_code_tasks.py` — задания для автоматической проверки.
-- `code_runner.py` проверяет решение и строит результат выполнения; код запускается в дочернем процессе.
-- `runner_executor.py` ограничивает конкурентные запуски между потоками и процессами приложения.
-- `runner_runtime.py` задаёт лимиты ресурсов, обмен результатами и вспомогательный код дочернего процесса.
+Каждая папка содержит `router.py` с HTTP-обработчиками, `schemas.py` с контрактами и `service.py` со связанными операциями:
 
-### `backend/routers/`
+- `accounts/` — регистрация, вход, cookie-сессии, профиль и сведения о подписке; `activity.py` отвечает за посещения и статистику.
+- `bookings/` — слоты, квоты, бронирование и отмена. Изменение брони и событие outbox сохраняются в одной транзакции.
+- `courses/` — получение учебных материалов и отправка решений; `access.py` содержит правила доступа, `progress.py` — сохранение прогресса.
+- `admin/` — административные операции и отчёты; использует операции других модулей и не импортирует их HTTP-обработчики.
 
-Каждая область разделяет HTTP-маршруты, функции работы с данными и схемы входа/выхода:
+### Общий учебный механизм в `backend/content/`
 
-- `user/routers.py`, `crud.py`, `schemas.py` — регистрация и вход, cookie-сессия, профиль, учебная активность, квоты и бронирование.
-- `learning/routers.py`, `schemas.py` — каталог курсов, содержимое занятия, контроль доступа, выполнение/отправка заданий и интерактивный интерпретатор.
-- `admin/routers.py`, `schemas.py` — администраторские endpoints, управление аккаунтами и подписками, прогрессом и слотами.
+- `catalog.py` собирает треки и уроки и предоставляет поиск; `identity.py` сохраняет прежние правила ID и ревизий.
+- `theory/markdown.py` разбирает Markdown, включая служебные блоки старого формата практики.
+- `practice/catalog.py` объединяет получение ручных и автоматических заданий; `helpers.py` содержит конструкторы и проверки учебных данных.
+- `practice/runner/python.py` запускает и проверяет код, `executor.py` ограничивает параллельное выполнение, `runtime.py` управляет дочерним процессом и ресурсами.
+- `materials/chapter_NN/block_NN/` хранит теорию и определения заданий рядом. Инструкция — в [README материалов](../backend/content/materials/README.md).
 
-`backend/main.py` подключает роутеры под префиксами `/user`, `/learning`, `/admin`, применяет CORS в режиме разработки, создаёт таблицы и выполняет совместимые обновления схемы. Если `frontend/dist/index.html` существует, он также подключает static assets и SPA fallback.
+`content` не импортирует `routers` и не работает с пользовательскими сессиями или БД. Сценарий в `routers/courses/service.py` получает задание, проверяет доступ и ревизию, вызывает runner и сохраняет прогресс. Runner не принимает решений о подписке или зачёте урока.
 
-В `routers/admin/` операции сейчас реализованы непосредственно в `routers.py`; `schemas.py` содержит входные контракты. Для user-области обработчики обращаются к функциям в `crud.py`. В learning-области проверка доступа и работа с учебными данными находятся в `routers.py`, а формы ответов — в `schemas.py`.
+### Уведомления, команды и проверки
 
-### `backend/services/` и `backend/tests/`
-
-- `telegram.py` форматирует и отправляет сообщения в Telegram.
-- `notification_worker.py` выбирает события из outbox, удерживает блокировку worker-процесса, выполняет доставку и планирует повторные попытки.
-- `local_notifications.py` запускает локальный цикл доставки вместе с FastAPI lifespan в поддерживаемом режиме.
-- `tests/` содержит регрессии для runner, расписания/бронирований и уведомлений. CI запускает их командой `PYTHONPATH=backend python -m unittest discover -s backend/tests -v`.
-- `fill_booking_slots.py` заполняет расписание слотами; `make_admin.py` — служебная команда для назначения администратора.
+- `notifications/telegram.py` форматирует и отправляет сообщения.
+- `notifications/delivery.py` обрабатывает outbox, блокировки, повторные попытки и порядок событий.
+- `notifications/local.py` использует тот же механизм доставки из lifespan; `notifications/worker.py` предоставляет CLI.
+- Из каталога `backend`: `python -m notifications.worker --stats`, `python -m scripts.make_admin user@example.com`, `python -m scripts.fill_booking_slots 2026 12` (последняя команда без `--apply` только показывает план).
+- Для существующих запусков сохранены короткие перенаправления: `python -m services.notification_worker`, `python make_admin.py`, `python fill_booking_slots.py`. В них нет копий основной логики.
+- `tests/` запускается из корня: `PYTHONPATH=backend python -m unittest discover -s backend/tests -v`.
 
 ## Frontend
 
@@ -143,7 +145,7 @@ FastAPI (backend/main.py)
 - `shared.ts` сохраняет единый импорт общих учебных компонентов для файлов уроков.
 - `course-placeholder.tsx` отображает состояние, когда страница занятия ещё не имеет специального компонента.
 
-Если компонент занятия не зарегистрирован, теория рендерится из Markdown. Специальная страница дополняет это представление; она не заменяет источник материала в `backend/learning/course_content`.
+Если компонент занятия не зарегистрирован, теория рендерится из Markdown. Специальная страница дополняет это представление; она не заменяет источник материала в `backend/content/materials`.
 
 ### `frontend/src/shared/`
 
@@ -171,7 +173,7 @@ FastAPI (backend/main.py)
 ### Загрузка курса и страницы занятия
 
 1. `App` открывает рабочее пространство; `useLearningCourse` запрашивает список треков через `features/learning/api.ts`.
-2. При выборе трека frontend загружает список его занятий с `/learning/lessons`. Backend `learning/content.py` собирает его из Markdown и Python-каталогов практики.
+2. При выборе трека frontend загружает список его занятий с `/learning/lessons`. Backend `content/catalog.py` собирает его из Markdown и Python-каталогов практики.
 3. Теория по умолчанию отображается из Markdown. Для отдельных страниц frontend сопоставляет `source_file` с ленивым компонентом из `lessons/chapter_NN/index.ts`; загрузчик забирает chunk при открытии.
 4. Backend повторно проверяет доступ к теории и практике по статусу пользователя и подписке. UI-состояние не считается проверкой прав.
 
@@ -180,9 +182,9 @@ FastAPI (backend/main.py)
 ```text
 LearningPracticeView / OnlineInterpreter
   → features/learning/api.ts
-  → backend/routers/learning/routers.py
+  → backend/routers/courses/router.py → service.py
   → права доступа + ревизия задания
-  → runner_executor.py → code_runner.py → дочерний процесс Python
+  → content/practice/runner/executor.py → python.py → дочерний процесс Python
   → ответ / результат проверки
   → user_lesson_progress и user_task_progress (успешная отправка)
 ```
@@ -196,7 +198,7 @@ LearningPracticeView / OnlineInterpreter
 ## Архитектурные решения
 
 - **Контент отдельно от интерфейса.** Markdown и каталоги практики можно изменять, не встраивая тексты уроков в API и компоненты оболочки.
-- **Стабильные идентификаторы.** ID урока строится по исходному файлу, а не по позиции в списке; карта совместимости в `learning/content.py` переносит старый прогресс.
+- **Стабильные идентификаторы.** ID урока строится по исходному файлу, а не по позиции в списке; карта совместимости в `content/catalog.py` переносит старый прогресс.
 - **Проверка доступа на backend.** Роутеры проверяют сессию, роль, подписку и доступность задания перед выдачей закрытого содержания или записью результата.
 - **Функциональные области на frontend.** API, контракты, состояние и UI одной области находятся рядом; `app` знает о них через `index.ts`.
 - **Повторно используемые компоненты по назначению.** Практика и интерпретатор делят каркас запуска/вывода, а предметное состояние остаётся у своего владельца.
@@ -208,16 +210,16 @@ LearningPracticeView / OnlineInterpreter
 
 | Нужно изменить | Начать отсюда |
 | --- | --- |
-| Текст или структуру теории | `backend/learning/course_content/chapter_NN/block_NN/*.md` и [LESSON_AUTHORING_GUIDE.md](manual/LESSON_AUTHORING_GUIDE.md) |
-| Ручное упражнение или самопроверку | `backend/learning/course_content/.../manual.py` |
-| Автоматически проверяемое задание | `backend/learning/course_content/.../code_tasks.py`; правила запуска — `backend/learning/code_runner.py` |
-| Специальную React-страницу занятия | `frontend/src/lessons/chapter_NN/`, затем манифест `index.ts`; см. [README учебного контента](../backend/learning/course_content/README.md) |
-| API учебного процесса | `backend/routers/learning/` и `frontend/src/features/learning/` |
-| Личный кабинет/расписание | `backend/routers/user/`, `frontend/src/features/account/` |
+| Текст или структуру теории | `backend/content/materials/chapter_NN/block_NN/*.md` и [LESSON_AUTHORING_GUIDE.md](manual/LESSON_AUTHORING_GUIDE.md) |
+| Ручное упражнение или самопроверку | `backend/content/materials/.../manual.py` |
+| Автоматически проверяемое задание | `backend/content/materials/.../code_tasks.py`; правила запуска — `backend/content/practice/runner/python.py` |
+| Специальную React-страницу занятия | `frontend/src/lessons/chapter_NN/`, затем манифест `index.ts`; см. [README учебного контента](../backend/content/materials/README.md) |
+| API учебного процесса | `backend/routers/courses/` и `frontend/src/features/learning/` |
+| Личный кабинет/расписание | `backend/routers/accounts/`, `backend/routers/bookings/`, `frontend/src/features/account/` |
 | Админ-панель | `backend/routers/admin/`, `frontend/src/features/admin/` |
 | Новую тему или цвет | `frontend/src/shared/theme/`; правила описаны в [README фронтенда](../frontend/src/README.md) |
 | Оболочку, навигацию или вкладки | `frontend/src/app/` и `frontend/src/app/styles/` |
-| Telegram-доставку | `backend/services/telegram.py`, `local_notifications.py`, `notification_worker.py` |
+| Telegram-доставку | `backend/notifications/` |
 
 ## Локальная разработка и проверки
 
@@ -255,4 +257,3 @@ npm run build
 ```
 
 Не редактируйте сгенерированные файлы в `frontend/dist` вручную. Для production соберите frontend с `/platform/`; GitHub Actions выполняет эту сборку и проверяет, что задеплоена версия API с ожидаемым отпечатком контента. Правила выпуска описаны в [production workflow](../.github/workflows/release-production.yml).
-

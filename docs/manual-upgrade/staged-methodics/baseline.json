@@ -1,0 +1,52 @@
+{
+  "date": "2026-10-25",
+  "scope": "staged-methodics",
+  "files": [
+    {
+      "path": "docs/manual/LESSON_PLAN_GUIDE.md",
+      "sha256": "C45600621D836CA7F74AD1F0681B8FC3F00A932A7FCA1C9A08D5984B77941116",
+      "bytes": 54029
+    },
+    {
+      "path": "docs/manual/LESSON_AUTHORING_GUIDE.md",
+      "sha256": "75FB825781F98FF9E686335D6967681D30E2D45E7ADB4D7C344FAA0D7AB357AC",
+      "bytes": 120816
+    },
+    {
+      "path": "docs/manual/LESSON_REVIEW_GUIDE.md",
+      "sha256": "CF4E94E49F849A0F3F3F790EEA43240C4F0F16E12E7CFD850D1B2F76A70F27F9",
+      "bytes": 60818
+    },
+    {
+      "path": "docs/manual/BLOCK_CONCEPT_GUIDE.md",
+      "sha256": "5ED99F4D8AB223DECE1B4C145058BC76CEB418632ECD441D7A458D3488D14756",
+      "bytes": 43578
+    },
+    {
+      "path": "docs/manual/COURSE_CONCEPT_GUIDE.md",
+      "sha256": "8505DFFB48B15D560AE3B9D2AB756781F4C630A03E16040B1DA9AD41DA2EE48C",
+      "bytes": 30028
+    },
+    {
+      "path": "docs/manual/README.md",
+      "sha256": "596198CFD120F06985E173FB9F24552EE530C0E38525605162FB664EB906916E",
+      "bytes": 5031
+    },
+    {
+      "path": "docs/PROJECT_CONTEXT.md",
+      "sha256": "FA9EB5BAE20A2E3A77D782B66D4BE5A670B9313C81228B4E1A537A291B74774D",
+      "bytes": 176536
+    }
+  ],
+  "git_status": [
+    " M docs/PROJECT_CONTEXT.md",
+    " M docs/manual/BLOCK_CONCEPT_GUIDE.md",
+    " M docs/manual/COURSE_CONCEPT_GUIDE.md",
+    " M docs/manual/LESSON_AUTHORING_GUIDE.md",
+    " M docs/manual/LESSON_PLAN_GUIDE.md",
+    " D docs/manual/LESSON_REVIEW_FINDINGS.md",
+    " M docs/manual/LESSON_REVIEW_GUIDE.md",
+    " M docs/manual/README.md",
+    " M docs/manual/STUDYHUB_LEARNING_WORKFLOW.md"
+  ]
+}

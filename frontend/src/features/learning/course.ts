@@ -55,3 +55,9 @@ export function getDisplayModule(lesson: Lesson, trackId: string): string {
 
   return PYTHON_MODULE_ORDER.includes(lesson.module) ? lesson.module : PYTHON_MODULE_ORDER[0];
 }
+
+export function getLessonHeadingTitle(lesson: Lesson): string {
+  const chapterNumber = Number(lesson.source_file?.match(/(?:^|[\\/])chapter_(\d+)(?:[\\/]|$)/i)?.[1]);
+  if (chapterNumber < 1 || chapterNumber > 4) return lesson.title;
+  return lesson.title.replace(/^\s*\d+(?:\.\d+)*\.?\s*(?:[-–—·:]\s*)?/, "");
+}

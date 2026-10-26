@@ -30,7 +30,7 @@ export function Lesson63_1({ module }: { module?: string }) {
       <RichHero
         variant="project"
         chip={module ?? BLOCK_TITLE}
-        title={"63.1. Annotated: параметры"}
+        title={"Annotated: параметры"}
         intro={"Разберём, как записать рядом обычный тип значения и сведения для FastAPI. Затем подготовим переход существующих маршрутов Planner API на эту форму без изменения HTTP-контракта."}
         tags={[
           { icon: <FileText size={14} />, label: "typing.Annotated" },
@@ -418,7 +418,7 @@ export function Lesson63_1({ module }: { module?: string }) {
 
         <Diagram caption={"От query-текста к типизированному значению"} orientation="horizontal">
           <DiagramFlow label={"Запрос проходит проверку Query и попадает в обработчик"}>
-            <DiagramNode title={"Клиент"} shape="input-output">
+            <DiagramNode title={"Клиент"} shape="process">
               <p><code>?page_size=8</code></p>
             </DiagramNode>
             <DiagramArrow label={"текст запроса"} />

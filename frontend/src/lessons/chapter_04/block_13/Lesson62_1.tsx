@@ -28,7 +28,7 @@ export function Lesson62_1({ module }: { module?: string }) {
       <RichHero
         variant="project"
         chip={module ?? BLOCK_TITLE}
-        title={"62.1. Общие настройки"}
+        title={"Общие настройки"}
         intro={
           "Соберём параметры запуска в одном проверенном объекте. API получит из него имя FastAPI и путь к данным, а CLI применит те же правила выбора JSON и сохранит привычный заголовок меню."
         }
@@ -77,7 +77,7 @@ export function Lesson62_1({ module }: { module?: string }) {
 
         <Diagram caption={"Внутри каждого запуска настройки проверяются до создания приложения и сервиса"}>
           <DiagramFlow label={"Путь от строк окружения к точке запуска"}>
-            <DiagramNode title={"Среда процесса"} shape="input-output">
+            <DiagramNode title={"Среда процесса"} shape="process">
               <p>{"JSON_PATH и APP_NAME приходят строками"}</p>
             </DiagramNode>
             <DiagramArrow label={"прочитать и проверить"} />

@@ -8,6 +8,7 @@ import type { CalendarMonth, StudentSlot, QuotaStatus } from "../../shared/api/c
 export function CalendarPanel({
   calendarMonth,
   activityDays,
+  activityTimes,
   bookingSlots,
   bookingQuota,
   onMonthChange,
@@ -16,6 +17,7 @@ export function CalendarPanel({
 }: {
   calendarMonth: CalendarMonth;
   activityDays: Set<string>;
+  activityTimes: Record<string, string | null>;
   bookingSlots: StudentSlot[];
   bookingQuota: QuotaStatus | null;
   onMonthChange: (calendarMonth: CalendarMonth) => void;
@@ -42,8 +44,8 @@ export function CalendarPanel({
   }, [bookingSlots]);
 
   useEffect(() => {
-    if (selectedDay && !slotsByDay.has(selectedDay)) setSelectedDay(null);
-  }, [selectedDay, slotsByDay]);
+    if (selectedDay && !slotsByDay.has(selectedDay) && !activityDays.has(selectedDay)) setSelectedDay(null);
+  }, [selectedDay, slotsByDay, activityDays]);
 
   useEffect(() => {
     setSelectedDay(null);
@@ -51,6 +53,9 @@ export function CalendarPanel({
   }, [calendarMonth.month, calendarMonth.year]);
 
   const selectedSlots = selectedDay ? slotsByDay.get(selectedDay) ?? [] : [];
+  const selectedActivityTime = selectedDay && activityTimes[selectedDay]
+    ? formatActivityTime(activityTimes[selectedDay]!)
+    : null;
   const usedQuotaPercent = bookingQuota && bookingQuota.granted > 0
     ? Math.min(100, Math.max(0, Math.round((bookingQuota.used / bookingQuota.granted) * 100)))
     : 0;
@@ -95,7 +100,7 @@ export function CalendarPanel({
             activityDays={activityDays}
             freeDays={freeDays}
             bookingDays={myDays}
-            selectableDays={new Set([...freeDays, ...myDays])}
+            selectableDays={new Set([...freeDays, ...myDays, ...activityDays])}
             selectedDay={selectedDay}
             onSelectDay={(dateKey) => setSelectedDay((current) => current === dateKey ? null : dateKey)}
             legend={[
@@ -114,6 +119,15 @@ export function CalendarPanel({
               <h3>{selectedDay ? formatSlotDate(selectedDay) : "Занятия и запись"}</h3>
             </div>
           </div>
+
+          {selectedDay && activityDays.has(selectedDay) && (
+            <p className="account-calendar__activity-time">
+              <Clock size={15} aria-hidden="true" />
+              {selectedActivityTime
+                ? <>Первый визит: <time dateTime={activityTimes[selectedDay] ?? undefined}>{selectedActivityTime}</time></>
+                : "Время активности для этой даты не сохранено"}
+            </p>
+          )}
 
           {selectedDay ? (
             selectedSlots.length > 0 ? (
@@ -135,8 +149,8 @@ export function CalendarPanel({
                   );
                 })}
               </div>
-            ) : <p className="account-calendar__empty">На этот день пока нет доступных окон.</p>
-          ) : <p className="account-calendar__empty">Выберите отмеченный день, чтобы посмотреть свободное время или свою запись.</p>}
+            ) : activityDays.has(selectedDay) ? null : <p className="account-calendar__empty">На этот день пока нет доступных окон.</p>
+          ) : <p className="account-calendar__empty">Выберите день с отметкой, чтобы увидеть время активности или запись.</p>}
 
           {bookingQuota && (
             <div className={`account-calendar__quota ${bookingQuota.remaining <= 0 ? "is-empty" : ""}`}>
@@ -162,4 +176,10 @@ export function CalendarPanel({
       </div>
     </section>
   );
+}
+
+function formatActivityTime(value: string): string | null {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  return date.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
 }

@@ -26,7 +26,7 @@ export function Lesson71({ module }: { module?: string }) {
       <RichHero
         variant="project"
         chip={module ?? BLOCK_TITLE}
-        title="71. Создание и ID из БД"
+        title="Создание и ID из БД"
         intro="Подключим SQL-создание к прежнему сценарию Planner и проверим его через существующий POST, оставив JSON штатным хранилищем."
         tags={[
           { icon: <Database size={14} />, label: "SQL create" },
@@ -99,7 +99,7 @@ export function Lesson71({ module }: { module?: string }) {
 
         <Diagram caption="Новый адаптер хранения внутри прежнего пути" orientation="horizontal">
           <DiagramFlow label="POST остаётся тем же сценарием" orientation="horizontal">
-            <DiagramNode title="POST /tasks" shape="input-output">
+            <DiagramNode title="POST /tasks" shape="process">
               <p>{"TaskCreate проверяет HTTP-вход"}</p>
             </DiagramNode>
             <DiagramArrow label="передаёт данные" />
@@ -327,7 +327,7 @@ export function Lesson71({ module }: { module?: string }) {
 
         <Diagram caption="Обычный маршрут, временная зависимость" orientation="vertical">
           <DiagramFlow label="Только во время теста" orientation="vertical">
-            <DiagramNode title="POST /tasks" shape="input-output">
+            <DiagramNode title="POST /tasks" shape="process">
               <p>{"Прежние schema и handler"}</p>
             </DiagramNode>
             <DiagramArrow label="dependency override" />

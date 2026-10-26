@@ -26,7 +26,7 @@ export function Lesson39_2({ module }: { module?: string }) {
       <RichHero
         variant="project"
         chip={module ?? "Месяц 2 · Блок 8"}
-        title={"39.2. Регрессия команд, сохранений и безопасной сборки"}
+        title={"Регрессия команд, сохранений и безопасной сборки"}
         intro={"Отдельная команда уже отделена от цикла CLI. Теперь проверим, что её сообщение, состояние Planner и сохранение сходятся в один предсказуемый результат."}
         tags={[
           { icon: <Activity size={14} />, label: "регрессия CLI" },
@@ -139,7 +139,7 @@ export function Lesson39_2({ module }: { module?: string }) {
         </p>
         <Diagram caption={"Одна команда и наблюдение за её данными"}>
           <DiagramFlow label={"Вызов команды и передача storage"}>
-            <DiagramNode title={"Тест"} shape="input-output">
+            <DiagramNode title={"Тест"} shape="process">
               <p>Передаёт read, собирает write</p>
             </DiagramNode>
             <DiagramArrow label={"запускает"} />

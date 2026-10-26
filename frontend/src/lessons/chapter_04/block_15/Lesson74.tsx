@@ -25,7 +25,7 @@ export function Lesson74({ module }: { module?: string }) {
       <RichHero
         variant="project"
         chip={module ?? BLOCK_TITLE}
-        title={"74. CLI и ресурс команды"}
+        title={"CLI и ресурс команды"}
         intro={"Передадим привычному циклу CLI способ получить ресурс на одну распознанную команду. Команды и обычный запуск Planner пока сохранят JSON."}
         tags={[
           { icon: <Terminal size={14} />, label: "существующие команды" },

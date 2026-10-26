@@ -8,6 +8,7 @@ export function AccountWorkspace({ user, progress, calendarMonth, onMonthChange,
 }) {
   const schedule = useAccountSchedule(user.id, calendarMonth);
   return <AccountPanel user={user} progress={progress} calendarMonth={calendarMonth} onMonthChange={onMonthChange}
-    activityDays={schedule.activityDays} bookingSlots={schedule.bookingSlots} bookingQuota={schedule.bookingQuota}
+    activityDays={schedule.activityDays} activityTimes={schedule.activityTimes} activitySummary={schedule.activitySummary}
+    bookingSlots={schedule.bookingSlots} bookingQuota={schedule.bookingQuota}
     onBookSlot={schedule.bookSlot} onCancelSlot={schedule.cancelSlotBooking} onLogout={onLogout} />;
 }

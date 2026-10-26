@@ -27,7 +27,7 @@ export function Lesson65_1({ module }: { module?: string }) {
       <RichHero
         variant="project"
         chip={module ?? BLOCK_TITLE}
-        title={"65.1. Cookie и вид ответа"}
+        title={"Cookie и вид ответа"}
         intro={"Сохраним одно небольшое предпочтение на стороне HTTP-клиента: разберёмся, как сервер просит сохранить cookie, как клиент отправляет её снова и почему это не меняет задачу в Planner."}
         tags={[
           { icon: <Cloud size={14} />, label: "request и response" },
