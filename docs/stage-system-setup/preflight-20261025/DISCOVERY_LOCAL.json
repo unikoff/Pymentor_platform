@@ -1,0 +1,101 @@
+{
+  "cli_version": "0.160.0",
+  "scope": "read-only discovery; no thread/start, turn/start, or model invocation",
+  "prior_sandbox_check": "access denied to Codex runtime state",
+  "skills_error": null,
+  "skill_matches": [
+    {
+      "name": "pymentor-stage-batch",
+      "path": "C:\\Project Python\\Pymentor_platform\\.agents\\skills\\pymentor-stage-batch\\SKILL.md",
+      "enabled": true,
+      "scope": "repo"
+    }
+  ],
+  "skill_errors": [],
+  "config_error": null,
+  "model_list_error": null,
+  "target_models": [
+    {
+      "id": "chatgpt-web/gpt-6-sol",
+      "model": "chatgpt-web/gpt-6-sol",
+      "displayName": "GPT-6 Sol (Web)",
+      "supportedReasoningEfforts": [
+        {
+          "reasoningEffort": "medium",
+          "description": "GPT-6 Sol (Web) — medium"
+        },
+        {
+          "reasoningEffort": "high",
+          "description": "GPT-6 Sol (Web) — high"
+        }
+      ],
+      "defaultReasoningEffort": "high",
+      "hidden": false
+    },
+    {
+      "id": "gpt-6-sol",
+      "model": "gpt-6-sol",
+      "displayName": "GPT-6-Sol",
+      "supportedReasoningEfforts": [
+        {
+          "reasoningEffort": "low",
+          "description": "Fast responses with lighter reasoning"
+        },
+        {
+          "reasoningEffort": "medium",
+          "description": "Balances speed and reasoning depth for everyday tasks"
+        },
+        {
+          "reasoningEffort": "high",
+          "description": "Greater reasoning depth for complex problems"
+        },
+        {
+          "reasoningEffort": "xhigh",
+          "description": "Extra high reasoning depth for complex problems"
+        },
+        {
+          "reasoningEffort": "max",
+          "description": "Maximum reasoning depth for the hardest problems"
+        },
+        {
+          "reasoningEffort": "ultra",
+          "description": "Maximum reasoning with automatic task delegation"
+        }
+      ],
+      "defaultReasoningEffort": "medium",
+      "hidden": false
+    },
+    {
+      "id": "gpt-6-luna",
+      "model": "gpt-6-luna",
+      "displayName": "GPT-6-Luna",
+      "supportedReasoningEfforts": [
+        {
+          "reasoningEffort": "low",
+          "description": "Fast responses with lighter reasoning"
+        },
+        {
+          "reasoningEffort": "medium",
+          "description": "Balances speed and reasoning depth for everyday tasks"
+        },
+        {
+          "reasoningEffort": "high",
+          "description": "Greater reasoning depth for complex problems"
+        },
+        {
+          "reasoningEffort": "xhigh",
+          "description": "Extra high reasoning depth for complex problems"
+        },
+        {
+          "reasoningEffort": "max",
+          "description": "Maximum reasoning depth for the hardest problems"
+        }
+      ],
+      "defaultReasoningEffort": "medium",
+      "hidden": false
+    }
+  ],
+  "model_list_has_more": false,
+  "project_agent_names": [],
+  "stderr_lines": 3
+}

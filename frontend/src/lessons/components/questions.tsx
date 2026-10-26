@@ -70,7 +70,7 @@ export function QuizCard({
           else if (isDone && index === picked) stateClass = "is-wrong";
           return (
             <button
-              key={option}
+              key={`${index}-${option}`}
               type="button"
               className={`quiz-option ${stateClass}`}
               disabled={isDone}

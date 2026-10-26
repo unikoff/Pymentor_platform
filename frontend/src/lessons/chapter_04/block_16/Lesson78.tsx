@@ -25,7 +25,7 @@ export function Lesson78({ module }: { module?: string }) {
       <RichHero
         variant={"project"}
         chip={module ?? BLOCK_TITLE}
-        title={"78. Улучшаем SQL-запрос"}
+        title={"Улучшаем SQL-запрос"}
         intro={"Продолжим наблюдение SQL и решим, где действительно нужна правка, а где достаточно защитить уже подходящий запрос."}
         tags={[
           { icon: <Activity size={14} />, label: "гипотеза по наблюдению" },
@@ -70,7 +70,7 @@ export function Lesson78({ module }: { module?: string }) {
               <p>Создают `TaskRow`, затем полный `Task`</p>
             </DiagramNode>
             <DiagramArrow label={"передают результат"} />
-            <DiagramNode title={"Сервис или интерфейс"} shape={"input-output"}>
+            <DiagramNode title={"Сервис или интерфейс"} shape={"process"}>
               <p>Использует результат по прежнему договору</p>
             </DiagramNode>
           </DiagramFlow>

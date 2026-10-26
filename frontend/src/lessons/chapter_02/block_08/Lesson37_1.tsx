@@ -74,7 +74,7 @@ export function Lesson37_1({ module }: { module?: string }) {
       <RichHero
         variant="project"
         chip={module ?? "Блок 8 · Интеграция и сервис"}
-        title="37.1. PlannerService и перенос чтения"
+        title="PlannerService и перенос чтения"
         intro="Мы соберём уже знакомые чтения Planner в одном сервисе. Хранилище останется владельцем данных, CLI сохранит ввод и показ, а чтение не начнёт запись."
         tags={[
           { icon: <Boxes size={14} />, label: "один сценарий" },

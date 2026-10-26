@@ -21,7 +21,7 @@ export function Lesson18({ module }: { module?: string }) {
     <RichLesson>
       <RichHero
         chip={module ?? "Блок 4 · Собираем свой Planner"}
-        title="18. Находим задачу по номеру"
+        title="Находим задачу по номеру"
         intro="Отделим правильный числовой ввод от наличия задачи, затем подключим поиск к команде find."
       />
 
@@ -140,7 +140,7 @@ export function Lesson18({ module }: { module?: string }) {
         </p>
         <Diagram caption="От введённого текста к результату поиска">
           <DiagramFlow label="Reader проверяет число, find_task проверяет список">
-            <DiagramNode title="Текст из input()" shape="input-output">
+            <DiagramNode title="Текст из input()" shape="process">
               <p>Например, «4», «999» или слово</p>
             </DiagramNode>
             <DiagramArrow label="преобразуем в int" />
@@ -148,7 +148,7 @@ export function Lesson18({ module }: { module?: string }) {
               <p>Текст, ноль и отрицательное число ведут к повтору вопроса</p>
             </DiagramNode>
             <DiagramArrow label="возвращает положительный int" />
-            <DiagramNode title="task_id и текущий tasks" shape="input-output">
+            <DiagramNode title="task_id и текущий tasks" shape="process">
               <p>Id возвращает reader, список передаёт run</p>
             </DiagramNode>
             <DiagramArrow label="передаём оба аргумента" />

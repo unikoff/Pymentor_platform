@@ -26,7 +26,7 @@ export function Lesson27({ module }: { module?: string }) {
     <RichLesson>
       <RichHero
         chip={module ?? "Месяц 2 · Модуль 6"}
-        title={"27. raise, else, finally и правила модели"}
+        title={"raise, else, finally и правила модели"}
         intro={"Перенесём защиту данных туда, где создаётся задача, и проследим, как Python различает успешный путь, ожидаемый отказ и обязательное завершение."}
         tags={[
           { icon: <AlertTriangle size={14} />, label: "raise и ValueError" },

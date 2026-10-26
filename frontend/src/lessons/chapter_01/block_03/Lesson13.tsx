@@ -23,7 +23,7 @@ export function Lesson13({ module }: { module?: string }) {
     <RichLesson>
       <RichHero
         chip={module ?? "Блок 3 · Функции и инструменты"}
-        title="13. Первый коммит в Git"
+        title="Первый коммит в Git"
         variant="project"
         intro="Сохраним проверенные файлы в локальной истории и прочитаем содержимое index перед commit."
       />

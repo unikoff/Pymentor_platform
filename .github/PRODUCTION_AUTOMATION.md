@@ -32,7 +32,7 @@ non-interactive SSH, хотя принимает ключ. Поэтому GitHub
 | Field | Value |
 | --- | --- |
 | Schedule | `* * * * *` |
-| Command | `cd /var/www/u3343606/data/www/Pymentor_platform/backend && /var/www/u3343606/data/www/pymentor.ru/.venv/bin/python -m services.notification_worker` |
+| Command | `cd /var/www/u3343606/data/www/Pymentor_platform/backend && /var/www/u3343606/data/www/pymentor.ru/.venv/bin/python -m notifications.worker` |
 
 На проде Passenger использует общую venv лендинга `pymentor.ru/.venv`.
 Команда загружает
@@ -57,14 +57,14 @@ cooldown Telegram через
 Для диагностики выполните из каталога `backend`:
 
 ```sh
-/var/www/u3343606/data/www/pymentor.ru/.venv/bin/python -m services.notification_worker --check
-/var/www/u3343606/data/www/pymentor.ru/.venv/bin/python -m services.notification_worker --stats
+/var/www/u3343606/data/www/pymentor.ru/.venv/bin/python -m notifications.worker --check
+/var/www/u3343606/data/www/pymentor.ru/.venv/bin/python -m notifications.worker --stats
 ```
 
 Согласованную копию SQLite перед миграцией создаёт отдельная команда (из backend):
 
 ```sh
-/var/www/u3343606/data/www/pymentor.ru/.venv/bin/python -m services.notification_worker --backup-db /var/www/u3343606/data/booking-before-outbox.sqlite3
+/var/www/u3343606/data/www/pymentor.ru/.venv/bin/python -m notifications.worker --backup-db /var/www/u3343606/data/booking-before-outbox.sqlite3
 ```
 
 Она не создаёт таблицы в исходной БД и не перезаписывает существующий backup.
@@ -72,11 +72,11 @@ cooldown Telegram через
 backup существующим Python из каталога backend до публикации кода:
 
 ```sh
-/var/www/u3343606/data/www/pymentor.ru/.venv/bin/python -c "import os, sqlite3; from pathlib import Path; from DataBase.engine import engine; assert engine.dialect.name == 'sqlite' and Path(engine.url.database).is_file(); destination='/var/www/u3343606/data/booking-before-outbox.sqlite3'; descriptor=os.open(destination, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600); os.close(descriptor); source=sqlite3.connect(engine.url.database); backup=sqlite3.connect(destination); source.backup(backup); backup.close(); source.close()"
+/var/www/u3343606/data/www/pymentor.ru/.venv/bin/python -c "import os, sqlite3; from pathlib import Path; from db.engine import engine; assert engine.dialect.name == 'sqlite' and Path(engine.url.database).is_file(); destination='/var/www/u3343606/data/booking-before-outbox.sqlite3'; descriptor=os.open(destination, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600); os.close(descriptor); source=sqlite3.connect(engine.url.database); backup=sqlite3.connect(destination); source.backup(backup); backup.close(); source.close()"
 ```
 
 Окончательно неудачные уведомления можно вернуть в очередь командой
-`/var/www/u3343606/data/www/pymentor.ru/.venv/bin/python -m services.notification_worker --retry-failed`.
+`/var/www/u3343606/data/www/pymentor.ru/.venv/bin/python -m notifications.worker --retry-failed`.
 Старые ошибки не возвращаются в очередь, если более позднее событие того же слота
 уже отправлено или обрабатывается: повтор нарушил бы порядок уведомлений.
 Статистика показывает последние ошибки без персональных данных. Повторная

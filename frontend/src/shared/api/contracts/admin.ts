@@ -3,6 +3,40 @@ import type { QuotaStatus } from "./account";
 
 export type AdminAccount = UserProfile & {
   completed_lessons: number;
+  completed_lessons_7d: number;
+  quota?: QuotaStatus;
+};
+
+export type AdminAccountsResponse = {
+  completed_since: string;
+  users: AdminAccount[];
+};
+
+export type AdminOverview = {
+  active_students_7d: number;
+  lessons_completed_7d: number;
+  expiring_subscriptions_count: number;
+  expiring_subscriptions: {
+    id: number;
+    username: string;
+    subscription_plan: string;
+    subscription_until: string;
+  }[];
+  slots_30d: {
+    booked: number;
+    total: number;
+    free: number;
+    occupancy_percent: number | null;
+  };
+  daily_active_students: {
+    date: string;
+    active_students: number;
+  }[];
+};
+
+export type AdminAccountFilters = {
+  subscription: "all" | "active" | "inactive";
+  lessons: "all" | "none" | "low" | "many";
 };
 
 export type AdminSlot = {

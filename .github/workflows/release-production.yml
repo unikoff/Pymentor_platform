@@ -82,7 +82,7 @@ jobs:
         run: |
           set -euo pipefail
           expected_asset="$(grep -oE '/platform/assets/index-[^\"]+\.js' frontend/dist/index.html | head -n 1)"
-          expected_content_revision="$(PYTHONPATH=backend python3 -c 'from learning.content import get_content_revision; print(get_content_revision())')"
+          expected_content_revision="$(PYTHONPATH=backend python3 -c 'from content.catalog import get_content_revision; print(get_content_revision())')"
           for attempt in {1..40}; do
             page_status="$(curl -skS -o "$RUNNER_TEMP/platform.html" -w '%{http_code}' https://pymentor.ru/platform/)"
             api_status="$(curl -skS -D "$RUNNER_TEMP/tracks.headers" -o "$RUNNER_TEMP/tracks.json" -w '%{http_code}' https://pymentor.ru/platform/learning/tracks)"

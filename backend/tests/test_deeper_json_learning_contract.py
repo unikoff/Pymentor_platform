@@ -9,7 +9,7 @@ import unittest
 from contextlib import redirect_stdout
 from unittest.mock import patch
 
-from learning.course_content.chapter_02.block_06.manual import MANUAL_PRACTICE
+from content.materials.chapter_02.block_06.manual import MANUAL_PRACTICE
 
 
 class JsonLessonContractTests(unittest.TestCase):

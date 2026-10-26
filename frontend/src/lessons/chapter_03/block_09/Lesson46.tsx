@@ -9,7 +9,7 @@ export function Lesson46({ module }: { module?: string }) {
     <RichLesson>
       <RichHero
         chip={module ?? "Месяц 3 · Блок 9 · Интернет и HTTP"}
-        title={"46. HTTP request: адрес, метод, headers и body"}
+        title={"HTTP request: адрес, метод, headers и body"}
         intro={"В прошлом занятии мы разделили роли клиента и сервера. Теперь разберём сообщение, которое клиент передаёт серверу: куда обратиться, что попросить и какие данные приложить."}
         tags={[
           { icon: <Braces size={14} />, label: "части request" },

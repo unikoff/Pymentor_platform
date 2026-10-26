@@ -24,7 +24,7 @@ export function Lesson66({ module }: { module?: string }) {
     <RichLesson>
       <RichHero
         chip={module ?? BLOCK_TITLE}
-        title={"66. JSON и его пределы"}
+        title={"JSON и его пределы"}
         intro={"Мы уже сохраняем задачи Planner в JSON и читаем их после перезапуска. Теперь разберём, какую цену имеет работа с полным снимком и почему два независимых изменения могут перезаписать друг друга."}
         tags={[
           { icon: <Layers size={14} />, label: "полный список задач" },

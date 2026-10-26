@@ -1,0 +1,9 @@
+{
+  "documents": 17,
+  "local_links": 139,
+  "missing_links": [],
+  "remaining_rule_flags": [],
+  "helper_tests": "4 PASS",
+  "real_stages": "NOT_RUN",
+  "speed_quality": "NOT_MEASURED"
+}

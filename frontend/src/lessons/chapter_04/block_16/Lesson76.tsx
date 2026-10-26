@@ -26,7 +26,7 @@ export function Lesson76({ module }: { module?: string }) {
       <RichHero
         variant={"project"}
         chip={module ?? BLOCK_TITLE}
-        title={"76. Сбой БД: API и CLI"}
+        title={"Сбой БД: API и CLI"}
         intro={"После перехода API и CLI на SQLite мы уже проверяли отмену неудачной записи. Теперь разберём, как распознать известную причину отказа и сообщить о ней без утечки технических деталей."}
         tags={[
           { icon: <Database size={14} />, label: "причина SQL-сбоя" },

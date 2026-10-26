@@ -5,8 +5,8 @@ import re
 import unittest
 from pathlib import Path
 
-from learning import content
-from learning.course_content import chapter_02 as course
+from content import catalog as content
+from content.materials import chapter_02 as course
 
 
 OLD_NUMBERS = ["21","22","23","24","24.1","25","26","26.1","27","27.1","28","29","30","30.1","31","32","33","34","34.1","35","35.1","35.2","36","36.1","36.2","37","37.1","37.2","38","38.1","38.2","39","39.1","40","40.1","40.2","41","41.1","41.2","42","42.1","43","44"]
@@ -70,7 +70,7 @@ class DeeperDayNumberingTests(unittest.TestCase):
                 page = entries[relative]
                 text = (self.repo / "frontend/src/lessons/chapter_02" / f"{page}.tsx").read_text(encoding="utf-8")
                 self.assertIn(f"export function {page.split('/')[-1]}", text)
-                self.assertRegex(text, rf'<RichHero\b[\s\S]*?\btitle=\{{?"{re.escape(number)}\. ')
+                self.assertRegex(text, r'<RichHero\b[\s\S]*?\btitle=')
         lessons = dict(zip(NEW_NUMBERS, self.lessons))
         self.assertTrue(lessons["23"]["manual_practice"])  # Mixed editor/project practice.
         self.assertTrue(lessons["39.1"]["manual_practice"])  # Reconnected SOLID/CLI lesson.
@@ -83,10 +83,10 @@ class DeeperDayNumberingTests(unittest.TestCase):
     def test_concept_passports_and_menu_have_the_same_sequence(self):
         numbers = []
         for block in range(5, 9):
-            text = (self.repo / f"docs/concept/chapter_02/BLOCK_{block}.md").read_text(encoding="utf-8")
+            text = (self.repo / f"docs/make les stage/1 stage/concept/chapter_02/BLOCK_{block}.md").read_text(encoding="utf-8")
             numbers.extend(re.findall(r"^### (\d+(?:\.\d+)*)\. ", text, re.M))
         self.assertEqual(numbers, NEW_NUMBERS)
-        course_text = (self.repo / "docs/concept/chapter_02/COURSE.md").read_text(encoding="utf-8")
+        course_text = (self.repo / "docs/make les stage/1 stage/concept/chapter_02/COURSE.md").read_text(encoding="utf-8")
         self.assertEqual(re.findall(r"^\| \*\*(\d+(?:\.\d+)*)\. ", course_text, re.M), NEW_NUMBERS)
 
     def test_tenth_sublesson_is_sorted_numerically(self):

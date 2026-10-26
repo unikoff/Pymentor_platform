@@ -8,7 +8,7 @@ export function Lesson51({ module }: { module?: string }) {
     <RichLesson>
       <RichHero
         chip={module ?? "Месяц 3 · Блок 10 · Первый FastAPI"}
-        title={"51. Postman: отправляем запрос вручную"}
+        title={"Postman: отправляем запрос вручную"}
         intro={"В прошлом блоке мы описали договор Planner API. Теперь впервые отправим HTTP-сообщения через готовый клиент, изучим настоящие ответы и сохраним сценарии рядом с уже существующим проектом."}
         tags={[
           { icon: <Terminal size={14} />, label: "HTTP-клиент" },

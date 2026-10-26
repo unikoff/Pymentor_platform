@@ -25,7 +25,7 @@ export function Lesson31_1({ module }: { module?: string }) {
       <RichHero
         variant="project"
         chip={module ?? "Блок 7 · Объектная модель"}
-        title="31.1. Обычная Task в настоящем пакете"
+        title="Обычная Task в настоящем пакете"
         intro="Мы перенесём знакомые class и self в существующий пакет: добавим одну проверяемую Task рядом со словарной фабрикой и не переключим на неё команды Planner."
         tags={[
           { icon: <Boxes size={14} />, label: "одна модель" },

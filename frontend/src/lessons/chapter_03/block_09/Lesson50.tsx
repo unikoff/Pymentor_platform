@@ -7,7 +7,7 @@ export function Lesson50({ module }: { module?: string }) {
     <RichLesson>
       <RichHero
         chip={module ?? "Месяц 3 · Блок 9 · Интернет и HTTP"}
-        title={"50. Path, query, body и контракт API"}
+        title={"Path, query, body и контракт API"}
         intro={"Карта операций уже есть. Теперь разберём, какие данные клиент передаёт для каждой операции и какой результат сервер обещает вернуть."}
         tags={[
           { icon: <KeyRound size={14} />, label: "path · query · body" },

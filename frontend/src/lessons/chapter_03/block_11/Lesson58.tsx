@@ -1,7 +1,5 @@
 import { FileText, Layers } from "lucide-react";
-import lesson58SchemaFlow from "./images/lesson-58-http-schema-boundaries.svg";
-import lesson58SchemaFlowMobile from "./images/lesson-58-http-schema-boundaries-mobile.svg";
-import { Callout, CompareSolutions, BugHunt, CodeBlock, KeyTakeaways, Lead, LinkedNotes, PredictOutput, QuizCard, StepThrough, TrueFalse, RichHero, RichLesson, Section, TypeCard, TypeCards } from "../../shared";
+import { Callout, CompareSolutions, BugHunt, CodeBlock, Diagram, DiagramArrow, DiagramFlow, DiagramNode, KeyTakeaways, Lead, LinkedNotes, PredictOutput, QuizCard, TrueFalse, RichHero, RichLesson, Section, TypeCard, TypeCards } from "../../shared";
 
 // 58. Разные схемы: вход и публичный ответ
 export function Lesson58({ module }: { module?: string }) {
@@ -10,19 +8,23 @@ export function Lesson58({ module }: { module?: string }) {
       <RichHero
         variant="project"
         chip={module ?? "Блок 11 · Валидация и CRUD Planner API"}
-        title={"58. Разные схемы: вход и публичный ответ"}
-        intro={"TaskCreate уже защищает вход настоящего POST. Теперь отделим HTTP-вход от доменной Task, JSON-хранилища и публичного ответа, а затем сделаем форму response явной через TaskRead и response_model."}
+        title={"Разные схемы: вход и публичный ответ"}
+        intro={"Настоящий POST уже создаёт и сохраняет задачу. Теперь мы сохраним этот путь и отдельно опишем данные на входе и в успешном ответе."}
         tags={[
           { icon: <Layers size={14} />, label: "направление данных" },
           { icon: <FileText size={14} />, label: "request и response" },
         ]}
       />
       <Section number="00" title={"Мы уже проверяем вход. Теперь нужно договориться об ответе"}>
+        <Lead>
+          {"POST уже проверяет данные клиента, создаёт задачу и возвращает результат. Разберём, какие поля принадлежат клиенту, а какие появляются после работы Planner."}
+        </Lead>
+
         <LinkedNotes
           variant="connected"
           items={[
             {
-              title: "Прежняя опора",
+              title: "Точка старта",
               description: "POST принимает проверенный TaskCreate. Существующий PlannerService создаёт Task и сохраняет её в общем JsonStorage.",
             },
             {
@@ -31,17 +33,13 @@ export function Lesson58({ module }: { module?: string }) {
             },
             {
               title: "Результат",
-              description: "Добавим TaskRead и подключим response_model к действующим GET и POST. Сервис, хранилище и CLI останутся прежними.",
+              description: "Мы добавим TaskRead и подключим response_model к действующим GET и POST. Сервис, хранилище и CLI останутся прежними.",
             },
           ]}
         />
 
-        <Lead>
-          {"Создание задачи не заканчивается проверкой входа. Сначала сервер принимает только разрешённые данные, затем создаёт ресурс и возвращает клиенту результат. Посмотрим, почему у этих двух направлений разные формы."}
-        </Lead>
-
         <p>
-          {"В предыдущем занятии TaskCreate стала проверяемым входом настоящего POST. При успехе существующий PlannerService создаёт Task, назначает серверные поля и сохраняет её через JsonStorage. Клиенту возвращается не исходный body, а результат операции."}
+          {"Мы уже очистили title и ограничили title и priority на входе настоящего POST. Теперь сохраняем эти правила без изменений и добавляем отдельный договор успешного ответа. Создание и назначение id по-прежнему выполняет существующий PlannerService, а JsonStorage остаётся источником постоянных данных."}
         </p>
 
         <CodeBlock
@@ -98,22 +96,19 @@ export function Lesson58({ module }: { module?: string }) {
         <p>
           {"Проследим обе стороны обмена и место, где задача остаётся полной внутри Planner."}
         </p>
-        <figure className="lesson-infographic lesson-infographic--lesson58">
-          <picture>
-            <source media="(max-width: 640px)" srcSet={lesson58SchemaFlowMobile} />
-            <img
-              src={lesson58SchemaFlow}
-              alt="Клиент отправляет request через TaskCreate и PlannerService. Полная Task сохраняется в JsonStorage, а TaskRead задаёт четыре поля ответа 201 тому же клиенту."
-              width={1672}
-              height={836}
-              loading="lazy"
-              decoding="async"
-            />
-          </picture>
-          <figcaption>
-            {"Request использует TaskCreate, а response формируется из Task через TaskRead. JsonStorage сохраняет полную доменную запись с tags."}
-          </figcaption>
-        </figure>
+        <Diagram caption={"Одна операция разделяет вход, внутреннюю Task и публичный ответ"}>
+          <DiagramFlow label={"Путь данных Planner API"}>
+            <DiagramNode title={"HTTP request"} shape="process"><p>title, priority</p></DiagramNode>
+            <DiagramArrow label={"проверка"} />
+            <DiagramNode title={"TaskCreate"}><p>Входная схема</p></DiagramNode>
+            <DiagramArrow label={"разрешённые данные"} />
+            <DiagramNode title={"PlannerService"}><p>Создаёт задачу и назначает id</p></DiagramNode>
+            <DiagramArrow label={"доменное состояние"} />
+            <DiagramNode title={"Task + JsonStorage"} shape="database"><p>Полная запись, включая tags</p></DiagramNode>
+            <DiagramArrow label={"публичные поля"} />
+            <DiagramNode title={"TaskRead → HTTP response"} shape="process"><p>id, title, priority, is_done</p></DiagramNode>
+          </DiagramFlow>
+        </Diagram>
 
         <p>
           {"Это не четыре случайные копии одной структуры. Каждая форма существует на своей границе. Если смешать роли, изменение HTTP-контракта начнёт неожиданно менять доменную модель или формат файла."}
@@ -183,6 +178,10 @@ export function Lesson58({ module }: { module?: string }) {
           {"TaskRead отвечает на другой вопрос, чем TaskCreate: как выглядит одна задача, когда API отдаёт её клиенту. В публичной форме есть id, title, priority и is_done."}
         </p>
 
+        <p>
+          {"В маршрутах этого проекта уже есть явная проекция: handler берёт четыре значения у Task и возвращает их словарём. Эта проекция выбирает поля, а TaskRead закрепляет их имена и типы как договор FastAPI. Одно дополняет другое: список выбранных полей не нужно переносить в сервис или менять внутреннюю модель."}
+        </p>
+
         <CodeBlock
           caption={"два направления HTTP-схем"}
           code={"TaskCreate\nrequest → server\n\nTaskRead\nserver → response"}
@@ -210,7 +209,7 @@ export function Lesson58({ module }: { module?: string }) {
         />
 
         <Callout tone="info">
-          {"Отдельная схема обновления появится тогда, когда в проекте появится реальная граница PUT/PATCH. В 58-м занятии TaskUpdate заранее не создаём."}
+          {"Схемы для изменения появятся вместе с соответствующей операцией. Здесь мы разделяем договоры уже существующих создания и чтения."}
         </Callout>
       </Section>
 
@@ -315,29 +314,8 @@ export function Lesson58({ module }: { module?: string }) {
         />
 
         <p>
-          {"Ниже показана упрощённая модель на чистом Pydantic. Это не внутренний исходный код FastAPI, а наблюдение за тем же смыслом: результат проверяется схемой, после чего наружу формируется публичное представление."}
+          {"FastAPI читает response_model в декораторе и применяет схему к успешному результату handler при подготовке ответа. Параметр TaskCreate описывает вход POST, а response_model описывает его выход. Эти модели могут различаться, потому что находятся по разные стороны одной функции. У GET по id тела запроса может не быть, но публичная форма ответа всё равно действует."}
         </p>
-
-        <StepThrough
-          code={'result = {"id": 5, "title": "FastAPI", "internal_note": "do not publish"}\nvalidated = ArticleRead.model_validate(result)\npublic = validated.model_dump()'}
-          steps={[
-            {
-              line: 0,
-              note: "Handler подготовил Python-результат. В нём есть публичные поля и дополнительное внутреннее поле.",
-              vars: { result: "{id, title, internal_note}" },
-            },
-            {
-              line: 1,
-              note: "ArticleRead проверяет обязательные id и title. Internal_note не становится полем модели ответа.",
-              vars: { validated: "ArticleRead(id=5, title='FastAPI')" },
-            },
-            {
-              line: 2,
-              note: "Публичное представление содержит только поля объявленной модели.",
-              vars: { public: "{'id': 5, 'title': 'FastAPI'}" },
-            },
-          ]}
-        />
 
         <Callout tone="info">
           {"Response model работает на границе ответа. Он не изменяет storage и не является операцией сохранения."}
@@ -442,47 +420,29 @@ export function Lesson58({ module }: { module?: string }) {
         </Callout>
       </Section>
 
-      <Section number="08" title={"model_dump() не сохраняет задачу"}>
+      <Section number="08" title={"Публичный ответ не является сохранением"}>
         <Lead>
-          {"Pydantic умеет представить модель обычными Python-данными. Это преобразование легко перепутать с настоящим действием приложения."}
+          {"Ответ сообщает клиенту результат операции. Запись на диск происходит в прежнем пути через PlannerService и JsonStorage."}
         </Lead>
 
-        <CodeBlock
-          caption={"model_dump создаёт словарь"}
-          code={'from pydantic import BaseModel\n\n\nclass FeedbackInput(BaseModel):\n    text: str\n    rating: int\n\n\npayload = FeedbackInput(text="Полезно", rating=5)\ndata = payload.model_dump()'}
-        />
-
-        <CodeBlock
-          caption={"полученное Python-представление"}
-          code={'{\n    "text": "Полезно",\n    "rating": 5,\n}'}
-        />
-
         <p>
-          {"Pydantic представил значения модели как словарь. Но доменная сущность не была создана, сервис не вызывался, id не назначался, JsonStorage.save() не запускался и файл не изменился."}
-        </p>
-
-        <p>
-          {"model_dump() похож на накладную: мы переписали сведения о посылке в отдельный документ, но от этого посылка не отправилась и не появилась на складе. Здесь словарь содержит значения модели, а реальное создание и сохранение выполняют PlannerService и JsonStorage. Граница сравнения: словарь остаётся представлением данных в памяти, а не бумажным документом и не командой записи."}
+          {"Сравним HTTP-ответ с накладной. Она показывает покупателю согласованные сведения о посылке, но сама не отправляет её и не кладёт на склад. Так же TaskRead задаёт публичную форму уже существующей Task: схема ответа не создаёт задачу и не сохраняет её."}
         </p>
 
         <CodeBlock
-          caption={"представление и создание: разные пути"}
-          code={"TaskCreate\n    ↓ model_dump()\ndict\n\nнастоящее создание:\nTaskCreate\n    ↓\nPlannerService.add_task(...)\n    ↓\nTask\n    ↓\nJsonStorage.save(...)"}
+          caption={"два связанных, но разных результата"}
+          code={"создание:\nPOST → PlannerService → Task → JsonStorage\n\nответ:\nTask → TaskRead → HTTP JSON"}
         />
 
         <TrueFalse
-          statement={<span>{"model_dump() записывает Pydantic-модель в data/tasks.json."}</span>}
+          statement={<span>{"Добавление response_model само по себе удаляет tags из JsonStorage."}</span>}
           isTrue={false}
-          explanation={"model_dump() только создаёт Python-представление. Постоянным хранением занимается JsonStorage через существующую операцию приложения."}
+          explanation={"response_model ограничивает HTTP-представление. PlannerService и JsonStorage продолжают сохранять полную доменную Task, включая tags."}
         />
 
         <p>
-          {"Если endpoint просто возвращает payload.model_dump(), клиент увидит JSON, но это может быть обычный echo. Красивый response сам по себе не доказывает, что задача появилась в Planner."}
+          {"Поэтому красивого JSON недостаточно, чтобы доказать сохранение. После POST мы отдельно найдём ту же задачу по фактическому id в JSON и прежнем CLI. Это наблюдение понадобится в следующем шаге, где мы проверим серверный id и повторное чтение сохранённой записи."}
         </p>
-
-        <Callout tone="info">
-          {"TaskRead тоже ничего не сохраняет. Создание Pydantic-модели ответа не изменяет файл без явного пути service → storage."}
-        </Callout>
       </Section>
 
       <Section number="09" title={"schemas.py: отдельное место для HTTP-схем"}>
@@ -529,7 +489,7 @@ export function Lesson58({ module }: { module?: string }) {
           {"При переносе TaskCreate нельзя потерять нормализацию, ограничения или другой уже согласованный механизм предыдущего занятия. Мы переносим существующую схему целиком, а не создаём похожую упрощённую копию."}
         </p>
         <p>
-          {"TaskUpdate заранее не создаём. Схема появляется тогда, когда появляется реальная граница данных, которую она описывает. PUT и PATCH будут разобраны вместе с настоящими операциями обновления."}
+          {"Схемы этого занятия описывают существующие операции создания и чтения. Сервис и хранилище сохраняют свои прежние обязанности."}
         </p>
 
         <Callout tone="info">
@@ -553,6 +513,10 @@ export function Lesson58({ module }: { module?: string }) {
 
         <p>
           {"GET /tasks/{task_id} возвращает одну публичную задачу. Невалидный path и отсутствующий id продолжают работать по прежнему договору: добавление response_model не меняет маршрут и не отменяет 404."}
+        </p>
+
+        <p>
+          {"Запись list[TaskRead] означает, что каждый элемент успешного ответа проверяется по одной и той же форме. Пустой список тоже соответствует этому договору: в нём нет элементов, которые могли бы нарушить схему. Для item маршрут возвращает один TaskRead. Отсутствующий ресурс остаётся отдельным исходом 404, а не пустой TaskRead."}
         </p>
 
         <p>
@@ -599,7 +563,10 @@ export function Lesson58({ module }: { module?: string }) {
           {"Query-параметры списка при этом никуда не исчезают. Схема ответа не заменяет фильтр, сортировку или limit. Она описывает только форму возвращаемых элементов."}
         </p>
         <p>
-          {"TaskUpdate здесь не должно быть. OpenAPI описывает реальные зарегистрированные операции, а PUT на этом этапе ещё не является новой работой занятия."}
+          {"В карточке POST /docs показывает две независимые части: request body со схемой TaskCreate и успешный ответ со схемой TaskRead и статусом 201. У GET списка документация указывает массив, у GET по id один объект. Это одна схема ответа, применённая к разным уже существующим операциям."}
+        </p>
+        <p>
+          {"OpenAPI показывает только реально зарегистрированные операции и их текущие договоры."}
         </p>
 
         <CodeBlock
@@ -636,8 +603,8 @@ export function Lesson58({ module }: { module?: string }) {
               description: "Если handler не вернул обязательный id, нарушен серверный договор ответа, а не вход клиента.",
             },
             {
-              title: "Словарь модели",
-              description: "model_dump() создаёт Python-словарь, но не вызывает PlannerService и JsonStorage.",
+              title: "Сохранение",
+              description: "response_model формирует публичную форму ответа; запись полной Task выполняет прежний путь PlannerService и JsonStorage.",
             },
             {
               title: "Документация",
@@ -708,7 +675,7 @@ export function Lesson58({ module }: { module?: string }) {
             <>{"TaskRead не заменяет доменную Task и не меняет формат JsonStorage."}</>,
             <>{"response_model проверяет, документирует и ограничивает внешний результат."}</>,
             <>{"tags может оставаться внутри Task и JSON, не входя в публичный response."}</>,
-            <>{"model_dump() создаёт Python-представление, но сам ничего не сохраняет."}</>,
+            <>{"Сохранение полной Task и формирование публичного ответа остаются разными этапами."}</>,
             <>{"Ошибка request и ошибка server response находятся по разные стороны handler."}</>,
           ]}
         />

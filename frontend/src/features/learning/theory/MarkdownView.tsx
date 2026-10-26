@@ -2,6 +2,7 @@ import "./lesson-theory.css";
 import React, { useEffect, useMemo, useState } from "react";
 import { getLessonTheory as fetchLessonTheory } from "../api";
 import { NextLessonLink } from "../navigation/LessonNavigation";
+import { getLessonHeadingTitle } from "../course";
 import { richLessonPages } from "../../../lessons/registry";
 import { LessonLoading } from "../LessonLoading";
 import { LessonPageBoundary } from "./LessonPageBoundary";
@@ -257,7 +258,7 @@ export function LearningTheoryView({ lesson }: { lesson: Lesson }) {
         <span>{lesson.module}</span>
         <span>{lesson.duration}</span>
       </div>
-      <h1>{lesson.title}</h1>
+      <h1>{getLessonHeadingTitle(lesson)}</h1>
       {theoryMarkdown ? (
         <MarkdownView source={theoryMarkdown.replace(/^\s*#\s+[^\n]*\n/, "")} />
       ) : isTheoryLoading ? (

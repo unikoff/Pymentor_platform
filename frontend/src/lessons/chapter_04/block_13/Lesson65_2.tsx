@@ -29,7 +29,7 @@ export function Lesson65_2({ module }: { module?: string }) {
       <RichHero
         variant="project"
         chip={module ?? BLOCK_TITLE}
-        title={"65.2. Безопасность cookie"}
+        title={"Безопасность cookie"}
         intro={"Укрепим уже знакомую настройку представления: отделим предпочтение клиента от решений сервера о доступе и подключим Secure к централизованной конфигурации."}
         tags={[
           { icon: <Cookie size={14} />, label: "cookie как ввод клиента" },
@@ -82,7 +82,7 @@ export function Lesson65_2({ module }: { module?: string }) {
         <Diagram caption={"Cookie проходит через границу клиента, но не становится источником прав."} orientation="horizontal">
           <DiagramFlow label={"Путь preference-cookie"} orientation="horizontal">
             <DiagramLane title={"Клиент"}>
-              <DiagramNode title={"Браузер"} shape={"input-output"}>
+              <DiagramNode title={"Браузер"} shape={"process"}>
                 <p>{"Отправляет planner_view и может изменить его значение."}</p>
               </DiagramNode>
             </DiagramLane>

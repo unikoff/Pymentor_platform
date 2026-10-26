@@ -7,7 +7,7 @@ export function Lesson60({ module }: { module?: string }) {
   return (
     <RichLesson>
       <RichHero variant="project" chip={module ?? "Блок 11 · Валидация и CRUD Planner API"}
-        title={"60. Единый PlannerService для CLI и API"}
+        title={"Единый PlannerService для CLI и API"}
         intro={"CLI и HTTP уже работают с одним Persistent Planner. Разберём, почему у них разные входы и ответы, но одно место для правил, данных и ошибок."}
         tags={[
           { icon: <Boxes size={14} />, label: "одно прикладное ядро" },

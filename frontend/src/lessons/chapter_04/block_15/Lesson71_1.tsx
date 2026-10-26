@@ -26,7 +26,7 @@ export function Lesson71_1({ module }: { module?: string }) {
       <RichHero
         variant="project"
         chip={module ?? "Блок 15 · Полный SQL-путь и единое переключение"}
-        title={"71.1. PUT: замена задачи"}
+        title={"PUT: замена задачи"}
         intro={"Прежний PUT уже задаёт договор полной замены публичных полей задачи. Разберём, как сохранить этот договор при адресном изменении SQL-строки, не пересоздать задачу и не потерять данные, которых клиент не отправляет."}
         tags={[
           { icon: <Database size={14} />, label: "одна выбранная строка" },
@@ -187,7 +187,7 @@ session.flush()`} />
         </p>
         <Diagram caption={"Путь полной замены существующей записи"}>
           <DiagramFlow label={"PUT выбирает и обновляет одну SQL-строку"}>
-            <DiagramNode title={"PUT /tasks/{task_id}"} shape={"input-output"}>
+            <DiagramNode title={"PUT /tasks/{task_id}"} shape={"process"}>
               <p>Полные публичные поля</p>
             </DiagramNode>
             <DiagramArrow label={"тот же id"} />

@@ -29,7 +29,7 @@ export function Lesson68_1({ module }: { module?: string }) {
       <RichHero
         variant="project"
         chip={module ?? BLOCK_TITLE}
-        title={"68.1. Транзакция и откат"}
+        title={"Транзакция и откат"}
         intro={"После первой успешной ORM-записи разберём обратный путь: как отменить связанную работу после ошибки и сохранить Session пригодной для следующей операции."}
       />
 

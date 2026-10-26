@@ -7,7 +7,7 @@ export function Lesson56({ module }: { module?: string }) {
     <RichLesson>
       <RichHero
         chip={module ?? "Месяц 3 · Блок 10 · Первый FastAPI"}
-        title={"56. Pydantic BaseModel и request body"}
+        title={"Pydantic BaseModel и request body"}
         intro={"До этого Planner API только читал задачи. Теперь клиент впервые отправит новую задачу, а FastAPI передаст её существующему сервису и сохранит в общий JSON Planner."}
         tags={[
           { icon: <Braces size={14} />, label: "JSON body" },

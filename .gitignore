@@ -24,3 +24,17 @@ pymentor-dist.zip
 DEPLOYMENT.local.md
 
 .docs
+
+# Local verification runs and generated artifacts.
+/output/
+/docs/stage-runs/
+**/.pytest_cache/
+backend/pymentor-run-*/
+backend/tests/pymentor-core-baseline-*/
+docs/manual-upgrade/**/CHAT_RUNS.json
+docs/manual-upgrade/**/RUN.json
+docs/stage-system-setup/**/CHAT_RUNS.json
+docs/stage-system-setup/**/RUN.json
+docs/stage-system-setup/**/dispatch-check-*/
+docs/stage-system-setup/**/core-check-*/
+.serena/

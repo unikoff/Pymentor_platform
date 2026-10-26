@@ -9,7 +9,7 @@ export function Lesson53({ module }: { module?: string }) {
     <RichLesson>
       <RichHero
         chip={module ?? "Месяц 3 · Блок 10 · Первый FastAPI"}
-        title={"53. GET-endpoints и ответы FastAPI"}
+        title={"GET-endpoints и ответы FastAPI"}
         intro={"В прошлом занятии мы запустили FastAPI и проверили GET /health. Теперь подключим к HTTP-интерфейсу уже существующий Planner: задачи создаёт CLI, а API читает тот же сохранённый файл."}
         tags={[
           { icon: <ListChecks size={14} />, label: "Чтение Planner" },

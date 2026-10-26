@@ -10,7 +10,7 @@ export function Lesson59({ module }: { module?: string }) {
       <RichHero
         variant="project"
         chip={module ?? "Блок 11 · Валидация и CRUD Planner API"}
-        title={"59. JSON-хранилище и серверные идентификаторы"}
+        title={"JSON-хранилище и серверные идентификаторы"}
         intro={"POST уже создаёт задачу, а TaskRead задаёт вид ответа. Теперь проследим, где задача действительно сохраняется, кто назначает её id и как проверить, что API и CLI работают с одним Planner."}
         tags={[
           { icon: <Boxes size={14} />, label: "настоящее сохранение" },

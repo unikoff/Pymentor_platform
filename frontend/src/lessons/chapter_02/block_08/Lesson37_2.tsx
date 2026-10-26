@@ -25,7 +25,7 @@ export function Lesson37_2({ module }: { module?: string }) {
     <RichLesson>
       <RichHero
         chip={module ?? "Месяц 2 · Блок 8"}
-        title={"37.2. Единое изменение и тонкий CLI"}
+        title={"Единое изменение и тонкий CLI"}
         intro={"Продолжим тот же Persistent Planner. Сервис уже выполняет чтение, а add и done пока проходят через переходные функции. Мы перенесём изменения, добавим удаление и соберём один понятный путь от команды до сохранённого результата."}
         variant="project"
         tags={[

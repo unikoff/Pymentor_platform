@@ -9,9 +9,9 @@ from unittest.mock import patch
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from DataBase.engine import Base
-from DataBase.model import BookingNotificationOutbox
-from services.local_notifications import LocalNotificationDispatcher
+from db.engine import Base
+from db.models import BookingNotificationOutbox
+from notifications.local import LocalNotificationDispatcher
 
 
 class LocalNotificationTests(TestCase):
@@ -20,7 +20,7 @@ class LocalNotificationTests(TestCase):
         self.engine = create_engine(f"sqlite:///{Path(self.temp.name).as_posix()}/queue.db")
         Base.metadata.create_all(self.engine)
         self.sessions = sessionmaker(bind=self.engine)
-        self.lock_patch = patch("services.notification_worker.LOCK_PATH", Path(self.temp.name) / "worker.lock")
+        self.lock_patch = patch("notifications.delivery.LOCK_PATH", Path(self.temp.name) / "worker.lock")
         self.lock_patch.start()
 
     def tearDown(self):
@@ -48,7 +48,7 @@ class LocalNotificationTests(TestCase):
         dispatcher = LocalNotificationDispatcher(
             session_factory=self.sessions, send=lambda event: delivered.set(), poll_seconds=0.03,
         )
-        with patch("services.local_notifications._get_telegram_credentials", return_value=("test", "test")):
+        with patch("notifications.local._get_telegram_credentials", return_value=("test", "test")):
             dispatcher.start()
             try:
                 self.assertTrue(delivered.wait(3))
@@ -76,7 +76,7 @@ class LocalNotificationTests(TestCase):
                 raise RuntimeError("test delivery blocked")
 
         dispatcher = LocalNotificationDispatcher(session_factory=self.sessions, send=send, poll_seconds=0.03)
-        with patch("services.local_notifications._get_telegram_credentials", return_value=("test", "test")):
+        with patch("notifications.local._get_telegram_credentials", return_value=("test", "test")):
             dispatcher.start()
             try:
                 self.assertTrue(started.wait(3))
@@ -90,7 +90,7 @@ class LocalNotificationTests(TestCase):
     def test_missing_credentials_preserve_queue(self):
         row = self.enqueue(1)
         dispatcher = LocalNotificationDispatcher(session_factory=self.sessions, poll_seconds=0.03)
-        with patch("services.local_notifications._get_telegram_credentials", return_value=None):
+        with patch("notifications.local._get_telegram_credentials", return_value=None):
             dispatcher.start()
             try:
                 time.sleep(0.1)

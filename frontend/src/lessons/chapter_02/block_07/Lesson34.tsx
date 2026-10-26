@@ -27,7 +27,7 @@ export function Lesson34({ module }: { module?: string }) {
       <RichHero
         variant="project"
         chip={module ?? "Блок 7 · Обычные классы и модель Task"}
-        title="34. Dataclass после обычного класса"
+        title="Dataclass после обычного класса"
         intro="Мы уже написали обычную Task и явно задали её проверки, методы и преобразования. Теперь разберём, как dataclass убирает часть повторяющегося кода, что он генерирует и что мы продолжаем отвечать за сами."
         tags={[
           { icon: <Wrench size={14} />, label: "модель без шаблонного кода" },
@@ -226,7 +226,7 @@ export function Lesson34({ module }: { module?: string }) {
 
         <Diagram caption="Как dataclass создаёт проверенный экземпляр">
           <DiagramFlow label="Генерация конструктора и проверка Task">
-            <DiagramNode title="Поля + @dataclass" shape="input-output">
+            <DiagramNode title="Поля + @dataclass" shape="process">
               <p>Поля задают состав данных и порядок аргументов</p>
             </DiagramNode>
             <DiagramArrow label="генерирует" />

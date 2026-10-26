@@ -23,7 +23,7 @@ export function Lesson70_2({ module }: { module?: string }) {
       <RichHero
         variant={"project"}
         chip={module ?? BLOCK_TITLE}
-        title={"70.2. Импорт задач в SQLite"}
+        title={"Импорт задач в SQLite"}
         intro={"Подготовим отдельный инструмент, который переносит проверенную копию JSON-снимка в пустую SQLite-таблицу и оставляет работающий Planner на прежнем пути."}
         tags={[
           { icon: <Archive size={14} />, label: "снимок данных" },

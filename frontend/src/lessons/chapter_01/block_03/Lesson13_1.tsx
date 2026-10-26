@@ -28,7 +28,7 @@ export function Lesson13_1({ module }: { module?: string }) {
       <RichHero
         variant="project"
         chip={module ?? "Блок 3 · Функции и инструменты"}
-        title="13.1. Отправляем код на GitHub"
+        title="Отправляем код на GitHub"
         intro="Опубликуем существующий локальный commit и проверим, что на GitHub появилась именно эта версия проекта."
       />
 

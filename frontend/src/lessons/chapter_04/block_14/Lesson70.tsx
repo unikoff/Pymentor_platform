@@ -25,7 +25,7 @@ export function Lesson70({ module }: { module?: string }) {
       <RichHero
         variant="project"
         chip={module ?? BLOCK_TITLE}
-        title={"70. Чтение через SQL-репо"}
+        title={"Чтение через SQL-репо"}
         intro={"Добавим чтение из SQLite в существующий договор хранения, сохранив обычную Task и рабочий JSON-путь."}
         tags={[
           { icon: <Database size={14} />, label: "SQL и ORM-строки" },
@@ -112,7 +112,7 @@ export function Lesson70({ module }: { module?: string }) {
 
         <Diagram caption={"Путь данных для чтения списка"} orientation="horizontal">
           <DiagramFlow label={"SQL-строка превращается в предметную задачу"} orientation="horizontal">
-            <DiagramNode title={"Запрос Session"} shape="input-output">
+            <DiagramNode title={"Запрос Session"} shape="process">
               <p>{"select(TaskRow) с явным порядком"}</p>
             </DiagramNode>
             <DiagramArrow label={"получает ORM-строки"} />

@@ -5,7 +5,7 @@ from types import SimpleNamespace
 from unittest import TestCase
 from unittest.mock import patch
 
-from routers.user.routers import book_slot, cancel_slot
+from routers.bookings.router import book_slot, cancel_slot
 
 
 class BookingNotificationRouteTests(TestCase):
@@ -21,8 +21,8 @@ class BookingNotificationRouteTests(TestCase):
         )
 
     def test_booking_persists_notification_through_crud_without_background_task(self) -> None:
-        with patch("routers.user.routers.crud.get_current_user", return_value=self.user), patch(
-            "routers.user.routers.crud.book_slot", return_value=self.slot
+        with patch("routers.bookings.router.accounts.get_current_user", return_value=self.user), patch(
+            "routers.bookings.router.service.book_slot", return_value=self.slot
         ) as create_booking:
             response = book_slot(slot_id=12, request=object(), db=self.db)
 
@@ -37,8 +37,8 @@ class BookingNotificationRouteTests(TestCase):
 
     def test_cancellation_persists_notification_through_crud_without_background_task(self) -> None:
         self.slot.student_id = None
-        with patch("routers.user.routers.crud.get_current_user", return_value=self.user), patch(
-            "routers.user.routers.crud.cancel_booking", return_value=self.slot
+        with patch("routers.bookings.router.accounts.get_current_user", return_value=self.user), patch(
+            "routers.bookings.router.service.cancel_booking", return_value=self.slot
         ) as cancel_booking:
             response = cancel_slot(slot_id=12, request=object(), db=self.db)
 

@@ -26,7 +26,7 @@ export function Lesson73_1({ module }: { module?: string }) {
       <RichHero
         variant="project"
         chip={module ?? BLOCK_TITLE}
-        title={"73.1. Поиск в SQL-базе"}
+        title={"Поиск в SQL-базе"}
         intro={
           "Перенесём уже знакомый поиск Planner в SQL и сохраним его поведение для русского текста, кавычек и символов % и _. Обычный запуск приложения пока продолжает работать с JSON."
         }

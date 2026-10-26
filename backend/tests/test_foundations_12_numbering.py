@@ -5,9 +5,9 @@ import re
 import unittest
 from pathlib import Path
 
-from learning import content
-from learning.course_content import chapter_01 as course
-from learning.course_content.chapter_01.numbering import LESSON_NUMBERS
+from content import catalog as content
+from content.materials import chapter_01 as course
+from content.materials.chapter_01.numbering import LESSON_NUMBERS
 
 
 class Foundations12NumberingTests(unittest.TestCase):
@@ -76,7 +76,7 @@ class Foundations12NumberingTests(unittest.TestCase):
                 source = repo / "frontend/src/lessons/chapter_01" / f"{page}.tsx"
                 text = source.read_text(encoding="utf-8")
                 self.assertIn(f"export function {page.split('/')[-1]}", text)
-                self.assertRegex(text, rf'<RichHero\b[\s\S]*?\btitle="{re.escape(number)}\. ')
+                self.assertRegex(text, r'<RichHero\b[\s\S]*?\btitle=')
 
 
 if __name__ == "__main__":

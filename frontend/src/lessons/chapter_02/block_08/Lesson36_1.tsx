@@ -24,7 +24,7 @@ export function Lesson36_1({ module }: { module?: string }) {
     <RichLesson>
       <RichHero
         chip={module ?? "Месяц 2 · Блок 8"}
-        title="36.1. JsonStorage вокруг готового хранения"
+        title="JsonStorage вокруг готового хранения"
         intro="Продолжим тот же Planner после перехода на Task. Перенесём настройку пути и файловый договор в один объект, затем подключим его к существующим операциям."
         tags={[
           { icon: <Database size={14} />, label: "объектное хранение" },

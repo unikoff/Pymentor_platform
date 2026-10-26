@@ -1,8 +1,8 @@
 import React from "react";
 
 export type DiagramOrientation = "horizontal" | "vertical";
-/** Standard flowchart node shapes. Use process by default, decision for a condition, terminator for start/end, input-output for data exchange, database for persistent storage, and subprocess for a named nested process. */
-export type DiagramNodeShape = "process" | "terminator" | "decision" | "input-output" | "database" | "subprocess";
+/** Standard flowchart node shapes. Use process by default, decision for a condition, terminator for start/end, database for persistent storage, and subprocess for a named nested process. */
+export type DiagramNodeShape = "process" | "terminator" | "decision" | "database" | "subprocess";
 export type DiagramArrowDirection = "forward" | "backward" | "both";
 export type DiagramArrowStyle = "solid" | "dashed";
 
@@ -73,7 +73,7 @@ export function DiagramNote({ title, children, className = "" }: { title?: strin
 
 /** A compact key for colors, symbols, or line styles used in a diagram. */
 export function DiagramLegend({ items, className = "" }: { items: { label: string; symbol: React.ReactNode }[]; className?: string }) {
-  return <ul className={`lesson-diagram-legend${className ? ` ${className}` : ""}`}>{items.map(({ label, symbol }) => <li key={label}><span aria-hidden="true">{symbol}</span><span>{label}</span></li>)}</ul>;
+  return <ul className={`lesson-diagram-legend${className ? ` ${className}` : ""}`}>{items.map(({ label, symbol }, index) => <li key={index}><span aria-hidden="true">{symbol}</span><span>{label}</span></li>)}</ul>;
 }
 
 /** Two labeled paths in opposite directions, such as request and response. */
@@ -90,7 +90,7 @@ export function DiagramExchange({ forward, reverse }: { forward: string; reverse
 export function DiagramTrack({ label, items, activeIndex = items.length - 1 }: { label: string; items: string[]; activeIndex?: number }) {
   return (
     <div className="lesson-diagram-track" role="group" aria-label={`${label}: ${items.join(", ")}`}>
-      <span>{label}</span><ol>{items.map((item, index) => <li key={`${label}-${item}`} className={index === activeIndex ? "is-active" : ""} aria-current={index === activeIndex ? "step" : undefined}>{item}</li>)}</ol>
+      <span>{label}</span><ol>{items.map((item, index) => <li key={index} className={index === activeIndex ? "is-active" : ""} aria-current={index === activeIndex ? "step" : undefined}>{item}</li>)}</ol>
     </div>
   );
 }

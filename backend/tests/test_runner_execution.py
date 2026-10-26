@@ -16,12 +16,13 @@ from fastapi import FastAPI
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from DataBase import model as models
-from DataBase.engine import Base
-from learning.code_runner import _run_runner_source, run_python_task
-from learning.runner_executor import RunnerExecutor
-from learning.runner_runtime import RunnerLimits, bootstrap_source, run_bounded_process
-from routers.learning import routers
+from db import models as models
+from db.engine import Base
+from content.practice.runner.python import _run_runner_source, run_python_task
+from content.practice.runner.executor import RunnerExecutor
+from content.practice.runner.runtime import RunnerLimits, bootstrap_source, run_bounded_process
+from routers.courses import service as routers
+from routers.courses.router import learning_router
 
 
 TASK = {"id": "runner-test-task", "revision": "1" * 64,
@@ -50,6 +51,23 @@ async def request(app, path, *, method="GET", cookie=False, code="def solve(): r
 
 
 class RunnerResourceTests(unittest.TestCase):
+    def test_harness_failure_reports_server_error_without_source_dump(self):
+        result = _run_runner_source("raise ImportError('failed to map segment from shared object')")
+        self.assertIsInstance(result, subprocess.CompletedProcess)
+        self.assertEqual(0, result.returncode)
+        payload = json.loads(result.stdout)
+        self.assertFalse(payload["ok"])
+        self.assertIn("на сервере", payload["error"])
+        self.assertNotIn("exec(", result.stderr.decode())
+
+    @unittest.skipUnless(sys.platform.startswith("linux"), "Linux resource limits")
+    def test_trusted_math_is_loaded_before_linux_limits(self):
+        prefix = "import resource, sys\noriginal = resource.setrlimit\ndef checked(*args):\n    assert 'math' in sys.modules\n    return original(*args)\nresource.setrlimit = checked\n"
+        source = bootstrap_source("emit_result({'ok': True})", RunnerLimits())
+        process = subprocess.run([sys.executable, "-I", "-c", prefix + source], capture_output=True, timeout=5)
+        self.assertEqual(0, process.returncode, process.stderr)
+        self.assertTrue(json.loads(process.stdout)["ok"])
+
     def assert_recovered(self):
         result = run_python_task("def solve(): return 1", TASK)
         self.assertTrue(result["ok"], result)
@@ -89,7 +107,7 @@ class RunnerResourceTests(unittest.TestCase):
     def test_invalid_config_fails_without_starting_process(self):
         for value in ("0", "nan", "-1", "invalid"):
             with self.subTest(value=value), patch.dict(os.environ, {"PYMENTOR_RUNNER_TIMEOUT_SECONDS": value}), \
-                    patch("learning.runner_runtime.subprocess.Popen") as popen:
+                    patch("content.practice.runner.runtime.subprocess.Popen") as popen:
                 result = run_python_task("def solve(): return 1", TASK)
                 self.assertFalse(result["ok"])
                 popen.assert_not_called()
@@ -132,6 +150,9 @@ class RunnerResourceTests(unittest.TestCase):
 
 class RunnerAPITests(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
+        legacy_runner = patch.dict("os.environ", {"PYMENTOR_PUBLIC_RUNNER_ENABLED": "1"})
+        legacy_runner.start()
+        self.addCleanup(legacy_runner.stop)
         self.temp = tempfile.TemporaryDirectory(prefix="pymentor-execution-test-")
         self.executor = RunnerExecutor(Path(self.temp.name) / "runner.lock")
         self.engine = create_engine(f"sqlite:///{Path(self.temp.name).as_posix()}/test.db",
@@ -146,11 +167,11 @@ class RunnerAPITests(unittest.IsolatedAsyncioTestCase):
             db.add(models.Session(user_id=user.id, session_token="runner-test-session"))
             db.commit()
         self.app = FastAPI()
-        self.app.include_router(routers.learning_router, prefix="/learning")
+        self.app.include_router(learning_router, prefix="/learning")
         @self.app.get("/ping")
         def ping():
             return {"ok": True}
-        self.patches = [patch.object(routers.user_crud, "get_db", self.sessions),
+        self.patches = [patch.object(routers, "SessionLocal", self.sessions),
                         patch.object(routers, "find_task", return_value=TASK),
                         patch.object(routers, "find_lesson_by_task", return_value=LESSON),
                         patch.object(routers, "get_runner_executor", return_value=self.executor)]
@@ -221,7 +242,7 @@ class RunnerAPITests(unittest.IsolatedAsyncioTestCase):
         def session_scope():
             context_threads.append(threading.get_ident())
             return SessionScope()
-        with patch.object(routers.user_crud, "get_db", side_effect=session_scope), \
+        with patch.object(routers, "SessionLocal", side_effect=session_scope), \
                 patch.object(routers, "run_python_task", side_effect=check):
             self.assertTrue((await self.submit(cookie=True))[1]["ok"])
         self.assertEqual(2, len(context_threads))
@@ -308,7 +329,7 @@ class RunnerAPITests(unittest.IsolatedAsyncioTestCase):
 
     async def test_another_process_holds_global_slot_and_api_returns_503(self):
         source = (
-            "from pathlib import Path\nfrom learning.runner_executor import _lock_file, _unlock_file\n"
+            "from pathlib import Path\nfrom content.practice.runner.executor import _lock_file, _unlock_file\n"
             f"with Path({str(self.executor.lock_path)!r}).open('a+b') as handle:\n"
             "    handle.write(b'0'); handle.flush(); _lock_file(handle)\n"
             "    print('READY', flush=True); input(); _unlock_file(handle)\n"

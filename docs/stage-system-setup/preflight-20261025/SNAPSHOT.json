@@ -1,0 +1,54 @@
+{
+  "files": [
+    {
+      "path": ".agents/skills/pymentor-stage-batch/SKILL.md",
+      "sha256": "2AD2DBB9E8D3D51F9F620279DFF37AF6F3BBB8EC8C51D0E9F56B1A6B8AD6D082",
+      "changed": true
+    },
+    {
+      "path": ".codex/agents/pymentor-plan-worker.toml",
+      "sha256": "0F6284B2DED81BBD3CB81C3BF528E8E99DD9E9A5946E4FB5FD7597595DAA79E1",
+      "changed": true
+    },
+    {
+      "path": ".codex/agents/pymentor-lesson-worker.toml",
+      "sha256": "19FBF13630F2FFC120CA7FDF79793385A63921BFE30F64E306FE71DE655393AC",
+      "changed": false
+    },
+    {
+      "path": "docs/make les stage/AGENTS.md",
+      "sha256": "C6E01634B4D12BE705BBC8E2322BA1B42722EF92EA2E7265D8C63AB2D6292FA2",
+      "changed": true
+    },
+    {
+      "path": "docs/make les stage/BATCH_WORKFLOW.md",
+      "sha256": "D6F53DF9A813FB6705458D4EA80E90A94AF26E6F78D3DB9DE8A161166A749831",
+      "changed": true
+    },
+    {
+      "path": "docs/make les stage/RUN_TEMPLATE.md",
+      "sha256": "B7FEB4B4FE60AE76528E62600B5D3AAB7454BAA449568179923C50B363D5A965",
+      "changed": true
+    },
+    {
+      "path": "docs/make les stage/2 stage/AGENTS.md",
+      "sha256": "9FE46E97503CB7D8742FD6142A2BEA0061F511BF67F9ADEFAA7F99108E946C97",
+      "changed": true
+    },
+    {
+      "path": "docs/make les stage/2 stage/README.md",
+      "sha256": "81C3F96AE9EEBC659F3C9C17496D863AC5918A6B8DAC26541FDE3D0311AB1367",
+      "changed": true
+    },
+    {
+      "path": "docs/make les stage/3 stage/AGENTS.md",
+      "sha256": "D7B7770914E9802F7719613F4E3A6940777FA4D232EA872542459B9EAB2D996B",
+      "changed": false
+    },
+    {
+      "path": "docs/make les stage/3 stage/README.md",
+      "sha256": "54CB9851322754B008486E767D1C98DD073AEEC90C9935928F3A84782DAB60D5",
+      "changed": false
+    }
+  ]
+}

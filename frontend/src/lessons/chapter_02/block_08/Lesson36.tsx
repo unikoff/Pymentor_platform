@@ -26,7 +26,7 @@ export function Lesson36({ module }: { module?: string }) {
       <RichHero
         variant="project"
         chip={module ?? "Месяц 2 · Блок 8"}
-        title="36. Включить Task в существующий Planner"
+        title="Включить Task в существующий Planner"
         intro="Переведём действующий Planner со словарей на подготовленную Task. Команды и JSON-перезапуск сохранят прежний смысл: объект будет внутренней моделью, словарь останется формой записи на границе."
         tags={[
           { icon: <Braces size={14} />, label: "объектная модель" },

@@ -3,13 +3,19 @@ import unittest
 
 from fastapi import HTTPException
 
-from learning.code_runner import run_python_task
-from learning.content import _task_from_override, build_task_revision
-from learning import rich_code_tasks
-from routers.learning.routers import _require_current_task_revision
+from content.practice.runner.python import _describe_crash, run_python_task
+from content.practice.catalog import _task_from_override
+from content.identity import build_task_revision
+from content.practice import catalog as rich_code_tasks
+from routers.courses.service import _require_current_task_revision
 
 
 class CodeRunnerRegressionTests(unittest.TestCase):
+    def test_import_failure_is_not_missing_solve_from_embedded_source(self):
+        stderr = 'Traceback (most recent call last):\n    exec("raise AssertionError(\\"PYMENTOR_MISSING_SOLVE\\")")\nImportError: math.so: failed to map segment from shared object\n'
+        self.assertIn("ImportError", _describe_crash(stderr))
+        self.assertEqual("Нужно объявить функцию solve.", _describe_crash("AssertionError: PYMENTOR_MISSING_SOLVE"))
+
     @staticmethod
     def _run_stdout(code: str, expected: str) -> dict:
         return run_python_task(
@@ -80,11 +86,11 @@ class CodeRunnerRegressionTests(unittest.TestCase):
         self.assertEqual([], [test for test in result["tests"] if not test["passed"]])
 
     def test_planner_route_task_uses_the_supplied_task_id(self) -> None:
-        task = rich_code_tasks.PLANNER_API_CODE_TASKS[49][0]
+        task = rich_code_tasks.PLANNER_API_CODE_TASKS[44][0]
         reference = run_python_task(task["reference_code"], task)
         hardcoded_id = run_python_task(
             task["reference_code"].replace(
-                'path = "/tasks/" + str(task_id)', 'path = "/tasks/7"'
+                'path = f"/tasks/{task_id}"', 'path = "/tasks/7"'
             ),
             task,
         )

@@ -27,7 +27,7 @@ export function Lesson68({ module }: { module?: string }) {
       <RichHero
         variant="project"
         chip={module ?? BLOCK_TITLE}
-        title={"68. Запись через Session"}
+        title={"Запись через Session"}
         intro={"Создадим короткую ORM-сессию, проведём одну задачу до подтверждённой записи и прочитаем её заново через другую Session."}
       />
 

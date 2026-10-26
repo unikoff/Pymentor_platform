@@ -1,5 +1,5 @@
 import { apiRequest } from "../../shared/api/client";
-import type { Lesson, LessonTheoryResponse, TaskRunResponse, TaskSubmitResponse, Track } from "./types";
+import type { Lesson, LessonTheoryResponse, ManualPracticeTaskAnswer, TaskRunResponse, TaskSubmitResponse, Track } from "./types";
 
 export function getTracks() {
   return apiRequest<{ tracks: Track[]; default_track: string | null }>("/learning/tracks");
@@ -28,6 +28,12 @@ export function getLessons(trackId: string) {
 
 export function getLessonTheory(lessonId: string) {
   return apiRequest<LessonTheoryResponse>(`/learning/lessons/${lessonId}/theory`);
+}
+
+export function getManualPracticeAnswer(lessonId: string, exerciseIndex: number, taskIndex: number) {
+  return apiRequest<{ answer: ManualPracticeTaskAnswer }>(
+    `/learning/lessons/${encodeURIComponent(lessonId)}/manual-practice/${exerciseIndex}/tasks/${taskIndex}/answer`,
+  );
 }
 
 export function completeLesson(lessonId: string) {

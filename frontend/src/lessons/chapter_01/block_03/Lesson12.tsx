@@ -56,7 +56,7 @@ export function Lesson12({ module }: { module?: string }) {
     <RichLesson>
       <RichHero
         chip={module ?? "Блок 3 · Функции и инструменты"}
-        title="12. Настраиваем Python и VS Code"
+        title="Настраиваем Python и VS Code"
         intro="Перенесём знакомый короткий код из подготовленной среды платформы на свой компьютер. Проверим, какая программа редактирует файл, какая исполняет Python и где вводить команды."
       />
 

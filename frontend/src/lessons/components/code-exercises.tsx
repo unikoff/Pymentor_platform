@@ -152,7 +152,7 @@ export function BugHunt({
           <button
             className={`bug-option ${isDone && index === correctIndex ? "is-correct" : ""} ${isDone && index === picked && !isCorrect ? "is-wrong" : ""}`}
             type="button"
-            key={option}
+            key={index}
             disabled={isDone}
             onClick={() => setPicked(index)}
           >

@@ -1,0 +1,20 @@
+{
+  "cli_version": "0.160.0",
+  "scope": "read-only discovery; no thread/start, turn/start, or model invocation",
+  "prior_sandbox_check": "access denied to Codex runtime state",
+  "skills_error": null,
+  "skill_matches": [
+    {
+      "name": "pymentor-stage-batch",
+      "path": "C:\\Project Python\\Pymentor_platform\\.agents\\skills\\pymentor-stage-batch\\SKILL.md",
+      "enabled": true,
+      "scope": "repo"
+    }
+  ],
+  "skill_errors": [],
+  "config_error": null,
+  "project_agent_names": [],
+  "stderr_lines": 3,
+  "agent_registration": "NOT_VERIFIED: config/read is not a standalone-role listing; current parent catalog has not exposed new profiles",
+  "product_stage_runs": "NOT_RUN: user requested infrastructure only"
+}

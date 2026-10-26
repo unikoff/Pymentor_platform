@@ -6,7 +6,7 @@ from urllib.parse import parse_qs
 from urllib.error import HTTPError
 from unittest.mock import MagicMock, patch
 
-from services.telegram import (
+from notifications.telegram import (
     _format_booking_cancelled_message,
     _format_booking_message,
     _send_telegram_message,
@@ -29,7 +29,7 @@ class TelegramBookingNotificationTests(unittest.IsolatedAsyncioTestCase):
             {},
             response,
         )
-        with patch("services.telegram.request.urlopen", side_effect=http_error):
+        with patch("notifications.telegram.request.urlopen", side_effect=http_error):
             with self.assertRaises(TelegramDeliveryError) as raised:
                 _send_telegram_message(token="SECRET_TOKEN", chat_id="chat", text="message")
 
@@ -40,7 +40,7 @@ class TelegramBookingNotificationTests(unittest.IsolatedAsyncioTestCase):
     def test_permanent_telegram_http_error_is_not_retryable(self) -> None:
         response = BytesIO(b'{"ok":false,"error_code":403,"description":"bot was blocked"}')
         http_error = HTTPError("https://api.telegram.org/botSECRET_TOKEN/sendMessage", 403, "Forbidden", {}, response)
-        with patch("services.telegram.request.urlopen", side_effect=http_error):
+        with patch("notifications.telegram.request.urlopen", side_effect=http_error):
             with self.assertRaises(TelegramDeliveryError) as raised:
                 _send_telegram_message(token="SECRET_TOKEN", chat_id="chat", text="message")
 
@@ -52,7 +52,7 @@ class TelegramBookingNotificationTests(unittest.IsolatedAsyncioTestCase):
             {"PYMENTOR_PLATFORM_TELEGRAM_BOT_TOKEN": "", "PYMENTOR_PLATFORM_TELEGRAM_CHAT_ID": ""},
             clear=False,
         ), patch(
-            "services.telegram._send_telegram_message"
+            "notifications.telegram._send_telegram_message"
         ) as send_message:
             sent = await notify_booking_created(
                 username="Никита",
@@ -69,7 +69,7 @@ class TelegramBookingNotificationTests(unittest.IsolatedAsyncioTestCase):
             os.environ,
             {"PYMENTOR_PLATFORM_TELEGRAM_BOT_TOKEN": "token", "PYMENTOR_PLATFORM_TELEGRAM_CHAT_ID": "chat"},
             clear=False,
-        ), patch("services.telegram._send_telegram_message") as send_message:
+        ), patch("notifications.telegram._send_telegram_message") as send_message:
             sent = await notify_booking_created(
                 username="Никита",
                 email="student@example.com",
@@ -95,7 +95,7 @@ class TelegramBookingNotificationTests(unittest.IsolatedAsyncioTestCase):
             {"PYMENTOR_PLATFORM_TELEGRAM_BOT_TOKEN": "token", "PYMENTOR_PLATFORM_TELEGRAM_CHAT_ID": "chat"},
             clear=False,
         ), patch(
-            "services.telegram._send_telegram_message",
+            "notifications.telegram._send_telegram_message",
             side_effect=OSError("network unavailable"),
         ):
             sent = await notify_booking_created(
@@ -112,7 +112,7 @@ class TelegramBookingNotificationTests(unittest.IsolatedAsyncioTestCase):
             os.environ,
             {"PYMENTOR_PLATFORM_TELEGRAM_BOT_TOKEN": "token", "PYMENTOR_PLATFORM_TELEGRAM_CHAT_ID": "chat"},
             clear=False,
-        ), patch("services.telegram._send_telegram_message") as send_message:
+        ), patch("notifications.telegram._send_telegram_message") as send_message:
             sent = await notify_booking_cancelled(
                 username="Никита",
                 email="unikofpost@gmail.ru",
@@ -142,7 +142,7 @@ class TelegramBookingNotificationTests(unittest.IsolatedAsyncioTestCase):
                 "TELEGRAM_CHAT_ID": "mentoring-chat",
             },
             clear=False,
-        ), patch("services.telegram._send_telegram_message") as send_message:
+        ), patch("notifications.telegram._send_telegram_message") as send_message:
             sent = await notify_booking_created(
                 username="Никита",
                 email="student@example.com",
@@ -190,7 +190,7 @@ class TelegramBookingNotificationTests(unittest.IsolatedAsyncioTestCase):
         response.read.return_value = b'{"ok":true}'
         response.__enter__.return_value = response
 
-        with patch("services.telegram.request.urlopen", return_value=response) as urlopen:
+        with patch("notifications.telegram.request.urlopen", return_value=response) as urlopen:
             _send_telegram_message(token="token", chat_id="chat", text="*hello*")
 
         telegram_request = urlopen.call_args.args[0]

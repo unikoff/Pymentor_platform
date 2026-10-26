@@ -23,7 +23,7 @@ export function Lesson14_1({ module }: { module?: string }) {
     <RichLesson>
       <RichHero
         chip={module ?? "Блок 3 · Функции и инструменты"}
-        title="14.1. Соединяем готовые функции"
+        title="Соединяем готовые функции"
         intro="Добавим независимый расчёт минут, а затем передадим результаты готовых функций друг другу в том же StudyHub."
       />
 
@@ -155,7 +155,7 @@ export function Lesson14_1({ module }: { module?: string }) {
         </p>
         <Diagram caption="Возвращённое значение одного вызова становится входом следующего">
           <DiagramFlow label="Передача значения от названия к видимой карточке">
-            <DiagramNode title="Название" shape="input-output">
+            <DiagramNode title="Название" shape="process">
               <p><code>raw_title</code></p>
             </DiagramNode>
             <DiagramArrow label="строка" />

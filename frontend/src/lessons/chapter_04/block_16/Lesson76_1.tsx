@@ -24,7 +24,7 @@ export function Lesson76_1({ module }: { module?: string }) {
       <RichHero
         variant="project"
         chip={module ?? BLOCK_TITLE}
-        title={"76.1. Rollback и повтор"}
+        title={"Rollback и повтор"}
         intro={"Проверим не только текст ошибки, но и сохранённое состояние Planner после сбоя на разных этапах записи."}
       />
 

@@ -28,7 +28,7 @@ export function Lesson65({ module }: { module?: string }) {
       <RichHero
         variant="project"
         chip={module ?? BLOCK_TITLE}
-        title={"65. Заголовки и Response"}
+        title={"Заголовки и Response"}
         intro={"Продолжим существующий Planner небольшим HTTP-ресурсом. Разделим значение, которое клиент прислал в заголовке, JSON-ответ и диагностическую метку, которую задаёт само приложение."}
         tags={[
           { icon: <FileText size={14} />, label: "HTTP-контракт" },
@@ -246,7 +246,7 @@ export function Lesson65({ module }: { module?: string }) {
         </p>
         <Diagram caption={"Как заголовок проходит через новый GET-ресурс"}>
           <DiagramFlow label={"Путь запроса и формирование ответа"}>
-            <DiagramNode title={"HTTP-клиент"} shape="input-output">
+            <DiagramNode title={"HTTP-клиент"} shape="process">
               <p>{"GET /preferences"}</p>
               <code>{"X-Client-Version?"}</code>
             </DiagramNode>
@@ -255,7 +255,7 @@ export function Lesson65({ module }: { module?: string }) {
               <p>{"Выбирает default view и переданную версию"}</p>
             </DiagramNode>
             <DiagramArrow label={"Response задаёт серверный header"} />
-            <DiagramNode title={"HTTP-ответ"} shape="input-output">
+            <DiagramNode title={"HTTP-ответ"} shape="process">
               <p>{"JSON: view, client_version"}</p>
               <code>{"X-Planner-Version"}</code>
             </DiagramNode>

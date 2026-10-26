@@ -27,7 +27,7 @@ export function Lesson69_1({ module }: { module?: string }) {
       <RichHero
         variant="project"
         chip={module ?? BLOCK_TITLE}
-        title={"69.1. Граница записи данных"}
+        title={"Граница записи данных"}
         intro={"Завершим переход сервиса на операции репозитория. Мы оставим прежний JSON-файл, API и CLI, но уберём из PlannerService прямое управление полным снимком при изменении задач."}
         tags={[
           { icon: <Layers size={14} />, label: "границы слоёв" },

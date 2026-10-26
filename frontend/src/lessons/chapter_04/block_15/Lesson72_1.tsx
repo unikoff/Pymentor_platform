@@ -26,7 +26,7 @@ export function Lesson72_1({ module }: { module?: string }) {
       <RichHero
         variant="project"
         chip={module ?? BLOCK_TITLE}
-        title="72.1. Задача: done и delete"
+        title="Задача: done и delete"
         intro="Сохраним прежний смысл done и DELETE при переходе на SQL: завершение меняет состояние выбранной задачи, удаление убирает только её строку, а итог подтверждается после транзакции."
         tags={[
           { icon: <CheckCircle2 size={14} />, label: "повтор done без лишней записи" },
@@ -201,7 +201,7 @@ return True`}
         </p>
         <Diagram caption="Операция удаления и независимая проверка">
           <DiagramFlow label="Последовательность удаления выбранной задачи">
-            <DiagramNode title="Прежний DELETE" shape="input-output">
+            <DiagramNode title="Прежний DELETE" shape="process">
               <p>Запрос с одним task_id</p>
             </DiagramNode>
             <DiagramArrow label="передаёт id" />

@@ -1,49 +1,64 @@
 import "./dashboard.css";
-import { useEffect, useState } from "react";
-import { BookCheck, CalendarClock, ChevronRight, Search, ShieldCheck, User, UsersRound } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { CalendarClock, CalendarDays, ChevronRight, LayoutDashboard, ShieldCheck, User } from "lucide-react";
 import { searchAdminAccounts } from "./api";
-import { formatSubscriptionDate } from "../../shared/lib/dates";
+import { formatSubscriptionDate, getInitialCalendarMonth } from "../../shared/lib/dates";
+import { AdminAccountFilters } from "./accounts/AdminAccountFilters";
+import type { AdminAccountFilters as AccountFilters } from "../../shared/api/contracts/admin";
 import { lazyNamed } from "../../shared/ui/async-boundary/lazyNamed";
 import { AsyncBoundary } from "../../shared/ui/async-boundary/AsyncBoundary";
 import type { AdminAccount } from "../../shared/api/contracts";
 const AdminStudentProfile = lazyNamed(() => import("./students/AdminStudentProfile"), "AdminStudentProfile");
 const AdminSlotsView = lazyNamed(() => import("./slots/AdminSlotsView"), "AdminSlotsView");
+const AdminCalendarView = lazyNamed(() => import("./calendar/AdminCalendarView"), "AdminCalendarView");
+const AdminOverviewDashboard = lazyNamed(() => import("./overview/AdminOverviewDashboard"), "AdminOverviewDashboard");
 
-function formatAccountCount(count: number) {
-  const lastTwoDigits = count % 100;
-  const lastDigit = count % 10;
-  const noun = lastTwoDigits >= 11 && lastTwoDigits <= 14
-    ? "аккаунтов"
-    : lastDigit === 1
-      ? "аккаунт"
-      : lastDigit >= 2 && lastDigit <= 4
-        ? "аккаунта"
-        : "аккаунтов";
-
-  return `${count.toLocaleString("ru-RU")} ${noun}`;
+function formatAdminSubscriptionExpiry(value?: string | null) {
+  return formatSubscriptionDate(value).match(/^(\d{2}\.\d{2})\./)?.[1] ?? "—";
 }
+
+function formatAdminPeriodStart(value: string) {
+  const [, month, day] = value.match(/^\d{4}-(\d{2})-(\d{2})$/) ?? [];
+  return day && month ? `${day}.${month}` : "—";
+}
+
+function formatSubscriptionPlan(value?: string | null) {
+  const plan = value?.trim() || "pro";
+  return plan.charAt(0).toLocaleUpperCase("ru-RU") + plan.slice(1);
+}
+
 export function AdminScreen() {
-  const [adminTab, setAdminTab] = useState<"accounts" | "slots">("accounts");
+  const [adminTab, setAdminTab] = useState<"overview" | "accounts" | "slots" | "calendar">("overview");
   const [openStudentId, setOpenStudentId] = useState<number | null>(null);
   const [search, setSearch] = useState("");
+  const [filters, setFilters] = useState<AccountFilters>({ subscription: "all", lessons: "all" });
+  const [quotaMonth] = useState(getInitialCalendarMonth);
   const [accounts, setAccounts] = useState<AdminAccount[]>([]);
+  const [completedSince, setCompletedSince] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   // Меняется после удаления аккаунта, чтобы список перезапросился.
   const [reloadKey, setReloadKey] = useState(0);
-  const activeSubscriptions = accounts.filter((account) => account.has_active_subscription).length;
-  const completedLessons = accounts.reduce((total, account) => total + account.completed_lessons, 0);
+  const openStudent = useCallback((studentId: number) => {
+    setOpenStudentId(studentId);
+    setAdminTab("accounts");
+  }, []);
 
   useEffect(() => {
+    if (adminTab !== "accounts" || openStudentId !== null) return;
+
     let cancelled = false;
     setIsLoading(true);
     setError("");
+    setAccounts([]);
+    setCompletedSince("");
 
     const timer = window.setTimeout(() => {
-      searchAdminAccounts(search)
+      searchAdminAccounts(search, filters, quotaMonth)
         .then((data) => {
           if (!cancelled) {
             setAccounts(data.users ?? []);
+            setCompletedSince(data.completed_since ?? "");
           }
         })
         .catch((err) => {
@@ -62,7 +77,7 @@ export function AdminScreen() {
       cancelled = true;
       window.clearTimeout(timer);
     };
-  }, [search, reloadKey]);
+  }, [adminTab, openStudentId, search, filters.subscription, filters.lessons, quotaMonth, reloadKey]);
 
   return (
       <section className="admin-panel" aria-label="Админ-панель">
@@ -70,36 +85,26 @@ export function AdminScreen() {
           <div className="admin-title">
             <span className="admin-title-icon"><ShieldCheck size={21} /></span>
             <div>
-              <span className="admin-eyebrow">УПРАВЛЕНИЕ ПЛАТФОРМОЙ</span>
               <h1>Админ-панель</h1>
-              <p>Аккаунты, обучение и расписание занятий — в одном месте.</p>
+              <p>Аккаунты, подписки и расписание занятий.</p>
             </div>
           </div>
         </header>
 
-        {adminTab === "accounts" && openStudentId === null && (
-          <div className="admin-summary" aria-label="Сводка по аккаунтам">
-            <section className="admin-summary-card">
-              <span className="admin-summary-icon"><UsersRound size={17} /></span>
-              <div><small>Аккаунтов в выборке</small><strong>{isLoading ? "—" : accounts.length.toLocaleString("ru-RU")}</strong></div>
-            </section>
-            <section className="admin-summary-card">
-              <span className="admin-summary-icon"><ShieldCheck size={17} /></span>
-              <div><small>Активная подписка</small><strong>{isLoading ? "—" : activeSubscriptions.toLocaleString("ru-RU")}</strong></div>
-            </section>
-            <section className="admin-summary-card">
-              <span className="admin-summary-icon"><BookCheck size={17} /></span>
-              <div><small>Пройдено уроков</small><strong>{isLoading ? "—" : completedLessons.toLocaleString("ru-RU")}</strong></div>
-            </section>
-          </div>
-        )}
-
         <div className="admin-tabs">
+          <button
+            type="button"
+            className={adminTab === "overview" ? "is-active" : ""}
+            aria-pressed={adminTab === "overview"}
+            onClick={() => { setAdminTab("overview"); setOpenStudentId(null); }}
+          >
+            <LayoutDashboard size={15} /> Обзор
+          </button>
           <button
             type="button"
             className={adminTab === "accounts" ? "is-active" : ""}
             aria-pressed={adminTab === "accounts"}
-            onClick={() => setAdminTab("accounts")}
+            onClick={() => { setAdminTab("accounts"); setOpenStudentId(null); }}
           >
             <User size={15} /> Аккаунты
           </button>
@@ -111,9 +116,17 @@ export function AdminScreen() {
           >
             <CalendarClock size={15} /> Слоты записи
           </button>
+          <button type="button" className={adminTab === "calendar" ? "is-active" : ""}
+            aria-pressed={adminTab === "calendar"} onClick={() => setAdminTab("calendar")}>
+            <CalendarDays size={15} /> Календарь
+          </button>
         </div>
 
-        {adminTab === "slots" ? (
+        {adminTab === "overview" ? (
+          <AsyncBoundary><AdminOverviewDashboard onOpenStudent={openStudent} /></AsyncBoundary>
+        ) : adminTab === "calendar" ? (
+          <AsyncBoundary><AdminCalendarView onOpenStudent={openStudent} /></AsyncBoundary>
+        ) : adminTab === "slots" ? (
           <>
             <div className="admin-section-heading">
               <div>
@@ -126,7 +139,7 @@ export function AdminScreen() {
         ) : openStudentId !== null ? (
           <AsyncBoundary key={openStudentId}><AdminStudentProfile
             studentId={openStudentId}
-            onBack={() => setOpenStudentId(null)}
+            onBack={() => { setOpenStudentId(null); setReloadKey((key) => key + 1); }}
             onDeleted={() => {
               setOpenStudentId(null);
               setReloadKey((key) => key + 1);
@@ -134,51 +147,56 @@ export function AdminScreen() {
           /></AsyncBoundary>
         ) : (
           <>
-            <div className="admin-section-heading">
-              <div>
-                <h2>Пользователи</h2>
-                <p>Управляйте доступом, подписками и прогрессом обучения.</p>
-              </div>
-              <span className="admin-result-count">{isLoading ? "Загрузка" : formatAccountCount(accounts.length)}</span>
-            </div>
-            <label className="admin-search">
-              <Search size={16} />
-              <input
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
-                placeholder="Поиск по имени или email..."
-                autoFocus
-              />
-            </label>
+            <AdminAccountFilters search={search} filters={filters} month={quotaMonth}
+              onSearch={setSearch} onChange={setFilters} />
 
-            {error && <div className="form-error">{error}</div>}
+            {error && <div className="form-error" role="alert">{error}</div>}
 
             <div className="admin-list" aria-live="polite">
               {isLoading ? (
                 <p className="admin-note">Загружаем аккаунты...</p>
-              ) : accounts.length === 0 ? (
+              ) : error ? null : accounts.length === 0 ? (
                 <p className="admin-note">Ничего не найдено.</p>
               ) : (
-                accounts.map((account) => (
-                  <button className="admin-row admin-row--clickable" key={account.id} type="button" onClick={() => setOpenStudentId(account.id)}>
-                    <div className="admin-row-user">
-                      <strong>
-                        {account.username}
-                        {account.is_admin && <span className="admin-badge">admin</span>}
-                      </strong>
-                      <small>{account.email}</small>
-                    </div>
-                    <div className="admin-row-meta">
-                      <span className={account.has_active_subscription ? "is-active-subscription" : ""}>
+                <>
+                  <div className="admin-list-header" aria-hidden="true">
+                    <span className="admin-list-header__account">Аккаунт</span>
+                    <span>Подписка</span>
+                    <span>Пройдено с {formatAdminPeriodStart(completedSince)}</span>
+                    <span>Остаток</span>
+                    <span aria-hidden="true" />
+                  </div>
+                  {accounts.map((account) => (
+                    <button className="admin-row admin-row--clickable" key={account.id} type="button" onClick={() => setOpenStudentId(account.id)}>
+                      <div className="admin-row-user">
+                        <strong>
+                          {account.username}
+                          {account.is_admin && <span className="admin-badge">admin</span>}
+                        </strong>
+                        <small>{account.email}</small>
+                      </div>
+                      <span className={`admin-row-meta admin-row__subscription ${account.has_active_subscription ? "is-active-subscription" : "is-no-subscription"}`}
+                        data-label="Подписка"
+                        aria-label={account.has_active_subscription
+                          ? `Подписка ${formatSubscriptionPlan(account.subscription_plan)} до ${formatSubscriptionDate(account.subscription_until)}`
+                          : "Нет действующей подписки"}>
                         {account.has_active_subscription
-                          ? `подписка до ${formatSubscriptionDate(account.subscription_until)}`
-                          : "подписка не активна"}
+                          ? `${formatSubscriptionPlan(account.subscription_plan)} · ${formatAdminSubscriptionExpiry(account.subscription_until)}`
+                          : "—"}
                       </span>
-                      <small>{account.completed_lessons} ур. пройдено</small>
-                    </div>
-                    <ChevronRight size={18} className="admin-row-chevron" />
-                  </button>
-                ))
+                      <span className="admin-row-completed" data-label="Пройдено"
+                        aria-label={`${account.completed_lessons_7d} уроков пройдено с ${formatAdminPeriodStart(completedSince)}`}>
+                        {account.completed_lessons_7d}
+                      </span>
+                      <span className={`admin-row-quota ${account.quota?.remaining === 0 ? "is-empty" : ""}`}
+                        data-label="Остаток"
+                        aria-label={`${account.quota?.remaining ?? "Нет данных"} занятий осталось`}>
+                        {account.quota?.remaining ?? "—"}
+                      </span>
+                      <ChevronRight size={18} className="admin-row-chevron" />
+                    </button>
+                  ))}
+                </>
               )}
             </div>
           </>

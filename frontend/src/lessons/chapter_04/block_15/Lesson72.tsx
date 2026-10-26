@@ -25,7 +25,7 @@ export function Lesson72({ module }: { module?: string }) {
       <RichHero
         variant="project"
         chip={module ?? BLOCK_TITLE}
-        title="72. PATCH: выбор полей"
+        title="PATCH: выбор полей"
         intro="Перенесём существующий частичный PATCH на SQL-репозиторий. Сохраним прежний HTTP-договор и проверим, что изменение одного поля не стирает остальное состояние задачи."
         tags={[
           { icon: <Layers size={14} />, label: "payload и предметная Task" },
@@ -193,7 +193,7 @@ export function Lesson72({ module }: { module?: string }) {
         </p>
         <Diagram caption="Как проверенное состояние становится записью базы">
           <DiagramFlow label="Путь одного частичного изменения">
-            <DiagramNode title="PATCH body" shape="input-output">
+            <DiagramNode title="PATCH body" shape="process">
               <p>Одно или несколько переданных значений</p>
             </DiagramNode>
             <DiagramArrow label="передаёт изменения" />

@@ -31,7 +31,7 @@ export function Lesson40({ module }: { module?: string }) {
       <RichHero
         variant="project"
         chip={module ?? "Месяц 2 · Блок 8"}
-        title={"40. Сквозная приёмка накопленного проекта"}
+        title={"Сквозная приёмка накопленного проекта"}
         intro={"Сверим готовый Persistent Planner как единый продукт: от команды до файла и обратно. Приёмка подтвердит совместную работу уже созданных частей, а исправлять будем только воспроизводимые дефекты."}
         tags={[
           { icon: <FileText size={14} />, label: "сквозная приёмка" },
@@ -90,7 +90,7 @@ export function Lesson40({ module }: { module?: string }) {
 
         <Diagram caption={"Команда, сервис и путь сохранённых данных"}>
           <DiagramFlow label={"Связь CLI, PlannerService, storage и JSON-файла"}>
-            <DiagramNode title={"CLI"} shape={"input-output"} />
+            <DiagramNode title={"CLI"} shape={"process"} />
             <DiagramArrow label={"вызов и ответ"} direction={"both"} />
             <DiagramNode title={"PlannerService"} />
             <DiagramExchange

@@ -26,7 +26,7 @@ export function Lesson62({ module }: { module?: string }) {
       <RichHero
         variant="project"
         chip={module ?? BLOCK_TITLE}
-        title={"62. Настройки окружения"}
+        title={"Настройки окружения"}
         intro={"Вынесем один настоящий параметр запуска Planner из кода в окружение процесса, явно подключим локальный .env и сохраним прежний путь по умолчанию."}
         tags={[
           { icon: <GitBranch size={14} />, label: "JSON_PATH" },

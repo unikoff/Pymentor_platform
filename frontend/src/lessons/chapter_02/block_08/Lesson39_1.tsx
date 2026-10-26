@@ -31,7 +31,7 @@ export function Lesson39_1({ module }: { module?: string }) {
       <RichHero
         variant="project"
         chip={module ?? "Месяц 2 · Блок 8"}
-        title={"39.1. SOLID и проверяемая граница CLI"}
+        title={"SOLID и проверяемая граница CLI"}
         intro={"Мы проследим путь одной команды через готовый Persistent Planner и отделим её обработку от цикла общения с пользователем."}
         tags={[
           { icon: <FolderGit2 size={14} />, label: "границы проекта" },

@@ -26,7 +26,7 @@ export function Lesson67_1({ module }: { module?: string }) {
       <RichHero
         variant="project"
         chip={module ?? BLOCK_TITLE}
-        title={"67.1. Модель ORM и таблица"}
+        title={"Модель ORM и таблица"}
         intro={"Опишем отдельную ORM-строку и создадим исходную таблицу, пока рабочий Planner продолжает использовать JSON."}
         tags={[
           { icon: <Boxes size={14} />, label: "три представления задачи" },

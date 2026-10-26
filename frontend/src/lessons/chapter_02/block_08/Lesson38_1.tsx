@@ -26,7 +26,7 @@ export function Lesson38_1({ module }: { module?: string }) {
       <RichHero
         variant="project"
         chip={module ?? "Месяц 2 · Блок 8"}
-        title="38.1. Свежая fixture и параметризация"
+        title="Свежая fixture и параметризация"
         intro="Первые pytest-проверки уже защищают Task, MemoryStorage и PlannerService. Уберём повтор подготовки, сохраним каждому тесту свои экземпляры и объединим только те варианты, которые проверяют одно правило."
         tags={[
           { icon: <CheckCircle2 size={14} />, label: "свежие fixtures" },
