@@ -16,6 +16,8 @@ Ingress smoke подтвердил отклонение oversized body разм�
 
 Ограничения: `local-path` не реплицирует SQLite между узлами; отказ узла Core не имеет автоматического failover. k3d nodes работают на одном Windows host/WSL и не являются независимыми failure domains. Frontend audit сообщил 4 High npm advisory и 0 Critical; сборка настроена не блокировать High findings. В этом прогоне используются только синтетические данные.
 
+Внешняя проверка из WSL host: слушали только loopback `28080` (Ingress) и `26550` (K3s API); TCP probes портов `5432`, `6379`, `8001`, `8002`, `8080`, `9090` завершились `ECONNREFUSED`. Kubernetes Services — только два `ClusterIP` (Core и Frontend); DB, broker и Runner не имеют внешних Service. Через Ingress `/api/docs` и `/api/openapi.json` вернули 404, `/api/admin/users` и `/api/admin/overview` без сессии — 401; `/docs` и `/admin` отдали SPA fallback, не admin данные. Последние 200 строк Core logs не содержали совпадений по DB URL/credential markers.
+
 ## Локальные профили
 
 | Профиль | Состав и назначение | Границы доказательства |
