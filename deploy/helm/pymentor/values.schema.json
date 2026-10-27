@@ -1,0 +1,119 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["profile", "global", "images", "runtimeSecret", "runner", "core", "frontend", "ingress", "ingressController", "networkPolicy", "quota"],
+  "properties": {
+    "profile": {"type": "string", "enum": ["local-single", "local-multinode", "production-single-vps", "future-production-ha"]},
+    "global": {
+      "type": "object",
+      "required": ["host", "cookieSecure", "ingressClassName"],
+      "properties": {
+        "host": {"type": "string", "minLength": 1},
+        "cookieSecure": {"type": "boolean"},
+        "ingressClassName": {"type": "string", "minLength": 1}
+      }
+    },
+    "images": {
+      "type": "object",
+      "required": ["core", "frontend"],
+      "properties": {
+        "core": {"$ref": "#/definitions/image"},
+        "frontend": {"$ref": "#/definitions/image"}
+      }
+    },
+    "runtimeSecret": {
+      "type": "object",
+      "required": ["name", "databaseUrlKey"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1},
+        "databaseUrlKey": {"type": "string", "minLength": 1},
+        "landingBotCredentialsKey": {"type": "string", "minLength": 1}
+      }
+    },
+    "runner": {
+      "type": "object",
+      "required": ["enabled"],
+      "properties": {"enabled": {"type": "boolean"}}
+    },
+    "core": {
+      "type": "object",
+      "required": ["replicaCount", "serviceAccountName", "port", "persistence", "resources", "terminationGracePeriodSeconds"],
+      "properties": {
+        "replicaCount": {"type": "integer", "const": 1},
+        "serviceAccountName": {"type": "string", "minLength": 1},
+        "port": {"type": "integer", "minimum": 1, "maximum": 65535},
+        "persistence": {"type": "object", "required": ["enabled", "accessMode", "size"], "properties": {"enabled": {"type": "boolean", "const": true}, "storageClassName": {"type": "string"}, "accessMode": {"type": "string", "enum": ["ReadWriteOnce"]}, "size": {"type": "string", "minLength": 1}}},
+        "resources": {"$ref": "#/definitions/resources"},
+        "notificationWorkerEnabled": {"type": "boolean"},
+        "terminationGracePeriodSeconds": {"type": "integer", "minimum": 1}
+      }
+    },
+    "frontend": {
+      "type": "object",
+      "required": ["replicaCount", "serviceAccountName", "port", "resources", "terminationGracePeriodSeconds", "topologySpread"],
+      "properties": {
+        "replicaCount": {"type": "integer", "minimum": 1},
+        "serviceAccountName": {"type": "string", "minLength": 1},
+        "port": {"type": "integer", "minimum": 1, "maximum": 65535},
+        "resources": {"$ref": "#/definitions/resources"},
+        "terminationGracePeriodSeconds": {"type": "integer", "minimum": 1},
+        "topologySpread": {"type": "boolean"}
+      }
+    },
+    "ingress": {
+      "type": "object",
+      "required": ["enabled", "tls", "rateLimit", "maxRequestBodyBytes", "flushInterval", "forwardingTimeouts"],
+      "properties": {
+        "enabled": {"type": "boolean"},
+        "tls": {"type": "object", "required": ["enabled", "secretName"], "properties": {"enabled": {"type": "boolean"}, "secretName": {"type": "string"}}},
+        "rateLimit": {"type": "object", "required": ["average", "burst"], "properties": {"average": {"type": "integer", "minimum": 1}, "burst": {"type": "integer", "minimum": 1}}},
+        "maxRequestBodyBytes": {"type": "integer", "minimum": 1},
+        "flushInterval": {"type": "string", "pattern": "^-?[0-9]+(ms|s|m|h)?$"},
+        "forwardingTimeouts": {"$ref": "#/definitions/forwardingTimeouts"}
+      }
+    },
+    "ingressController": {"type": "object", "required": ["configureBundledK3sTraefik", "replicas", "imageRepository", "imageTag"], "properties": {"configureBundledK3sTraefik": {"type": "boolean"}, "replicas": {"type": "integer", "minimum": 1}, "imageRepository": {"type": "string", "minLength": 1}, "imageTag": {"type": "string", "minLength": 1}}},
+    "networkPolicy": {"type": "object", "required": ["enabled", "trustedIngressNamespace"], "properties": {"enabled": {"type": "boolean"}, "trustedIngressNamespace": {"type": "string", "minLength": 1}}},
+    "quota": {"type": "object", "required": ["enabled", "pods", "requestsCpu", "requestsMemory", "limitsCpu", "limitsMemory", "requestsStorage"], "properties": {"enabled": {"type": "boolean"}, "pods": {"type": "string"}, "requestsCpu": {"type": "string"}, "requestsMemory": {"type": "string"}, "limitsCpu": {"type": "string"}, "limitsMemory": {"type": "string"}, "requestsStorage": {"type": "string"}}},
+    "production": {"type": "object", "required": ["singleVpsHost", "haHost"], "properties": {"singleVpsHost": {"type": "string"}, "haHost": {"type": "string"}}}
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "profile": {"enum": ["production-single-vps", "future-production-ha"]}
+        },
+        "required": ["profile"]
+      },
+      "then": {
+        "properties": {
+          "runner": {"properties": {"enabled": {"const": false}}},
+          "images": {
+            "properties": {
+              "core": {"required": ["digest"], "not": {"required": ["tag"]}},
+              "frontend": {"required": ["digest"], "not": {"required": ["tag"]}}
+            }
+          }
+        }
+      }
+    }
+  ],
+  "definitions": {
+    "image": {
+      "type": "object",
+      "required": ["repository", "pullPolicy"],
+      "properties": {
+        "repository": {"type": "string", "minLength": 1},
+        "digest": {"type": "string", "pattern": "^sha256:[a-f0-9]{64}$"},
+        "tag": {"type": "string", "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}$"},
+        "pullPolicy": {"type": "string", "enum": ["IfNotPresent", "Always"]}
+      },
+      "oneOf": [
+        {"required": ["digest"], "not": {"required": ["tag"]}},
+        {"required": ["tag"], "not": {"required": ["digest"]}}
+      ]
+    },
+    "resources": {"type": "object", "required": ["requests", "limits"], "properties": {"requests": {"type": "object", "required": ["cpu", "memory"], "properties": {"cpu": {"type": "string"}, "memory": {"type": "string"}}}, "limits": {"type": "object", "required": ["cpu", "memory"], "properties": {"cpu": {"type": "string"}, "memory": {"type": "string"}}}}},
+    "forwardingTimeouts": {"type": "object", "required": ["dialTimeout", "responseHeaderTimeout", "idleConnTimeout"], "properties": {"dialTimeout": {"type": "string"}, "responseHeaderTimeout": {"type": "string"}, "idleConnTimeout": {"type": "string"}}}
+  }
+}

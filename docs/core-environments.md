@@ -4,6 +4,18 @@
 **Дата:** 27.10.2026. Источник контекста: текущий checkout; фактический кластер не обнаружен.
 **Сверка:** [C1.1.1 inventory](core-inventory.md) и [C1.1.3 boundaries ADR](core-boundaries-adr.md). Core остаётся модульным монолитом; для M1 один Core writer с SQLite, для M2 локальный PostgreSQL и две stateless replicas, M3 обязателен для безопасного запуска недоверенного кода. Успех M1/M2 не разрешает production.
 
+> Исторический снимок ниже фиксирует состояние при выполнении C1.1.4. Результаты последующего C1.3 зафиксированы отдельно здесь и в [runbook](core-k3s-local.md).
+
+## C1.3 — реализованные и проверенные локальные профили K3s
+
+**Статус на 28.10.2026: C1.3 implementation и runtime-проверки завершены.** `local-single` и `local-multinode` воспроизводимо подняты текущим bootstrap; профили использовали K3s `v1.37.1+k3s1`. Проверены Helm chart/values, single-origin ingress, маршруты/коды, PVC и SQLite persistence, probes/resources, graceful shutdown, NetworkPolicy и ingress replica recovery. Отдельный native K3s smoke выполнен для C1.4. Текущие ограничения — SQLite один Core writer и node-local `local-path`; это не HA/production, а оба сохранённых k3d профиля после проверок остановлены.
+
+Для `local-single` подтверждены: Node Ready; Core и frontend rollout Ready; PVC `pymentor-sqlite` Bound с `ReadWriteOnce`; Core — один pod; `/` возвращает HTTP 200, `/api/user/me` без сессии — 401. Cookie login/logout прошёл same-origin smoke: локальная cookie HttpOnly/SameSite=Lax без Secure, logout очищает с теми же атрибутами. После перезапуска Core SQLite сохранила синтетического пользователя и запись прогресса (1/1). Online backup проверен через SQLite `integrity_check=ok`; backup содержал те же строки.
+
+Ingress smoke подтвердил отклонение oversized body размером 21 MiB с HTTP 413; из 150 параллельных запросов получено 142×200 и 8×429. NetworkPolicy реально обеспечивается CNI: Frontend→Core разрешён, Frontend→внешний IP заблокирован, произвольный Pod в namespace `pymentor` не достигает Core. Четыре Helm-профиля проходили lint; production профили только рендерились/линтовались и не применялись.
+
+Ограничения: `local-path` не реплицирует SQLite между узлами; отказ узла Core не имеет автоматического failover. k3d nodes работают на одном Windows host/WSL и не являются независимыми failure domains. Frontend audit сообщил 4 High npm advisory и 0 Critical; сборка настроена не блокировать High findings. В этом прогоне используются только синтетические данные.
+
 ## Локальные профили
 
 | Профиль | Состав и назначение | Границы доказательства |

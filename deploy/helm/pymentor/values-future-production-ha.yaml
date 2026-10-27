@@ -1,0 +1,28 @@
+# Configuration scaffold only. Core deliberately remains one SQLite writer;
+# PostgreSQL and the Stage 2 migration are prerequisites for Core replicas > 1.
+profile: future-production-ha
+global:
+  host: pymentor-ha.example.invalid
+  cookieSecure: true
+ingress:
+  tls:
+    enabled: true
+    secretName: pymentor-ha-tls
+ingressController:
+  configureBundledK3sTraefik: false
+  replicas: 3
+core:
+  replicaCount: 1
+  persistence:
+    storageClassName: production-rwo
+    size: 10Gi
+frontend:
+  replicaCount: 3
+  topologySpread: true
+quota:
+  pods: "24"
+  requestsCpu: "6"
+  requestsMemory: 8Gi
+  limitsCpu: "12"
+  limitsMemory: 16Gi
+  requestsStorage: 20Gi

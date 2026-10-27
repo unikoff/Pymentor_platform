@@ -1,0 +1,96 @@
+profile: local-single
+
+global:
+  host: pymentor.localhost
+  cookieSecure: false
+  ingressClassName: traefik
+
+images:
+  core:
+    repository: pymentor/core-api
+    digest: sha256:855643a753d14be6a7e363530976cb1c7248e80a3b275fc2090cd0c9cbeb747d
+    pullPolicy: IfNotPresent
+  frontend:
+    repository: pymentor/frontend
+    digest: sha256:87362f7b82f058921a6bb1615528fe360d1de9256ba40c276443485808cfe4aa
+    pullPolicy: IfNotPresent
+
+runtimeSecret:
+  name: pymentor-runtime
+  databaseUrlKey: DATABASE_URL
+  landingBotCredentialsKey: PYMENTOR_LANDING_BOT_CREDENTIALS
+
+# Development-only opt-in. The legacy runner is not a sandbox.
+runner:
+  enabled: false
+
+core:
+  replicaCount: 1
+  serviceAccountName: pymentor-core
+  port: 8001
+  persistence:
+    enabled: true
+    storageClassName: local-path
+    accessMode: ReadWriteOnce
+    size: 1Gi
+  resources:
+    requests:
+      cpu: 200m
+      memory: 384Mi
+    limits:
+      cpu: "1"
+      memory: 768Mi
+  notificationWorkerEnabled: false
+  terminationGracePeriodSeconds: 60
+
+frontend:
+  replicaCount: 1
+  serviceAccountName: pymentor-frontend
+  port: 8080
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 300m
+      memory: 192Mi
+  terminationGracePeriodSeconds: 30
+  topologySpread: true
+
+ingress:
+  enabled: true
+  tls:
+    enabled: false
+    secretName: ""
+  rateLimit:
+    average: 60
+    burst: 120
+  maxRequestBodyBytes: 20971520
+  flushInterval: "-1"
+  forwardingTimeouts:
+    dialTimeout: 10s
+    responseHeaderTimeout: 120s
+    idleConnTimeout: 180s
+
+ingressController:
+  configureBundledK3sTraefik: true
+  replicas: 1
+  imageRepository: docker.io/pymentor/traefik-local
+  imageTag: 3.7.13
+
+networkPolicy:
+  enabled: true
+  trustedIngressNamespace: kube-system
+
+quota:
+  enabled: true
+  pods: "12"
+  requestsCpu: "1"
+  requestsMemory: 1536Mi
+  limitsCpu: "3"
+  limitsMemory: 3Gi
+  requestsStorage: 2Gi
+
+production:
+  singleVpsHost: pymentor.example.invalid
+  haHost: pymentor-ha.example.invalid
