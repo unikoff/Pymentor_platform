@@ -142,8 +142,19 @@ jobs:
           network="pymentor-ci-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
           docker network create "$network"
           cleanup() {
+            result=$?
+            trap - EXIT
+            if [[ "$result" -ne 0 ]]; then
+              for container in pymentor-ci-nginx pymentor-ci-core pymentor-ci-redis; do
+                if docker inspect "$container" >/dev/null 2>&1; then
+                  echo "---- docker logs --tail 200 $container ----"
+                  docker logs --tail 200 "$container" || true
+                fi
+              done
+            fi
             docker rm -f pymentor-ci-nginx pymentor-ci-core pymentor-ci-redis >/dev/null 2>&1 || true
             docker network rm "$network" >/dev/null 2>&1 || true
+            exit "$result"
           }
           trap cleanup EXIT
 
@@ -188,6 +199,7 @@ jobs:
               except HTTPError as error:
                   return error.code, error.headers, error.read()
 
+          last_error = None
           for attempt in range(60):
               try:
                   status, _, body = fetch(core + '/health')
@@ -195,10 +207,11 @@ jobs:
                   status, _, _ = fetch(site + '/index.html')
                   assert status == 200
                   break
-              except (AssertionError, KeyError, ValueError, HTTPError, URLError):
+              except (AssertionError, KeyError, ValueError, HTTPError, URLError, OSError) as error:
+                  last_error = repr(error)
                   time.sleep(2)
           else:
-              raise AssertionError('Core or Nginx failed to become ready')
+              raise AssertionError(f'Core or Nginx failed to become ready: {last_error}')
 
           status, _, _ = fetch(site + '/api/learning/catalog')
           assert status == 200, 'proxied learning catalog must respond successfully'
