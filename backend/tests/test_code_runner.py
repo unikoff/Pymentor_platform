@@ -1,4 +1,6 @@
 import copy
+import hashlib
+import json
 import unittest
 
 from fastapi import HTTPException
@@ -226,6 +228,39 @@ class CodeRunnerRegressionTests(unittest.TestCase):
         changed_task["tests"][0]["expected"] = {"value": 2}
 
         self.assertNotEqual(build_task_revision(task), build_task_revision(changed_task))
+
+    def test_task_revision_is_stable_for_unordered_set_values(self) -> None:
+        task = {
+            "id": "lesson-example-task-01",
+            "tests": [
+                {
+                    "name": "unique route",
+                    "namespace": {"expected_unique": {"Мост", "Лес"}},
+                    "expected": True,
+                }
+            ],
+        }
+        canonical_payload = {
+            "id": "lesson-example-task-01",
+            "tests": [
+                {
+                    "name": "unique route",
+                    "namespace": {"expected_unique": ["Лес", "Мост"]},
+                    "expected": True,
+                }
+            ],
+        }
+        canonical_json = json.dumps(
+            canonical_payload,
+            ensure_ascii=False,
+            separators=(",", ":"),
+            sort_keys=True,
+        )
+
+        self.assertEqual(
+            hashlib.sha256(canonical_json.encode("utf-8")).hexdigest(),
+            build_task_revision(task),
+        )
 
     def test_stale_task_revision_is_configuration_error(self) -> None:
         with self.assertRaises(HTTPException) as error:
