@@ -1,7 +1,7 @@
 {
   "catalog_after": {
     "body": {
-      "content_revision": "7aa5c71c3cf9231a45e86c43a9ac17622afad1c88d0f8f1b3283e9c5f663aae2",
+      "content_revision": "f07c3cb0368e42811bf93e599ea1430c2806a532da9c12a02ecc91f6df187a79",
       "default_track": "Основы Python и мышление программиста 01.2",
       "lessons": [
         {
@@ -561,7 +561,7 @@
   },
   "catalog_before": {
     "body": {
-      "content_revision": "7aa5c71c3cf9231a45e86c43a9ac17622afad1c88d0f8f1b3283e9c5f663aae2",
+      "content_revision": "f07c3cb0368e42811bf93e599ea1430c2806a532da9c12a02ecc91f6df187a79",
       "default_track": "Основы Python и мышление программиста 01.2",
       "lessons": [
         {

@@ -327,12 +327,26 @@ def build_task_revision(task: dict[str, Any]) -> str:
         for key, value in task.items()
         if key not in {"legacy_ids", "revision"}
     }
+    def _stable_default(value: Any) -> Any:
+        if isinstance(value, (set, frozenset)):
+            return sorted(
+                value,
+                key=lambda item: json.dumps(
+                    item,
+                    ensure_ascii=False,
+                    separators=(",", ":"),
+                    sort_keys=True,
+                    default=_stable_default,
+                ),
+            )
+        return repr(value)
+
     serialized = json.dumps(
         payload,
         ensure_ascii=False,
         separators=(",", ":"),
         sort_keys=True,
-        default=repr,
+        default=_stable_default,
     )
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
 
