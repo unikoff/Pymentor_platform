@@ -1,4 +1,4 @@
-FROM python:3.12.16-slim-bookworm AS dependencies
+FROM python:3.12.16-slim-trixie AS dependencies
 
 ENV VIRTUAL_ENV=/opt/venv
 RUN python -m venv "$VIRTUAL_ENV"
@@ -8,7 +8,7 @@ WORKDIR /build
 COPY requirements.txt ./requirements.txt
 RUN pip install --no-cache-dir --requirement requirements.txt
 
-FROM python:3.12.16-slim-bookworm AS runtime
+FROM python:3.12.16-slim-trixie AS runtime
 
 ENV PATH="/opt/venv/bin:$PATH" \
     PYTHONDONTWRITEBYTECODE=1 \
