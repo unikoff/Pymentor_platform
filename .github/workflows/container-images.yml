@@ -306,8 +306,13 @@ jobs:
           cleanup() {
             result=$?
             if [[ "$result" -ne 0 ]]; then
-              kubectl --context "$context" -n pymentor get pods,pvc,events --sort-by=.metadata.creationTimestamp || true
+              kubectl --context "$context" -n pymentor get pods,svc,pvc -o wide || true
+              kubectl --context "$context" -n pymentor get events --sort-by=.metadata.creationTimestamp || true
+              kubectl --context "$context" -n pymentor get ingressroute pymentor -o yaml || true
               kubectl --context "$context" -n pymentor logs deployment/pymentor-core --tail=100 || true
+              kubectl --context "$context" -n pymentor logs deployment/pymentor-frontend --tail=100 || true
+              kubectl --context "$context" -n kube-system get pods -o wide || true
+              kubectl --context "$context" -n kube-system logs deployment/traefik --tail=100 || true
             fi
             k3d cluster delete "$cluster" || true
             exit "$result"
@@ -333,9 +338,11 @@ jobs:
             --set-string images.core.tag="$REVISION" \
             --set images.frontend.digest=null \
             --set-string images.frontend.tag="$REVISION" \
+            --set ingressController.configureBundledK3sTraefik=false \
             --wait --timeout 8m --rollback-on-failure
           kubectl --context "$context" -n pymentor rollout status deployment/pymentor-core --timeout=8m
           kubectl --context "$context" -n pymentor rollout status deployment/pymentor-frontend --timeout=8m
+          kubectl --context "$context" -n kube-system rollout status deployment/traefik --timeout=8m
 
           root_status=""
           api_status=""
