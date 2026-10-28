@@ -325,6 +325,15 @@ jobs:
             --k3s-arg "--disable=metrics-server@server:*" \
             --port "127.0.0.1:18080:80@loadbalancer" \
             --wait --timeout 180s --kubeconfig-switch-context=false
+          # K3s installs its packaged Traefik asynchronously; wait for its CRDs before Helm maps custom resources.
+          kubectl --context "$context" -n kube-system wait \
+            --for=condition=Complete job/helm-install-traefik-crd --timeout=240s
+          kubectl --context "$context" wait \
+            --for=condition=Established \
+            crd/ingressroutes.traefik.io \
+            crd/middlewares.traefik.io \
+            crd/serverstransports.traefik.io \
+            --timeout=240s
           k3d image import --cluster "$cluster" \
             "pymentor/core-api:${REVISION}" "pymentor/frontend:${REVISION}"
 
