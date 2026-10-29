@@ -185,7 +185,13 @@ class CoreBaselineTests(unittest.IsolatedAsyncioTestCase):
         status, _, schema = await _request(self.app, "GET", "/openapi.json")
         self.assertEqual(status, 200)
         paths = schema["paths"]
-        fixture_path = Path(__file__).resolve().parents[2] / "docs" / "core-baseline-openapi.json"
+        fixture_path = (
+            Path(__file__).resolve().parents[2]
+            / "docs"
+            / "stage-01-k3s"
+            / "reference"
+            / "core-baseline-openapi.json"
+        )
         expected_openapi = json.loads(fixture_path.read_text(encoding="utf-8"))
         self.assertEqual(_relevant_openapi(schema), expected_openapi)
         self.assertFalse(any("attempt" in table.lower() for table in Base.metadata.tables))
@@ -289,7 +295,13 @@ class CoreBaselineTests(unittest.IsolatedAsyncioTestCase):
         record("unauthorized_after_logout", status, headers, after_logout)
         self.assertEqual(status, 401)
 
-        response_fixture_path = Path(__file__).resolve().parents[2] / "docs" / "core-baseline-responses.json"
+        response_fixture_path = (
+            Path(__file__).resolve().parents[2]
+            / "docs"
+            / "stage-01-k3s"
+            / "reference"
+            / "core-baseline-responses.json"
+        )
         if os.getenv("PYMENTOR_CAPTURE_CORE_FIXTURES") == "1":
             response_fixture_path.write_text(
                 json.dumps(response_fixtures, ensure_ascii=False, indent=2, sort_keys=True) + "\n",

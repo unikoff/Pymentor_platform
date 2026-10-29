@@ -79,7 +79,7 @@ class CodeRunnerRegressionTests(unittest.TestCase):
             result["error"],
         )
 
-    def test_property_task_reference_solution_keeps_stdout_contract(self) -> None:
+    def test_lesson_34_reference_solution_keeps_stdout_contract(self) -> None:
         task = rich_code_tasks.DEEPER_CODE_TASKS[34][0]
 
         result = run_python_task(task["reference_code"], task)

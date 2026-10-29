@@ -224,7 +224,7 @@ CODE_TASKS: dict[int | str, list[dict[str, Any]]] = {
                                  'намеренно без def и без готовой обёртки.',
                         'todo': 'С нуля два вложенных def, оба способа применения, маркер МЕЖДУ и сохранение '
                                 'результатов.',
-                        'check': 'В обоих наборах строк @ настраивается до МЕЖДУ, ручной вызов observe — '
+                        'check': 'В обоих наборах строк @ настраивается до МЕЖДУ, ручной вызов observe: '
                                  'после него; операции вызываются по разу после READY.'},
            'requirements': {'items': ['observe и wrapped целиком самостоятельно объявлены в пустом стартере',
                                       'декорируемая функция определяется раньше маркера МЕЖДУ и применяет '
@@ -241,7 +241,7 @@ CODE_TASKS: dict[int | str, list[dict[str, Any]]] = {
                      'Над decorated_operation поставьте @observe. Выведите МЕЖДУ после обоих определений и '
                      'лишь затем присвойте manual_operation = observe(manual_operation).',
                      'В wrapped поместите ОБЁРТКА, затем один operation(), print результата и return '
-                     'результата; вызовы операций — строго после READY.'],
+                     'результата; вызовы операций: строго после READY.'],
            'starter_code': '# ДАНО: manual_value и decorated_value задаёт платформа.\n'
                            '# Новый пустой файл: напишите observe(operation) И def wrapped() с нуля.\n'
                            '# Далее создайте decorated_operation c @observe и manual_operation без @.\n'

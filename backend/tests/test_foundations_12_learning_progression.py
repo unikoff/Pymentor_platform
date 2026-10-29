@@ -27,11 +27,12 @@ class FoundationsLearningProgressionTests(unittest.TestCase):
         self.assert_rejected(task, code.replace("value >= threshold", "value > threshold"))
         self.assert_rejected(task, code.replace("total += value", "total = value"))
 
-    def test_while_catches_off_by_one_and_accepts_a_different_counter_name(self):
-        task = exercise("10.1", "Напишем весь while самостоятельно")
+    def test_while_catches_off_by_one_and_skipped_increment(self):
+        task = exercise("10.1", "Сами построим конечный счётчик")
         code = task["reference_code"]
-        self.assert_accepted(task, code.replace("remaining", "current"))
-        self.assert_rejected(task, code.replace("remaining > limit", "remaining >= limit"))
+        self.assert_accepted(task, code)
+        self.assert_rejected(task, code.replace("count < limit", "count <= limit"))
+        self.assert_rejected(task, code.replace("count = count + 1", "count = count + 2"))
 
     def test_integrated_work_checks_filter_and_preserves_source(self):
         task = exercise("10.2", "Итоговая работа: подберём помещения")

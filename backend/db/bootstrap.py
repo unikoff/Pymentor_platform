@@ -1,13 +1,62 @@
 from sqlalchemy import inspect, text
-from db.engine import Base, engine
+from sqlalchemy.exc import IntegrityError
+from db.engine import Base, SessionLocal, engine
 from db import models
 from content.catalog import get_legacy_lesson_id_map
+
+
+def ensure_default_landing(session_factory=SessionLocal) -> models.Landing:
+    """Register the existing /backend page once so it can receive admin config."""
+    session = session_factory()
+    try:
+        landing = session.query(models.Landing).filter_by(slug="backend").first()
+        if landing is not None:
+            return landing
+
+        landing = models.Landing(
+            id="pymentor-backend",
+            slug="backend",
+            title="Pymentor",
+            description="Основной лендинг платформы по адресу /backend",
+            is_active=True,
+        )
+        session.add(landing)
+        try:
+            session.commit()
+        except IntegrityError:
+            session.rollback()
+            landing = session.query(models.Landing).filter_by(slug="backend").first()
+            if landing is None:
+                raise
+        session.refresh(landing)
+        return landing
+    finally:
+        session.close()
 
 
 def ensure_schema() -> None:
     Base.metadata.create_all(bind=engine)
 
     inspector = inspect(engine)
+    landing_columns = {column["name"] for column in inspector.get_columns("landings")}
+    if "version" not in landing_columns:
+        with engine.begin() as connection:
+            connection.execute(
+                text("ALTER TABLE landings ADD COLUMN version INTEGER NOT NULL DEFAULT 1")
+            )
+
+    outbox_columns = {column["name"] for column in inspector.get_columns("landing_notification_outbox")}
+    if "manual_retry_count" not in outbox_columns:
+        with engine.begin() as connection:
+            connection.execute(
+                text(
+                    "ALTER TABLE landing_notification_outbox "
+                    "ADD COLUMN manual_retry_count INTEGER NOT NULL DEFAULT 0"
+                )
+            )
+
+    ensure_default_landing()
+
     user_columns = {column["name"] for column in inspector.get_columns("users")}
     if "subscription_until" not in user_columns:
         with engine.begin() as connection:

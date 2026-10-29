@@ -1,0 +1,27 @@
+# Prepared configuration only. Replace the reserved host and provision the
+# referenced Secret and storage class before any separately approved release.
+profile: production-single-vps
+global:
+  host: pymentor.example.invalid
+  cookieSecure: true
+ingress:
+  tls:
+    enabled: true
+    secretName: pymentor-production-tls
+ingressController:
+  configureBundledK3sTraefik: false
+  replicas: 1
+core:
+  replicaCount: 1
+  persistence:
+    storageClassName: ""
+    size: 10Gi
+frontend:
+  replicaCount: 1
+  topologySpread: false
+quota:
+  requestsCpu: "3"
+  requestsMemory: 4Gi
+  limitsCpu: "6"
+  limitsMemory: 8Gi
+  requestsStorage: 20Gi

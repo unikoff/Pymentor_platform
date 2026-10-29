@@ -215,7 +215,7 @@ export function Lesson65_2({ module }: { module?: string }) {
 
       <Section number="05" title={"Создаём dependency для уже созданного Settings"}>
         <Lead>
-          {"После урока 65.1 app.state.settings уже содержит готовый Settings, но provider для него ещё отсутствует. В этом занятии мы добавим get_settings и SettingsDep, применив знакомые Depends и Annotated."}
+          {"После настройки app.state.settings уже содержит готовый Settings, но provider для него ещё отсутствует. В этом занятии мы добавим get_settings и SettingsDep, применив знакомые Depends и Annotated."}
         </Lead>
 
         <p>
@@ -233,7 +233,7 @@ export function Lesson65_2({ module }: { module?: string }) {
           code={`from typing import Annotated\nfrom fastapi import Depends, Request\nfrom app.core.config import Settings\n\n# app/api.py уже сохраняет этот объект\napp.state.settings = settings\n\n# Добавляем в app/core/dependencies.py\ndef get_settings(request: Request) -> Settings:\n    return request.app.state.settings\n\nSettingsDep = Annotated[Settings, Depends(get_settings)]\n\n# В preference-router.py\nsettings: SettingsDep\nsecure = settings.cookie_secure`}
           steps={[
             { line: 5, note: "В app/api.py уже хранится собранный объект.", vars: { "app.state.settings": "готовый Settings" } },
-            { line: 8, note: "В этом занятии добавляем provider, который получает Request.", vars: { get_settings: "новая dependency" } },
+            { line: 8, note: "Добавляем provider, который получает Request.", vars: { get_settings: "новая dependency" } },
             { line: 9, note: "Provider читает единственный источник Settings.", vars: { "request.app.state.settings": "тот же объект" } },
             { line: 11, note: "Создаём типизированный alias на Depends(get_settings).", vars: { SettingsDep: "Settings через Depends" } },
             { line: 14, note: "Обработчик получает сохранённый Settings через alias.", vars: { settings: "готовый объект" } },

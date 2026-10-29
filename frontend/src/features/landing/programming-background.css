@@ -1,0 +1,85 @@
+/* Hallmark · component: interactive panel field · genre: tactile ambient · Pymentor mint palette */
+
+.backend-landing .backend-landing__scene {
+  position: relative;
+  isolation: isolate;
+  min-height: 100%;
+}
+
+.backend-landing .landing-panel-field {
+  --panel-columns: 8;
+  --panel-rows: 30;
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(var(--panel-columns), minmax(0, 1fr));
+  grid-template-rows: repeat(var(--panel-rows), minmax(0, 1fr));
+  gap: 0;
+  padding: 0;
+  pointer-events: none;
+}
+
+.backend-landing .landing-panel-field__tile {
+  min-width: 0;
+  min-height: 0;
+  border: 1px solid transparent;
+  border-radius: 0;
+  background-color: transparent;
+  opacity: 0;
+  transform-origin: center center;
+  transform: perspective(1100px) translateZ(0) rotateX(0deg) rotateY(0deg);
+  transition: transform 150ms cubic-bezier(.2, .8, .2, 1), opacity 220ms ease, border-color 220ms ease, background-color 220ms ease, box-shadow 220ms ease;
+}
+
+.backend-landing .landing-panel-field__tile.is-near {
+  border-color: color-mix(in srgb, var(--accent-secondary) 38%, transparent);
+  background-color: color-mix(in srgb, var(--accent-secondary) 7%, transparent);
+  box-shadow: 0 10px 18px -14px color-mix(in srgb, var(--accent-secondary) 52%, transparent), inset 0 1px 0 color-mix(in srgb, var(--white) 10%, transparent);
+  opacity: .7;
+  transform: perspective(1100px) translateZ(var(--panel-lift, 0px)) rotateX(var(--panel-rotate-x, 0deg)) rotateY(var(--panel-rotate-y, 0deg)) scale(.94);
+}
+
+.backend-landing .landing-panel-field__tile.is-far {
+  border-color: color-mix(in srgb, var(--accent-secondary) 10%, transparent);
+  background-color: color-mix(in srgb, var(--accent-secondary) 1%, transparent);
+  opacity: .14;
+  transform: perspective(1100px) translateZ(var(--panel-lift, 0px)) rotateX(var(--panel-rotate-x, 0deg)) rotateY(var(--panel-rotate-y, 0deg)) scale(.96);
+}
+
+.backend-landing .landing-panel-field__tile.is-active {
+  position: relative;
+  z-index: 1;
+  border-color: color-mix(in srgb, var(--accent) 64%, transparent);
+  border-radius: 9px;
+  background-color: color-mix(in srgb, var(--accent) 18%, var(--surface));
+  box-shadow: 0 18px 32px -22px color-mix(in srgb, var(--accent) 72%, transparent), inset 0 1px 0 color-mix(in srgb, var(--white) 22%, transparent);
+  opacity: .98;
+  transform: perspective(1100px) translateZ(var(--panel-lift, 0px)) rotateX(var(--panel-rotate-x, 0deg)) rotateY(var(--panel-rotate-y, 0deg)) scale(.94);
+}
+
+@media (max-width: 680px) {
+  .backend-landing .landing-panel-field {
+    --panel-columns: 4;
+    --panel-rows: 40;
+  }
+
+  .backend-landing .landing-panel-field__tile:nth-child(n + 161) {
+    display: none;
+  }
+
+}
+
+@media (hover: none) {
+  .backend-landing .landing-panel-field__tile {
+    opacity: 0;
+    transition: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .backend-landing .landing-panel-field__tile {
+    transition: none;
+    transform: none;
+  }
+}

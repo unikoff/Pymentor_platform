@@ -1,11 +1,16 @@
 """Account authentication, SQL sessions and subscription information."""
 
+import os
 import uuid
 from fastapi import HTTPException, status, Response, Request
 from .schemas import UserCreate, UserLogin
 from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 from db import models
+
+
+def _secure_cookie_enabled() -> bool:
+    return os.getenv("PYMENTOR_COOKIE_SECURE", "").strip().lower() in {"1", "true", "yes", "on"}
 
 
 def _normalize_datetime(value: datetime | None) -> datetime | None:
@@ -76,6 +81,7 @@ def login_user(response: Response, user: UserLogin, db: Session):
         value=session_token,
         httponly=True,
         samesite="lax",
+        secure=_secure_cookie_enabled(),
         max_age=30 * 24 * 3600,
     )
     return user_db
@@ -104,6 +110,11 @@ def logout_user(request: Request, response: Response, db: Session):
 
     db.query(models.Session).filter(models.Session.session_token == session_token).delete()
     db.commit()
-    response.delete_cookie(key="session")
+    response.delete_cookie(
+        key="session",
+        httponly=True,
+        samesite="lax",
+        secure=_secure_cookie_enabled(),
+    )
 
     return {"message": "Logout successful"}

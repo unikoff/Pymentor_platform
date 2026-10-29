@@ -1,0 +1,57 @@
+# Local configuration and runtime secrets
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+
+# Repository metadata, Python environments, caches, and logs
+.git
+**/.git
+.venv/
+**/.venv/
+venv/
+**/venv/
+__pycache__/
+**/__pycache__/
+*.py[cod]
+.pytest_cache/
+**/.pytest_cache/
+.mypy_cache/
+**/.mypy_cache/
+.ruff_cache/
+**/.ruff_cache
+*.log
+**/*.log
+
+# Private keys and certificates
+*.pem
+**/*.pem
+*.key
+**/*.key
+*.p12
+**/*.p12
+*.pfx
+**/*.pfx
+*.crt
+**/*.crt
+*.cer
+**/*.cer
+
+# SQLite data and runtime state
+*.db
+**/*.db
+*.db-*
+**/*.db-*
+*.sqlite
+**/*.sqlite
+*.sqlite-*
+**/*.sqlite-*
+*.sqlite3
+**/*.sqlite3
+*.sqlite3-*
+**/*.sqlite3-*
+
+# Test suites
+**/tests/

@@ -11,13 +11,13 @@ CODE_TASKS: dict[int, list[dict[str, Any]]] = {
        'mode': 'solve',
        'prompt': 'Скопируйте существующие задачи, вычислите следующий id и добавьте новую задачу с очищенным title и '
                  'is_done=False. Затем найдите lookup_id в обновлённом списке. Верните словарь с ключами created, '
-                 'items, found. found — копия найденной задачи или None.',
-       'contract': {'given': 'Автопроверка вызывает solve(tasks, title, priority, lookup_id). tasks — текущее '
+                 'items, found. found: копия найденной задачи или None.',
+       'contract': {'given': 'Автопроверка вызывает solve(tasks, title, priority, lookup_id). tasks: текущее '
                              'in-memory storage. Нужно создать одну задачу, получить итоговый список и найти в нём '
                              'задачу с id, равным lookup_id.',
                     'todo': 'Скопируйте существующие задачи, вычислите следующий id и добавьте новую задачу с '
                             'очищенным title и is_done=False. Затем найдите lookup_id в обновлённом списке. Верните '
-                            'словарь с ключами created, items, found. found — копия найденной задачи или None.',
+                            'словарь с ключами created, items, found. found: копия найденной задачи или None.',
                     'check': 'Проверяется поиск новой задачи, поиск старой задачи и отсутствующий id. Сравнивается '
                              'весь результат, а исходный tasks не должен быть изменён.'},
        'requirements': {'items': ['create новой задачи', 'полный items', 'поиск lookup_id', 'None при отсутствии'],

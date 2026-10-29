@@ -1,0 +1,49 @@
+# Local configuration and secrets; keep only safe sample
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+
+# Private keys, certificates, and database files
+*.pem
+**/*.pem
+*.key
+**/*.key
+*.p12
+**/*.p12
+*.pfx
+**/*.pfx
+*.crt
+**/*.crt
+*.cer
+**/*.cer
+*.db
+**/*.db
+*.db-*
+**/*.db-*
+*.sqlite
+**/*.sqlite
+*.sqlite-*
+**/*.sqlite-*
+*.sqlite3
+**/*.sqlite3
+*.sqlite3-*
+**/*.sqlite3-*
+
+# Test suites
+**/tests/
+
+# Build output and dependencies
+.git
+**/.git
+node_modules/
+**/node_modules/
+dist/
+output/
+**/output/
+*.log
+**/*.log
+.vite/
+**/.vite/

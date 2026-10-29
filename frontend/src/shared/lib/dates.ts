@@ -12,6 +12,19 @@ export function getLocalDateKey(date = new Date()): string {
   return `${year}-${month}-${day}`;
 }
 
+export function getMoscowDateKey(date = new Date()): string {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/Moscow",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(date);
+  const year = parts.find((part) => part.type === "year")?.value ?? "";
+  const month = parts.find((part) => part.type === "month")?.value ?? "";
+  const day = parts.find((part) => part.type === "day")?.value ?? "";
+  return `${year}-${month}-${day}`;
+}
+
 export function getMonthTitle(calendarMonth: CalendarMonth): string {
   return new Date(calendarMonth.year, calendarMonth.month - 1, 1).toLocaleDateString("ru-RU", {
     month: "long",

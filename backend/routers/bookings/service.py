@@ -36,6 +36,11 @@ def _slot_is_past(slot: models.BookingSlot, *, now: datetime | None = None) -> b
     return _slot_time_is_past(slot.slot_date, slot.start_time, now=now)
 
 
+def _slot_has_ended(slot: models.BookingSlot, *, now: datetime | None = None) -> bool:
+    slot_end = _slot_starts_at(slot.slot_date, slot.start_time) + timedelta(minutes=slot.duration_minutes)
+    return slot_end <= _now_moscow(now)
+
+
 def _can_cancel_booking(slot: models.BookingSlot, *, now: datetime | None = None) -> bool:
     """Return whether the student can cancel this slot under the 36-hour policy."""
     return _slot_starts_at(slot.slot_date, slot.start_time) - _now_moscow(now) >= CANCELLATION_DEADLINE
@@ -133,6 +138,7 @@ def serialize_slot_student(slot: models.BookingSlot, viewer_id: int, *, now: dat
         "duration_minutes": slot.duration_minutes,
         "status": "mine" if slot.student_id == viewer_id else "free",
         "can_cancel": slot.student_id == viewer_id and _can_cancel_booking(slot, now=now),
+        "is_completed": slot.student_id == viewer_id and _slot_has_ended(slot, now=now),
     }
 
 

@@ -1,0 +1,44 @@
+{{- if .Values.ingress.enabled }}
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: {{ include "pymentor.fullname" . }}
+  labels:
+    {{- include "pymentor.labels" . | nindent 4 }}
+spec:
+  entryPoints:
+    - {{ if .Values.ingress.tls.enabled }}websecure{{ else }}web{{ end }}
+  routes:
+    - kind: Rule
+      match: {{ printf "Host(`%s`) && (Path(`/api`) || PathPrefix(`/api/`))" .Values.global.host | quote }}
+      priority: 100
+      middlewares:
+        - name: {{ include "pymentor.fullname" . }}-rate-limit
+        - name: {{ include "pymentor.fullname" . }}-request-size
+      services:
+        - kind: Service
+          name: core-api
+          port: {{ .Values.core.port }}
+          passHostHeader: true
+          serversTransport: {{ include "pymentor.fullname" . }}-backend
+          responseForwarding:
+            flushInterval: {{ .Values.ingress.flushInterval | quote }}
+    - kind: Rule
+      match: {{ printf "Host(`%s`) && PathPrefix(`/`)" .Values.global.host | quote }}
+      priority: 1
+      middlewares:
+        - name: {{ include "pymentor.fullname" . }}-rate-limit
+        - name: {{ include "pymentor.fullname" . }}-request-size
+      services:
+        - kind: Service
+          name: {{ include "pymentor.fullname" . }}-frontend
+          port: 80
+          passHostHeader: true
+          serversTransport: {{ include "pymentor.fullname" . }}-backend
+          responseForwarding:
+            flushInterval: {{ .Values.ingress.flushInterval | quote }}
+  {{- if .Values.ingress.tls.enabled }}
+  tls:
+    secretName: {{ .Values.ingress.tls.secretName }}
+  {{- end }}
+{{- end }}

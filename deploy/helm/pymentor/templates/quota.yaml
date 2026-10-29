@@ -1,0 +1,33 @@
+{{- if .Values.quota.enabled }}
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: {{ include "pymentor.fullname" . }}
+  labels:
+    {{- include "pymentor.labels" . | nindent 4 }}
+spec:
+  hard:
+    pods: {{ .Values.quota.pods | quote }}
+    requests.cpu: {{ .Values.quota.requestsCpu | quote }}
+    requests.memory: {{ .Values.quota.requestsMemory | quote }}
+    limits.cpu: {{ .Values.quota.limitsCpu | quote }}
+    limits.memory: {{ .Values.quota.limitsMemory | quote }}
+    requests.storage: {{ .Values.quota.requestsStorage | quote }}
+    persistentvolumeclaims: "1"
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: {{ include "pymentor.fullname" . }}
+  labels:
+    {{- include "pymentor.labels" . | nindent 4 }}
+spec:
+  limits:
+    - type: Container
+      defaultRequest:
+        cpu: 50m
+        memory: 64Mi
+      default:
+        cpu: 500m
+        memory: 512Mi
+{{- end }}

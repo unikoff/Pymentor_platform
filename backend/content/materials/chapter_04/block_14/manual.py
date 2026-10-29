@@ -653,13 +653,13 @@ def test_session_closes_without_committing_on_error(isolated_database):
         {
             "title": "SQL-репозиторий чтения",
             "task": (
-                "В checkout StudyHub после подтверждённого результата занятия 69.1 "
+                "В checkout StudyHub после подтверждённого результата подготовки JSON-адаптера "
                 "появляется частичный SqlTaskRepository с операциями list и get. "
                 "Изолированные SQLite-проверки подтверждают их предметный результат, "
                 "а рабочие API и CLI продолжают использовать полный JSON-путь."
             ),
             "requirements": [
-                "Коммит 3b8498a фиксирует занятие 69.1. Проверьте app/DBase/session.py и app/DBase/models.py, а также app/repositories.py и app/services.py: фабрику сессий, схему и mapping, полный JSON-адаптер и его использование сервисом. Для более нового коммита проверьте ту же основу по файлам.",
+                "Коммит 3b8498a фиксирует подготовку JSON-адаптера. Проверьте app/DBase/session.py и app/DBase/models.py, а также app/repositories.py и app/services.py: фабрику сессий, схему и mapping, полный JSON-адаптер и его использование сервисом. Для более нового коммита проверьте ту же основу по файлам.",
                 "Репозиторий получает Session извне и не закрывает её, не вызывает commit и не читает JSON.",
                 "SQL-проверки используют отдельную временную SQLite-базу; штатный JSON-путь остаётся default.",
             ],
@@ -1602,7 +1602,7 @@ def test_default_tags_are_independent(session_factory):
                             "select_tasks() начинает с list_tasks(), затем применяет is_done, сортировку по id и limit.",
                             "search_tasks() убирает пробелы по краям, переводит запрос в нижний регистр и ищет буквальную подстроку в title.",
                             "get_statistics() возвращает all, open и done по загруженным задачам.",
-                            "add_task(), replace_task(), patch_task(), mark_done() и delete_task() продолжают использовать прежний load/save-путь до занятия 69.1."
+                            "add_task(), replace_task(), patch_task(), mark_done() и delete_task() продолжают использовать прежний load/save-путь до перехода чтения на SQL."
                         ],
                         "code": "чтение: load() -> list/get/select/search/statistics -> результат\nизменение: load() -> прежнее правило PlannerService -> save()",
                         "checks": [
@@ -1886,13 +1886,13 @@ with pytest.raises(TaskNotFoundError):
                 "Пять читающих операций PlannerService проходят через JsonTaskRepository "
                 "поверх единственного прежнего JsonStorage. Результаты API и CLI "
                 "сохранены, чтение видит изменения старого пути записи, а изменяющие "
-                "операции остаются на том же JSON до занятия 69.1."
+                "операции остаются на том же JSON до перехода чтения на SQL."
             )
         }
     ],
     "69.1": [{
         "title": "Завершите переход PlannerService на JSON-репозиторий",
-        "task": "Рабочая копия после занятия 69 читает список, задачу, выборку, поиск и статистику через JsonTaskRepository, а изменения ещё используют тот же JsonStorage. После перехода все сценарии PlannerService используют один репозиторий и один JSON-файл, сохраняя прежние API и CLI.",
+        "task": "Рабочая копия после настройки JSON-адаптера читает список, задачу, выборку, поиск и статистику через JsonTaskRepository, а изменения ещё используют тот же JsonStorage. После перехода все сценарии PlannerService используют один репозиторий и один JSON-файл, сохраняя прежние API и CLI.",
         "tasks": [
             {
                 "title": "1. Добавьте операции записи в тот же адаптер",

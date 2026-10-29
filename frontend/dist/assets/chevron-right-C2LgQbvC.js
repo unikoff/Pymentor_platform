@@ -1,0 +1,1 @@
+import{r as e}from"./ThemeToggle-2sZo9z4q.js";var t=e(`ChevronRight`,[[`path`,{d:`m9 18 6-6-6-6`,key:`mthhwq`}]]);export{t};

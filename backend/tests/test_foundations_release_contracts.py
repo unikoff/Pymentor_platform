@@ -15,19 +15,23 @@ class FoundationsReleaseContractsTests(unittest.TestCase):
     def grade(self, code):
         return run_python_task(code, self.task)
 
+    def replace_required(self, code, original, replacement):
+        self.assertIn(original, code)
+        return code.replace(original, replacement)
+
     def test_reference_passes_every_statistics_case(self):
         result = self.grade(self.task["reference_code"])
         self.assertTrue(result["ok"], result)
 
     def test_tuple_result_is_rejected(self):
-        code = self.task["reference_code"].replace(
-            'return {"total": total, "completed": completed, "left": total - completed}',
+        code = self.replace_required(self.task["reference_code"],
+            'return {"total": total, "completed": completed, "left": left}',
             "return total, completed, total - completed",
         )
         self.assertFalse(self.grade(code)["ok"])
 
     def test_two_argument_percentage_is_rejected(self):
-        code = self.task["reference_code"].replace(
+        code = self.replace_required(self.task["reference_code"],
             "def completion_percent(statistics):",
             "def completion_percent(completed, total):",
         )
@@ -36,11 +40,17 @@ class FoundationsReleaseContractsTests(unittest.TestCase):
     def test_zero_division_rounding_and_source_mutation_are_detected(self):
         code = self.task["reference_code"]
         for broken in (
-            code.replace('if statistics["total"] == 0:', 'if False:'),
-            code.replace('return round(statistics["completed"] / statistics["total"] * 100, 1)',
-                         'return statistics["completed"] / statistics["total"] * 100'),
-            code.replace('statistics = build_statistics(tasks)',
-                         'statistics = build_statistics(tasks)\ntasks.clear()'),
+            self.replace_required(code, 'if total == 0:', 'if False:'),
+            self.replace_required(
+                code,
+                'return round(statistics["completed"] / total * 100, 1)',
+                'return statistics["completed"] / total * 100',
+            ),
+            self.replace_required(
+                code,
+                'statistics = build_statistics(tasks)',
+                'statistics = build_statistics(tasks)\ntasks.clear()',
+            ),
         ):
             with self.subTest(code=broken):
                 self.assertFalse(self.grade(broken)["ok"])
@@ -68,9 +78,13 @@ class FoundationsReleaseContractsTests(unittest.TestCase):
         with contextlib.redirect_stdout(output):
             for task in tasks[:2]:
                 exec(task["answer"]["code"], namespace)
-        self.assertEqual(namespace["first_task"]["title"], "Прочитать главу")
-        self.assertIn("[21] Прочитать главу | приоритет: 3 | не завершена", output.getvalue())
-        self.assertIn("[22] Проверить расписание | приоритет: 5 | выполнена", output.getvalue())
+        self.assertEqual(namespace["first"]["id"], 21)
+        self.assertEqual(namespace["first"]["title"], "Проверить задания")
+        self.assertTrue(namespace["first"]["is_done"])
+        self.assertEqual(namespace["second"]["id"], 22)
+        self.assertFalse(namespace["second"]["is_done"])
+        self.assertIn("[21] Проверить задания | приоритет: 4 | выполнена", output.getvalue())
+        self.assertIn("[22] Сделать паузу | приоритет: 1 | не завершена", output.getvalue())
 
 
 if __name__ == "__main__":

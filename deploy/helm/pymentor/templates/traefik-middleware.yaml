@@ -1,0 +1,37 @@
+{{- if .Values.ingress.enabled }}
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: {{ include "pymentor.fullname" . }}-rate-limit
+  labels:
+    {{- include "pymentor.labels" . | nindent 4 }}
+spec:
+  rateLimit:
+    average: {{ .Values.ingress.rateLimit.average }}
+    burst: {{ .Values.ingress.rateLimit.burst }}
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: {{ include "pymentor.fullname" . }}-request-size
+  labels:
+    {{- include "pymentor.labels" . | nindent 4 }}
+spec:
+  buffering:
+    maxRequestBodyBytes: {{ .Values.ingress.maxRequestBodyBytes }}
+    memRequestBodyBytes: 1048576
+    maxResponseBodyBytes: 0
+    memResponseBodyBytes: 1048576
+---
+apiVersion: traefik.io/v1alpha1
+kind: ServersTransport
+metadata:
+  name: {{ include "pymentor.fullname" . }}-backend
+  labels:
+    {{- include "pymentor.labels" . | nindent 4 }}
+spec:
+  forwardingTimeouts:
+    dialTimeout: {{ .Values.ingress.forwardingTimeouts.dialTimeout | quote }}
+    responseHeaderTimeout: {{ .Values.ingress.forwardingTimeouts.responseHeaderTimeout | quote }}
+    idleConnTimeout: {{ .Values.ingress.forwardingTimeouts.idleConnTimeout | quote }}
+{{- end }}

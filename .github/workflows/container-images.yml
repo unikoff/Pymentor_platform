@@ -1,0 +1,447 @@
+name: Container images CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  container-images:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Read pinned tool versions
+        id: chart-versions
+        shell: bash
+        run: |
+          source scripts/local-k3s/tool-versions.env
+          echo "helm-version=$HELM_VERSION" >> "$GITHUB_OUTPUT"
+          echo "kubectl-version=$KUBECTL_VERSION" >> "$GITHUB_OUTPUT"
+          echo "k3d-version=$K3D_VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: ${{ steps.chart-versions.outputs.helm-version }}
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: ${{ steps.chart-versions.outputs.kubectl-version }}
+
+      - name: Set up pinned k3d
+        env:
+          K3D_VERSION: ${{ steps.chart-versions.outputs.k3d-version }}
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 --fail --show-error --location \
+            "https://github.com/k3d-io/k3d/releases/download/${K3D_VERSION}/k3d-linux-amd64" \
+            --output /tmp/k3d
+          sudo install -m 0755 /tmp/k3d /usr/local/bin/k3d
+          k3d version | grep -F "${K3D_VERSION}"
+
+      - name: Lint and render Helm profiles
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/manifests
+          cp deploy/helm/pymentor/Chart.yaml artifacts/Chart.yaml
+          for profile in local-single local-multinode production-single-vps future-production-ha; do
+            values="deploy/helm/pymentor/values-${profile}.yaml"
+            helm lint deploy/helm/pymentor --values "$values"
+            helm template pymentor deploy/helm/pymentor \
+              --namespace pymentor --values "$values" \
+              > "artifacts/manifests/pymentor-${profile}.yaml"
+          done
+          runner_manifest="$(mktemp)"
+          helm template pymentor deploy/helm/pymentor \
+            --namespace pymentor --values deploy/helm/pymentor/values-local-single.yaml \
+            --set runner.enabled=true > "$runner_manifest"
+          grep -Fq 'PYMENTOR_PUBLIC_RUNNER_ENABLED: "true"' "$runner_manifest"
+          grep -Fq 'mountPath: /app/.runner.lock' "$runner_manifest"
+          rm -f "$runner_manifest"
+          if helm template pymentor deploy/helm/pymentor \
+            --namespace pymentor --values deploy/helm/pymentor/values-production-single-vps.yaml \
+            --set runner.enabled=true >/dev/null 2>&1; then
+            echo "Production profiles must reject the legacy Runner opt-in" >&2
+            exit 1
+          fi
+          helm package deploy/helm/pymentor --destination artifacts
+
+      - name: Set up Python for backend checks
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+
+      - name: Compile and test backend
+        id: backend-checks
+        continue-on-error: true
+        env:
+          PYTHONPATH: backend
+          REDIS_URL: redis://127.0.0.1:6379/15
+          DATABASE_URL: 'sqlite:///:memory:'
+          PYMENTOR_PUBLIC_RUNNER_ENABLED: 'false'
+          PYMENTOR_LOCAL_NOTIFICATIONS: 'false'
+        run: |
+          set -euo pipefail
+          python -m pip install -r backend/requirements.txt pytest==9.1.1
+          python -m compileall -q backend
+          python -m pytest -q backend/tests
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Build Core image locally
+        uses: docker/build-push-action@v7
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: false
+          load: true
+          tags: pymentor/core-api:${{ github.sha }}
+
+      - name: Build Nginx/frontend image locally
+        uses: docker/build-push-action@v7
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: false
+          load: true
+          tags: pymentor/frontend:${{ github.sha }}
+
+      - name: Print local image IDs and digests
+        env:
+          REVISION: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          printf 'commit=%s\n' "$REVISION" > artifacts/local-image-identities.txt
+          for image in "pymentor/core-api:$REVISION" "pymentor/frontend:$REVISION"; do
+            echo "$image"
+            docker image inspect "$image" --format 'Local image ID/config digest: {{.Id}}'
+            docker image inspect "$image" --format 'Local RepoDigests (do not imply a registry push): {{json .RepoDigests}}'
+            docker image inspect "$image" --format '{{.RepoTags}} {{.Id}} {{json .RepoDigests}}' \
+              >> artifacts/local-image-identities.txt
+          done
+
+      - name: Smoke Redis, Core, and Nginx
+        env:
+          REVISION: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          network="pymentor-ci-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          docker network create "$network"
+          smoke_nginx_conf=""
+          cleanup() {
+            result=$?
+            trap - EXIT
+            if [[ "$result" -ne 0 ]]; then
+              for container in pymentor-ci-nginx pymentor-ci-core pymentor-ci-redis; do
+                if docker inspect "$container" >/dev/null 2>&1; then
+                  echo "---- docker logs --tail 200 $container ----"
+                  docker logs --tail 200 "$container" || true
+                fi
+              done
+            fi
+            docker rm -f pymentor-ci-nginx pymentor-ci-core pymentor-ci-redis >/dev/null 2>&1 || true
+            docker network rm "$network" >/dev/null 2>&1 || true
+            if [[ -n "$smoke_nginx_conf" ]]; then
+              rm -f "$smoke_nginx_conf" || true
+            fi
+            exit "$result"
+          }
+          trap cleanup EXIT
+
+          docker run -d --name pymentor-ci-redis --network "$network" redis:7-alpine
+          docker run -d --name pymentor-ci-core --network "$network" \
+            --network-alias core-api -e REDIS_URL=redis://pymentor-ci-redis:6379/0 \
+            -e DATABASE_URL=sqlite:////tmp/pymentor-ci.db \
+            -e PYMENTOR_PUBLIC_RUNNER_ENABLED=false \
+            -e PYMENTOR_LOCAL_NOTIFICATIONS=false \
+            -p 127.0.0.1:18001:8001 "pymentor/core-api:$REVISION"
+          smoke_nginx_conf="$(mktemp)"
+          sed \
+            -e 's/resolver 10\.43\.0\.10 valid=10s ipv6=off;/resolver 127.0.0.11 valid=10s ipv6=off;/' \
+            -e 's/core-api\.pymentor\.svc\.cluster\.local:8001/core-api:8001/' \
+            frontend/nginx.conf > "$smoke_nginx_conf"
+          grep -Fq 'resolver 127.0.0.11 valid=10s ipv6=off;' "$smoke_nginx_conf"
+          grep -Fq 'set $core_api_upstream core-api:8001;' "$smoke_nginx_conf"
+          docker run -d --name pymentor-ci-nginx --network "$network" \
+            --mount "type=bind,src=$smoke_nginx_conf,dst=/etc/nginx/conf.d/default.conf,readonly" \
+            -p 127.0.0.1:18080:8080 "pymentor/frontend:$REVISION"
+          docker exec pymentor-ci-nginx nginx -t
+
+          python3 - <<'PY'
+          import json
+          import os
+          import re
+          import time
+          from http.cookiejar import CookieJar
+          from urllib.error import HTTPError, URLError
+          from urllib.request import HTTPCookieProcessor, Request, build_opener, urlopen
+
+          core = os.environ.get('PYMENTOR_SMOKE_CORE_URL', 'http://127.0.0.1:18001')
+          site = os.environ.get('PYMENTOR_SMOKE_SITE_URL', 'http://127.0.0.1:18080')
+
+          def fetch(url):
+              with urlopen(url, timeout=4) as response:
+                  return response.status, response.headers, response.read()
+
+          browser = build_opener(HTTPCookieProcessor(CookieJar()))
+
+          def api_request(method, path, payload=None):
+              headers = {'Origin': site} if method in {'POST', 'PUT', 'PATCH', 'DELETE'} else {}
+              data = json.dumps(payload).encode('utf-8') if payload is not None else None
+              if data is not None:
+                  headers['Content-Type'] = 'application/json'
+              request = Request(site + path, data=data, headers=headers, method=method)
+              try:
+                  with browser.open(request, timeout=4) as response:
+                      return response.status, response.headers, response.read()
+              except HTTPError as error:
+                  return error.code, error.headers, error.read()
+
+          last_error = None
+          for attempt in range(60):
+              try:
+                  status, _, body = fetch(core + '/health')
+                  assert status == 200 and json.loads(body)['status'] == 'ok'
+                  status, _, _ = fetch(site + '/index.html')
+                  assert status == 200
+                  break
+              except (AssertionError, KeyError, ValueError, HTTPError, URLError, OSError) as error:
+                  last_error = repr(error)
+                  time.sleep(2)
+          else:
+              raise AssertionError(f'Core or Nginx failed to become ready: {last_error}')
+
+          status, _, _ = fetch(site + '/api/learning/catalog')
+          assert status == 200, 'proxied learning catalog must respond successfully'
+
+          def post_status(origin, forwarded_proto=None):
+              headers = {'Origin': origin, 'Content-Type': 'application/json'}
+              if forwarded_proto:
+                  headers['X-Forwarded-Proto'] = forwarded_proto
+              request = Request(site + '/api/__c1_2_origin_probe__', data=b'{}', headers=headers)
+              try:
+                  with urlopen(request, timeout=4) as response:
+                      return response.status
+              except HTTPError as error:
+                  return error.code
+
+          assert post_status('http://127.0.0.1:18080') == 404, 'HTTP Origin must survive the Nginx proxy'
+          assert post_status('https://127.0.0.1:18080', 'https') == 404, 'forwarded HTTPS Origin must survive the proxy'
+          assert post_status('https://attacker.invalid', 'https') == 403, 'cross-origin mutation must remain rejected'
+
+          status, headers, index = fetch(site + '/index.html')
+          assert status == 200 and 'text/html' in headers.get('Content-Type', '')
+          assert 'no-store' in headers.get('Cache-Control', '').lower()
+
+          status, headers, deep = fetch(site + '/learning/catalog/deep-link')
+          assert status == 200 and 'text/html' in headers.get('Content-Type', '')
+          assert deep == index, 'SPA fallback must serve the index document'
+
+          assets = re.findall(rb'''(?:src|href)=["'](/assets/[^"']+\.(?:js|css))["']''', index)
+          assert assets, 'index must reference hashed JS/CSS assets'
+          for raw_path in assets:
+              path = raw_path.decode('utf-8')
+              assert re.search(r'-[A-Za-z0-9_-]{6,}\.(?:js|css)$', path), path
+              status, asset_headers, payload = fetch(site + path)
+              expected = 'javascript' if path.endswith('.js') else 'text/css'
+              assert status == 200 and expected in asset_headers.get('Content-Type', ''), path
+              cache = asset_headers.get('Cache-Control', '').lower()
+              assert 'immutable' in cache and 'max-age=31536000' in cache, path
+              assert payload, path
+
+          run_id = re.sub(r'[^a-z0-9-]', '-', os.environ.get('GITHUB_RUN_ID', 'local').lower())
+          email = f'container-smoke-{run_id}@example.test'
+          password = 'Container-smoke-only-42!'
+          status, _, body = api_request('POST', '/api/user/register', {
+              'username': 'container-smoke', 'email': email, 'password': password,
+          })
+          assert status == 200 and json.loads(body)['user']['email'] == email, 'registration route failed through Nginx'
+          status, headers, body = api_request('POST', '/api/user/login', {'email': email, 'password': password})
+          assert status == 200 and 'httponly' in headers.get('Set-Cookie', '').lower(), 'login cookie failed through Nginx'
+          status, _, body = api_request('GET', '/api/user/me')
+          assert status == 200 and json.loads(body)['user']['email'] == email, 'authenticated session failed through Nginx'
+          status, _, body = api_request('GET', '/api/learning/catalog')
+          assert status == 200 and json.loads(body)['courses'], 'authenticated course catalog failed through Nginx'
+          status, _, _ = api_request('POST', '/api/user/activity/visit', {})
+          assert status == 200, 'authenticated activity write failed through Nginx'
+          status, _, body = api_request('POST', '/api/user/logout')
+          assert status == 200 and json.loads(body)['message'] == 'Logout successful', 'logout failed through Nginx'
+          status, _, _ = api_request('GET', '/api/user/me')
+          assert status == 401, 'logout must invalidate the session through Nginx'
+          print(f'Smoke passed: health, auth/logout, catalog/activity, SPA, cache headers, {len(assets)} hashed assets')
+          PY
+
+          started=$(date +%s)
+          docker stop --time 10 pymentor-ci-core >/dev/null
+          elapsed=$(( $(date +%s) - started ))
+          test "$(docker inspect -f '{{.State.Running}}' pymentor-ci-core)" = false
+          test "$(docker inspect -f '{{.State.ExitCode}}' pymentor-ci-core)" = 0
+          test "$elapsed" -le 12
+          echo "Core graceful SIGTERM stop: ${elapsed}s, exit code 0"
+
+      - name: Deploy chart to ephemeral k3d and smoke the ingress
+        env:
+          REVISION: ${{ github.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          source scripts/local-k3s/tool-versions.env
+          cluster="pymentor-ci-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          context="k3d-${cluster}"
+          origin="http://127.0.0.1:18080"
+          cleanup() {
+            result=$?
+            if [[ "$result" -ne 0 ]]; then
+              kubectl --context "$context" -n pymentor get pods,svc,pvc -o wide || true
+              kubectl --context "$context" -n pymentor get events --sort-by=.metadata.creationTimestamp || true
+              kubectl --context "$context" -n pymentor get ingressroute pymentor -o yaml || true
+              kubectl --context "$context" -n pymentor logs deployment/pymentor-core --tail=100 || true
+              kubectl --context "$context" -n pymentor logs deployment/pymentor-frontend --tail=100 || true
+              kubectl --context "$context" -n kube-system get pods -o wide || true
+              kubectl --context "$context" -n kube-system logs deployment/traefik --tail=100 || true
+            fi
+            k3d cluster delete "$cluster" || true
+            exit "$result"
+          }
+          trap cleanup EXIT
+
+          k3d cluster create "$cluster" \
+            --image "rancher/k3s:${K3S_VERSION}" \
+            --servers 1 --agents 0 --servers-memory 2g \
+            --k3s-arg "--disable=metrics-server@server:*" \
+            --port "127.0.0.1:18080:80@loadbalancer" \
+            --wait --timeout 180s --kubeconfig-switch-context=false
+          # K3s installs its packaged Traefik asynchronously; wait for its CRDs before Helm maps custom resources.
+          kubectl --context "$context" -n kube-system wait \
+            --for=condition=Complete job/helm-install-traefik-crd --timeout=240s
+          kubectl --context "$context" wait \
+            --for=condition=Established \
+            crd/ingressroutes.traefik.io \
+            crd/middlewares.traefik.io \
+            crd/serverstransports.traefik.io \
+            --timeout=240s
+          k3d image import --cluster "$cluster" \
+            "pymentor/core-api:${REVISION}" "pymentor/frontend:${REVISION}"
+
+          kubectl --context "$context" create namespace pymentor
+          kubectl --context "$context" -n pymentor create secret generic pymentor-runtime \
+            --from-literal=DATABASE_URL=sqlite:////data/pymentor.sqlite3
+          helm upgrade --install pymentor deploy/helm/pymentor \
+            --kube-context "$context" --namespace pymentor \
+            --values deploy/helm/pymentor/values-local-single.yaml \
+            --set images.core.digest=null \
+            --set-string images.core.tag="$REVISION" \
+            --set images.frontend.digest=null \
+            --set-string images.frontend.tag="$REVISION" \
+            --set ingressController.configureBundledK3sTraefik=false \
+            --wait --timeout 8m --rollback-on-failure
+          kubectl --context "$context" -n pymentor rollout status deployment/pymentor-core --timeout=8m
+          kubectl --context "$context" -n pymentor rollout status deployment/pymentor-frontend --timeout=8m
+          kubectl --context "$context" -n kube-system rollout status deployment/traefik --timeout=8m
+
+          root_status=""
+          api_status=""
+          for attempt in $(seq 1 60); do
+            root_status="$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' \
+              --header 'Host: pymentor.localhost' "$origin/" || true)"
+            api_status="$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' \
+              --header 'Host: pymentor.localhost' "$origin/api/user/me" || true)"
+            [[ "$root_status" == 200 && "$api_status" == 401 ]] && break
+            sleep 2
+          done
+          test "$root_status" = 200
+          test "$api_status" = 401
+          test "$(kubectl --context "$context" -n pymentor get pvc pymentor-sqlite -o jsonpath='{.status.phase}')" = Bound
+          kubectl --context "$context" -n pymentor get pods,svc,pvc -o wide
+          mkdir -p artifacts
+          helm history pymentor --kube-context "$context" --namespace pymentor > artifacts/ci-helm-history.txt
+          helm get manifest pymentor --kube-context "$context" --namespace pymentor > artifacts/ci-deployed-manifest.yaml
+          helm get values pymentor --kube-context "$context" --namespace pymentor --all > artifacts/ci-deployed-values.yaml
+          echo "Ingress smoke passed: /=${root_status}, /api/user/me=${api_status}, SQLite PVC=Bound"
+
+      - name: Generate Core SBOM (SPDX JSON)
+        uses: anchore/sbom-action@v0
+        with:
+          image: pymentor/core-api:${{ github.sha }}
+          format: spdx-json
+          output-file: core-api.spdx.json
+          upload-artifact: true
+          upload-release-assets: false
+
+      - name: Generate frontend SBOM (SPDX JSON)
+        uses: anchore/sbom-action@v0
+        with:
+          image: pymentor/frontend:${{ github.sha }}
+          format: spdx-json
+          output-file: frontend.spdx.json
+          upload-artifact: true
+          upload-release-assets: false
+
+      # Only confirmed critical vulnerabilities block CI; high and below are reported.
+      # Scanner errors still fail the step (fail-build stays true).
+      - name: Scan Core local image
+        uses: anchore/scan-action@v7
+        with:
+          image: pymentor/core-api:${{ github.sha }}
+          fail-build: true
+          severity-cutoff: critical
+          output-format: table
+
+      - name: Scan frontend local image
+        uses: anchore/scan-action@v7
+        with:
+          image: pymentor/frontend:${{ github.sha }}
+          fail-build: true
+          severity-cutoff: critical
+          output-format: table
+
+      - name: Fail CI if backend checks failed
+        if: steps.backend-checks.outcome == 'failure'
+        run: |
+          echo "Backend compile/tests failed; container build, smoke, SBOM, and scans ran for diagnostics."
+          exit 1
+
+      - name: Publish immutable images to GHCR on the default branch
+        if: github.event_name == 'push' && github.ref_name == github.event.repository.default_branch
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          owner="${GITHUB_REPOSITORY_OWNER,,}"
+          repo_name="${GITHUB_REPOSITORY##*/}"
+          repo_name="$(printf '%s' "$repo_name" | tr '[:upper:]_' '[:lower:]-')"
+          core_image="ghcr.io/${owner}/${repo_name}-core"
+          frontend_image="ghcr.io/${owner}/${repo_name}-frontend"
+          printf '%s' "$GHCR_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+          docker tag "pymentor/core-api:${GITHUB_SHA}" "${core_image}:${GITHUB_SHA}"
+          docker tag "pymentor/frontend:${GITHUB_SHA}" "${frontend_image}:${GITHUB_SHA}"
+          docker push "${core_image}:${GITHUB_SHA}"
+          docker push "${frontend_image}:${GITHUB_SHA}"
+          core_ref="$(docker image inspect "${core_image}:${GITHUB_SHA}" --format '{{index .RepoDigests 0}}')"
+          frontend_ref="$(docker image inspect "${frontend_image}:${GITHUB_SHA}" --format '{{index .RepoDigests 0}}')"
+          echo "Core registry digest: ${core_ref}"
+          echo "Frontend registry digest: ${frontend_ref}"
+          printf 'core=%s\nfrontend=%s\n' "$core_ref" "$frontend_ref" > artifacts/registry-image-digests.txt
+
+      - name: Upload chart, manifest, and image revision evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pymentor-release-evidence-${{ github.sha }}
+          path: artifacts/
+          if-no-files-found: ignore
+          retention-days: 14

@@ -15,6 +15,8 @@ export function AdminCalendarView({ onOpenStudent }: { onOpenStudent: (id: numbe
   const [error, setError] = useState("");
   const [reloadKey, setReloadKey] = useState(0);
   const today = getLocalDateKey();
+  const monthCells = useMemo(() => buildMonthCells(month), [month.year, month.month]);
+  const weekCount = Math.ceil(monthCells.length / 7);
 
   useEffect(() => {
     let cancelled = false;
@@ -60,8 +62,8 @@ export function AdminCalendarView({ onOpenStudent }: { onOpenStudent: (id: numbe
           <div className="admin-calendar__scroll" tabIndex={0} role="region" aria-label="Месячный календарь занятий">
             <div className="admin-calendar__month">
               <div className="admin-calendar__weekdays" aria-hidden="true">{weekdays.map((day) => <span key={day}>{day}</span>)}</div>
-              <div className="admin-calendar__grid">
-                {buildMonthCells(month).map((cell, index) => {
+              <div className="admin-calendar__grid" style={{ gridTemplateRows: `repeat(${weekCount}, minmax(0, 1fr))` }}>
+                {monthCells.map((cell, index) => {
                   if (!cell) return <div className="admin-calendar__blank" key={`empty-${index}`} aria-hidden="true" />;
                   const bookings = bookingsByDay.get(cell.dateKey) ?? [];
                   return <article key={cell.key} className={`admin-calendar__day ${cell.dateKey === today ? "is-today" : ""} ${selectedDay === cell.dateKey ? "is-selected" : ""}`}>
@@ -70,14 +72,16 @@ export function AdminCalendarView({ onOpenStudent }: { onOpenStudent: (id: numbe
                       onClick={() => setSelectedDay((current) => current === cell.dateKey ? null : cell.dateKey)}>
                       <span>{cell.day}</span>{bookings.length > 0 && <small>{bookings.length}</small>}
                     </button>
-                    {bookings.slice(0, 3).map((slot) => <button key={slot.id} type="button"
-                      className={`admin-calendar__event ${slot.is_past ? "is-past" : ""}`}
-                      title={`${formatSlotTimeRange(slot.start_time, slot.duration_minutes)} · ${slot.student?.username}`}
-                      onClick={() => setSelectedDay(cell.dateKey)}>
-                      <strong>{formatSlotTimeRange(slot.start_time, slot.duration_minutes)}</strong>
-                      <span>{slot.student?.username}</span>
-                    </button>)}
-                    {bookings.length > 3 && <button className="admin-calendar__more" type="button" onClick={() => setSelectedDay(cell.dateKey)}>Ещё {bookings.length - 3}</button>}
+                    <div className="admin-calendar__day-events">
+                      {bookings.slice(0, 3).map((slot) => <button key={slot.id} type="button"
+                        className={`admin-calendar__event ${slot.is_past ? "is-past" : ""}`}
+                        title={`${formatSlotTimeRange(slot.start_time, slot.duration_minutes)} · ${slot.student?.username}`}
+                        onClick={() => setSelectedDay(cell.dateKey)}>
+                        <strong>{formatSlotTimeRange(slot.start_time, slot.duration_minutes)}</strong>
+                        <span>{slot.student?.username}</span>
+                      </button>)}
+                      {bookings.length > 3 && <button className="admin-calendar__more" type="button" onClick={() => setSelectedDay(cell.dateKey)}>Ещё {bookings.length - 3}</button>}
+                    </div>
                   </article>;
                 })}
               </div>

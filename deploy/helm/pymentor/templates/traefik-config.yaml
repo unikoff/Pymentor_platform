@@ -1,0 +1,25 @@
+{{- if .Values.ingressController.configureBundledK3sTraefik }}
+apiVersion: helm.cattle.io/v1
+kind: HelmChartConfig
+metadata:
+  name: traefik
+  namespace: kube-system
+spec:
+  valuesContent: |-
+    deployment:
+      replicas: {{ .Values.ingressController.replicas }}
+    image:
+      repository: {{ .Values.ingressController.imageRepository | quote }}
+      tag: {{ .Values.ingressController.imageTag | quote }}
+    {{- if gt (int .Values.ingressController.replicas) 1 }}
+    affinity:
+      podAntiAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              topologyKey: kubernetes.io/hostname
+              labelSelector:
+                matchLabels:
+                  app.kubernetes.io/name: traefik
+    {{- end }}
+{{- end }}

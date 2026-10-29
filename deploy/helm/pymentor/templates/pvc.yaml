@@ -1,0 +1,17 @@
+{{- if .Values.core.persistence.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "pymentor.fullname" . }}-sqlite
+  labels:
+    {{- include "pymentor.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - {{ .Values.core.persistence.accessMode }}
+  {{- with .Values.core.persistence.storageClassName }}
+  storageClassName: {{ . | quote }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.core.persistence.size }}
+{{- end }}

@@ -10,49 +10,61 @@ MANUAL_PRACTICE: dict[int | str, list[dict[str, Any]]] = {
         {
             'title': 'От готового /health к первому HTTP-тесту',
             'task': (
-                'Точка A: pytest, assert и tmp_path знакомы. В app/api.py уже есть FastAPI app с GET /health и ответом '
-                '{"status": "ok"}; HTTP-теста ещё нет.\n\n'
-                'Точка B: dev-зависимости готовы, команда записана в README, а tests/test_api.py проверяет настоящий '
-                'app. Тест подтверждает статус 200 и JSON; Uvicorn и данные Planner не затрагиваются.'
+                'Точка A: планируемая, её нужно подтвердить на фактическом checkout: повторите входные проверки '
+                'проверки сервиса удаления, найдите существующий app и проверьте GET /health. До TestClient запустите короткий '
+                'знакомый тест и объясните, что сравнивает assert. Готовность pytest, TestClient и маршрута заранее '
+                'не предполагается. Если проектный вход отсутствует или проверка не проходит, зафиксируйте '
+                'расхождение и восстановите вход до продолжения; маршрут в этом уроке не создавайте.\n\n'
+                'Точка B: один тест в tests/test_api.py обращается через TestClient к настоящему app и отдельно '
+                'проверяет статус 200 и JSON {"status": "ok"}. Недостающая dev-зависимость добавлена в '
+                'requirements-dev.txt по действующим правилам проекта. README, runtime API и данные Planner не меняются.'
             ),
             'tasks': [
                 {
-                    'title': 'Подготовьте dev-зависимости',
+                    'title': 'Подтвердите вход и dev-зависимости',
                     'task': (
-                        'В requirements-dev.txt уже есть pytest==8.4.2. Подключите runtime-набор из requirements.txt, '
-                        'добавьте httpx2==2.13.1 и установите dev-зависимости из корня StudyHub.'
+                        'На фактическом checkout повторите предусмотренные входные проверки проверки сервиса удаления. Найдите '
+                        'реальный объект app и проверьте GET /health с ожидаемым ответом. До TestClient запустите '
+                        'короткий знакомый pytest-тест и своими словами объясните, что сравнивает assert. Затем '
+                        'проверьте requirements-dev.txt и доступность TestClient из проектной dev-среды; при '
+                        'недостающей зависимости добавьте её по принятому в проекте правилу закрепления версий.'
                     ),
                     'requirements': [
-                        'requirements-dev.txt включает -r requirements.txt.',
-                        'В файле сохранён pytest==8.4.2 и добавлен httpx2==2.13.1.',
-                        'Runtime requirements.txt не изменён.',
-                        'Команда установки использует Python из .venv.',
+                        'Checkout и результаты входных проверок относятся к фактическим файлам и командам, а не к плану или исторической записи.',
+                        'До создания TestClient подтверждены импорт существующего app и GET /health; маршрут здесь не добавляется.',
+                        'Ученик запускает короткий знакомый тест и объясняет, что assert сравнивает ожидаемый и фактический результат.',
+                        'При недостающем входе работа над HTTP-тестом останавливается до фиксации расхождения и восстановления входа.',
+                        'Доступность pytest и TestClient сверена с фактической dev-средой; добавляется только отсутствующая зависимость в requirements-dev.txt по принятому правилу проекта.',
+                        'Текущие версии и содержимое файлов не предполагаются заранее; runtime requirements.txt не меняется.',
                     ],
                     'hint': (
-                        'Оставьте pytest. Добавьте строку -r requirements.txt и закреплённый httpx2, затем установите '
-                        'весь набор Python из .venv.'
+                        'Сначала посмотрите на сам checkout: найдите app и выполните GET /health. Потом выберите '
+                        'знакомый небольшой тест, запустите его и объясните смысл его assert. Только после успешной '
+                        'проверки входа сравните dev-файл и доступный импорт TestClient с правилами проекта.'
                     ),
                     'answer': {
                         'explanation': (
-                            'Строка -r requirements.txt подключает пакеты приложения. Файл dev-зависимостей добавляет '
-                            'pytest и HTTP-клиент для TestClient. Закреплённые версии делают установку повторяемой.'
+                            'План описывает ожидаемый вход, но не доказывает состояние текущей копии проекта. '
+                            'Сначала наблюдаем фактические app, маршрут, знакомый тест и dev-зависимости. assert '
+                            'останавливает тест, если фактическое значение не совпало с ожидаемым. Если проектный '
+                            'вход не готов, его фиксируют и восстанавливают до дальнейших действий; новый маршрут '
+                            'в рамках урока не создают.'
                         ),
                         'steps': [
-                            'Подключаем runtime-набор строкой -r requirements.txt.',
-                            'Сохраняем pytest==8.4.2 и добавляем httpx2==2.13.1.',
-                            'Из корня запускаем .venv\\Scripts\\python.exe -m pip install -r requirements-dev.txt.',
+                            'В фактическом checkout повторяем входные проверки проверки сервиса удаления и сверяем приложение и GET /health.',
+                            'До TestClient запускаем короткий знакомый тест и объясняем, что assert сопоставляет два значения.',
+                            'Если вход отсутствует или не проходит, записываем конкретное расхождение и восстанавливаем вход; дальше пока не идём.',
+                            'Проверяем dev-файл и импорт TestClient из выбранного Python; добавляем только недостающую зависимость по правилам проекта.',
                         ],
-                        'code': '''# requirements-dev.txt
--r requirements.txt
-pytest==8.4.2
-httpx2==2.13.1''',
                         'checks': [
-                            'Установка завершилась без ошибки.',
-                            'В dev-файле закреплены pytest и HTTP-клиент; runtime-набор подключён.',
+                            'Есть наблюдаемый результат проверки фактического app и GET /health.',
+                            'Знакомый тест запущен до TestClient, смысл assert объяснён.',
+                            'Установленные версии и зависимости сверены с фактической средой; неподтверждённые значения не подставлены.',
+                            'При провале вход восстановлен до перехода к следующей задаче.',
                         ],
                     },
                     'result': (
-                        'Dev-набор включает runtime-пакеты, pytest==8.4.2 и httpx2==2.13.1; пакеты доступны из .venv.'
+                        'Текущий checkout и нужные предпосылки проверены фактически; входной пробел, если он был, зафиксирован и восстановлен до TestClient. Dev-зависимости сверены с реальной средой и правилами проекта.'
                     ),
                 },
                 {
@@ -73,9 +85,9 @@ httpx2==2.13.1''',
                     ),
                     'requirements': [
                         'Тест импортирует app из app.api и TestClient из fastapi.testclient.',
-                        'TestClient(app) создаётся внутри with; запрос — GET /health.',
+                        'TestClient(app) создаётся внутри with; запрос: GET /health.',
                         'Отдельные assert проверяют status_code == 200 и JSON {"status": "ok"}.',
-                        'Нет второй FastAPI app, Uvicorn, fixture, подмены сервиса или запросов на запись.',
+                        'Нет второй FastAPI app, Uvicorn, fixture, tmp_path, подмены сервиса или запросов на запись.',
                     ],
                     'hint': (
                         'Внутри with запросите /health через client.get. Сохраните response, затем отдельно проверьте '
@@ -116,44 +128,48 @@ def test_health_returns_ok():
                     ),
                 },
                 {
-                    'title': 'Запишите команду и запустите тест',
+                    'title': 'Запустите выбранный тест',
                     'task': (
-                        'В README.md сохраните команду полного набора и добавьте рядом запуск tests/test_api.py. '
-                        'Выполните его из корня StudyHub. Ожидаем один найденный и прошедший test_health_returns_ok.'
+                        'Из корня фактического checkout запустите только tests/test_api.py выбранным Python из '
+                        'проектной dev-среды. Убедитесь, что pytest нашёл и выполнил один test_health_returns_ok. '
+                        'Не запускайте Uvicorn и не меняйте README.'
                     ),
                     'requirements': [
-                        'Команда полного набора в README сохранена.',
-                        'Рядом указана .\\.venv\\Scripts\\python.exe -m pytest -q tests/test_api.py.',
+                        'Выполнена команда pytest для tests/test_api.py из корня проекта через выбранный Python.',
                         'Pytest находит и проходит один test_health_returns_ok.',
-                        'Uvicorn не запускается, data/tasks.json не меняется.',
+                        'Uvicorn не запускается; запрос только GET, рабочие данные Planner не меняются.',
+                        'README не изменяется.',
                     ],
                     'hint': (
-                        'Запустите pytest Python из .venv и укажите точный файл. В отчёте проверьте, что найден один тест.'
+                        'Используйте тот же Python, из которого проверяли dev-зависимости, и укажите точный файл '
+                        'tests/test_api.py. В отчёте различайте «тест не найден» и упавшее утверждение.'
                     ),
                     'answer': {
                         'explanation': (
-                            'Путь к файлу ограничивает запуск новым тестом. Python из .venv использует подготовленные '
-                            'dev-зависимости; Uvicorn для TestClient не нужен.'
+                            'Запуск одного файла показывает, что pytest обнаружил именно добавленный тест. '
+                            'TestClient вызывает app внутри процесса, поэтому Uvicorn не нужен. Это не проверка сетевого порта.'
                         ),
                         'steps': [
-                            'Из корня запускаем .\\.venv\\Scripts\\python.exe -m pytest -q tests/test_api.py.',
+                            'Из корня запускаем выбранным Python: python -m pytest -q tests/test_api.py.',
                             'Проверяем, что найден и прошёл один test_health_returns_ok.',
-                            'Сверяем команду с README.',
+                            'Подтверждаем, что Uvicorn не запускался и рабочие данные не менялись.',
                         ],
-                        'code': '.\\.venv\\Scripts\\python.exe -m pytest -q tests/test_api.py',
+                        'code': 'python -m pytest -q tests/test_api.py',
                         'checks': [
                             'Отчёт показывает один прошедший тест.',
-                            'Uvicorn не запущен, data/tasks.json не изменён.',
+                            'Запрос был только GET /health; Uvicorn не запускался, данные Planner не менялись.',
+                            'README не изменялся.',
                         ],
                     },
                     'result': (
-                        'README содержит команду, а именованный запуск находит и проходит test_health_returns_ok.'
+                        'Именованный запуск находит и проходит test_health_returns_ok без запуска Uvicorn и изменения данных Planner.'
                     ),
                 },
             ],
             'result': (
-                'Точка B достигнута: dev-среда готова, настоящий GET /health проверяется через TestClient, а README '
-                'содержит команду запуска. Один тест подтверждает статус 200 и JSON {"status": "ok"}; данные Planner не меняются.'
+                'Фактический вход проверен до TestClient; при необходимости его расхождение зафиксировано и восстановлено. '
+                'Один тест через TestClient проверяет настоящий GET /health: отдельно статус 200 и JSON '
+                '{"status": "ok"}. Dev-зависимость сверена по правилам проекта; README, runtime API и данные Planner не меняются.'
             ),
         }
     ],
@@ -161,13 +177,13 @@ def test_health_returns_ok():
         {
             'title': 'Изолируйте состояние HTTP-тестов',
             'task': (
-                'Работаем в корне StudyHub. Старт (A): в занятии 56 TestClient проверял GET /health через настоящее app. '
+                'Работаем в корне StudyHub. Старт (A): в первом HTTP-тесте TestClient проверял GET /health через настоящее app. '
                 'Ранее встречались pytest, tmp_path, JsonStorage и build_service. '
                 'Цель: подготовить api_service и api_client в tests/conftest.py, чтобы тесты работали с временным JSON. '
                 'Результат (B): запросы одного теста видят одну задачу, следующий тест начинает с пустого списка, '
                 'клиент закрывается, прежний Planner возвращается даже после ошибки, а рабочий JSON не меняется. '
-                'Связь с теорией: задача 1 — раздел 02; задача 2 — разделы 01 и 03–05; задача 3 — разделы 05–06; '
-                'задача 4 — разделы 02–03 и 06; задача 5 — разделы 04–07.'
+                'Связь с теорией: задача 1: раздел 02; задача 2: разделы 01 и 03–05; задача 3: разделы 05–06; '
+                'задача 4: разделы 02–03 и 06; задача 5: разделы 04–07.'
             ),
             'tasks': [
                 {
@@ -307,7 +323,7 @@ def test_health(api_client):
                     ),
                     'result': 'После POST→GET новый тест получает пустой список; рабочий data/tasks.json не меняется и не создаётся заново.',
                     'requirements': [
-                        'test_new_function_starts_empty — отдельная функция с параметром api_client.',
+                        'test_new_function_starts_empty: отдельная функция с параметром api_client.',
                         'GET /tasks возвращает статус 200 и пустой список; тест ничего не очищает вручную.',
                         'Из корня StudyHub в PowerShell выполните `Test-Path .\\data\\tasks.json`. Если ответ True, сохраните SHA-256 командой `Get-FileHash .\\data\\tasks.json -Algorithm SHA256`; если False, запишите, что файла нет.',
                         'Из корня StudyHub запустите сначала `test_create_then_read`, затем `test_new_function_starts_empty`: `python -m pytest tests/test_api.py::test_create_then_read tests/test_api.py::test_new_function_starts_empty`.',
@@ -391,24 +407,28 @@ def test_01_temporary_planner_was_restored():
         {
             'title': 'Базовые HTTP-гарантии остаются рабочими',
             'task': (
-                'Работаем в корне StudyHub. В app/api.py уже есть /health, маршруты задач и /stats. '
-                'Fixtures api_service и api_client готовы в tests/conftest.py. Добавьте базовые проверки в '
-                'tests/test_api.py. Сохраните test_health_returns_ok. Не меняйте приложение, fixtures и '
-                'рабочий data/tasks.json.'
+                'Перед практикой проверьте фактический checkout: успешные ручные сценарии блока 11, прохождение '
+                'первого HTTP-теста и изоляции его данных, готовые api_client/api_service fixtures, серверный ID в POST и сохранение '
+                'прежнего ID в PUT. Если это не подтверждено, сначала обеспечьте недостающую опору и не '
+                'объявляйте её освоенной. После проверки добавьте в tests/test_api.py пять самостоятельных '
+                'CRUD-сценариев: чтение, создание, полная замена, частичное изменение и удаление. Сохраните '
+                'health-тест. Приложение, fixtures и рабочий data/tasks.json не меняйте.'
             ),
             'tasks': [
                 {
-                    'title': 'GET проверяет список, сводку и выбранную задачу',
+                    'title': 'Подтвердите опору и проверьте чтение',
                     'task': (
-                        'Добавьте три отдельных теста: GET /tasks, GET /stats и GET /tasks/{task_id}. '
-                        'Создайте нужные записи через api_service. Запросы отправьте через api_client и '
-                        'проверьте статус и данные каждого ответа.'
+                        'Перед HTTP-сценарием подтвердите первый тест и изоляцию его данных, ручную матрицу блока 11 '
+                        'успешна, а готовые api_client и api_service доступны. Затем добавьте проверки GET '
+                        '/tasks, GET /stats и GET /tasks/{task_id}: создайте нужные записи через api_service, '
+                        'запросы отправьте через api_client и сверьте статус и данные ответов.'
                     ),
                     'requirements': [
                         'Сохраните существующий test_health_returns_ok.',
                         'GET /tasks и GET item возвращают 200 и поля id, title, priority, is_done.',
                         'GET /stats возвращает 200 и ожидаемые total, open, done.',
                         'Постройте item-path из id созданной задачи. Поля tags в HTTP-ответе нет.',
+                        'Если входные опоры не подтверждены, не переходите к CRUD-тестам; сначала обеспечьте их.',
                     ],
                     'hint': (
                         'В каждом тесте создайте только нужные данные через api_service. Затем отправьте GET через api_client.'
@@ -418,6 +438,7 @@ def test_01_temporary_planner_was_restored():
                             'Каждый тест создаёт свои данные через сервис, а читает их через HTTP. Проверяем статус и JSON.'
                         ),
                         'steps': [
+                            'Сначала подтверждаем входные опоры по фактическому checkout.',
                             'Для списка создаём одну задачу и сравниваем весь ответ.',
                             'Для stats создаём открытую и выполненную задачи, затем проверяем три счётчика.',
                             'Для item берём реальный id и проверяем четыре публичных поля.',
@@ -524,29 +545,21 @@ def test_create_then_read_uses_server_id(api_client):
                     ),
                 },
                 {
-                    'title': 'PUT и PATCH проверяют результат обновления',
+                    'title': 'PUT проверяет полную замену',
                     'task': (
-                        'Добавьте два теста: test_put_replaces_task и '
-                        'test_patch_applies_false_and_keeps_other_values. Создайте задачи через api_service, '
-                        'отправьте запросы через api_client и проверьте ответы.'
+                        'Добавьте test_put_replaces_task. Создайте задачу через api_service, затем отправьте '
+                        'полную форму через api_client.put по фактическому ID. Проверьте ответ и сохранение прежнего ID.'
                     ),
                     'requirements': [
                         'Для PUT передайте все обязательные поля: title, priority и is_done. Ожидайте статус 200.',
-                        'Для PATCH сначала отметьте задачу выполненной, затем передайте is_done: false.',
-                        'Проверьте статус 200 и все поля ответа. PATCH должен сохранить title и priority.',
+                        'Проверьте новые значения и тот же id, который был у исходной задачи.',
                     ],
-                    'hint': (
-                        'Перед PATCH вызовите api_service.mark_done(task.id). Тогда тест увидит, применилось ли false.'
-                    ),
+                    'hint': 'Возьмите id созданной задачи. Сравните ответ PUT с полной ожидаемой формой, включая прежний id.',
                     'answer': {
-                        'explanation': (
-                            'PUT проверяет замену всех полей. PATCH проверяет изменение True на False и сохранение остальных полей.'
-                        ),
+                        'explanation': 'Полная форма PUT заменяет значения задачи, но не создаёт другой ресурс: публичный ответ сохраняет исходный id.',
                         'steps': [
                             'Для PUT создаём задачу и отправляем все поля: title, priority и is_done.',
-                            'Проверяем статус 200 и весь ответ PUT.',
-                            'Для PATCH создаём задачу и отмечаем её выполненной.',
-                            'Передаём is_done: false и проверяем, что title и priority не изменились.',
+                            'Проверяем статус 200, новые значения и прежний id.',
                         ],
                         'code': '''# tests/test_api.py
 def test_put_replaces_task(api_client, api_service):
@@ -564,9 +577,35 @@ def test_put_replaces_task(api_client, api_service):
         "title": "Новый заголовок",
         "priority": 4,
         "is_done": False,
-    }
-
-
+    }''',
+                        'checks': [
+                            'PUT возвращает 200 и ожидаемые поля.',
+                            'ID ответа совпадает с ID исходной задачи.',
+                        ],
+                    },
+                    'result': 'PUT возвращает ожидаемые новые поля и сохраняет прежний ID задачи.',
+                },
+                {
+                    'title': 'PATCH меняет переданное поле и сохраняет остальные',
+                    'task': (
+                        'Добавьте test_patch_applies_false_and_keeps_other_values. Создайте задачу через api_service, '
+                        'отметьте её выполненной, передайте через api_client.patch только is_done: false, затем '
+                        'перечитайте задачу и проверьте изменённое и сохранённое поля.'
+                    ),
+                    'requirements': [
+                        'Исходная задача имеет is_done == True.',
+                        'PATCH передаёт is_done: false и возвращает статус 200.',
+                        'Последующий GET подтверждает is_done == False и сохранённые title и priority.',
+                    ],
+                    'hint': 'До PATCH отметьте задачу выполненной. После запроса прочитайте тот же ID и проверьте false вместе с title и priority.',
+                    'answer': {
+                        'explanation': 'PATCH меняет переданное поле. Последующий GET показывает, что явное false применилось, а title и priority, которых не было в запросе, сохранились.',
+                        'steps': [
+                            'Создаём задачу и отмечаем её выполненной.',
+                            'Отправляем PATCH только с is_done: false и проверяем статус 200.',
+                            'Читаем тот же ID и проверяем false, title и priority.',
+                        ],
+                        'code': '''# tests/test_api.py
 def test_patch_applies_false_and_keeps_other_values(api_client, api_service):
     task = api_service.add_task("Сверить ответ", 3)
     api_service.mark_done(task.id)
@@ -577,21 +616,21 @@ def test_patch_applies_false_and_keeps_other_values(api_client, api_service):
     )
 
     assert response.status_code == 200
-    assert response.json() == {
+
+    read_response = api_client.get("/tasks/" + str(task.id))
+    assert read_response.status_code == 200
+    assert read_response.json() == {
         "id": task.id,
         "title": "Сверить ответ",
         "priority": 3,
         "is_done": False,
     }''',
                         'checks': [
-                            'PUT и PATCH возвращают 200 и ожидаемые поля.',
-                            'PATCH меняет is_done с true на false.',
-                            'PATCH сохраняет title и priority.',
+                            'PATCH возвращает 200 и применяется значение false.',
+                            'GET того же ID подтверждает сохранение title и priority.',
                         ],
                     },
-                    'result': (
-                        'Тесты подтверждают замену через PUT и изменение одного поля через PATCH.'
-                    ),
+                    'result': 'Последующий GET подтверждает, что PATCH применил false и сохранил непереданные title и priority.',
                 },
                 {
                     'title': 'DELETE возвращает пустой 204 и удаляет item',
@@ -638,67 +677,17 @@ def test_delete_returns_empty_204_then_get_returns_404(api_client, api_service):
                     ),
                 },
                 {
-                    'title': 'Отказной POST не меняет состояние',
+                    'title': 'Запустите пять CRUD-сценариев отдельно и вместе',
                     'task': (
-                        'Добавьте test_invalid_post_does_not_change_state. Создайте задачу через api_service. '
-                        'До POST сохраните ответы GET /tasks и GET /stats через api_client. Отправьте POST через '
-                        'api_client с title из пробелов, проверьте 422 и '
-                        'сравните список и stats после запроса с сохранёнными ответами.'
-                    ),
-                    'requirements': [
-                        'Причина отказа одна: title состоит из пробелов.',
-                        'POST возвращает 422.',
-                        'Список и stats после запроса совпадают с ответами до него.',
-                        'Все данные создаются внутри теста.',
-                    ],
-                    'hint': (
-                        'Перед POST сохраните оба JSON-ответа. После 422 повторите GET и сравните результаты.'
-                    ),
-                    'answer': {
-                        'explanation': (
-                            'Статус 422 показывает отказ. Сравнение списка и stats подтверждает, что данные не изменились.'
-                        ),
-                        'steps': [
-                            'Создаём одну задачу.',
-                            'Сохраняем ответы списка и stats.',
-                            'Отправляем POST с пробельным title и проверяем 422.',
-                            'Повторно читаем список и stats и сравниваем ответы.',
-                        ],
-                        'code': '''# tests/test_api.py
-def test_invalid_post_does_not_change_state(api_client, api_service):
-    api_service.add_task("Исходная задача", 2)
-    tasks_before = api_client.get("/tasks").json()
-    stats_before = api_client.get("/stats").json()
-
-    response = api_client.post(
-        "/tasks",
-        json={"title": "   ", "priority": 2},
-    )
-
-    assert response.status_code == 422
-    assert api_client.get("/tasks").json() == tasks_before
-    assert api_client.get("/stats").json() == stats_before''',
-                        'checks': [
-                            'POST возвращает 422.',
-                            'Список и stats не изменились.',
-                            'Тест использует собственные данные.',
-                        ],
-                    },
-                    'result': (
-                        'POST возвращает 422. Список и stats до и после запроса совпадают.'
-                    ),
-                },
-                {
-                    'title': 'Запустите новые проверки отдельно и вместе',
-                    'task': (
-                        'Из корня StudyHub запустите каждый новый тест отдельно по node ID. Затем запустите весь '
-                        'tests/test_api.py. Проверьте, что проходят новые тесты и сохранённый test_health_returns_ok.'
+                        'Из корня фактического checkout запустите новые тесты каждого из пяти CRUD-сценариев отдельно '
+                        'по node ID. Затем запустите весь tests/test_api.py. Проверьте, что проходят CRUD-проверки '
+                        'и сохранённый test_health_returns_ok.'
                     ),
                     'requirements': [
                         'Каждый новый тест проходит при отдельном запуске pytest.',
                         'Общий запуск tests/test_api.py выполняет все тесты, включая test_health_returns_ok.',
                         'Не меняйте приложение, fixtures и рабочий JSON.',
-                        'Не добавляйте новые проверки границ, OpenAPI или полного workflow.',
+                        'Не добавляйте отдельный отказной сценарий, матрицу границ, OpenAPI или полный workflow.',
                     ],
                     'hint': (
                         'Node ID состоит из пути к файлу, двух двоеточий и имени функции. Например: '
@@ -722,12 +711,11 @@ python -m pytest -q tests/test_api.py::test_create_then_read_uses_server_id
 python -m pytest -q tests/test_api.py::test_put_replaces_task
 python -m pytest -q tests/test_api.py::test_patch_applies_false_and_keeps_other_values
 python -m pytest -q tests/test_api.py::test_delete_returns_empty_204_then_get_returns_404
-python -m pytest -q tests/test_api.py::test_invalid_post_does_not_change_state
 python -m pytest -q tests/test_api.py''',
                         'checks': [
-                            'Каждый отдельный запуск прошёл.',
-                            'Общий запуск включает health-тест и новые проверки.',
-                            'Тесты используют отдельные данные.',
+                            'Отдельные запуски покрывают чтение, POST→GET, PUT, PATCH и DELETE.',
+                            'Общий запуск включает health-тест и все проверки пяти CRUD-сценариев.',
+                            'Тесты используют отдельные данные; POST→GET внутри сценария использует общее состояние.',
                         ],
                     },
                     'result': (
@@ -736,9 +724,10 @@ python -m pytest -q tests/test_api.py''',
                 },
             ],
             'result': (
-                'Сохранён test_health_returns_ok. В tests/test_api.py есть проверки GET списка, stats и item, '
-                'POST и GET по выданному id, PUT, PATCH, DELETE и отказа POST без изменения данных. Новые тесты '
-                'проходят отдельно и вместе. Приложение и fixtures не менялись.'
+                'Сохранён test_health_returns_ok. В tests/test_api.py проверены пять CRUD-сценариев: чтение '
+                '(список, stats и item), POST с GET по выданному сервером id, полная замена PUT с прежним id, '
+                'PATCH с false и сохранением непереданных полей, DELETE с пустым 204 и последующим 404. '
+                'Каждый сценарий запускается отдельно и все проверки проходят вместе. Приложение и fixtures не менялись.'
             ),
         }
     ],
@@ -1030,9 +1019,9 @@ def read_stats():
         {
             'title': 'Отказ сохраняет данные, PATCH с false меняет is_done',
             'task': (
-                'Продолжите tests/test_contract.py. В файле уже есть проверки body, path и помощник _error_field(response). '
-                'Используйте api_client из tests/conftest.py. Берите id из ответа POST и сравнивайте состояние Planner '
-                'до и после запроса.'
+                'Сверьте фактическую точку старта tests/test_contract.py и сохраните найденные проверки body/path и '
+                'помощник _error_field(response). Используйте готовый api_client, если эта опора подтверждена. '
+                'Берите id из ответа POST и сравнивайте состояние Planner до и после каждого запроса.'
             ),
             'tasks': [
                 {
@@ -1099,32 +1088,41 @@ def test_contract_baseline_captures_both_records(api_client):
                     },
                 },
                 {
-                    'title': 'Ошибочные POST, PUT и PATCH сохраняют снимок',
+                    'title': '422 и отсутствующий id не меняют снимок',
                     'task': (
-                        'Добавьте test_invalid_writes_preserve_public_state. Отправьте по очереди POST, PUT и PATCH с '
-                        'неверным title. После каждого ответа проверьте цель, соседа и /stats.'
+                        'В test_invalid_writes_preserve_public_state сохраните существующие проверки POST, PUT и PATCH '
+                        'с неверным title. Затем выберите положительный id, отсутствующий в этом fixture, и отправьте '
+                        'на него PUT с корректным полным body, PATCH с корректным is_done: false и DELETE. После '
+                        'каждого ответа перечитайте цель, соседа и /stats.'
                     ),
                     'result': (
-                        'Каждый запрос возвращает 422 с ошибкой title. Цель, сосед и stats остаются прежними; POST не добавляет задачу.'
+                        'Прежние отказы по title остаются покрыты. PUT/PATCH с валидными телами и DELETE для отсутствующего '
+                        'положительного id возвращают 404; после каждого отказа цель, сосед и stats не меняются.'
                     ),
                     'requirements': [
-                        'В каждом запросе неверен только title. Остальные поля и положительный id корректны.',
-                        'Проверьте статус 422 и поле title в detail.',
-                        'После каждого запроса перечитайте обе задачи и stats. У POST total не должен вырасти.',
+                        'Сохраните существующие POST/PUT/PATCH 422-проверки: неверен только title, остальные поля и id корректны.',
+                        'Каждый из трёх отказов даёт 422 с полем title; после каждого цель, сосед и stats совпадают с исходным снимком.',
+                        'PUT и PATCH используют один корректный положительный id, которого нет в fixture; их тела валидны и каждый запрос даёт 404.',
+                        'DELETE того же отсутствующего положительного id без body даёт 404.',
+                        'После каждого 404 существующие цель, сосед и stats совпадают с исходным снимком.',
                     ],
                     'hint': (
-                        'Сохраните снимок до запросов. После каждого 422 создавайте новый снимок и сравнивайте его с исходным.'
+                        'Сначала сохраните baseline и проверьте три прежних случая 422. Для 404 оставьте path положительным, '
+                        'а body PUT/PATCH корректным; после каждого запроса сравните те же две записи и stats.'
                     ),
                     'answer': {
                         'explanation': (
-                            'В каждом запросе неверен только title. Статус и detail подтверждают причину, а повторные GET '
-                            'показывают, что цель и сосед не изменились.'
+                            '422 проверяет отказ из-за body, а 404 означает запрос по корректному, но отсутствующему id. '
+                            'Валидные тела отделяют проверку 404 от ошибок валидации. Повторное чтение цели, соседа и '
+                            'stats подтверждает отсутствие эффекта.'
                         ),
                         'steps': [
                             'Создаём две задачи и сохраняем исходный снимок.',
                             'Отправляем POST с пробельным title.',
                             'Отправляем PUT с пустым title и PATCH с пробельным title на id цели.',
                             'После каждого 422 проверяем title в detail и сравниваем снимок.',
+                            'Выбираем отсутствующий положительный id и отправляем PUT с полным корректным body, PATCH с корректным is_done: false и DELETE без body.',
+                            'После каждого 404 перечитываем цель, соседа и stats и сравниваем с исходным снимком.',
                         ],
                         'code': '''def test_invalid_writes_preserve_public_state(api_client):
     target, control = _create_contract_pair(api_client)
@@ -1149,10 +1147,29 @@ def test_contract_baseline_captures_both_records(api_client):
     response = api_client.patch(target_path, json={"title": " "})
     assert response.status_code == 422
     assert _error_field(response) == "title"
+    assert _contract_state(api_client, target["id"], control["id"]) == before
+
+    missing_id = max(target["id"], control["id"]) + 1
+    missing_path = f"/tasks/{missing_id}"
+
+    response = api_client.put(
+        missing_path,
+        json={"title": "Valid title", "priority": 3, "is_done": False},
+    )
+    assert response.status_code == 404
+    assert _contract_state(api_client, target["id"], control["id"]) == before
+
+    response = api_client.patch(missing_path, json={"is_done": False})
+    assert response.status_code == 404
+    assert _contract_state(api_client, target["id"], control["id"]) == before
+
+    response = api_client.delete(missing_path)
+    assert response.status_code == 404
     assert _contract_state(api_client, target["id"], control["id"]) == before''',
                         'checks': [
-                            'Все три запроса получают 422 по title.',
-                            'После каждого запроса цель, сосед и stats совпадают с исходным снимком.',
+                            'Прежние POST, PUT и PATCH получают 422 по title.',
+                            'PUT и PATCH с корректными телами и отсутствующим положительным id, а также DELETE без body дают 404.',
+                            'После каждого 422 и 404 цель, сосед и stats совпадают с исходным снимком.',
                         ],
                     },
                 },
@@ -1301,8 +1318,9 @@ def test_patch_false_changes_only_done_state(api_client):
                 },
             ],
             'result': (
-                'tests/test_contract.py проверяет отказные POST/PUT/PATCH по статусу и причине, сравнивает публичные записи '
-                'и stats до и после, подтверждает полноту PUT и различает пустой/null PATCH от явного false.'
+                'tests/test_contract.py сохраняет проверки отказных POST/PUT/PATCH по статусу и причине, полноты PUT и '
+                'различия пустого/null PATCH от false; добавленные PUT/PATCH с корректным body и DELETE для отсутствующего '
+                'положительного id дают 404, а записи и stats остаются прежними.'
             ),
         }
     ],
@@ -1737,11 +1755,15 @@ def test_put_priority_boundaries(
                     ),
                 },
                 {
-                    'title': 'Отличите неверный path от отсутствующей задачи',
+                    'title': 'GET item-route различает неверный и отсутствующий path',
                     'task': (
-                        'Добавьте проверки PUT для path.\n\n1. Для not-an-integer, 0 и -1 создайте задачу через POST. Отправьте PUT с этим path и корректным полным body.\n2. Отдельно создайте задачу, вычислите другой положительный id, которого нет в хранилище, и отправьте PUT с тем же корректным body.'
+                        'Добавьте path-проверки через GET /tasks/{task_id} без body. Создайте задачу, проверьте '
+                        'GET её существующего положительного id, затем запросите тот же item-route с path '
+                        'not-an-integer, 0 и -1. Отдельно запросите корректный положительный id, которого нет '
+                        'в тестовом хранилище. Body-границы остаются отдельными: их проверяйте полным PUT по '
+                        'существующему id в задачах title и priority.'
                     ),
-                    'requirements': ['Текст, 0 и -1 дают 422; detail.loc указывает на task_id.', 'В каждом запросе body содержит допустимые title, priority и is_done.', 'Id существующей задачи берётся из POST.', 'Отсутствующий положительный id даёт 404.', 'Успешный PUT по существующему id уже проверен в карточке 1.'],
+                    'requirements': ['Path проверяется только через GET item-route; JSON body не передаётся.', 'Существующий положительный id, полученный из POST, даёт 200.', 'Текстовый id, 0 и отрицательный id дают 422 с task_id в detail.loc.', 'Корректный отсутствующий положительный id даёт 404.', 'Body-границы проверяются отдельно полным PUT по существующему id с остальными допустимыми полями.'],
                     'hint': (
                         'Path сначала проверяет тип и gt=0, затем сервис ищет запись. Для 404 возьмите положительный id, которого нет в новом временном хранилище.'
                     ),
@@ -1749,227 +1771,194 @@ def test_put_priority_boundaries(
                         'explanation': (
                             'Текст нельзя преобразовать в int, а 0 и -1 не проходят gt=0. Поэтому ответ 422 возникает до поиска. Положительный id проходит проверку; если задачи с ним нет, API отвечает 404.'
                         ),
-                        'steps': ['Запишите три недопустимых path-значения для parametrize.', 'В каждом запуске создайте контрольную задачу.', 'Отправьте полный PUT и проверьте 422 и поле task_id.', 'Для отдельного случая получите отсутствующий положительный id.', 'Отправьте корректный PUT и проверьте 404.'],
+                        'steps': ['Создайте задачу через POST и получите её положительный id.', 'Проверьте обычный GET item-route по этому id: ожидается 200.', 'Для текстового, нулевого и отрицательного id отправьте GET без body и проверьте 422 и поле task_id.', 'Выберите другой корректный положительный id, отсутствующий в fixture, отправьте GET без body и проверьте 404.', 'Проверьте, что title и priority по-прежнему тестируются отдельными полными PUT по существующему id.'],
                         'code': '''@pytest.mark.parametrize(
     "path_value",
     ["not-an-integer", 0, -1],
 )
-def test_put_rejects_invalid_task_id(api_client, path_value):
+def test_get_rejects_invalid_task_id(api_client, path_value):
     created = api_client.post(
         "/tasks", json={"title": "Before", "priority": 3}
     )
     task_id = created.json()["id"]
     assert task_id > 0
-    response = api_client.put(
-        f"/tasks/{path_value}",
-        json={"title": "Valid title", "priority": 3, "is_done": False},
-    )
+    assert api_client.get(f"/tasks/{task_id}").status_code == 200
+    response = api_client.get(f"/tasks/{path_value}")
 
     assert response.status_code == 422
     assert _error_field(response) == "task_id"
 
 
-def test_put_returns_404_for_missing_positive_id(api_client):
+def test_get_returns_404_for_missing_positive_id(api_client):
     created = api_client.post(
         "/tasks", json={"title": "Before", "priority": 3}
     )
     task_id = created.json()["id"]
-    missing_id = task_id + 10
-    response = api_client.put(
-        f"/tasks/{missing_id}",
-        json={"title": "Valid title", "priority": 3, "is_done": False},
-    )
+    missing_id = task_id + 1
+    response = api_client.get(f"/tasks/{missing_id}")
 
     assert missing_id > 0
     assert response.status_code == 404''',
-                        'checks': ['Неверная форма и неположительные числа дают 422 с полем task_id.', 'Отсутствующий положительный id даёт 404 при корректном body.', 'Существующий положительный id даёт успешный ответ в карточке 1.'],
+                        'checks': ['Обычный существующий id отвечает 200; path-матрица использует только GET без body.', 'Текст, 0 и отрицательный id дают 422 с task_id; отсутствующий положительный id даёт 404.', 'Body-границы остаются отдельными полными PUT по существующему id.'],
                     },
                     'result': (
-                        'Проверки различают неверный path, существующую задачу и отсутствующий положительный id.'
+                        'GET item-route без body различает существующий id (200), неверный формат и неположительные значения (422), а также корректный отсутствующий положительный id (404). Body-границы проверяются отдельно полным PUT по существующему id.'
                     ),
                 },
             ],
             'result': (
-                'В tests/test_contract.py будут проверки полного PUT: существующий положительный id, границы title и priority, неверный path и отсутствующий положительный id. Каждый тест использует готовые маршруты и не меняет приложение.'
+                'В tests/test_contract.py отдельно проверяются body-границы полным PUT по существующему id и path-границы через GET item-route без body: неверный формат, неположительные значения и корректный отсутствующий положительный id. Готовые маршруты и рабочие данные не меняются.'
             ),
         },
     ],
 
     59: [
         {
-            'title': 'Добавьте два недостающих unit-теста Planner',
+            'title': 'Сверьте доказательства по слоям Planner',
             'task': (
-                'В корне Planner сверьте docs/test-matrix.md с тестами. Не хватает двух проверок: отдельного списка tags '
-                'у каждой Task и копирования списка в MemoryStorage. Добавьте только эти тесты. Проверки сервиса, JSON, '
-                'CLI и HTTP уже есть.'
+                'На фактическом checkout проверьте готовность HTTP-fixtures, переноса маршрутов, проверок границ и query/OpenAPI, а также доступность Task, '
+                'storage, PlannerService, CLI и HTTP-тестов. Сначала найдите существующие проверки и установите, '
+                'что именно каждая вызывает и наблюдает. Добавьте только отсутствующую прямую проверку '
+                'прикладного правила и отдельную HTTP-гарантию; проверьте нужные persistence-гарантии и общий '
+                'сервис CLI/API. Не создавайте маршруты, не повторяйте CRUD и не считайте отдельную матрицу тестов обязательной.'
             ),
             'tasks': [
                 {
-                    'title': 'Проверьте список tags у двух Task',
+                    'title': 'Инвентаризируйте реальные доказательства',
                     'task': (
-                        'Создайте tests/test_models.py. Создайте две Task без аргумента tags. Добавьте метку первой и '
-                        'проверьте, что список второй остался пустым. Вызывайте модель напрямую, без хранилища, CLI и HTTP.'
+                        'Просмотрите фактические тесты и модули проекта. Для каждой гарантии запишите найденный '
+                        'тест или кодовый путь, его границу и наблюдаемое утверждение: прямое прикладное правило, '
+                        'HTTP-ответ, чтение без сохранения, persistence-обновление, зависимости слоёв и общий сервис '
+                        'CLI/API. Сверьте также фактические результаты HTTP-fixtures, переноса маршрутов, проверок границ и query/OpenAPI; неизвестное обозначьте как '
+                        'непроверенное, а не как отсутствующее.'
                     ),
                     'requirements': [
-                        'Файл tests/test_models.py импортирует Task из app.models.',
-                        'Тест создаёт две Task с разными id и без аргумента tags.',
-                        'Добавьте "review" первой Task: её tags равен ["review"], а tags второй Task равен [].',
-                        'В проверке нет обращения к JsonStorage, MemoryStorage, PlannerService или API.',
+                        'Файлы, fixtures, тесты и их результаты устанавливаются по текущему checkout, без обязательных имён или заранее заданного числа файлов.',
+                        'Для каждого доказательства указано, что оно вызывает и какое состояние или ответ наблюдает.',
+                        'Отдельно различаются прямой вызов приложения, HTTP-граница и сохранение через storage.',
+                        'Похожие имена тестов не считаются доказательством; уже покрытые гарантии помечены для повторного использования.',
+                        'Непроверенные входные опоры и пробелы не объявляются подтверждёнными или отсутствующими без наблюдения.',
                     ],
-                    'hint': (
-                        'Сначала создайте обе задачи и проверьте, что оба списка пусты. Затем добавьте метку первой и сравните списки.'
-                    ),
+                    'hint': 'Откройте сами тесты и проследите вызовы и assert. Спросите для каждого: какой слой вызван и какое конкретное значение проверено?',
                     'answer': {
-                        'explanation': (
-                            'У каждой Task должен быть свой список tags. Поэтому изменение первой задачи не меняет вторую. '
-                            'Прямой вызов проверяет модель без участия других слоёв.'
-                        ),
+                        'explanation': 'Инвентаризация нужна, чтобы адресно дополнить доказательства. Имя файла или наличие плана не говорит, что тест реально наблюдает нужную гарантию.',
                         'steps': [
-                            'Импортируем Task из app.models в tests/test_models.py.',
-                            'Создаём две задачи с разными id и без аргумента tags.',
-                            'Добавляем review в tags первой задачи.',
-                            'Проверяем tags обеих задач: ["review"] у первой и [] у второй.',
-                            'Запускаем python -m pytest -q tests/test_models.py из корня проекта.',
+                            'Подтверждаем доступные входные опоры по фактическому checkout.',
+                            'Находим тесты и соответствующие модули по содержимому, не предполагая имена файлов.',
+                            'Для каждого нужного обещания записываем вызов, проверяемый результат и слой.',
+                            'Отмечаем готовое доказательство, реальный пробел или непроверенную зависимость.',
                         ],
-                        'code': '''# tests/test_models.py
-from app.models import Task
-
-
-def test_tasks_have_independent_default_tags():
-    first = Task(id=1, title="First")
-    second = Task(id=2, title="Second")
-
-    first.tags.append("review")
-
-    assert first.tags == ["review"]
-    assert second.tags == []''',
                         'checks': [
-                            'Обе задачи начинают с пустого списка tags.',
-                            'Изменение первой задачи не меняет список второй.',
-                            'Проверяется только гарантия модели, без повторения тестов других слоёв.',
+                            'Каждая запись карты опирается на фактический вызов и проверяемое наблюдение.',
+                            'Уже покрытые HTTP, прикладные и persistence-гарантии не назначены на повторную реализацию.',
+                            'Неизвестное состояние явно отмечено как непроверенное.',
                         ],
                     },
-                    'result': (
-                        'Тест tests/test_models.py проходит: изменение tags первой Task не меняет список второй.'
-                    ),
+                    'result': 'Составлена краткая карта фактических гарантий, тестов, слоёв и оставшихся пробелов; неподтверждённые входы помечены отдельно.',
                 },
                 {
-                    'title': 'Проверьте списки и задачи в MemoryStorage',
+                    'title': 'Закройте только отсутствующие прикладную и HTTP-гарантии',
                     'task': (
-                        'Создайте tests/test_storage.py. Проверьте, что MemoryStorage копирует списки при создании, load() и save(), '
-                        'но оставляет в них те же объекты Task. Очистка внешнего списка не меняет набор storage. Изменение '
-                        'поля Task видно после следующего load().'
+                        'По результату инвентаризации выберите одно ещё не подтверждённое прикладное правило и '
+                        'проверьте его отдельным прямым вызовом существующего сервиса на изолированных данных. '
+                        'Отдельно убедитесь, что есть подходящая проверка внешней HTTP-гарантии через существующий '
+                        'маршрут и приложение; добавьте или дополните её только если такого доказательства нет. '
+                        'Существующие маршруты и CRUD-запросы заново не реализуйте.'
                     ),
                     'requirements': [
-                        'Тест импортирует Task и MemoryStorage из app.models и app.storage.',
-                        'Изменение исходного списка после создания storage не меняет список в storage.',
-                        'Очистка списка из load() не меняет список в storage.',
-                        'Изменение входного списка после save() не меняет сохранённый набор.',
-                        'Ссылка на Task общая: изменение её поля видно при следующем load().',
-                        'Тест не требует глубокой копии Task, JSON-файла или пользовательских данных.',
+                        'Прямая проверка вызывает правило сервиса без TestClient и фиксирует вход и результат.',
+                        'HTTP-гарантия проверяется отдельным запросом через существующие приложение и маршрут.',
+                        'Добавляются только реально отсутствующие доказательства; эквивалентные существующие тесты переиспользуются.',
+                        'Оба способа используют собственные изолированные данные и отвечают на разные вопросы.',
+                        'Новые endpoint, схемы, service-методы и дубли CRUD не создаются.',
                     ],
-                    'hint': (
-                        'Разделите две проверки: изменение состава списка и изменение поля Task. Списки разные, объект Task тот же.'
-                    ),
+                    'hint': 'Сначала выберите пробел из карты: что ещё не проверено прямым вызовом сервиса? Какое отдельное наблюдение видит HTTP-клиент?',
                     'answer': {
-                        'explanation': (
-                            'При создании, load() и save() MemoryStorage копирует список через list(tasks), но не копирует Task. '
-                            'Поэтому списки независимы, а изменение общей задачи видно через обе ссылки.'
-                        ),
+                        'explanation': 'Прямой вызов проверяет прикладное правило, а HTTP-тест проверяет внешний адрес, статус и публичный ответ. Один не заменяет другой; уже имеющееся подходящее доказательство не нужно дублировать.',
                         'steps': [
-                            'Создаём Task и передаём её в MemoryStorage.',
-                            'Добавляем задачу в исходный список и проверяем, что storage не изменился.',
-                            'Очищаем результат load() и проверяем, что следующий load() возвращает задачу.',
-                            'Передаём список в save(), очищаем его и проверяем список в storage.',
-                            'Меняем is_done у Task и проверяем это значение после нового load().',
-                            'Запускаем python -m pytest -q tests/test_storage.py из корня проекта.',
+                            'Выбираем по карте одно прикладное правило, для которого нет подходящего прямого утверждения.',
+                            'Подготавливаем изолированные данные, вызываем существующий метод сервиса и проверяем результат правила.',
+                            'Отдельно находим HTTP-гарантию для существующего маршрута и проверяем её через TestClient.',
+                            'Добавляем тест только для той границы, которая ещё не подтверждена; сохраняем фактические пути найденных тестов.',
                         ],
-                        'code': '''# tests/test_storage.py
-from app.models import Task
-from app.storage import MemoryStorage
-
-
-def test_memory_storage_copies_lists_but_keeps_task_references():
-    first = Task(id=1, title="First")
-    second = Task(id=2, title="Second")
-    initial = [first]
-    storage = MemoryStorage(initial)
-
-    initial.append(second)
-    assert storage.load() == [first]
-
-    loaded = storage.load()
-    loaded.clear()
-    assert storage.load() == [first]
-
-    replacement = [second]
-    storage.save(replacement)
-    replacement.clear()
-    assert storage.load() == [second]
-
-    second.mark_done()
-    assert storage.load()[0].is_done is True''',
                         'checks': [
-                        'Конструктор, load() и save() создают отдельные списки.',
-                            'Состав возвращённого списка не изменяет внутренний список без save().',
-                            'Объекты Task не копируются глубоко: изменение общей Task видно после нового load().',
+                            'Прямой тест вызывает сервис непосредственно и проверяет выбранное прикладное правило.',
+                            'Отдельный HTTP-тест проходит через существующий маршрут и проверяет внешний ответ.',
+                            'Покрытые гарантии не дублируются, приложение и API-договор не меняются.',
                         ],
                     },
-                    'result': (
-                        'Тест tests/test_storage.py подтверждает, что списки копируются, а объекты Task остаются общими.'
-                    ),
+                    'result': 'Недостающие прикладная и HTTP-гарантии подтверждены раздельно; существующие эквивалентные тесты сохранены без дублей.',
                 },
                 {
-                    'title': 'Обновите матрицу тестов',
+                    'title': 'Сверьте persistence-доказательства',
                     'task': (
-                        'Сверьте тесты с docs/test-matrix.md. Замените строку о непокрытых unit-проверках двумя строками: '
-                        'для tests/test_models.py и tests/test_storage.py. Укажите готовые тесты сервиса, CLI, JSON и HTTP. '
-                        'Для этих слоёв новые тесты не нужны.'
+                        'Проверьте фактические service/storage-тесты для чтения без вызова save и для сохранённого '
+                        'обновления, которое видит новый сервис на том же временном пути. Переиспользуйте каждое '
+                        'имеющееся эквивалентное доказательство и добавьте только недостающее. Для persistence '
+                        'сверьте полную Task и контрольного соседа; сохраняйте id и tags, если они есть в объекте.'
                     ),
                     'requirements': [
-                        'Независимость tags Task указана как Unit-проверка tests/test_models.py.',
-                        'Поверхностная копия MemoryStorage указана как Unit-проверка tests/test_storage.py.',
-                        'tests/test_services.py указывает на save_calls == 0 при чтении; tests/test_service_persistence.py указывает на повторную загрузку полной Task и сохранение соседней задачи.',
-                        'Для JSON, CLI и HTTP указаны существующие tests/test_persistence.py, tests/test_cli.py, tests/test_api.py и tests/test_contract.py.',
-                        'В матрице нет строки, которая объявляет уже покрытый слой непроверенным или приписывает тесту ненаблюдаемое свойство.',
+                        'Для гарантии чтения без записи наблюдается счётчик save или уже существующее эквивалентное доказательство; сравнение файла до и после не заменяет его.',
+                        'Сохранённое обновление проверяется повторным чтением через новый сервис/storage на том же временном пути, если эта гарантия ещё не покрыта.',
+                        'При persistence-проверке сверяются полная Task, её id, tags при наличии и контрольная соседняя запись.',
+                        'Тесты используют временные данные; пользовательский JSON не используется.',
+                        'Не задаётся конкретный файл теста и не копируются глубоко Task-объекты без требования.',
                     ],
-                    'hint': (
-                        'Найдите сами тесты и прочитайте, что они вызывают и проверяют. Затем коротко запишите результат в матрицу.'
-                    ),
+                    'hint': 'Найдите, чем тест доказывает вызов или отсутствие save. Для записи спросите: читает ли новый сервис тот же файл и сохранены ли остальные поля и сосед?',
                     'answer': {
-                        'explanation': (
-                            'В матрице укажем два новых unit-теста. Проверки сервиса уже считают вызовы save и перечитывают данные '
-                            'новым сервисом. JSON, CLI и HTTP тоже уже проверяются, поэтому повторять эти тесты не нужно.'
-                        ),
+                        'explanation': 'Результат метода сам по себе не доказывает persistence. Счётчик вызовов подходит для проверки отсутствия save при чтении, а новый сервис на том же пути показывает, что обновление пережило повторную загрузку.',
                         'steps': [
-                            'Проверяем, что tests/test_models.py и tests/test_storage.py закрывают два нужных пробела.',
-                            'Находим готовые тесты сервиса, JSON, CLI и HTTP и записываем их результаты.',
-                            'В docs/test-matrix.md указываем слой, файл теста и что именно он проверяет.',
-                            'Код приложения, фикстуры и готовые тесты не меняем.',
+                            'Сверяем существующие тесты и переиспользуем те, которые наблюдают нужную гарантию.',
+                            'Если чтение без записи не доказано, используем изученный счётчик save или эквивалентный наблюдаемый механизм.',
+                            'Если сохранённое обновление не доказано, пишем его на временный путь и читаем новым сервисом с того же пути.',
+                            'Сравниваем полную Task и контрольного соседа, включая id и tags, если эти поля есть.',
                         ],
-                        'code': '''| Риск | Уровень | Проверка в проекте | Наблюдаемый результат |
-|---|---|---|---|
-| Список tags разделяется между экземплярами Task | Unit | `tests/test_models.py` | Изменение одной Task не меняет tags другой |
-| MemoryStorage не отделяет контейнеры списка | Unit | `tests/test_storage.py` | Внешний список изолирован, но ссылки на Task общие |
-| Чтение PlannerService вызывает лишний save | Unit | `tests/test_services.py` | `ObservedStorage.save_calls` остаётся 0 |
-| Изменение PlannerService не видно после загрузки | Integration | `tests/test_service_persistence.py` | Новый сервис читает полную Task и сохраняет соседа |
-| Ошибка JSON стирает исходные данные | Integration | `tests/test_persistence.py` | `StorageError`, прежние байты не меняются |
-| CLI меняет не ту задачу или сохраняет лишний раз | CLI regression | `tests/test_cli.py` | Вывод и количество save соответствуют команде |
-| Ответ API или границы запроса нарушают HTTP-договор | Contract | `tests/test_api.py`, `tests/test_contract.py` | Статусы, публичный JSON и состояние соответствуют запросу |''',
                         'checks': [
-                            'Все указанные в матрице тесты существуют.',
-                            'Новые гарантии добавлены один раз, в подходящем unit-файле.',
-                            'Тесты сервиса, JSON, CLI и HTTP не дублируются.',
+                            'Каждая заявленная persistence-гарантия имеет прямое наблюдение или явно переиспользованное существующее доказательство.',
+                            'Побайтовое сравнение файла не объявляется доказательством отсутствия save.',
+                            'Тестовые данные изолированы, id и остальные поля сохранены.',
                         ],
                     },
-                    'result': (
-                        'Матрица ссылается на два новых unit-теста и на готовые тесты сервиса, JSON, CLI и HTTP.'
+                    'result': 'Необходимые persistence-гарантии либо подтверждены существующими подходящими тестами, либо дополнены ровно в обнаруженных пробелах на временных данных.',
+                },
+                {
+                    'title': 'Проследите слои и общий сервис CLI/API',
+                    'task': (
+                        'По фактическому коду проследите один путь чтения и один путь изменения: route → service → '
+                        'storage. Установите, где создаётся и используется PlannerService в HTTP API и CLI, и '
+                        'проверьте направление импортов нижних слоёв. Запишите конкретные модули и существующие '
+                        'проверки, которые подтверждают выводы; если связь не удалось проверить, отметьте её как неизвестную.'
                     ),
+                    'requirements': [
+                        'Путь route → service → storage подтверждён фактическими вызовами, а не только именами модулей.',
+                        'По фактическому коду показано, что CLI и API используют общее прикладное ядро/PlannerService.',
+                        'Проверено, что нижние слои не зависят от FastAPI; вывод опирается на импорты и доступные тесты.',
+                        'Нарушение, если найдено, описывается конкретной связью и эффектом; рефакторинг не входит в практику.',
+                        'Пользовательские интерфейсы и уже проверенный HTTP-договор не меняются.',
+                    ],
+                    'hint': 'Проследите реальные вызовы от route и CLI до сервиса, затем от сервиса до storage. Отдельно проверьте импорты снизу вверх.',
+                    'answer': {
+                        'explanation': 'Направление вызовов показывает, кто отвечает за HTTP, прикладное правило и сохранение. Общий сервис можно подтвердить только по фактическим точкам сборки и использования, а не по совпадению названий.',
+                        'steps': [
+                            'Находим существующий route и прослеживаем вызов через сервис к storage.',
+                            'Находим путь CLI и сверяем, какой PlannerService он использует.',
+                            'Проверяем импорты модели, storage и сервиса на зависимость от FastAPI.',
+                            'Записываем конкретные подтверждающие тесты и оставшиеся неизвестные связи.',
+                        ],
+                        'checks': [
+                            'Описаны фактические route → service → storage и CLI → service пути.',
+                            'Общий сервис CLI/API подтверждён кодом и подходящими тестами, если они доступны.',
+                            'Не добавлены новые тесты CRUD, маршруты или архитектурный рефакторинг.',
+                        ],
+                    },
+                    'result': 'Слои и общее прикладное ядро CLI/API описаны по фактическим вызовам; неизвестные связи отделены от подтверждённых, продуктовый код не изменён.',
                 },
             ],
             'result': (
-                'Два новых теста проверяют tags у Task и списки в MemoryStorage. Матрица указывает эти и готовые тесты '
-                'сервиса, JSON, CLI и HTTP.'
+                'Сначала инвентаризированы реальные тестовые доказательства. Добавлены только недостающие проверки '
+                'прикладного правила и отдельной HTTP-гарантии; нужные persistence-гарантии проверены или дополнены '
+                'без дублей. Прослежены route → service → storage и общий сервис CLI/API. Новые маршруты и CRUD '
+                'не вводятся, отдельная матрица тестов не требуется; данные остаются изолированными.'
             ),
         }
     ],
@@ -2117,7 +2106,7 @@ def test_task_workflow_uses_one_state(api_client):
                 {
                     'title': 'Postman показывает переходы от реального baseline',
                     'task': (
-                        'Запустите сервер из корня StudyHub. В Postman импортируйте коллекцию и среду Local, затем проверьте GET /health. Пройдите ту же историю, что и в тесте. Порядок запросов и ожидаемые ответы перечислены ниже.'
+                        'Запустите сервер из корня StudyHub. В Postman импортируйте коллекцию и среду Local, затем проверьте GET /health. Пройдите ту же историю, что и в тесте. После удаления своей главной задачи прочитайте оставшуюся контрольную задачу существующим CLI, настроенным на тот же рабочий JSON. Не очищайте файл и не удаляйте исходные записи.'
                     ),
                     'requirements': [
                         'Запустите сервер командой python -m uvicorn app.api:app --reload из корня StudyHub.',
@@ -2128,14 +2117,15 @@ def test_task_workflow_uses_one_state(api_client):
                         'Отправьте главной PATCH {\"priority\":99}. Ожидается 422; после ответа снова прочитайте список, обе задачи и stats. Данные должны совпасть с состоянием до отказа.',
                         'Отправьте PATCH {\"is_done\":false}. Ожидается 200; проверьте новое состояние и stats.',
                         'Удалите главную. DELETE должен вернуть пустой ответ 204, следующий GET должен вернуть 404. Контрольная задача должна открываться.',
+                        'После workflow через Postman прочитайте оставшуюся контрольную задачу существующим CLI из того же рабочего JSON, что использовал сервер. Рабочий JSON не очищайте; не смешивайте эту проверку с изолированной pytest fixture.',
                         'Сравнивайте stats с исходными значениями. Изменения после POST: +2/+2/0, после PUT: +2/+1/+1, после PATCH false: +2/+2/0, после DELETE: +1/+1/0. Не удаляйте исходные записи и не очищайте рабочий JSON.',
                     ],
                     'hint': (
-                        'Выберите Local и проверьте GET /health. Для item-запросов копируйте id из ответов POST. Перед PATCH с priority=99 сохраните ответы GET /tasks и GET /stats.'
+                        'Выберите Local и проверьте GET /health. Для item-запросов копируйте id из ответов POST. Перед PATCH с priority=99 сохраните ответы GET /tasks и GET /stats. После сценария откройте контрольную задачу существующим CLI на том же JSON; pytest fixture использует отдельное состояние.'
                     ),
                     'answer': {
                         'explanation': (
-                            'Рабочий JSON может быть непустым, поэтому stats сравниваем с исходными значениями. Две новые задачи дают +2/+2/0. После PUT в done значения меняются до +2/+1/+1, после PATCH false возвращаются к +2/+2/0. Удаление главной оставляет +1/+1/0. Исходные записи и контрольную задачу сохраняем.'
+                            'Рабочий JSON может быть непустым, поэтому stats сравниваем с исходными значениями. Две новые задачи дают +2/+2/0. После PUT в done значения меняются до +2/+1/+1, после PATCH false возвращаются к +2/+2/0. Удаление главной оставляет +1/+1/0. Затем CLI читает контрольную задачу из того же рабочего JSON; это отдельная проверка от pytest fixture на временном хранилище. Исходные записи сохраняем.'
                         ),
                         'steps': [
                             'Запустите сервер из корня StudyHub. Импортируйте коллекцию и среду Local; проверьте GET /health.',
@@ -2145,18 +2135,21 @@ def test_task_workflow_uses_one_state(api_client):
                             'До неверного PATCH сохраните список и stats. После ответа 422 повторите чтение и сравните данные.',
                             'Выполните PATCH с is_done=false. Проверьте ответ, повторный GET и stats.',
                             'Удалите главную задачу. Проверьте пустое тело 204, ответ 404, контрольную задачу и итоговые stats.',
+                            'После Postman workflow прочитайте контрольную задачу прежним CLI, настроенным на тот же рабочий JSON. Не очищайте его и не удаляйте исходные записи; помните, что pytest использовал отдельную временную fixture.',
                         ],
                         'checks': [
                             'Все id взяты из ответов текущего сервера, а stats сравнены с baseline.',
                             'Исходные записи сохранены, контрольная задача доступна.',
+                            'Существующий CLI читает контрольную задачу из того же рабочего JSON; эта проверка отделена от изолированной pytest fixture.',
                         ],
                     },
                     'result': (
-                        'Postman показывает фактические id и ответы. Stats меняются ожидаемо; после 422 данные не изменились, главная задача после удаления недоступна, контрольная и исходные записи сохранены.'
+                        'Postman показывает фактические id и ответы. Stats меняются ожидаемо; после 422 данные не изменились, главная задача после удаления недоступна. Прежний CLI читает оставшуюся контрольную задачу из того же рабочего JSON; исходные записи сохранены, файл не очищался.'
                     ),
                     'checks': [
                         'Postman проходит ту же историю, что и workflow-тест.',
-                        'Рабочий JSON не очищен, исходные записи не удалены.',
+                        'После Postman контрольная задача читается существующим CLI из того же рабочего JSON.',
+                        'CLI-проверка рабочего JSON различена с изолированной pytest fixture; файл не очищен, исходные записи не удалены.',
                     ],
                 },
                 {
@@ -2195,7 +2188,7 @@ def test_task_workflow_uses_one_state(api_client):
                 },
             ],
             'result': (
-                'Добавлен один workflow-тест на готовых маршрутах и fixtures. Он связывает запросы реальными id, проверяет состояние после 422 и удаляет главную задачу, сохраняя контрольную. В Postman та же история пройдена относительно фактического baseline; рабочий JSON не очищен.'
+                'Добавлен один workflow-тест на готовых маршрутах и fixtures. Он связывает запросы реальными id, проверяет состояние после 422 и удаляет главную задачу, сохраняя контрольную. В Postman та же история пройдена относительно фактического baseline; затем прежний CLI читает контрольную задачу из того же рабочего JSON. Рабочий JSON не очищен.'
             ),
         },
     ],
@@ -2203,7 +2196,7 @@ def test_task_workflow_uses_one_state(api_client):
         {
             'title': 'Проверьте запуск Planner в чистой копии',
             'task': (
-                'В занятии 59.1 мы проверили готовый Planner. Теперь проверим тот же commit в новой папке: '
+                'В сквозном сценарии Planner мы проверили готовый Planner. Теперь проверим тот же commit в новой папке: '
                 'установим зависимости, запустим тесты, CLI и API, импортируем файлы Postman. '
                 'Исходную папку и её данные не меняем. Код приложения не исправляем.'
             ),
@@ -2211,20 +2204,20 @@ def test_task_workflow_uses_one_state(api_client):
                 {
                     'title': 'Создайте копию на нужном commit',
                     'task': (
-                        'В PowerShell создайте отдельный clone и переключите его на полный SHA результата 59.1. '
+                        'В PowerShell создайте отдельный clone и переключите его на полный SHA проверенного HTTP-workflow. '
                         'Подставьте пути и SHA в шаблон из теории. Если точный SHA неизвестен или недоступен, '
                         'остановитесь и запишите это; не выбирайте другой commit. В новой папке выполните '
                         '`git status --short`, `Test-Path .venv` и `Test-Path data/tasks.json`. Исходную папку не меняйте.'
                     ),
                     'requirements': [
                         'Clone находится в отдельной папке и содержит каталог .git.',
-                        'Полный SHA clone совпадает с SHA результата 59.1; неизвестный SHA отмечен как блокер.',
+                        'Полный SHA clone совпадает с SHA проверенного HTTP-workflow; неизвестный SHA отмечен как блокер.',
                         'До установки git status --short пуст.',
                         'В новой копии обе команды Test-Path возвращают False.',
                         'Исходная папка и её данные не изменены.',
                     ],
                     'hint': (
-                        'Сначала сверьте SHA с результатом 59.1. После checkout сравните его с `git rev-parse HEAD`. '
+                        'Сначала сверьте SHA с результатом проверенного HTTP-workflow. После checkout сравните его с `git rev-parse HEAD`. '
                         'Если SHA не найден, остановитесь.'
                     ),
                     'answer': {
@@ -2233,7 +2226,7 @@ def test_task_workflow_uses_one_state(api_client):
                             'игнорируемый JSON. Detached checkout закрепляет новую копию на выбранном commit.'
                         ),
                         'steps': [
-                            'Запишите полный SHA результата 59.1. Если его нет, отметьте блокер и остановитесь.',
+                            'Запишите полный SHA проверенного HTTP-workflow. Если его нет, отметьте блокер и остановитесь.',
                             'Клонируйте репозиторий в отдельную папку и перейдите в неё.',
                             'Переключитесь на записанный SHA и сравните его с `git rev-parse HEAD`.',
                             'Проверьте чистый статус и отсутствие .venv и data/tasks.json.',
@@ -2248,13 +2241,13 @@ git status --short
 Test-Path .venv
 Test-Path data/tasks.json''',
                         'checks': [
-                            'SHA совпадает с результатом 59.1.',
+                            'SHA совпадает с результатом проверенного HTTP-workflow.',
                             'Новая папка отдельная; .venv и личного JSON в ней нет.',
                             'Рабочее дерево чистое.',
                         ],
                     },
                     'result': (
-                        'Новая папка открыта на точном SHA результата 59.1; старая папка сохранена, '
+                        'Новая папка открыта на точном SHA проверенного HTTP-workflow; старая папка сохранена, '
                         'а старая .venv и личный JSON не попали в копию.'
                     ),
                 },
@@ -2390,7 +2383,7 @@ GET /tasks/{task_id}  -> подставить id из вывода CLI''',
                     'task': (
                         'Импортируйте в Postman collection и environment из каталога `postman` новой копии. '
                         'Выберите Local и проверьте, что `base_url` указывает на запущенный локальный API. '
-                        'Сценарий 59.1 повторять не нужно.'
+                        'Уже проверенный HTTP-сценарий повторять не нужно.'
                     ),
                     'requirements': [
                         'Импортированы оба файла Postman из новой копии.',
@@ -2405,7 +2398,7 @@ GET /tasks/{task_id}  -> подставить id из вывода CLI''',
                         'explanation': (
                             'Импорт подтверждает, что оба файла есть в копии и открываются в Postman. '
                             'Он не проверяет ответ API. Здесь проверяем выбранную среду и адрес сервера; '
-                            'полный HTTP-сценарий уже был в 59.1.'
+                            'полный HTTP-сценарий уже был проверен отдельно.'
                         ),
                         'steps': [
                             'Импортируйте `postman/planner-api.postman_collection.json` из новой копии.',
@@ -2427,7 +2420,7 @@ base_url = http://127.0.0.1:8000''',
                     ),
                 },
                 {
-                    'title': 'Сверьте README и передайте результаты в 60.1',
+                    'title': 'Сверьте README и передайте результаты для документации проверки',
                     'task': (
                         'Сравните с README того же commit пять шагов: clone, установку, pytest, CLI/API и импорт Postman. '
                         'Запишите команду и результат каждого шага. Если нашли подтверждённую ошибку README или '
@@ -2439,7 +2432,7 @@ base_url = http://127.0.0.1:8000''',
                         'Результаты pytest, живого API и импорта Postman указаны отдельно.',
                         'Изменены только README или requirements в новой копии.',
                         'После исправления повторены затронутые проверки.',
-                        'Для 60.1 подготовлены SHA, команды, результаты и найденные расхождения.',
+                        'Для документации проверки подготовлены SHA, команды, результаты и найденные расхождения.',
                     ],
                     'hint': (
                         'Сверяйте README с записанными командами и выводом. Если ошибки нет, так и запишите. '
@@ -2448,7 +2441,7 @@ base_url = http://127.0.0.1:8000''',
                     'answer': {
                         'explanation': (
                             'README подтверждён, когда его команды сработали в новой среде. SHA связывает результат '
-                            'с версией проекта. Если README или requirements изменились, передайте в 60.1 исходный SHA '
+                            'с версией проекта. Если README или requirements изменились, передайте для документации исходный SHA '
                             'и список изменений.'
                         ),
                         'steps': [
@@ -2456,22 +2449,22 @@ base_url = http://127.0.0.1:8000''',
                             'Для каждого расхождения запишите ожидаемую и выполненную команду, вывод и причину.',
                             'Исправьте только подтверждённую ошибку в README или requirements.',
                             'Повторите проверки, которых коснулось изменение.',
-                            'Передайте в 60.1 SHA, команды, результаты и список изменений либо отметку «расхождений нет».',
+                            'Передайте для документации SHA, команды, результаты и список изменений либо отметку «расхождений нет».',
                         ],
                         'checks': [
                             'Отчёт содержит фактический запуск и выбранный SHA.',
                             'pytest, живой API и импорт Postman не смешаны в один результат.',
-                            'README выполнен либо оставшиеся расхождения записаны для 60.1.',
+                            'README выполнен либо оставшиеся расхождения записаны для документации проверки.',
                         ],
                     },
                     'result': (
-                        'Для 60.1 записаны SHA, команды, результаты pytest/CLI/API/Postman и подтверждённые расхождения.'
+                        'Для документации проверки записаны SHA, команды, результаты pytest/CLI/API/Postman и подтверждённые расхождения.'
                     ),
                 },
             ],
             'result': (
-                'Новая копия на SHA результата 59.1 устанавливает пакеты, проходит полный pytest, запускает CLI/API '
-                'на собственном JSON и импортирует файлы Postman. Команды и результаты сверены с README и подготовлены для 60.1.'
+                'Новая копия на SHA проверенного HTTP-workflow устанавливает пакеты, проходит полный pytest, запускает CLI/API '
+                'на собственном JSON и импортирует файлы Postman. Команды и результаты сверены с README и подготовлены для документации проверки.'
             ),
         }
     ],
@@ -2479,7 +2472,7 @@ base_url = http://127.0.0.1:8000''',
         {
             'title': 'Передача проверенной версии Planner API',
             'task': (
-                'Точка A: после шага 60 есть чистая копия StudyHub, SHA и результаты проверок.\n\n'
+                'Точка A: после чистой проверки есть копия StudyHub, SHA и результаты проверок.\n\n'
                 'Точка B: README, матрица, release notes и Postman описывают тот же проверенный Planner. '
                 'Локальный API-тег указывает на итоговый commit. Если подтверждений не хватает, причина записана, '
                 'а тег не создан. Код и личные данные не меняются.'
@@ -2488,17 +2481,17 @@ base_url = http://127.0.0.1:8000''',
                 {
                     'title': 'Запись о проверке',
                     'task': (
-                        'Отдельная заметка содержит результаты нового шага 60 из STUDYHUB_LEARNINGS.md. '
+                        'Отдельная заметка содержит результаты чистой проверки из STUDYHUB_LEARNINGS.md. '
                         'Для каждой проверки есть свой статус. Отсутствующие результаты отмечены как неподтверждённые.'
                     ),
                     'requirements': [
                         'Указан полный SHA чистой копии или его отсутствие.',
                         'Записаны Python, команда установки, pytest, CLI и API.',
-                        'Импорт Postman в шаге 60 и сценарий из 59.1 имеют отдельные статусы.',
+                        'Импорт Postman при чистой установке и сквозной HTTP-сценарий имеют отдельные статусы.',
                     ],
                     'hint': (
-                        'Опора: раздел 01 теории. Мы ищем новый шаг 60, берём SHA и фактические результаты. '
-                        'Сценарий, который в шаге 60 не повторяли, так и отмечаем.'
+                        'Опора: раздел 01 теории. Мы ищем запись чистой проверки, берём SHA и фактические результаты. '
+                        'Сценарий, который при этой проверке не повторяли, так и отмечаем.'
                     ),
                     'answer': {
                         'explanation': (
@@ -2506,7 +2499,7 @@ base_url = http://127.0.0.1:8000''',
                             'не заменяют результатов нужной копии.'
                         ),
                         'steps': [
-                            'Находим запись нового шага 60 в STUDYHUB_LEARNINGS.md.',
+                            'Находим запись чистой проверки в STUDYHUB_LEARNINGS.md.',
                             'Сравниваем SHA с git rev-parse HEAD в чистой копии; git status --short пуст.',
                             'Переносим фактические команды и результаты, неизвестное помечаем отдельно.',
                         ],
@@ -2530,7 +2523,7 @@ Postman, сценарий: <результат или «не подтвержд�
                 {
                     'title': 'README соответствует запуску',
                     'task': (
-                        'README.md содержит команды, которые сработали в шаге 60. '
+                        'README.md содержит команды, которые сработали при чистой проверке. '
                         'Он правильно описывает возможности Planner и ограничения JSON-хранилища.'
                     ),
                     'requirements': [
@@ -2539,7 +2532,7 @@ Postman, сценарий: <результат или «не подтвержд�
                         'Описаны восемь операций API и ограничения JSON; нет обещаний SQL и авторизации.',
                     ],
                     'hint': (
-                        'Опора: раздел 02 теории. Мы сравниваем каждую команду README с записью шага 60. '
+                        'Опора: раздел 02 теории. Мы сравниваем каждую команду README с записью чистой проверки. '
                         'Пакеты сверяем с двумя файлами requirements.'
                     ),
                     'answer': {
@@ -2548,7 +2541,7 @@ Postman, сценарий: <результат или «не подтвержд�
                             'и точное описание JSON-backed Planner.'
                         ),
                         'steps': [
-                            'Сверяем папку, Python и команды установки с записью шага 60.',
+                            'Сверяем папку, Python и команды установки с записью чистой проверки.',
                             'Проверяем команды CLI, Uvicorn и pytest, адреса документации и список операций.',
                             'Исправляем только найденные расхождения и заново проверяем затронутую команду.',
                         ],
@@ -2638,7 +2631,7 @@ Postman, сценарий: <результат или «не подтвержд�
                         'и новый тег не создан.'
                     ),
                     'requirements': [
-                        'SHA шага 60 и SHA итогового commit записаны отдельно.',
+                        'Исходный SHA чистой проверки и SHA итогового commit записаны отдельно.',
                         'Правки документов сохранены в commit и перепроверены; состояние git status --short чистое.',
                         'API-тег создан или подтверждён только при наличии нужных результатов.',
                         'Теги v1.0.0 и существующий API-тег с другим SHA не изменены.',

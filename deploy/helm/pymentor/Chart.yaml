@@ -1,0 +1,6 @@
+apiVersion: v2
+name: pymentor
+description: Pymentor Core API and frontend behind one Traefik entry point
+type: application
+version: 0.1.0
+appVersion: "c1.3"

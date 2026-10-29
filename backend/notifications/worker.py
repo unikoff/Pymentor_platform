@@ -1,11 +1,13 @@
-"""Command-line entry point for durable booking notifications."""
+"""Command-line entry point for durable booking and landing notifications."""
 import argparse
 import json
 import logging
+import os
+import sys
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from db.engine import engine
-from .telegram import _get_telegram_credentials
+from .telegram import _get_telegram_credentials, has_landing_bot_credentials
 from .delivery import (
     MAX_BATCH_SIZE,
     LOG_PATH,
@@ -21,7 +23,7 @@ from .delivery import (
 
 
 def _parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Send queued booking notifications to Telegram")
+    parser = argparse.ArgumentParser(description="Send queued Pymentor notifications to Telegram")
     parser.add_argument("--limit", type=int, default=MAX_BATCH_SIZE, help="Maximum events per run (1-20)")
     parser.add_argument("--stats", action="store_true", help="Print queue counts without sending")
     parser.add_argument("--check", action="store_true", help="Check cron environment without sending messages")
@@ -31,10 +33,16 @@ def _parse_args() -> argparse.Namespace:
 
 
 def main() -> int:
+    log_to_stdout = os.getenv("PYMENTOR_LOG_TO_STDOUT", "").lower() in {"1", "true", "yes", "on"}
+    log_handler = (
+        logging.StreamHandler(sys.stdout)
+        if log_to_stdout
+        else RotatingFileHandler(LOG_PATH, maxBytes=2_000_000, backupCount=3, encoding="utf-8")
+    )
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s %(levelname)s %(message)s",
-        handlers=[RotatingFileHandler(LOG_PATH, maxBytes=2_000_000, backupCount=3, encoding="utf-8")],
+        handlers=[log_handler],
     )
     args = _parse_args()
     if not 1 <= args.limit <= MAX_BATCH_SIZE:
@@ -46,9 +54,7 @@ def main() -> int:
             return 0
         _ensure_outbox_table()
         if args.check:
-            import sys
-
-            configured = _get_telegram_credentials() is not None
+            configured = _get_telegram_credentials() is not None or has_landing_bot_credentials()
             lock = _worker_lock()
             lock_available = lock is not None
             if lock is not None:
@@ -79,7 +85,7 @@ def main() -> int:
             logger.info("worker_already_running")
             return 0
         try:
-            if _get_telegram_credentials() is None:
+            if _get_telegram_credentials() is None and not has_landing_bot_credentials():
                 logger.error("telegram_credentials_missing queue_preserved=true")
                 return 1
             counts = drain_notifications(limit=args.limit)

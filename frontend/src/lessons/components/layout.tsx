@@ -14,7 +14,12 @@ function renderInlineCode(value: React.ReactNode, keyPrefix: string): React.Reac
   }
 
   if (Array.isArray(value)) {
-    return value.map((item, index) => renderInlineCode(item, `${keyPrefix}-${index}`));
+    return value.map((item, index) => {
+      const rendered = renderInlineCode(item, `${keyPrefix}-${index}`);
+      return React.isValidElement(rendered) && rendered.key == null
+        ? React.cloneElement(rendered, { key: `${keyPrefix}-${index}` })
+        : rendered;
+    });
   }
 
   if (!React.isValidElement<Record<string, unknown>>(value)) {
@@ -156,7 +161,7 @@ export function MethodGrid({ rows }: { rows: [React.ReactNode, React.ReactNode][
     <div className="method-grid">
       {rows.map((row, index) => (
         <div className="method-row" key={index}>
-          <code>{row[0]}</code>
+          <span className="method-label">{row[0]}</span>
           <span>{row[1]}</span>
         </div>
       ))}

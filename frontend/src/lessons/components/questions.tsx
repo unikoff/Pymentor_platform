@@ -76,7 +76,7 @@ export function QuizCard({
               disabled={isDone}
               onClick={() => setPicked(index)}
             >
-              <code>{option}</code>
+              <span>{option}</span>
             </button>
           );
         })}

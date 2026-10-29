@@ -1,3 +1,11 @@
+export type TrackBlockProgress = {
+  id: string;
+  title: string;
+  completed: number;
+  total: number;
+  lesson_ids?: string[];
+};
+
 export type Track = {
   id: string;
   title: string;
@@ -5,6 +13,7 @@ export type Track = {
   lessons_total: number;
   lessons_countable: number;
   lessons_completed: number;
+  blocks?: TrackBlockProgress[];
 };
 
 export type LessonStatus = "done" | "current" | "locked";

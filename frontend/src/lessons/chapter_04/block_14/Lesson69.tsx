@@ -169,7 +169,7 @@ export function Lesson69({ module }: { module?: string }) {
           тому же сервису.
         </Lead>
         <Diagram
-          caption={"Занятие 69 · Путь запроса на чтение через прежний JSON"}
+          caption={"Путь запроса на чтение через прежний JSON"}
           orientation={"horizontal"}
         >
           <DiagramFlow

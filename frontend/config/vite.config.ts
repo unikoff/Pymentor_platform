@@ -1,29 +1,19 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
-const apiTarget = process.env.VITE_API_TARGET ?? "http://127.0.0.1:8001";
+const devApiTarget = "http://127.0.0.1:8001";
 
 export default defineConfig({
   plugins: [react()],
-  // На проде платформа живёт под префиксом /platform внутри сайта лендинга
-  // (хостинг разрешает только один сайт), поэтому ассеты и API должны
-  // резолвиться от него. Собираем прод как: VITE_BASE=/platform/ npm run build
-  // В dev база остаётся "/" — фронт крутит Vite отдельно.
+  // VITE_BASE is public build-time configuration (for example /platform/).
+  // Never put backend credentials or other secrets in VITE_* variables.
   base: process.env.VITE_BASE ?? "/",
   cacheDir: process.env.VITE_CACHE_DIR ?? "C:/Temp/pymentor-platform-vite-cache",
   server: {
     strictPort: true,
     proxy: {
-      "/user": {
-        target: apiTarget,
-        changeOrigin: true,
-      },
-      "/learning": {
-        target: apiTarget,
-        changeOrigin: true,
-      },
-      "/admin": {
-        target: apiTarget,
+      "/api": {
+        target: devApiTarget,
         changeOrigin: true,
       },
     },

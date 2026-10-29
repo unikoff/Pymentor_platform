@@ -78,7 +78,7 @@ class DeeperDayNumberingTests(unittest.TestCase):
         self.assertTrue(lessons["29.1"]["manual_practice"])  # JSON project practice is published.
         self.assertFalse(lessons["37.3"]["tasks"])
         self.assertTrue(lessons["37.3"]["manual_practice"])  # Local environment setup is published.
-        self.assertEqual(sum(len(l["tasks"]) for l in self.lessons), 5)
+        self.assertEqual(sum(len(l["tasks"]) for l in self.lessons), 6)
 
     def test_concept_passports_and_menu_have_the_same_sequence(self):
         numbers = []

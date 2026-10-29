@@ -111,8 +111,9 @@ function AccountDockPanel({ api }: IDockviewPanelProps) {
   const context = useWorkspace();
   const opened = usePanelOpened(api);
   if (!context.user || !opened) return null;
-  return <div className="dock-scroll"><AsyncBoundary><AccountWorkspace user={context.user} progress={context.course.progress}
-    calendarMonth={context.calendarMonth} onMonthChange={context.setCalendarMonth} onLogout={context.onLogout} /></AsyncBoundary></div>;
+  return <div className="dock-scroll"><AsyncBoundary><AccountWorkspace user={context.user} tracks={context.course.tracks} courseEntries={context.course.courses}
+    tracksLoaded={context.course.tracksLoaded} calendarMonth={context.calendarMonth}
+    onMonthChange={context.setCalendarMonth} onLogout={context.onLogout} /></AsyncBoundary></div>;
 }
 function AdminDockPanel({ api }: IDockviewPanelProps) {
   const { user } = useWorkspace();
