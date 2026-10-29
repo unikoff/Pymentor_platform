@@ -2,9 +2,11 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { createServer } from "vite";
 
-test("apiRequest sends API calls through the relative /api prefix", async () => {
+for (const [base, expected] of [["/", "/api/user/me"], ["/platform/", "/platform/api/user/me"]]) {
+ test(`apiRequest uses the configured base ${base}`, async () => {
   const vite = await createServer({
     configFile: false,
+    base,
     server: { middlewareMode: true },
   });
   const originalFetch = globalThis.fetch;
@@ -20,9 +22,10 @@ test("apiRequest sends API calls through the relative /api prefix", async () => 
     };
 
     await apiRequest("/user/me");
-    assert.equal(requestedUrl, "/api/user/me");
+    assert.equal(requestedUrl, expected);
   } finally {
     globalThis.fetch = originalFetch;
     await vite.close();
   }
-});
+ });
+}

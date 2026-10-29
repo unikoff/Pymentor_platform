@@ -57,6 +57,7 @@ jobs:
         working-directory: frontend
         run: |
           npm ci
+          node --test src/shared/api/client.test.mjs
           VITE_BASE=/platform/ npm run build
           grep -q '/platform/assets/' dist/index.html
 
