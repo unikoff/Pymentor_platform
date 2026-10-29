@@ -225,10 +225,7 @@ def list_bookable_slots(year: int, month: int, user_id: int, db: Session, *, now
         .order_by(models.BookingSlot.slot_date.asc(), models.BookingSlot.start_time.asc())
         .all()
     )
-    visible = [
-        slot for slot in slots
-        if slot.student_id == user_id or not _slot_is_past(slot, now=current_time)
-    ]
+    visible = [slot for slot in slots if not _slot_is_past(slot, now=current_time)]
     return [serialize_slot_student(slot, user_id, now=current_time) for slot in visible]
 
 
