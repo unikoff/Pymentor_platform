@@ -180,3 +180,82 @@ class BookingNotificationDeliveryState(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     blocked_until: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class Landing(Base):
+    """Stable backend identity and delivery switches for a public landing page."""
+
+    __tablename__ = "landings"
+    __table_args__ = (UniqueConstraint("slug", name="uq_landings_slug"),)
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    slug: Mapped[str] = mapped_column(String(80), nullable=False)
+    title: Mapped[str] = mapped_column(String(120), nullable=False)
+    description: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True, server_default="1")
+    telegram_enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default="0")
+    version: Mapped[int] = mapped_column(Integer, nullable=False, default=1, server_default="1")
+    config_version: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=_utcnow, onupdate=_utcnow)
+
+
+class LandingTelegramConfig(Base):
+    """Immutable destination version; credentials stay in the external secret store."""
+
+    __tablename__ = "landing_telegram_configs"
+    __table_args__ = (
+        UniqueConstraint("landing_id", "version", name="uq_landing_telegram_config_version"),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    landing_id: Mapped[str] = mapped_column(String(36), ForeignKey("landings.id", ondelete="CASCADE"), nullable=False)
+    version: Mapped[int] = mapped_column(Integer, nullable=False)
+    secret_ref: Mapped[str] = mapped_column(String(128), nullable=False)
+    chat_id: Mapped[str] = mapped_column(String(128), nullable=False)
+    bot_username: Mapped[str] = mapped_column(String(64), nullable=False, default="")
+    status: Mapped[str] = mapped_column(String(16), nullable=False, default="verified")
+    verified_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=_utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
+
+
+class LandingNotificationOutbox(Base):
+    """Allowlisted landing event routed to one immutable Telegram config version."""
+
+    __tablename__ = "landing_notification_outbox"
+    __table_args__ = (
+        UniqueConstraint("landing_id", "event_id", name="uq_landing_notification_event"),
+        Index("ix_landing_notification_ready", "status", "next_attempt_at"),
+        Index("ix_landing_notification_retention", "status", "sent_at"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    landing_id: Mapped[str] = mapped_column(String(36), ForeignKey("landings.id", ondelete="RESTRICT"), nullable=False)
+    destination_config_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("landing_telegram_configs.id", ondelete="RESTRICT"), nullable=False
+    )
+    event_id: Mapped[str] = mapped_column(String(128), nullable=False)
+    event_type: Mapped[str] = mapped_column(String(64), nullable=False)
+    schema_version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    payload_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
+    payload_sha256: Mapped[str] = mapped_column(String(64), nullable=False)
+    status: Mapped[str] = mapped_column(String(16), nullable=False, default="pending")
+    attempts: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    manual_retry_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
+    next_attempt_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=_utcnow)
+    locked_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    lock_token: Mapped[str | None] = mapped_column(String(36), nullable=True)
+    last_error: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
+    sent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+class LandingNotificationDeliveryState(Base):
+    """Per-bot Telegram rate-limit cooldown for landing notifications."""
+
+    __tablename__ = "landing_notification_delivery_state"
+
+    destination_config_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("landing_telegram_configs.id", ondelete="CASCADE"), primary_key=True
+    )
+    blocked_until: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)

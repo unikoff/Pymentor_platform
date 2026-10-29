@@ -10,7 +10,7 @@ from notifications.delivery import (
     _worker_lock,
     drain_notifications,
 )
-from notifications.telegram import _get_telegram_credentials
+from notifications.telegram import _get_telegram_credentials, has_landing_bot_credentials
 
 
 logger = logging.getLogger("pymentor.notifications.local")
@@ -44,7 +44,7 @@ class LocalNotificationDispatcher:
         missing_credentials_logged = False
         while not self.stop_event.is_set():
             try:
-                if _get_telegram_credentials() is None:
+                if _get_telegram_credentials() is None and not has_landing_bot_credentials():
                     if not missing_credentials_logged:
                         logger.error("telegram_credentials_missing queue_preserved=true")
                         missing_credentials_logged = True

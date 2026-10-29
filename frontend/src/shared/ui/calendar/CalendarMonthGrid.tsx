@@ -2,13 +2,16 @@ import { buildMonthCells, getLocalDateKey, getMonthTitle } from "../../lib/dates
 import { Check } from "lucide-react";
 import type { CalendarMonth } from "../../api/contracts/account";
 
-type CalendarMarker = "is-activity" | "is-free" | "is-booking";
+type CalendarMarker = "is-activity" | "is-free" | "is-booking" | "is-completed";
 
 type CalendarMonthGridProps = {
   month: CalendarMonth;
   activityDays: Set<string>;
   freeDays?: Set<string>;
+  freeSlotCounts?: ReadonlyMap<string, number>;
   bookingDays?: Set<string>;
+  completedDays?: Set<string>;
+  showCellEvents?: boolean;
   selectableDays?: Set<string>;
   selectedDay?: string | null;
   onSelectDay?: (dateKey: string) => void;
@@ -21,7 +24,10 @@ export function CalendarMonthGrid({
   month,
   activityDays,
   freeDays = new Set(),
+  freeSlotCounts,
   bookingDays = new Set(),
+  completedDays = new Set(),
+  showCellEvents = true,
   selectableDays = new Set(),
   selectedDay = null,
   onSelectDay,
@@ -40,7 +46,9 @@ export function CalendarMonthGrid({
 
           const hasActivity = activityDays.has(cell.dateKey);
           const hasFree = freeDays.has(cell.dateKey);
+          const freeSlotCount = freeSlotCounts?.get(cell.dateKey) ?? 1;
           const hasBooking = bookingDays.has(cell.dateKey);
+          const hasCompleted = completedDays.has(cell.dateKey);
           const isSelected = selectedDay === cell.dateKey;
           const dayClass = [
             "account-calendar__day",
@@ -48,19 +56,28 @@ export function CalendarMonthGrid({
             hasActivity ? "has-activity" : "",
             hasFree ? "has-free" : "",
             hasBooking ? "has-booking" : "",
+            hasCompleted ? "has-completed" : "",
             isSelected ? "is-selected" : "",
           ].filter(Boolean).join(" ");
           const dateLabel = new Date(month.year, month.month - 1, cell.day)
             .toLocaleDateString("ru-RU", { weekday: "long", day: "numeric", month: "long" });
           const statusLabel = [
-            hasFree && "есть свободные занятия",
+            hasFree && `есть свободные окна: ${freeSlotCount}`,
             hasBooking && "есть запись на занятие",
+            hasCompleted && "время занятия прошло",
             hasActivity && "была активность",
           ].filter(Boolean).join(", ");
-          const markers = (
+          const dayEvents = showCellEvents ? (
+            <span className="account-calendar__day-events" aria-hidden="true">
+              {hasFree && <span className="account-calendar__day-event is-free">Свободно · {freeSlotCount}</span>}
+              {hasBooking && <span className="account-calendar__day-event is-booking">Ваша запись</span>}
+              {hasCompleted && <span className="account-calendar__day-event is-completed">Занятие прошло</span>}
+            </span>
+          ) : (
             <span className="account-calendar__markers" aria-hidden="true">
               {hasFree && <i className="is-free" />}
               {hasBooking && <i className="is-booking" />}
+              {hasCompleted && <i className="is-completed" />}
             </span>
           );
           const dayContent = <>
@@ -68,7 +85,7 @@ export function CalendarMonthGrid({
               <span className="account-calendar__day-number">{cell.day}</span>
               {hasActivity && <Check className="account-calendar__visit-check" size={15} aria-hidden="true" />}
             </span>
-            {markers}
+            {dayEvents}
           </>;
 
           if (onSelectDay && selectableDays.has(cell.dateKey)) {

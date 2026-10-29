@@ -7,6 +7,8 @@ versions="$repo_root/scripts/local-k3s/tool-versions.env"
 # This file contains fixed public version strings only.
 # shellcheck disable=SC1090
 source "$versions"
+# shellcheck disable=SC1091
+source "$repo_root/scripts/local-k3s/local-image-refs.sh"
 
 usage() {
   echo "Usage: bash scripts/local-k3s/cluster.sh {create|start|stop|status|delete} {local-single|local-multinode}" >&2
@@ -64,6 +66,9 @@ else:
 case "$action" in
   create)
     require_tools
+    # Validate and tag locally built images before creating or resuming a cluster.
+    core_ref="$(prepare_local_image_ref pymentor/core-api:c1.3-local)"
+    frontend_ref="$(prepare_local_image_ref pymentor/frontend:c1.3-local)"
     docker pull --platform linux/amd64 "$K3S_LOCAL_PATH_IMAGE"
     if [[ "$(cluster_state)" != absent ]]; then
       echo "Resuming bootstrap for existing cluster: $cluster"
@@ -184,26 +189,14 @@ EOF
     if ! docker image inspect "$qualified_klipper_image" >/dev/null 2>&1; then
       docker pull --platform linux/amd64 "$qualified_klipper_image"
     fi
-    core_digest="$(docker image inspect --format '{{index .RepoDigests 0}}' pymentor/core-api:c1.3-local)"
-    frontend_digest="$(docker image inspect --format '{{index .RepoDigests 0}}' pymentor/frontend:c1.3-local)"
-    core_digest="${core_digest##*@}"
-    frontend_digest="${frontend_digest##*@}"
-    grep -Fq "$core_digest" "$chart_dir/values.yaml" || {
-      echo "Core image digest does not match the chart values: $core_digest" >&2
-      exit 1
-    }
-    grep -Fq "$frontend_digest" "$chart_dir/values.yaml" || {
-      echo "Frontend image digest does not match the chart values: $frontend_digest" >&2
-      exit 1
-    }
     node_images=(
       "$K3S_LOCAL_PATH_IMAGE"
       "${K3S_SYSTEM_IMAGES[@]}"
       "${K3S_SYSTEM_NORMALIZED_TAGS[@]}"
       "$qualified_klipper_image"
       "$traefik_normalized_tag"
-      pymentor/core-api:c1.3-local
-      pymentor/frontend:c1.3-local
+      "$core_ref"
+      "$frontend_ref"
     )
     node_images_archive="$klipper_context/pymentor-node-images.tar"
     docker save --output "$node_images_archive" "${node_images[@]}"
@@ -221,12 +214,6 @@ EOF
         cat "$node_image_import_log" >&2
         exit 1
       fi
-      docker exec "$node" /tmp/pymentor-ld-linux.so.2 --library-path /tmp /tmp/pymentor-ctr \
-        --address /run/k3s/containerd/containerd.sock --namespace k8s.io images tag \
-        docker.io/pymentor/core-api:c1.3-local "docker.io/pymentor/core-api@$core_digest"
-      docker exec "$node" /tmp/pymentor-ld-linux.so.2 --library-path /tmp /tmp/pymentor-ctr \
-        --address /run/k3s/containerd/containerd.sock --namespace k8s.io images tag \
-        docker.io/pymentor/frontend:c1.3-local "docker.io/pymentor/frontend@$frontend_digest"
       for index in "${!K3S_SYSTEM_IMAGES[@]}"; do
         docker exec "$node" /tmp/pymentor-ld-linux.so.2 --library-path /tmp /tmp/pymentor-ctr \
           --address /run/k3s/containerd/containerd.sock --namespace k8s.io images tag \
@@ -238,6 +225,8 @@ EOF
         "docker.io/$traefik_normalized_tag" "$qualified_traefik_image:$traefik_tag"
       docker exec "$node" crictl inspecti "$qualified_klipper_image" >/dev/null
       docker exec "$node" crictl inspecti "$K3S_LOCAL_PATH_IMAGE" >/dev/null
+      docker exec "$node" crictl inspecti "docker.io/$core_ref" >/dev/null
+      docker exec "$node" crictl inspecti "docker.io/$frontend_ref" >/dev/null
       for image in "${K3S_SYSTEM_IMAGES[@]}"; do
         docker exec "$node" crictl inspecti "docker.io/${image#docker.io/}" >/dev/null
       done
@@ -281,7 +270,10 @@ EOF
       --dry-run=client -o yaml | kubectl --context "$context" apply -f -
     helm upgrade --install pymentor "$chart_dir" \
       --kube-context "$context" --namespace pymentor --create-namespace \
-      --values "$values_file" --wait --timeout 8m
+      --values "$values_file" \
+      --set images.core.digest=null --set-string "images.core.tag=${core_ref##*:}" \
+      --set images.frontend.digest=null --set-string "images.frontend.tag=${frontend_ref##*:}" \
+      --wait --timeout 8m
     kubectl --context "$context" rollout status deployment/traefik -n kube-system --timeout=240s
     kubectl --context "$context" rollout status deployment/pymentor-core -n pymentor --timeout=240s
     kubectl --context "$context" rollout status deployment/pymentor-frontend -n pymentor --timeout=240s

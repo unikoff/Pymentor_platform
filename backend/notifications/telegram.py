@@ -43,6 +43,27 @@ def _get_telegram_credentials() -> tuple[str, str] | None:
     return token, chat_id
 
 
+def has_landing_bot_credentials() -> bool:
+    try:
+        values = json.loads(os.getenv("PYMENTOR_LANDING_BOT_CREDENTIALS", "{}"))
+    except (json.JSONDecodeError, TypeError):
+        return False
+    return isinstance(values, dict) and any(
+        isinstance(value, str) and bool(value.strip()) for value in values.values()
+    )
+
+
+def _get_landing_bot_token(secret_ref: str) -> str:
+    try:
+        values = json.loads(os.getenv("PYMENTOR_LANDING_BOT_CREDENTIALS", "{}"))
+    except (json.JSONDecodeError, TypeError):
+        values = {}
+    token = values.get(secret_ref) if isinstance(values, dict) else None
+    if not isinstance(token, str) or not token.strip() or len(token) > 512:
+        raise TelegramDeliveryError("Telegram destination secret is unavailable", retryable=False)
+    return token.strip()
+
+
 def _escape_markdown_v2(value: str) -> str:
     return _MARKDOWN_V2_SPECIAL_CHARS.sub(r"\\\1", value)
 
@@ -152,12 +173,12 @@ def _send_telegram_message(
             response_data = {}
         finally:
             exc.close()
-        _raise_telegram_error(response_data, fallback_code=exc.code)
+        _raise_telegram_error(response_data, fallback_code=exc.code, secret=token)
     if not response_data.get("ok"):
-        _raise_telegram_error(response_data, fallback_code=200)
+        _raise_telegram_error(response_data, fallback_code=200, secret=token)
 
 
-def _raise_telegram_error(response_data: dict, *, fallback_code: int) -> None:
+def _raise_telegram_error(response_data: dict, *, fallback_code: int, secret: str | None = None) -> None:
     error_code = response_data.get("error_code", fallback_code)
     try:
         error_code = int(error_code)
@@ -173,11 +194,75 @@ def _raise_telegram_error(response_data: dict, *, fallback_code: int) -> None:
     if error_code == 429 and retry_after is None:
         retry_after = 60
     retryable = error_code == 429 or error_code >= 500
+    if secret:
+        description = description.replace(secret, "[redacted]")
     raise TelegramDeliveryError(
         f"Telegram error {error_code}: {description}",
         retryable=retryable,
         retry_after_seconds=retry_after,
     )
+
+
+def _telegram_api_get(*, token: str, method: str, params: dict[str, str] | None = None) -> dict:
+    query = f"?{urlencode(params)}" if params else ""
+    telegram_request = request.Request(
+        f"https://api.telegram.org/bot{token}/{method}{query}",
+        headers={"Accept": "application/json"},
+        method="GET",
+    )
+    try:
+        with request.urlopen(telegram_request, timeout=10) as response:
+            response_data = json.loads(response.read(16_384).decode("utf-8"))
+    except error.HTTPError as exc:
+        try:
+            response_data = json.loads(exc.read(16_384).decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError):
+            response_data = {}
+        finally:
+            exc.close()
+        _raise_telegram_error(response_data, fallback_code=exc.code, secret=token)
+    except (error.URLError, OSError, TimeoutError, UnicodeDecodeError, json.JSONDecodeError):
+        raise TelegramDeliveryError("Telegram connection check failed", retryable=True) from None
+
+    if not isinstance(response_data, dict):
+        raise TelegramDeliveryError("Telegram returned an invalid response", retryable=False)
+    if not response_data.get("ok"):
+        _raise_telegram_error(response_data, fallback_code=200, secret=token)
+    result = response_data.get("result")
+    if not isinstance(result, dict):
+        raise TelegramDeliveryError("Telegram returned an invalid response", retryable=False)
+    return result
+
+
+def verify_telegram_destination(token: str, chat_id: str) -> str:
+    """Validate the bot token and its access to a chat without sending a message."""
+    bot = _telegram_api_get(token=token, method="getMe")
+    if bot.get("is_bot") is not True:
+        raise TelegramDeliveryError("Telegram credential is not a bot token", retryable=False)
+    chat = _telegram_api_get(token=token, method="getChat", params={"chat_id": chat_id})
+    if str(chat.get("id", "")) != str(chat_id):
+        raise TelegramDeliveryError("Telegram chat could not be verified", retryable=False)
+    return str(bot.get("username") or bot.get("first_name") or "")[:64]
+
+
+def send_landing_notification(
+    *,
+    token: str,
+    chat_id: str,
+    landing_slug: str,
+    event_id: str,
+    event_type: str,
+    payload: dict,
+) -> None:
+    """Send the only enabled v1 landing event: an admin-requested connection test."""
+    if event_type != "telegram_connection_test.v1" or payload != {}:
+        raise TelegramDeliveryError("Unknown landing notification event", retryable=False)
+    message = (
+        "🧪 *Проверка подключения Telegram*\n\n"
+        f"Лендинг: *{_escape_markdown_v2(landing_slug)}*\n"
+        f"Событие: `{_escape_markdown_v2(event_id)}`"
+    )
+    _send_telegram_message(token=token, chat_id=chat_id, text=message)
 
 
 def send_booking_created_notification(

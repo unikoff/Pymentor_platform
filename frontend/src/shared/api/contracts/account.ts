@@ -5,6 +5,7 @@ export type StudentSlot = {
   duration_minutes: number;
   status: "free" | "mine";
   can_cancel: boolean;
+  is_completed?: boolean;
 };
 
 export type QuotaStatus = {
@@ -32,4 +33,6 @@ export type ActivitySummaryResponse = {
   current_streak: number;
   visited_today: boolean;
   total_active_days: number;
+  weekly_activity?: { activity_date: string; active: boolean }[];
+  weekly_lessons_completed?: { activity_date: string; lessons_completed: number }[];
 };

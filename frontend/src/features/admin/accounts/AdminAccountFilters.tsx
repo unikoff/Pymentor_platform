@@ -15,23 +15,29 @@ export function AdminAccountFilters({ search, filters, month, onSearch, onChange
           placeholder="Поиск по имени или email" aria-label="Поиск по имени или email" />
       </label>
       <div className="admin-filters__options">
-        <select aria-label="Подписка" value={filters.subscription}
-          onChange={(event) => onChange({ ...filters, subscription: event.target.value as Filters["subscription"] })}>
-          <option value="all">Все подписки</option>
-          <option value="active">Активна</option>
-          <option value="inactive">Не активна</option>
-        </select>
-        <select aria-label={`Остаток занятий за ${getMonthTitle(month)}`} value={filters.lessons}
-          onChange={(event) => onChange({ ...filters, lessons: event.target.value as Filters["lessons"] })}>
-          <option value="all">Любое количество</option>
-          <option value="none">Нет занятий</option>
-          <option value="low">От 1 до 3</option>
-          <option value="many">4 и больше</option>
-        </select>
+        <label className="admin-filter-field">
+          <span>Подписка</span>
+          <select value={filters.subscription}
+            onChange={(event) => onChange({ ...filters, subscription: event.target.value as Filters["subscription"] })}>
+            <option value="all">Все подписки</option>
+            <option value="active">Активна</option>
+            <option value="inactive">Не активна</option>
+          </select>
+        </label>
+        <label className="admin-filter-field">
+          <span>Занятия · {getMonthTitle(month)}</span>
+          <select value={filters.lessons}
+            onChange={(event) => onChange({ ...filters, lessons: event.target.value as Filters["lessons"] })}>
+            <option value="all">Любой остаток</option>
+            <option value="none">Нет занятий</option>
+            <option value="low">От 1 до 3</option>
+            <option value="many">4 и больше</option>
+          </select>
+        </label>
         {(search || filters.subscription !== "all" || filters.lessons !== "all") && (
           <button className="admin-filters__reset" type="button" onClick={() => {
             onSearch(""); onChange({ subscription: "all", lessons: "all" });
-          }}><RotateCcw size={14} aria-hidden="true" /> Сбросить</button>
+          }}><RotateCcw size={14} aria-hidden="true" /> Очистить</button>
         )}
       </div>
     </div>

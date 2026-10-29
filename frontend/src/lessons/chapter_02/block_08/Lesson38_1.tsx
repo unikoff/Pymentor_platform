@@ -16,7 +16,6 @@ import {
   RichLesson,
   Section,
   StepThrough,
-  TheoryBridge,
   TrueFalse,
 } from "../../shared";
 
@@ -57,11 +56,21 @@ export function Lesson38_1({ module }: { module?: string }) {
             },
           ]}
         />
+        <CodeBlock
+          caption="До fixture: две независимые подготовки"
+          code={'def test_add_item():\n    items = []            # Arrange\n    items.append("A")     # Act\n    assert items == ["A"] # Assert\n\n\ndef test_starts_empty():\n    items = []            # Arrange\n    assert items == []    # Assert'}
+        />
         <p>
-          Мы будем двигаться от повторяющейся подготовки к её времени жизни, затем проследим передачу объектов через
-          fixtures и только после этого посмотрим на параметризацию. Так новая запись сокращает служебный Arrange, но
-          не скрывает действие сервиса и наблюдаемое ожидание.
+          Здесь повторяется создание пустого списка, но действие <code>append</code> нужно только первому тесту.
+          Если добавить его в общую подготовку, второй тест перестанет проверять пустое начало. В Planner точно так же
+          вынесем конструкторы, а добавление задач и ожидания оставим в сценариях.
         </p>
+        <Callout tone="info">
+          Проверьте себя до изучения pytest: если заменить два выражения <code>items = []</code> одним глобальным
+          <code>items = []</code>, второй тест начнёт зависеть от того, запускался ли первый. Независимость означает,
+          что начальные данные каждого сценария определяются его собственной подготовкой. Порядок выполнения тестов
+          больше не должен менять ожидаемый ответ.
+        </Callout>
       </Section>
 
       <Section number="01" title="Fixture готовит условие, тест проверяет поведение">
@@ -77,15 +86,14 @@ export function Lesson38_1({ module }: { module?: string }) {
           чтобы собрать PlannerService. Это не особый storage и не новый объектный фреймворк: классы и передача
           зависимости работают так же, как раньше.
         </p>
-        <p>
-          Представим, что перед опытом мы раскладываем на столе чистые инструменты. Подготовленная полка экономит
-          повторную раскладку, но не выполняет сам опыт и не выбирает, какой вывод считать правильным. Так и fixture
-          отвечает за повторяемую часть Arrange, а тест сохраняет Act и Assert. Граница аналогии: pytest не хранит
-          физическую полку, а создаёт и передаёт значения Python во время запуска теста.
-        </p>
+        <Callout tone="info">
+          Синтаксис состоит из трёх частей: <code>import pytest</code> подключает библиотеку,
+          <code>@pytest.fixture</code> отмечает функцию подготовки, а параметр теста с тем же именем запрашивает
+          её результат. <code>return</code> передаёт объект тесту; <code>print</code> его не заменяет.
+        </Callout>
         <CodeBlock
           caption="fixture для одного значения"
-          code={'@pytest.fixture\ndef memory_storage():\n    return MemoryStorage()\n\n\ndef test_empty_storage_is_empty(memory_storage):\n    assert memory_storage.load() == []'}
+          code={'import pytest\n\n\n@pytest.fixture\ndef memory_storage():\n    return MemoryStorage()\n\n\ndef test_empty_storage_is_empty(memory_storage):\n    assert memory_storage.load() == []'}
         />
         <p>
           Имя параметра теста совпадает с именем fixture. Мы не вызываем memory_storage() внутри теста: pytest видит
@@ -93,6 +101,11 @@ export function Lesson38_1({ module }: { module?: string }) {
           возвращать значение, которым сценарий действительно пользуется, а не печатать его или делать проверку за
           тест.
         </p>
+        <Callout tone="info">
+          Если pytest сообщает <code>fixture 'memory_storage' not found</code>, сначала проверьте написание имени и
+          доступность определения в тестовом файле. В обычном вызове теста pytest сам передаёт аргумент: вручную
+          вызывать fixture из теста не требуется.
+        </Callout>
         <QuizCard
           question="Где остаётся проверяемое действие после появления fixture?"
           options={[
@@ -112,17 +125,14 @@ export function Lesson38_1({ module }: { module?: string }) {
           Тесты получают независимую отправную точку и могут выполняться отдельно или вместе без зависимости от
           соседнего сценария.
         </Lead>
+        <CodeBlock
+          caption="Два имени у одного списка"
+          code={'first = []\nsecond = first\nfirst.append("A")\n\nassert second == ["A"]  # second видит изменение'}
+        />
         <p>
-          Здесь помогает образ чистого листа для каждого опыта. Записи в новом листе не переносятся в следующий, если
-          мы начинаем новый опыт с отдельного листа. Но если вместо нового листа каждый раз выдавать ссылку на один
-          общий блокнот, одинаковый конверт ничего не исправит. Так и function scope определяет, как часто вызывается
-          fixture, но не копирует автоматически тот объект, который функция возвращает.
-        </p>
-        <p>
-          Например, функция fixture может возвращать переменную, созданную один раз на уровне модуля. Тогда все
-          вызовы получат одну и ту же ссылку, хотя сама fixture function-scoped. Поэтому свежесть обеспечивается
-          созданием нового MemoryStorage внутри fixture и отсутствием общего изменяемого service или списка, а не
-          одним фактом наличия декоратора.
+          <code>second = first</code> копирует ссылку, а не список. Такой же эффект возникает, если fixture каждый
+          раз возвращает глобальный <code>shared_storage</code>. Pytest заново вызывает функцию fixture, но все вызовы
+          получают один старый экземпляр. Для свежести создавайте <code>MemoryStorage()</code> внутри функции.
         </p>
         <BugHunt
           code={'shared_storage = MemoryStorage()\n\n@pytest.fixture\ndef memory_storage():\n    return shared_storage'}
@@ -133,14 +143,25 @@ export function Lesson38_1({ module }: { module?: string }) {
             "MemoryStorage всегда читает данные с диска",
           ]}
           correctIndex={0}
-          explanation="Мы нашли общий объект на уровне модуля. Fixture возвращает тот же service boundary для всех тестов; новый экземпляр нужно создать внутри функции."
+          explanation="Общий MemoryStorage создан до запуска тестов. Каждый вызов fixture возвращает одну и ту же ссылку. Новый MemoryStorage нужно создавать внутри fixture."
           fix={'@pytest.fixture\ndef memory_storage():\n    return MemoryStorage()'}
         />
+        <CodeBlock
+          caption="Новый внешний список, прежняя вложенная Task"
+          code={'task = Task(1, "Python")\nfirst = [task]\nsecond = list(first)  # новый список, та же Task\n\nfirst[0].is_done = True\nassert second[0].is_done is True'}
+        />
         <Callout tone="info">
-          Свежий контейнер также не равен глубокой копии его содержимого. MemoryStorage копирует список, но вложенная
-          Task остаётся тем же объектом. Для теста независимости tags создаём новые Task в сценарии, а не делим один
-          изменяемый список между тестами.
+          <code>first</code> и <code>second</code> здесь разные списки, но внутри лежит один объект
+          <code>Task</code>. Копирование контейнера не создаёт новую Task. Поэтому проверки независимых
+          <code>tags</code> выполняем на двух отдельно созданных задачах. Это свойство ссылок Python, а не
+          обещание конкретной реализации <code>MemoryStorage</code>.
         </Callout>
+        <p>
+          На практике плохой тест с общим объектом иногда проходит сам по себе и падает при запуске всего файла:
+          предыдущий сценарий успел что-то добавить в память. Исправление состоит в создании нового объекта для
+          каждого тестового вызова. Очистка глобального списка после проверки хрупка: если тест оборвётся раньше
+          очистки, следующий всё равно может получить чужое состояние.
+        </p>
         <TrueFalse
           statement={<>Если fixture имеет function scope, pytest глубоко копирует каждый объект внутри её результата.</>}
           isTrue={false}
@@ -182,7 +203,7 @@ export function Lesson38_1({ module }: { module?: string }) {
           сервис.
         </p>
         <StepThrough
-          code={'@pytest.fixture\ndef memory_storage():\n    return MemoryStorage()\n\n@pytest.fixture\ndef service(memory_storage):\n    return PlannerService(memory_storage)\n\ndef test_add_task(service, memory_storage):\n    created = service.add_task("Python")'}
+          code={'@pytest.fixture\ndef memory_storage():\n    return MemoryStorage()\n\n@pytest.fixture\ndef service(memory_storage):\n    return PlannerService(memory_storage)\n\ndef test_add_task(service, memory_storage):\n    created = service.add_task("Python")\n    assert created.title == "Python"\n    assert [task.title for task in memory_storage.load()] == ["Python"]'}
           steps={[
             { line: 8, note: "pytest обнаруживает параметры теста и разрешает service и memory_storage." },
             { line: 5, note: "Для service сначала нужна fixture memory_storage, поэтому выполняется её подготовка." },
@@ -190,12 +211,14 @@ export function Lesson38_1({ module }: { module?: string }) {
             { line: 6, note: "Fixture сервиса получает результат memory_storage и передаёт его конструктору PlannerService." },
             { line: 8, note: "Обе fixtures теперь доступны тесту; запрошенная зависимость storage одна и та же." },
             { line: 9, note: "Начинается Act: тест добавляет задачу через публичный метод сервиса." },
+            { line: 10, note: "Первый Assert проверяет возвращённый объект: заголовок соответствует вводу." },
+            { line: 11, note: "Второй Assert наблюдает запись через ту же память, которую получил сервис." },
           ]}
         />
         <p>
-          Мы не создаём один service глобально, не используем autouse и не вводим yield или широкие области времени
-          жизни. Эти возможности нужны для других задач. Здесь достаточно обычной function-scoped подготовки, чья
-          зависимость отражена параметром функции.
+          Внутри одного запуска pytest сохраняет уже подготовленный результат fixture. Поэтому оба аргумента
+          <code>service</code> и <code>memory_storage</code> связаны с одной памятью. При следующем запуске
+          pytest построит новые экземпляры. Здесь не нужны более широкие scopes или автоматические fixtures.
         </p>
       </Section>
 
@@ -211,11 +234,14 @@ export function Lesson38_1({ module }: { module?: string }) {
           именно поиска и остаётся в этом тесте. Fixture общего назначения не должна прятать причину, по которой
           подготовленные данные нужны.
         </p>
+        <CodeBlock
+          caption="До: создание зависимостей повторяется в тесте"
+          code={'def test_add_task():\n    storage = MemoryStorage()\n    service = PlannerService(storage)\n    created = service.add_task("Python", priority=3)\n    assert created.title == "Python"'}
+        />
         <p>
-          Полезно думать о fixture как о рецепте приготовления одной базовой заготовки. Мы можем повторить рецепт с
-          чистыми ингредиентами, но начинку и ожидаемый результат выбираем для конкретного блюда. Аналогия ограничена:
-          тестовые данные не являются едой, а сохранность mutable объектов определяется ссылками, не чистотой кухни.
-          Поэтому мы всё равно проверяем, какие значения принадлежат fixture, тесту и самой модели.
+          После переноса первые две строки станут общей подготовкой, а проверка останется прежней. Для теста поиска
+          добавление искомых задач остаётся в его теле: без этих данных именно этот сценарий нечего проверять.
+          Перенос <code>add_task</code> в fixture для всех тестов сломал бы тест пустого списка.
         </p>
         <CodeBlock
           caption="одна подготовка, отдельное действие"
@@ -227,6 +253,12 @@ export function Lesson38_1({ module }: { module?: string }) {
           Unknown id тоже остаётся отдельной проверкой: она должна подтвердить TaskNotFoundError и отсутствие
           изменения состояния, а не затеряться среди успешных примеров.
         </p>
+        <Callout tone="info">
+          Сравните тест до и после переноса: вход <code>"Python"</code>, вызов <code>add_task</code> и проверка
+          <code>created.title</code> совпадают. Изменилось только место создания зависимостей. Если после
+          рефакторинга исчез исходный <code>assert</code> или появился заранее добавленный Task, мы изменили смысл
+          теста. Такой рефакторинг нельзя считать успешным даже при зелёном результате запуска.
+        </Callout>
         <MatchPairs
           prompt="Соединим элемент теста с его ответственностью."
           leftTitle="Элемент"
@@ -248,14 +280,13 @@ export function Lesson38_1({ module }: { module?: string }) {
           одного запуска, pytest отдельно выполняет тест для каждой строки.
         </Lead>
         <p>
-          Представим один бланк проверки с несколькими подставленными числами. Мы не переписываем всю процедуру для
-          priority 1 и 5, а меняем конкретное значение и наблюдаем, принимается ли оно на границе. Но таблица не должна
-          складывать несвязанные договоры. Проверка пустого title, неизвестного id и сохранения после add отвечают на
-          разные вопросы и остаются разными тестами.
+          Декоратор задаёт имена и значения параметров. Pytest создаёт отдельный запуск на каждую строку таблицы,
+          а function-scoped fixtures этого запуска тоже готовятся заново. Для границ допустимого <code>priority</code>
+          достаточно двух значений, <code>1</code> и <code>5</code>; отказ за границами проверяем другим тестом.
         </p>
         <CodeBlock
           caption="две отдельные стороны диапазона"
-          code={'@pytest.mark.parametrize("priority", [1, 5])\ndef test_task_accepts_priority_boundaries(priority):\n    task = Task(1, "Python", priority=priority)\n\n    assert task.priority == priority\n\n\n@pytest.mark.parametrize("priority", [0, 6])\ndef test_task_rejects_priority_outside_range(priority):\n    with pytest.raises(ValueError):\n        Task(1, "Python", priority=priority)'}
+          code={'@pytest.mark.parametrize("priority", [1, 5])\ndef test_task_accepts_priority_boundaries(priority):\n    task = Task(1, "Python", priority=priority)\n    assert task.priority == priority\n\n\n@pytest.mark.parametrize("priority", [0, 6])\ndef test_task_rejects_priority_outside_range(priority):\n    with pytest.raises(ValueError):\n        Task(1, "Python", priority=priority)'}
         />
         <p>
           Имя "priority" внутри декоратора должно совпадать с параметром функции. Значения из списка подставляются
@@ -268,6 +299,10 @@ export function Lesson38_1({ module }: { module?: string }) {
           проверить несколько запросов с разным регистром и соответствующими результатами. Каждый набор параметров
           должен иметь одну ясную причину ожидания.
         </p>
+        <CodeBlock
+          caption="Один договор: пустой title недопустим"
+          code={'@pytest.mark.parametrize("title", ["", "   "])\ndef test_task_rejects_blank_title(title):\n    with pytest.raises(ValueError):\n        Task(1, title)'}
+        />
         <QuizCard
           question="Какие примеры удобнее объединить одной параметризацией?"
           options={[
@@ -278,14 +313,20 @@ export function Lesson38_1({ module }: { module?: string }) {
           correctIndex={0}
           explanation="Мы объединяем входы, которые проверяют один договор и имеют одинаковую форму ожидания. Разные действия сохраняют отдельные тесты."
         />
+        <Callout tone="info">
+          Если в декораторе написано <code>"priority"</code>, тест обязан принимать параметр
+          <code>priority</code>. Для двух значений pytest покажет два случая, например с суффиксами
+          <code>[1]</code> и <code>[5]</code>. При ошибке одного случая сразу видно проблемный вход.
+          Параметры не превращаются в цикл внутри теста: каждый случай запускает всю тестовую функцию отдельно.
+        </Callout>
         <CodeBlock
           caption="варианты одного поискового договора"
-          code={'@pytest.mark.parametrize(\n    ("query", "expected_titles"),\n    [("python", ["Python"]), ("readme", ["README"])],\n)\ndef test_search_is_case_insensitive(service, query, expected_titles):\n    service.add_task("Python")\n    service.add_task("README")\n\n    found = service.search_tasks(query)\n\n    assert [task.title for task in found] == expected_titles'}
+          code={'@pytest.mark.parametrize(\n    ("query", "expected_titles"),\n    [("PYTHON", ["Python"]), ("ReAdMe", ["README"])],\n)\ndef test_search_is_case_insensitive(service, query, expected_titles):\n    service.add_task("Python")\n    service.add_task("README")\n\n    found = service.search_tasks(query)\n    assert [task.title for task in found] == expected_titles'}
         />
         <p>
-          В этом примере меняется пара query/expected_titles, а правило одно: поиск находит заголовок без зависимости
-          от регистра и возвращает исходную задачу. Параметризация не заменяет Arrange–Act–Assert. Мы всё ещё видим,
-          какие данные подготавливаются, что вызывается и какой результат сравнивается.
+          Здесь два параметра подставляются парой: <code>query</code> и <code>expected_titles</code>.
+          Оба входа проверяют регистронезависимый поиск; ожидаемые заголовки при этом разные. Исходные задачи
+          добавляются в каждом запуске, поэтому второй вариант не наследует данные первого.
         </p>
       </Section>
 
@@ -301,27 +342,38 @@ export function Lesson38_1({ module }: { module?: string }) {
           service fixture сам по себе этого свойства не доказывает: он создаёт сервис и storage, а тест должен назвать
           проверяемое правило модели.
         </p>
+        <CodeBlock
+          caption="Две отдельные Task с независимыми tags"
+          code={'def test_tags_are_independent():\n    first = Task(1, "Python")\n    second = Task(2, "Tests")\n    first.tags.append("pytest")\n\n    assert first.tags == ["pytest"]\n    assert second.tags == []'}
+        />
         <p>
-          Мы не используем autouse, чтобы неподписанные зависимости внезапно появлялись в каждом тесте, и не кладём
-          mutable service на уровень модуля. Не добавляем глобальную фикстуру с общими Task и не очищаем её после
-          теста, рассчитывая восстановить порядок. Function scope даёт простой договор: каждый запуск начинает с
-          объектов, созданных его подготовкой.
+          Этот тест защищает <code>default_factory</code> модели Task: изменение списка <code>first.tags</code>
+          не должно затронуть <code>second.tags</code>. Ему не нужен сервис, потому что правило относится к самой
+          модели. Отдельный тест отказа сервиса должен проверить ещё и сохранность данных после исключения.
         </p>
         <StepThrough
-          code={'@pytest.mark.parametrize("priority", [0, 6])\ndef test_task_rejects_priority(priority):\n    with pytest.raises(ValueError):\n        Task(1, "Python", priority=priority)'}
+          code={'def test_unknown_id_keeps_state(service):\n    service.add_task("Python")\n    before = [task.title for task in service.list_tasks()]\n    with pytest.raises(TaskNotFoundError):\n        service.get_task(999)\n    after = [task.title for task in service.list_tasks()]\n    assert after == before'}
           steps={[
-            { line: 0, note: "pytest создаёт отдельный запуск для priority=0, затем для priority=6." },
-            { line: 1, note: "Функция получает одно значение текущего случая." },
-            { line: 2, note: "Тест объявляет конкретное ожидаемое исключение." },
-            { line: 3, note: "Для каждого значения конструктор должен отклонить вход с ValueError." },
+            { line: 1, note: "Arrange: добавляем одну известную задачу, чтобы было что сохранить при отказе." },
+            { line: 2, note: "Снимок до вызова нужен для сравнения состояния." },
+            { line: 3, note: "Ожидаем именно TaskNotFoundError, а не любую ошибку." },
+            { line: 4, note: "Act: запрашиваем неизвестный id; pytest проверяет тип исключения." },
+            { line: 5, note: "После отказа снова читаем список из сервиса." },
+            { line: 6, note: "Assert: существующие задачи остались теми же." },
           ]}
         />
         <p>
-          В отчёте тесты одной параметризации получают отдельные идентификаторы, поэтому неисправную строку проще
-          обнаружить. Если причины ошибок разные, отдельные функции дают яснее имя и ожидание. Мы выбираем форму не
-          для уменьшения количества строк любой ценой, а чтобы следующий читатель быстро понял, какой договор
-          защищает каждое падение.
+          Для <code>mark_done</code> нужен ещё один тест: завершить первую из двух задач и подтвердить, что вторая
+          осталась незавершённой. Нельзя объединить его с неизвестным id только ради одной таблицы: действия и
+          ожидаемые результаты отличаются. Запускайте выбранные тесты по отдельности и вместе, чтобы проверить
+          независимость от порядка.
         </p>
+        <Callout tone="info">
+          Проверку проводим из корня учебного проекта: сначала <code>python -m pytest tests/test_models.py -q</code>,
+          затем <code>python -m pytest tests/test_services.py -q</code> и <code>python -m pytest -q</code>.
+          Все три запуска должны пройти. Если только общий запуск падает, найдите первое изменение состояния,
+          которое могло перейти между тестами. Успех отдельного теста ещё не доказывает отсутствие общих ссылок.
+        </Callout>
       </Section>
 
       <Section number="07" title="Что мы будем делать в практике">

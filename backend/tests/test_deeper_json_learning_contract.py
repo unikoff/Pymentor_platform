@@ -49,7 +49,8 @@ class JsonLessonContractTests(unittest.TestCase):
         lines = self.run_example(2, namespace)
         self.assertEqual(lines, ["True", "False", "False"])
         self.cli.run = lambda tasks: None  # list / exit do not mutate the list.
-        self.assertEqual(self.run_example(4, namespace), ["True"])
+        lines = self.run_example(4, namespace)
+        self.assertEqual([line.split(":", 1)[0] for line in lines], ["original", "restored"])
         self.assertEqual(namespace["restored"], self.records)
 
     def test_full_round_trip_preserves_values_and_creates_new_containers(self):
@@ -66,7 +67,10 @@ class JsonLessonContractTests(unittest.TestCase):
             self.assertIsInstance(result["is_done"], bool)
 
     def test_invalid_syntax_is_distinct_from_empty_or_unvalidated_data(self):
-        self.assertEqual(self.run_example(3, {}), ["[]", "{'id': 1, 'title': 8}", "JSONDecodeError"])
+        self.assertEqual(
+            self.run_example(3, {}),
+            ["[]", "{'id': 1, 'title': 8}", "JSONDecodeError", "True"],
+        )
         with self.assertRaises(json.JSONDecodeError):
             self.storage.decode_tasks("[")
 

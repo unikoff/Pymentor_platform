@@ -74,7 +74,7 @@ def get_activity_records(user_id: int, year: int, month: int, db: Session) -> li
     return rows
 
 
-def get_activity_summary(user_id: int, db: Session) -> dict[str, int | bool]:
+def get_activity_summary(user_id: int, db: Session) -> dict[str, int | bool | list[dict[str, str | bool | int]]]:
     today = datetime.now(MOSCOW_TZ).date()
     activity_dates = {
         row.activity_date
@@ -94,8 +94,41 @@ def get_activity_summary(user_id: int, db: Session) -> dict[str, int | bool]:
     while current_day in activity_dates:
         current_streak += 1
         current_day -= timedelta(days=1)
+    period_start = today - timedelta(days=6)
+    period_end = today + timedelta(days=1)
+    period_start_utc = datetime.combine(period_start, datetime.min.time(), tzinfo=MOSCOW_TZ).astimezone(timezone.utc)
+    period_end_utc = datetime.combine(period_end, datetime.min.time(), tzinfo=MOSCOW_TZ).astimezone(timezone.utc)
+    lessons_by_date = {period_start + timedelta(days=day_offset): 0 for day_offset in range(7)}
+    lesson_completion_rows = (
+        db.query(models.UserLessonProgress.completed_at)
+        .filter(
+            models.UserLessonProgress.user_id == user_id,
+            models.UserLessonProgress.completed_at >= period_start_utc,
+            models.UserLessonProgress.completed_at < period_end_utc,
+        )
+        .all()
+    )
+    for (completed_at,) in lesson_completion_rows:
+        normalized_at = completed_at if completed_at.tzinfo else completed_at.replace(tzinfo=timezone.utc)
+        completed_date = normalized_at.astimezone(MOSCOW_TZ).date()
+        if completed_date in lessons_by_date:
+            lessons_by_date[completed_date] += 1
     return {
         "current_streak": current_streak,
         "visited_today": visited_today,
         "total_active_days": len(activity_dates),
+        "weekly_activity": [
+            {
+                "activity_date": (period_start + timedelta(days=day_offset)).isoformat(),
+                "active": period_start + timedelta(days=day_offset) in activity_dates,
+            }
+            for day_offset in range(7)
+        ],
+        "weekly_lessons_completed": [
+            {
+                "activity_date": day.isoformat(),
+                "lessons_completed": lessons_by_date[day],
+            }
+            for day in (period_start + timedelta(days=day_offset) for day_offset in range(7))
+        ],
     }

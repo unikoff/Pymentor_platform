@@ -48,6 +48,6 @@ else
   docker tag pymentor/frontend:c1.2-local pymentor/frontend:c1.3-local
 fi
 
-printf '\nPinned local repository digests for deploy/helm/pymentor/values.yaml:\n'
+printf '\nLocal image IDs (cluster bootstrap derives a content tag automatically):\n'
 docker image inspect pymentor/core-api:c1.3-local pymentor/frontend:c1.3-local \
-  --format '{{.RepoTags}} {{range .RepoDigests}}{{.}} {{end}}'
+  --format '{{.RepoTags}} {{.Id}}'

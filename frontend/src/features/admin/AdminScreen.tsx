@@ -1,8 +1,8 @@
-import "./dashboard.css";
+import "./admin.css";
 import { useCallback, useEffect, useState } from "react";
-import { CalendarClock, CalendarDays, ChevronRight, LayoutDashboard, ShieldCheck, User } from "lucide-react";
+import { ArrowLeft, CalendarClock, CalendarDays, ChevronRight, LayoutDashboard, User } from "lucide-react";
 import { searchAdminAccounts } from "./api";
-import { formatSubscriptionDate, getInitialCalendarMonth } from "../../shared/lib/dates";
+import { formatSubscriptionDate, getInitialCalendarMonth, getMonthTitle } from "../../shared/lib/dates";
 import { AdminAccountFilters } from "./accounts/AdminAccountFilters";
 import type { AdminAccountFilters as AccountFilters } from "../../shared/api/contracts/admin";
 import { lazyNamed } from "../../shared/ui/async-boundary/lazyNamed";
@@ -27,8 +27,18 @@ function formatSubscriptionPlan(value?: string | null) {
   return plan.charAt(0).toLocaleUpperCase("ru-RU") + plan.slice(1);
 }
 
+function formatAccountCount(count: number) {
+  const lastTwo = count % 100;
+  const last = count % 10;
+  const noun = lastTwo >= 11 && lastTwo <= 14 ? "аккаунтов"
+    : last === 1 ? "аккаунт"
+      : last >= 2 && last <= 4 ? "аккаунта" : "аккаунтов";
+  return `${count} ${noun}`;
+}
+
 export function AdminScreen() {
   const [adminTab, setAdminTab] = useState<"overview" | "accounts" | "slots" | "calendar">("overview");
+  const [returnTab, setReturnTab] = useState<"overview" | "accounts" | "slots" | "calendar">("accounts");
   const [openStudentId, setOpenStudentId] = useState<number | null>(null);
   const [search, setSearch] = useState("");
   const [filters, setFilters] = useState<AccountFilters>({ subscription: "all", lessons: "all" });
@@ -39,10 +49,24 @@ export function AdminScreen() {
   const [error, setError] = useState("");
   // Меняется после удаления аккаунта, чтобы список перезапросился.
   const [reloadKey, setReloadKey] = useState(0);
-  const openStudent = useCallback((studentId: number) => {
+  const openStudent = useCallback((studentId: number, fromTab: "overview" | "accounts" | "slots" | "calendar" = "accounts") => {
+    setReturnTab(fromTab);
     setOpenStudentId(studentId);
     setAdminTab("accounts");
   }, []);
+
+  const closeStudentProfile = useCallback(() => {
+    setOpenStudentId(null);
+    setAdminTab(returnTab);
+    setReloadKey((key) => key + 1);
+  }, [returnTab]);
+
+  const returnLabel = {
+    overview: "К обзору",
+    accounts: "К аккаунтам",
+    slots: "К слотам записи",
+    calendar: "К календарю",
+  }[returnTab];
 
   useEffect(() => {
     if (adminTab !== "accounts" || openStudentId !== null) return;
@@ -80,22 +104,12 @@ export function AdminScreen() {
   }, [adminTab, openStudentId, search, filters.subscription, filters.lessons, quotaMonth, reloadKey]);
 
   return (
-      <section className="admin-panel" aria-label="Админ-панель">
-        <header className="admin-head">
-          <div className="admin-title">
-            <span className="admin-title-icon"><ShieldCheck size={21} /></span>
-            <div>
-              <h1>Админ-панель</h1>
-              <p>Аккаунты, подписки и расписание занятий.</p>
-            </div>
-          </div>
-        </header>
-
-        <div className="admin-tabs">
+      <section className={`admin-panel ${adminTab === "calendar" ? "admin-panel--calendar" : ""}`} aria-label="Админ-панель">
+        <nav className="admin-tabs" aria-label="Разделы админ-панели">
           <button
             type="button"
             className={adminTab === "overview" ? "is-active" : ""}
-            aria-pressed={adminTab === "overview"}
+            aria-current={adminTab === "overview" ? "page" : undefined}
             onClick={() => { setAdminTab("overview"); setOpenStudentId(null); }}
           >
             <LayoutDashboard size={15} /> Обзор
@@ -103,7 +117,7 @@ export function AdminScreen() {
           <button
             type="button"
             className={adminTab === "accounts" ? "is-active" : ""}
-            aria-pressed={adminTab === "accounts"}
+            aria-current={adminTab === "accounts" ? "page" : undefined}
             onClick={() => { setAdminTab("accounts"); setOpenStudentId(null); }}
           >
             <User size={15} /> Аккаунты
@@ -111,95 +125,90 @@ export function AdminScreen() {
           <button
             type="button"
             className={adminTab === "slots" ? "is-active" : ""}
-            aria-pressed={adminTab === "slots"}
+            aria-current={adminTab === "slots" ? "page" : undefined}
             onClick={() => setAdminTab("slots")}
           >
             <CalendarClock size={15} /> Слоты записи
           </button>
           <button type="button" className={adminTab === "calendar" ? "is-active" : ""}
-            aria-pressed={adminTab === "calendar"} onClick={() => setAdminTab("calendar")}>
+            aria-current={adminTab === "calendar" ? "page" : undefined} onClick={() => setAdminTab("calendar")}>
             <CalendarDays size={15} /> Календарь
           </button>
-        </div>
+        </nav>
 
         {adminTab === "overview" ? (
-          <AsyncBoundary><AdminOverviewDashboard onOpenStudent={openStudent} /></AsyncBoundary>
+          <AsyncBoundary>
+            <AdminOverviewDashboard onOpenStudent={(studentId) => openStudent(studentId, "overview")} />
+          </AsyncBoundary>
         ) : adminTab === "calendar" ? (
-          <AsyncBoundary><AdminCalendarView onOpenStudent={openStudent} /></AsyncBoundary>
+          <AsyncBoundary><AdminCalendarView onOpenStudent={(studentId) => openStudent(studentId, "calendar")} /></AsyncBoundary>
         ) : adminTab === "slots" ? (
-          <>
-            <div className="admin-section-heading">
-              <div>
-                <h2>Расписание занятий</h2>
-                <p>Создавайте свободные окна и управляйте записями учеников.</p>
-              </div>
-            </div>
-            <AsyncBoundary><AdminSlotsView /></AsyncBoundary>
-          </>
+          <AsyncBoundary><AdminSlotsView /></AsyncBoundary>
         ) : openStudentId !== null ? (
-          <AsyncBoundary key={openStudentId}><AdminStudentProfile
-            studentId={openStudentId}
-            onBack={() => { setOpenStudentId(null); setReloadKey((key) => key + 1); }}
-            onDeleted={() => {
-              setOpenStudentId(null);
-              setReloadKey((key) => key + 1);
-            }}
-          /></AsyncBoundary>
-        ) : (
           <>
+            <div className="admin-section-heading admin-section-heading--profile">
+              <button className="admin-back" type="button" onClick={closeStudentProfile}>
+                <ArrowLeft size={16} aria-hidden="true" /> {returnLabel}
+              </button>
+            </div>
+            <AsyncBoundary key={openStudentId}><AdminStudentProfile
+              studentId={openStudentId}
+              onBack={closeStudentProfile}
+              onDeleted={closeStudentProfile}
+            /></AsyncBoundary>
+          </>
+        ) : (
+          <section className="admin-accounts-panel" aria-label="Список аккаунтов">
+            <div className="admin-accounts-panel__summary" aria-live="polite">
+              <strong>{isLoading ? "Загрузка аккаунтов…" : formatAccountCount(accounts.length)}</strong>
+              {!isLoading && !error && <span>Активных подписок: {accounts.filter((account) => account.has_active_subscription).length}</span>}
+            </div>
             <AdminAccountFilters search={search} filters={filters} month={quotaMonth}
               onSearch={setSearch} onChange={setFilters} />
 
             {error && <div className="form-error" role="alert">{error}</div>}
 
-            <div className="admin-list" aria-live="polite">
+            <div className="admin-account-list" aria-live="polite">
               {isLoading ? (
-                <p className="admin-note">Загружаем аккаунты...</p>
+                <p className="admin-note" role="status">Загружаем аккаунты…</p>
               ) : error ? null : accounts.length === 0 ? (
-                <p className="admin-note">Ничего не найдено.</p>
+                <p className="admin-account-list__empty">Ничего не найдено по этим условиям.</p>
               ) : (
-                <>
-                  <div className="admin-list-header" aria-hidden="true">
-                    <span className="admin-list-header__account">Аккаунт</span>
-                    <span>Подписка</span>
-                    <span>Пройдено с {formatAdminPeriodStart(completedSince)}</span>
-                    <span>Остаток</span>
-                    <span aria-hidden="true" />
-                  </div>
-                  {accounts.map((account) => (
-                    <button className="admin-row admin-row--clickable" key={account.id} type="button" onClick={() => setOpenStudentId(account.id)}>
-                      <div className="admin-row-user">
-                        <strong>
-                          {account.username}
-                          {account.is_admin && <span className="admin-badge">admin</span>}
+                accounts.map((account) => (
+                  <button className="admin-account-card" key={account.id} type="button" onClick={() => openStudent(account.id, "accounts")}>
+                    <span className="admin-account-card__identity">
+                      <strong>
+                        {account.username}
+                        {account.is_admin && <span className="admin-badge">admin</span>}
+                      </strong>
+                      <small>{account.email}</small>
+                    </span>
+                    <span className="admin-account-card__metrics">
+                      <span className="admin-account-metric">
+                        <small>Подписка</small>
+                        <strong className={account.has_active_subscription ? "is-active" : "is-muted"}>
+                          {account.has_active_subscription
+                            ? `${formatSubscriptionPlan(account.subscription_plan)} · ${formatAdminSubscriptionExpiry(account.subscription_until)}`
+                            : "Не активна"}
                         </strong>
-                        <small>{account.email}</small>
-                      </div>
-                      <span className={`admin-row-meta admin-row__subscription ${account.has_active_subscription ? "is-active-subscription" : "is-no-subscription"}`}
-                        data-label="Подписка"
-                        aria-label={account.has_active_subscription
-                          ? `Подписка ${formatSubscriptionPlan(account.subscription_plan)} до ${formatSubscriptionDate(account.subscription_until)}`
-                          : "Нет действующей подписки"}>
-                        {account.has_active_subscription
-                          ? `${formatSubscriptionPlan(account.subscription_plan)} · ${formatAdminSubscriptionExpiry(account.subscription_until)}`
-                          : "—"}
                       </span>
-                      <span className="admin-row-completed" data-label="Пройдено"
-                        aria-label={`${account.completed_lessons_7d} уроков пройдено с ${formatAdminPeriodStart(completedSince)}`}>
-                        {account.completed_lessons_7d}
+                      <span className="admin-account-metric">
+                        <small>Уроки · с {formatAdminPeriodStart(completedSince)}</small>
+                        <strong>{account.completed_lessons_7d}</strong>
                       </span>
-                      <span className={`admin-row-quota ${account.quota?.remaining === 0 ? "is-empty" : ""}`}
-                        data-label="Остаток"
-                        aria-label={`${account.quota?.remaining ?? "Нет данных"} занятий осталось`}>
-                        {account.quota?.remaining ?? "—"}
+                      <span className="admin-account-metric">
+                        <small>Занятия · {getMonthTitle(quotaMonth)}</small>
+                        <strong className={account.quota?.remaining === 0 ? "is-empty" : ""}>
+                          {account.quota?.remaining ?? "—"} осталось
+                        </strong>
                       </span>
-                      <ChevronRight size={18} className="admin-row-chevron" />
-                    </button>
-                  ))}
-                </>
+                    </span>
+                    <ChevronRight size={18} className="admin-account-card__chevron" aria-hidden="true" />
+                  </button>
+                ))
               )}
             </div>
-          </>
+          </section>
         )}
       </section>
   );

@@ -4,6 +4,7 @@ import logging
 import os
 from copy import deepcopy
 from time import perf_counter
+from typing import Any
 
 from fastapi import HTTPException, Request, status
 from sqlalchemy.orm import Session
@@ -190,16 +191,28 @@ def learning_catalog(request: Request, db: Session):
     for track in summaries:
         countable_ids = set(track.pop("countable_lesson_ids"))
         lessons = []
+        blocks_by_title: dict[str, dict[str, Any]] = {}
         source_track = source_tracks[track["id"]]
         for lesson in source_track["lessons"] if source_track else []:
             item = {key: lesson[key] for key in (
                 "id", "module", "title", "duration", "status", "access", "source_file"
             ) if key in lesson}
             available, reason = get_lesson_access(lesson, user)
-            item.update(is_available=available, locked_reason=reason,
-                        completed=_lesson_completion_status(lesson, completed_ids, revisions))
+            completed = _lesson_completion_status(lesson, completed_ids, revisions)
+            item.update(is_available=available, locked_reason=reason, completed=completed)
             lessons.append(item)
+            block_title = str(lesson.get("module") or "Другие уроки")
+            block = blocks_by_title.setdefault(
+                block_title,
+                {"id": f"{track['id']}:{block_title}", "title": block_title, "completed": 0, "total": 0, "lesson_ids": []},
+            )
+            block["lesson_ids"].append(lesson["id"])
+            if lesson["id"] in countable_ids:
+                block["total"] += 1
+                if completed:
+                    block["completed"] += 1
         track["lessons_completed"] = sum(item["completed"] for item in lessons if item["id"] in countable_ids)
+        track["blocks"] = list(blocks_by_title.values())
         courses[track["id"]] = lessons
     return {"tracks": summaries, "courses": courses, "default_track": default_track_id(),
             "content_revision": get_content_revision()}

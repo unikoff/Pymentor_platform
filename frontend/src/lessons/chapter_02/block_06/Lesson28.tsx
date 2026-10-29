@@ -65,8 +65,8 @@ export function Lesson28({ module }: { module?: string }) {
           стандартный помощник для уже знакомой обёртки. Сами операции и пользовательское поведение не переписываем.
         </p>
         <Callout tone="info">
-          Мы переносим существующие функции, а не создаём второй Planner. В занятии 28.1 эти же плоские модули станут
-          пакетом <code>app</code>; CLI останется в <code>main.py</code> до занятия 28.2.
+          Мы переносим существующие функции, а не создаём второй Planner. Далее эти же плоские модули станут
+          пакетом <code>app</code>; CLI останется в <code>main.py</code> до выделения точки входа.
         </Callout>
       </Section>
 
@@ -128,34 +128,37 @@ export function Lesson28({ module }: { module?: string }) {
           файл: реализация остаётся в источнике, а новый модуль получает доступ к выбранному имени.
         </Lead>
         <p>
-          Если рядом лежат <code>main.py</code> и <code>validators.py</code>, запись <code>import validators</code>
-          оставляет источник видимым в каждом вызове: <code>validators.validate_priority(value)</code>. Форма
-          <code>from validators import validate_priority</code> короче в месте использования, но имя уже появляется
-          напрямую. Псевдоним через <code>as</code> помогает, когда длинное имя стоит сократить или нужно устранить
-          совпадение имён.
+          В <code>labels.py</code> определим <code>make_label(text)</code>. После <code>import labels</code>
+          вызов пишется <code>labels.make_label("A")</code>; после <code>from labels import make_label</code>
+          имя вызывается напрямую. Код функции остаётся в исходном файле <code>labels.py</code>.
         </p>
+        <CodeBlock
+          caption="labels.py"
+          code={`def make_label(text):
+    return f"[{text}]"`}
+        />
         <TypeCards>
-          <TypeCard badge="import" title="Импортировать модуль" code={`import validators
+          <TypeCard badge="import" title="Импортировать модуль" code={`import labels
 
-priority = validators.validate_priority(raw_priority)`}>
-            Мы видим, откуда пришла функция, и различаем её с локальными именами.
+label = labels.make_label("A")`}>
+            Префикс показывает, из какого модуля взяли функцию.
           </TypeCard>
-          <TypeCard badge="from" badgeTone="float" title="Импортировать имя" code={`from validators import validate_priority
+          <TypeCard badge="from" badgeTone="float" title="Импортировать имя" code={`from labels import make_label
 
-priority = validate_priority(raw_priority)`}>
-            Имя короче, а источник нужно проверить в блоке импортов файла.
+label = make_label("A")`}>
+            Имя короче, а источник виден в строке импорта.
           </TypeCard>
-          <TypeCard badge="as" badgeTone="str" title="Задать псевдоним" code={`import validators as task_rules
+          <TypeCard badge="as" badgeTone="str" title="Задать псевдоним" code={`import labels as text_labels
 
-task_rules.validate_priority(raw_priority)`}>
-            Мы явно вводим другое локальное имя для того же модуля.
+label = text_labels.make_label("A")`}>
+            Псевдоним задаёт другое локальное имя модуля.
           </TypeCard>
         </TypeCards>
         <p>
-          Импорт работает только тогда, когда Python может найти модуль в текущем контексте запуска. Для занятия 28
-          файлы приложения лежат рядом, и мы запускаем <code>main.py</code> из корня проекта. Если имя указано неверно
-          или файл недоступен для поиска, появляется <code>ModuleNotFoundError</code>. Эта ошибка относится к поиску
-          модуля; она не доказывает, что внутри найденной функции сломалась операция.
+          Импорт сработает, если Python найдёт файл по пути поиска. Для опыта <code>labels.py</code> и запускающий
+          файл лежат рядом, а команду мы выполняем из их каталога. В Planner плоские модули тоже лежат рядом с
+          <code>main.py</code>. Если Python не находит указанный модуль, возникает <code>ModuleNotFoundError</code>,
+          например при опечатке или запуске из другого каталога. Ошибка внутри найденного модуля имеет другую причину.
         </p>
         <BugHunt
           code={`from validators import *
@@ -196,33 +199,29 @@ print(validators.normalize_title(" SQL "))`}
           заканчивается здесь: Python не «читает» файл как человек, он исполняет точные инструкции языка.
         </p>
         <CodeBlock
-          caption="status.py"
-          code={`print("модуль подключён")
+          caption="lesson_signal.py"
+          code={`print("module loaded")
 
-STATUS = "готов"
-
-def show_status():
-    print(STATUS)`}
+def ping():
+    print("ping")`}
         />
         <PredictOutput
-          code={`import status
-import status
-
-print(status.STATUS)`}
-          output={"модуль подключён\nготов"}
-          hint="Мы остаёмся в одном процессе: после первого импорта модуль хранится в кэше."
+          code={`import lesson_signal
+import lesson_signal
+lesson_signal.ping()`}
+          output={"module loaded\nping"}
+          hint="Первый импорт выполняет верхний уровень. Повторный импорт в том же процессе берёт модуль из кэша."
         />
         <p>
-          В этом примере функция <code>show_status</code> только определяется. Её тело не печатает статус, пока мы её
-          не вызовем. Напротив, строка с сообщением расположена вне функции, поэтому она выполняется при первом
-          подключении. Повторный обычный <code>import status</code> в том же процессе использует уже загруженный модуль
-          и не выполняет его верхний уровень повторно. Новый процесс начинает с пустого кэша модулей.
+          При первом импорте верхняя строка печатает <code>module loaded</code>. Повторный импорт в этом же процессе
+          не выполняет её снова. Определение <code>ping</code> создаёт функцию, но не запускает её тело.
+          Поэтому <code>ping</code> печатается только после явного вызова. Новый процесс начинает с пустого кэша.
         </p>
         <QuizCard
-          question="Что увидим после import модуля, где определена функция show_status, но нет её вызова?"
-          options={["Функция определится, её тело не напечатает статус", "Функция выполнится автоматически", "Python пропустит все строки файла"]}
-          correctIndex={0}
-          explanation="Мы отделяем создание объекта функции от вызова. Само определение не запускает инструкции внутри тела."
+          question="Когда появится строка ping?"
+          options={["При первом импорте", "При повторном импорте в том же процессе", "После явного вызова lesson_signal.ping()"]}
+          correctIndex={2}
+          explanation="Импорт создаёт функцию, но её тело начинает выполняться только при вызове."
         />
         <Callout>
           Верхний уровень подходит для импортов, констант и определений. Пользовательский сценарий с меню и вводом
@@ -243,23 +242,23 @@ print(status.STATUS)`}
           не запускают меню.
         </p>
         <CodeBlock
-          caption="main.py"
-          code={`def run():
-    print("Planner открыт")
+          caption="demo.py"
+          code={`def show():
+    print("started")
 
 if __name__ == "__main__":
-    run()`}
+    show()`}
         />
         <StepThrough
-          code={`def run():
-    print("Planner открыт")
+          code={`def show():
+    print("started")
 
 if __name__ == "__main__":
-    run()`}
+    show()`}
           steps={[
-            { line: 0, note: "Мы определяем run; её тело пока не выполняется.", vars: { run: "функция" } },
+            { line: 0, note: "Мы определяем show; её тело пока не выполняется.", vars: { show: "функция" } },
             { line: 3, note: "При прямом запуске Python задаёт __name__ равным __main__.", vars: { __name__: '"__main__"' } },
-            { line: 4, note: "Условие истинно, поэтому вызывается run и появляется сообщение.", vars: { вывод: "Planner открыт" } },
+            { line: 4, note: "Условие истинно, поэтому вызывается show и появляется started.", vars: { вывод: "started" } },
           ]}
         />
         <CompareSolutions
@@ -290,8 +289,11 @@ if __name__ == "__main__":
           explanation="При импорте значение __name__ равно имени модуля, например main."
         />
         <Callout tone="info">
-          Команда <code>python -c "import main"</code> помогает проверить этот режим: она должна завершиться без
-          меню и запроса пользовательского ввода.
+          Для <code>demo.py</code> сравним три запуска: <code>python demo.py</code> печатает
+          <code>started</code>; <code>python -c "import demo"</code> не печатает ничего;
+          <code>python -c "import demo; demo.show()"</code> печатает <code>started</code>. Для Planner
+          <code>python -c "import main"</code> завершается без меню, а <code>python main.py</code>
+          запускает привычный CLI.
         </Callout>
       </Section>
 
@@ -306,6 +308,22 @@ if __name__ == "__main__":
           к файлу-источнику. Поэтому стрелка от <code>main.py</code> к <code>operations.py</code> означает, что главный
           модуль вызывает операции. Мы повторяем узел <code>operations.py</code> в трёх отдельных связях, чтобы показать
           его импорты модели, валидаторов и ошибок без двусмысленного разветвления линии.
+        </p>
+        <CodeBlock
+          caption="screen.py и calculate.py"
+          code={`# calculate.py
+def total(price, count):
+    return price * count
+
+# screen.py
+from calculate import total
+
+def show_total():
+    return total(4, 3)`}
+        />
+        <p>
+          <code>screen.py</code> импортирует <code>total</code>, передаёт два аргумента и получает число 12.
+          Направление зависимости идёт от файла с вызовом к файлу с определением функции.
         </p>
         <Diagram caption="Кто импортирует компоненты Planner" orientation="vertical">
           <DiagramFlow label="Зависимость точки запуска от операций" orientation="vertical">
@@ -336,7 +354,7 @@ if __name__ == "__main__":
           правилах и типах. Валидатору не нужно знать, кто ввёл число; модели не нужны меню и вывод; ошибка не зависит
           от CLI. Если <code>operations.py</code> импортирует <code>main.py</code>, связь возвращается вверх. При
           одновременном импорте файлов такой круг может встретить модуль до завершения его начальной загрузки.
-          Подробно разбирать цикл будем в занятии 28.1.
+          Подробно разбирать цикл будем при переносе модулей в пакет.
         </p>
         <CodeBlock
           caption="operations.py: источники имён"
@@ -357,7 +375,7 @@ from validators import validate_priority, validate_title
           explanation="Мы выбираем файл по ответственности. Состояние передаётся знакомыми аргументами, а нижние модули не импортируют точку запуска."
         />
         <Callout>
-          Занятие 28 оставляет readers, обработчики, форматирование, меню и run в main.py. Отдельный cli.py появится
+          Этот этап оставляет readers, обработчики, форматирование, меню и run в main.py. Отдельный cli.py появится
           позже, поэтому сейчас не разрезаем интерфейс повторно.
         </Callout>
       </Section>
@@ -415,7 +433,7 @@ def trace(operation):
           ]}
         />
         <p>
-          Мы используем существующий StudyHub после выполнения предыдущих занятий 26–27.1, переносим функции без
+          Мы используем существующий StudyHub после выполнения предыдущих тем об исключениях и собственных ошибках, переносим функции без
           переписывания их логики и проверяем один путь за раз. На подтверждённой ревизии проекта
           <code>142d81a3cb569814b65e8c82ca8082dd00c06e97</code> находился только <code>main.py</code>, и изменения этих
           занятий ещё не были внесены. Поэтому практика начинается с состояния после их прохождения; сам этот SHA

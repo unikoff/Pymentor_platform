@@ -378,7 +378,7 @@ CODE_TASKS: dict[int | str, list[dict[str, Any]]] = {
     46: [{'title': 'Модель HTTP request',
        'level': 'easy',
        'mode': 'solve',
-        'prompt': 'Результат — учебное описание HTTP request в виде словаря, собранное из готовых значений.',
+        'prompt': 'Результат: учебное описание HTTP request в виде словаря, собранное из готовых значений.',
        'hints': ['Обязательные заголовки отличаются от заголовка формата body. Отсутствие тела обозначает None.',
                  'Пустой словарь всё ещё переданное тело. Отсутствие тела определяется сравнением с None.',
                   'Короткую запись method нужно привести к верхнему регистру. Остальные входные значения сохраняются без изменений.'],
@@ -628,6 +628,112 @@ CODE_TASKS: dict[int | str, list[dict[str, Any]]] = {
                           '    else:\n'
                           '        path = f"/tasks/{task_id}"\n'
                           '    return {"method": methods[action], "path": path}\n'
+    }],
+    45: [{
+        'title': 'Соберите модель запроса Planner API',
+        'level': 'easy',
+        'mode': 'solve',
+        'prompt': 'solve(action, task_id, values) собирает учебную модель запроса Planner API. Готовая route_for уже выбирает method и path.',
+        'contract': {
+            'given': 'action принимает list, create, get, replace, update, delete, health или stats. task_id задан для get, replace, update и delete, в остальных случаях равен None. values содержит допустимые значения операции, без неизвестных полей и явного None.',
+            'todo': 'Собираем словарь с точными ключами method, path, query и body. Для list переносим в query только переданные is_done, sort_desc и limit. Для create формируем body из title и priority. Для replace и update копируем переданные значения в body. Для остальных действий оставляем query пустым, а body равным None.',
+            'check': 'Проверяются отсутствие выдуманных query-defaults, сохранение явного False, состав body и готовые method/path. values остаётся неизменным. Запрос не отправляем, существование задачи не проверяем.'
+        },
+        'hints': [
+            'Сначала определяем действия, которым нужны query или body. Для остальных частей запроса оставляем значения по умолчанию.',
+            'Для list переносим только ключи, которые уже есть в values. False тоже является переданным значением.',
+            'Для create создаём новый словарь только с title и priority. Для replace и update копируем values, чтобы не менять вход.',
+            'Для PATCH переносим все переданные поля. Одно поле и несколько обрабатываются одинаково; False тоже сохраняем как переданное значение.'
+        ],
+        'requirements': {
+            'items': [
+                'результат содержит method, path, query и body',
+                'query всегда словарь, даже когда параметров нет',
+                'отсутствующие query не подменяются defaults сервера',
+                'create body содержит только title и priority',
+                'replace и update сохраняют переданные поля',
+                'values остаётся неизменным'
+            ],
+            'names': ['action', 'task_id', 'values', 'route_for'],
+            'nodes': ['FunctionDef']
+        },
+        'starter_code': 'methods = {\n'
+                        '    "list": "GET",\n'
+                        '    "get": "GET",\n'
+                        '    "create": "POST",\n'
+                        '    "replace": "PUT",\n'
+                        '    "update": "PATCH",\n'
+                        '    "delete": "DELETE",\n'
+                        '    "health": "GET",\n'
+                        '    "stats": "GET",\n'
+                        '}\n'
+                        '\n'
+                        'def route_for(action, task_id):\n'
+                        '    if action == "health":\n'
+                        '        path = "/health"\n'
+                        '    elif action == "stats":\n'
+                        '        path = "/stats"\n'
+                        '    elif action == "list" or action == "create":\n'
+                        '        path = "/tasks"\n'
+                        '    else:\n'
+                        '        path = f"/tasks/{task_id}"\n'
+                        '    return {"method": methods[action], "path": path}\n'
+                        '\n'
+                        'def solve(action, task_id, values):\n'
+                        '    # Распределяем входные значения по query и body\n'
+                        '    pass\n',
+        'tests': [
+            {'name': 'список без фильтров', 'args': ['list', None, {}], 'preserve_inputs': True, 'no_stdout': True, 'expected': {'method': 'GET', 'path': '/tasks', 'query': {}, 'body': None}},
+            {'name': 'список с False и настройками', 'args': ['list', None, {'is_done': False, 'sort_desc': True, 'limit': 5}], 'preserve_inputs': True, 'no_stdout': True, 'expected': {'method': 'GET', 'path': '/tasks', 'query': {'is_done': False, 'sort_desc': True, 'limit': 5}, 'body': None}},
+            {'name': 'отдельный фильтр True', 'args': ['list', None, {'is_done': True}], 'preserve_inputs': True, 'no_stdout': True, 'expected': {'method': 'GET', 'path': '/tasks', 'query': {'is_done': True}, 'body': None}},
+            {'name': 'отдельный limit', 'args': ['list', None, {'limit': 8}], 'preserve_inputs': True, 'no_stdout': True, 'expected': {'method': 'GET', 'path': '/tasks', 'query': {'limit': 8}, 'body': None}},
+            {'name': 'явный sort_desc False', 'args': ['list', None, {'sort_desc': False}], 'preserve_inputs': True, 'no_stdout': True, 'expected': {'method': 'GET', 'path': '/tasks', 'query': {'sort_desc': False}, 'body': None}},
+            {'name': 'создание без серверных полей', 'args': ['create', None, {'title': 'Изучить HTTP', 'priority': 4}], 'preserve_inputs': True, 'no_stdout': True, 'expected': {'method': 'POST', 'path': '/tasks', 'query': {}, 'body': {'title': 'Изучить HTTP', 'priority': 4}}},
+            {'name': 'полная замена', 'args': ['replace', 12, {'title': 'Planner API', 'priority': 3, 'is_done': True}], 'preserve_inputs': True, 'no_stdout': True, 'expected': {'method': 'PUT', 'path': '/tasks/12', 'query': {}, 'body': {'title': 'Planner API', 'priority': 3, 'is_done': True}}},
+            {'name': 'частичное изменение с False', 'args': ['update', 7, {'is_done': False}], 'preserve_inputs': True, 'no_stdout': True, 'expected': {'method': 'PATCH', 'path': '/tasks/7', 'query': {}, 'body': {'is_done': False}}},
+            {'name': 'PATCH одного title', 'args': ['update', 9, {'title': 'Новый заголовок'}], 'preserve_inputs': True, 'no_stdout': True, 'expected': {'method': 'PATCH', 'path': '/tasks/9', 'query': {}, 'body': {'title': 'Новый заголовок'}}},
+            {'name': 'PATCH только priority', 'args': ['update', 10, {'priority': 5}], 'preserve_inputs': True, 'no_stdout': True, 'expected': {'method': 'PATCH', 'path': '/tasks/10', 'query': {}, 'body': {'priority': 5}}},
+            {'name': 'PATCH нескольких полей', 'args': ['update', 11, {'priority': 5, 'is_done': False}], 'preserve_inputs': True, 'no_stdout': True, 'expected': {'method': 'PATCH', 'path': '/tasks/11', 'query': {}, 'body': {'priority': 5, 'is_done': False}}},
+            {'name': 'чтение item', 'args': ['get', 7, {}], 'preserve_inputs': True, 'no_stdout': True, 'expected': {'method': 'GET', 'path': '/tasks/7', 'query': {}, 'body': None}},
+            {'name': 'удаление item', 'args': ['delete', 7, {}], 'preserve_inputs': True, 'no_stdout': True, 'expected': {'method': 'DELETE', 'path': '/tasks/7', 'query': {}, 'body': None}},
+            {'name': 'health отдельно от tasks', 'args': ['health', None, {}], 'preserve_inputs': True, 'no_stdout': True, 'expected': {'method': 'GET', 'path': '/health', 'query': {}, 'body': None}},
+            {'name': 'stats отдельно от фильтра списка', 'args': ['stats', None, {}], 'preserve_inputs': True, 'no_stdout': True, 'expected': {'method': 'GET', 'path': '/stats', 'query': {}, 'body': None}}
+        ],
+        'reference_code': 'methods = {\n'
+                          '    "list": "GET",\n'
+                          '    "get": "GET",\n'
+                          '    "create": "POST",\n'
+                          '    "replace": "PUT",\n'
+                          '    "update": "PATCH",\n'
+                          '    "delete": "DELETE",\n'
+                          '    "health": "GET",\n'
+                          '    "stats": "GET",\n'
+                          '}\n'
+                          '\n'
+                          'def route_for(action, task_id):\n'
+                          '    if action == "health":\n'
+                          '        path = "/health"\n'
+                          '    elif action == "stats":\n'
+                          '        path = "/stats"\n'
+                          '    elif action == "list" or action == "create":\n'
+                          '        path = "/tasks"\n'
+                          '    else:\n'
+                          '        path = f"/tasks/{task_id}"\n'
+                          '    return {"method": methods[action], "path": path}\n'
+                          '\n'
+                          'def solve(action, task_id, values):\n'
+                          '    route = route_for(action, task_id)\n'
+                          '    query = {}\n'
+                          '    body = None\n'
+                          '    if action == "list":\n'
+                          '        for key in ("is_done", "sort_desc", "limit"):\n'
+                          '            if key in values:\n'
+                          '                query[key] = values[key]\n'
+                          '    elif action == "create":\n'
+                          '        body = {"title": values["title"], "priority": values["priority"]}\n'
+                          '    elif action == "replace" or action == "update":\n'
+                          '        body = values.copy()\n'
+                          '    return {"method": route["method"], "path": route["path"], "query": query, "body": body}\n'
     }],
     50: [{
         'title': 'Распределите значения по частям запроса',

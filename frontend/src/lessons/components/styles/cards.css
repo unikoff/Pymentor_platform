@@ -142,13 +142,13 @@
   background: var(--surface);
 }
 
-.method-row > code {
-  font-family: "JetBrains Mono", Consolas, monospace;
-  font-size: 0.88rem;
-  color: var(--accent);
+.method-row > .method-label {
+  color: var(--text);
+  font-size: 0.9rem;
+  font-weight: 600;
 }
 
-.method-row span {
+.method-row > span:not(.method-label) {
   color: var(--muted);
   font-size: 0.9rem;
 }

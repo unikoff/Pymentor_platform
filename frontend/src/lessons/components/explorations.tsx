@@ -62,7 +62,7 @@ export function MatchPairs({
               disabled={matched.has(id)}
               onClick={() => setActiveLeft(id)}
             >
-              <code>{pair.left}</code>
+              <span>{pair.left}</span>
             </button>
           ))}
         </div>
@@ -76,7 +76,7 @@ export function MatchPairs({
               disabled={matched.has(right.id)}
               onClick={() => pickRight(right.id)}
             >
-              <code>{right.label}</code>
+              <span>{right.label}</span>
             </button>
           ))}
         </div>

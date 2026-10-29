@@ -5,8 +5,10 @@ from core.dependencies import get_db
 from routers.bookings.schemas import SlotCreate
 from .schemas import QuotaChange, SubscriptionChange
 from . import service
+from routers.landings.admin import router as landing_admin_router
 
 admin_router = APIRouter()
+admin_router.include_router(landing_admin_router, prefix="/landings", tags=["landing-admin"])
 
 
 @admin_router.get("/overview")

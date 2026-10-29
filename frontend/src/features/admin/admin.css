@@ -4,3 +4,247 @@
 @import "./progress/progress.css";
 @import "./students/profile-actions.css";
 @import "./slots/slots-list.css";
+
+/* Административная оболочка */
+.admin-panel {
+  --admin-card-shadow: 0 8px 24px color-mix(in srgb, var(--surface-shadow) 14%, transparent);
+
+  gap: clamp(8px, 0.9vw, 12px);
+  max-width: 1680px;
+  padding: clamp(18px, 2.5vw, 38px);
+}
+
+.admin-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  width: 100%;
+  gap: 4px;
+  padding: 5px;
+  border: 1px solid var(--line);
+  border-radius: 17px;
+  background: var(--surface);
+}
+
+.admin-tabs button {
+  display: flex;
+  min-width: 0;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 8px clamp(4px, 1vw, 12px);
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 700;
+  transition: color 160ms ease, background 160ms ease, border-color 160ms ease;
+}
+
+.admin-tabs button:hover { color: var(--text); background: var(--surface-2); }
+
+.admin-tabs button.is-active {
+  border-color: color-mix(in srgb, var(--accent) 32%, var(--line));
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
+.admin-tabs button.is-active svg { color: var(--accent); }
+.admin-tabs svg { flex-shrink: 0; }
+
+.admin-tabs button.is-active::after {
+  display: none;
+}
+
+.admin-tabs button:focus-visible,
+.admin-back:focus-visible,
+.admin-row--clickable:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.admin-section-heading--current {
+  align-items: center;
+  margin: -6px 0 -8px;
+}
+
+.admin-result-count {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.admin-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 36px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.admin-back:hover { border-color: var(--accent); color: var(--text); }
+
+.admin-section-heading--profile {
+  display: grid;
+  justify-content: start;
+  gap: 12px;
+  margin: -5px 0 -7px;
+}
+
+.admin-filters {
+  padding: clamp(12px, 1.5vw, 18px);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-md);
+  background: var(--card);
+  box-shadow: var(--admin-card-shadow);
+}
+
+.admin-filters__options select {
+  width: 100%;
+  border-radius: var(--radius-sm);
+  background-color: var(--surface-2);
+}
+
+.admin-filter-field { display: grid; flex: 0 1 180px; gap: 4px; min-width: 0; color: var(--muted); font-size: .65rem; font-weight: 700; }
+.admin-filter-field > span { overflow: hidden; padding-inline: 2px; text-overflow: ellipsis; white-space: nowrap; }
+.admin-filter-field select { min-width: 0; min-height: 38px; font-size: .76rem; }
+.admin-filter-field select:focus-visible { border-color: var(--accent); outline: 2px solid color-mix(in srgb, var(--accent) 45%, transparent); outline-offset: 1px; }
+.admin-filters__reset { align-self: end; min-height: 38px; border-color: var(--line-soft); background: var(--surface); }
+
+.admin-search {
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+}
+
+.admin-search:focus-within { box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent); }
+
+.admin-list { gap: 8px; padding: 2px 3px 8px 0; }
+.admin-list-header { padding-bottom: 3px; color: var(--faint); font-size: 0.68rem; }
+
+.admin-row {
+  min-height: 58px;
+  border-color: var(--card-border);
+  border-radius: var(--radius-md);
+  background: var(--card);
+  box-shadow: var(--admin-card-shadow);
+  transition: transform 140ms ease, background 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
+}
+
+.admin-row--clickable:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--line));
+  background: var(--surface-2);
+  box-shadow: var(--admin-card-shadow);
+}
+
+.admin-accounts-panel {
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  gap: 10px;
+  min-width: 0;
+  min-height: 0;
+  padding: clamp(12px, 1.5vw, 18px);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-md);
+  background: var(--card);
+  box-shadow: var(--admin-card-shadow);
+}
+
+.admin-accounts-panel__summary {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+  color: var(--muted);
+  font-size: .75rem;
+}
+
+.admin-accounts-panel__summary strong { color: var(--text); font-size: .86rem; }
+.admin-accounts-panel__summary > span { white-space: nowrap; }
+.admin-accounts-panel .admin-filters { padding: 0; border: 0; background: transparent; box-shadow: none; }
+.admin-accounts-panel .admin-search { min-height: 40px; }
+.admin-accounts-panel .admin-search,
+.admin-accounts-panel .admin-filters__options select { background: var(--surface); }
+
+.admin-account-list {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  min-height: 0;
+  overflow: auto;
+  padding: 1px 3px 2px 0;
+}
+
+.admin-account-card {
+  display: grid;
+  grid-template-columns: minmax(160px, .85fr) minmax(0, 2.4fr) 20px;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+  min-height: 76px;
+  padding: 9px 11px;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 140ms ease, border-color 140ms ease, background 140ms ease;
+}
+
+.admin-account-card:hover { transform: translateY(-1px); border-color: color-mix(in srgb, var(--accent) 42%, var(--line)); background: var(--surface-2); }
+.admin-account-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.admin-account-card__identity { display: grid; gap: 4px; min-width: 0; }
+.admin-account-card__identity > strong { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; font-size: .88rem; }
+.admin-account-card__identity > small { overflow-wrap: anywhere; color: var(--muted); font-size: .72rem; }
+.admin-account-card__metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; min-width: 0; padding-inline: 10px; border-left: 1px solid var(--line-soft); }
+.admin-account-metric { display: grid; align-content: center; gap: 4px; min-width: 0; min-height: 48px; padding: 5px 10px; }
+.admin-account-metric + .admin-account-metric { border-left: 1px solid var(--line-soft); }
+.admin-account-metric small { overflow: hidden; color: var(--muted); font-size: .64rem; text-overflow: ellipsis; white-space: nowrap; }
+.admin-account-metric strong { overflow: hidden; color: var(--text); font-size: .76rem; font-variant-numeric: tabular-nums; text-overflow: ellipsis; white-space: nowrap; }
+.admin-account-metric strong.is-active { color: var(--accent); }
+.admin-account-metric strong.is-muted { color: var(--muted); font-size: .7rem; }
+.admin-account-metric strong.is-empty { color: var(--accent-secondary); }
+.admin-account-card__chevron { justify-self: center; color: var(--muted); }
+.admin-account-list__empty { margin: 4px; color: var(--muted); font-size: .84rem; }
+
+.admin-panel--calendar {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  height: auto;
+  min-height: 100%;
+}
+
+@container admin-screen (max-width: 650px) {
+  .admin-panel { gap: 10px; padding: 16px; }
+  .admin-tabs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; padding: 6px; }
+  .admin-tabs button { min-height: 44px; padding-inline: 7px; font-size: 0.76rem; }
+  .admin-section-heading--current { align-items: flex-start; }
+  .admin-result-count { padding-top: 4px; }
+  .admin-section-heading--profile { gap: 9px; }
+  .admin-accounts-panel { grid-template-rows: auto auto auto; padding: 10px; }
+  .admin-accounts-panel__summary { align-items: flex-start; flex-direction: column; gap: 3px; }
+  .admin-account-list { overflow: visible; }
+  .admin-account-card { grid-template-columns: minmax(0, 1fr) 20px; gap: 8px; }
+  .admin-account-card__metrics { grid-column: 1 / -1; grid-row: 2; }
+  .admin-account-card__chevron { grid-column: 2; grid-row: 1; }
+  .admin-account-card__metrics { padding: 7px 0 0; border-top: 1px solid var(--line-soft); border-left: 0; }
+  .admin-account-metric { padding-inline: 7px; }
+}

@@ -1,6 +1,7 @@
-"""Drain durable booking notifications from SQLite and deliver them to Telegram."""
+"""Drain durable booking and landing notifications to Telegram."""
 from __future__ import annotations
 import errno
+import json
 import logging
 import os
 import random
@@ -20,6 +21,8 @@ from core.config import BACKEND_ROOT
 from db import models
 from notifications.telegram import (
     TelegramDeliveryError,
+    _get_landing_bot_token,
+    send_landing_notification,
     send_booking_cancelled_notification,
     send_booking_created_notification,
 )
@@ -59,9 +62,28 @@ class ClaimedNotification:
     lock_token: str
 
 
+@dataclass(frozen=True)
+class ClaimedLandingNotification:
+    id: int
+    event_id: str
+    event_type: str
+    landing_id: str
+    landing_slug: str
+    destination_config_id: str
+    secret_ref: str
+    chat_id: str
+    payload: dict
+    attempts: int
+    lock_token: str
+
+
 def _ensure_outbox_table() -> None:
     models.BookingNotificationOutbox.__table__.create(bind=engine, checkfirst=True)
     models.BookingNotificationDeliveryState.__table__.create(bind=engine, checkfirst=True)
+    models.Landing.__table__.create(bind=engine, checkfirst=True)
+    models.LandingTelegramConfig.__table__.create(bind=engine, checkfirst=True)
+    models.LandingNotificationOutbox.__table__.create(bind=engine, checkfirst=True)
+    models.LandingNotificationDeliveryState.__table__.create(bind=engine, checkfirst=True)
 
 
 def backup_database(destination: Path) -> Path:
@@ -201,7 +223,109 @@ def _claim_next(session: Session, now: datetime | None = None) -> ClaimedNotific
         return claimed
 
 
-def _send_notification(event: ClaimedNotification) -> None:
+def _claim_next_landing(
+    session: Session, now: datetime | None = None
+) -> ClaimedLandingNotification | None:
+    now = now or _utcnow()
+    dialect = session.get_bind().dialect.name
+    cooldown = aliased(models.LandingNotificationDeliveryState)
+    due = or_(
+        and_(
+            models.LandingNotificationOutbox.status == "pending",
+            models.LandingNotificationOutbox.next_attempt_at <= now,
+        ),
+        and_(
+            models.LandingNotificationOutbox.status == "processing",
+            models.LandingNotificationOutbox.locked_until <= now,
+        ),
+    )
+    query = (
+        session.query(models.LandingNotificationOutbox)
+        .join(models.Landing, models.Landing.id == models.LandingNotificationOutbox.landing_id)
+        .join(
+            models.LandingTelegramConfig,
+            models.LandingTelegramConfig.id == models.LandingNotificationOutbox.destination_config_id,
+        )
+        .outerjoin(
+            cooldown,
+            cooldown.destination_config_id == models.LandingNotificationOutbox.destination_config_id,
+        )
+        .filter(
+            due,
+            or_(cooldown.destination_config_id.is_(None), cooldown.blocked_until <= now),
+        )
+    )
+    if dialect != "sqlite":
+        query = query.with_for_update(of=models.LandingNotificationOutbox, skip_locked=True)
+
+    while True:
+        if dialect == "sqlite":
+            session.execute(text("BEGIN IMMEDIATE"))
+        event = query.order_by(models.LandingNotificationOutbox.id).first()
+        if event is None:
+            session.commit()
+            return None
+        if event.attempts >= MAX_ATTEMPTS:
+            event.status = "failed"
+            event.locked_until = None
+            event.lock_token = None
+            event.last_error = "Worker stopped before completing the maximum number of attempts"
+            session.commit()
+            continue
+
+        try:
+            payload = json.loads(event.payload_json)
+        except (TypeError, json.JSONDecodeError):
+            event.status = "failed"
+            event.locked_until = None
+            event.lock_token = None
+            event.last_error = "Stored event payload is invalid"
+            session.commit()
+            continue
+        landing = session.get(models.Landing, event.landing_id)
+        config = session.get(models.LandingTelegramConfig, event.destination_config_id)
+        if landing is None or config is None:
+            event.status = "failed"
+            event.locked_until = None
+            event.lock_token = None
+            event.last_error = "Stored destination is unavailable"
+            session.commit()
+            continue
+
+        token = str(uuid4())
+        event.status = "processing"
+        event.attempts += 1
+        event.locked_until = now + timedelta(seconds=LEASE_SECONDS)
+        event.lock_token = token
+        claimed = ClaimedLandingNotification(
+            id=event.id,
+            event_id=event.event_id,
+            event_type=event.event_type,
+            landing_id=event.landing_id,
+            landing_slug=landing.slug,
+            destination_config_id=event.destination_config_id,
+            secret_ref=config.secret_ref,
+            chat_id=config.chat_id,
+            payload=payload,
+            attempts=event.attempts,
+            lock_token=token,
+        )
+        session.commit()
+        return claimed
+
+
+def _send_notification(event: ClaimedNotification | ClaimedLandingNotification) -> None:
+    if isinstance(event, ClaimedLandingNotification):
+        send_landing_notification(
+            token=_get_landing_bot_token(event.secret_ref),
+            chat_id=event.chat_id,
+            landing_slug=event.landing_slug,
+            event_id=event.event_id,
+            event_type=event.event_type,
+            payload=event.payload,
+        )
+        return
+
     send = {
         "booking_created": send_booking_created_notification,
         "booking_cancelled": send_booking_cancelled_notification,
@@ -303,12 +427,94 @@ def _finish_failure(
         session.close()
 
 
+def _finish_landing_success(
+    session_factory: sessionmaker, event: ClaimedLandingNotification
+) -> bool:
+    session = session_factory()
+    try:
+        updated = (
+            session.query(models.LandingNotificationOutbox)
+            .filter_by(id=event.id, status="processing", lock_token=event.lock_token)
+            .update(
+                {
+                    "status": "sent",
+                    "sent_at": _utcnow(),
+                    "locked_until": None,
+                    "lock_token": None,
+                    "last_error": None,
+                },
+                synchronize_session=False,
+            )
+        )
+        session.commit()
+        return bool(updated)
+    except Exception:
+        session.rollback()
+        raise
+    finally:
+        session.close()
+
+
+def _finish_landing_failure(
+    session_factory: sessionmaker,
+    event: ClaimedLandingNotification,
+    exc: Exception,
+    *,
+    now: datetime | None = None,
+) -> str:
+    now = now or _utcnow()
+    retryable, retry_after, safe_error = _failure_details(exc)
+    session = session_factory()
+    try:
+        row = (
+            session.query(models.LandingNotificationOutbox)
+            .filter_by(id=event.id, status="processing", lock_token=event.lock_token)
+            .first()
+        )
+        if row is None:
+            session.commit()
+            return "lease_lost"
+        row.locked_until = None
+        row.lock_token = None
+        row.last_error = safe_error[:500]
+        if retry_after is not None:
+            cooldown = session.get(models.LandingNotificationDeliveryState, event.destination_config_id)
+            until = now + timedelta(seconds=retry_after)
+            if cooldown is None:
+                session.add(
+                    models.LandingNotificationDeliveryState(
+                        destination_config_id=event.destination_config_id,
+                        blocked_until=until,
+                    )
+                )
+            elif _as_utc(cooldown.blocked_until) < _as_utc(until):
+                cooldown.blocked_until = until
+        if not retryable:
+            config = session.get(models.LandingTelegramConfig, event.destination_config_id)
+            if config is not None:
+                config.status = "invalid"
+        if retryable and row.attempts < MAX_ATTEMPTS:
+            row.status = "pending"
+            row.next_attempt_at = now + timedelta(seconds=_retry_delay(row.attempts, retry_after))
+            outcome = "retry"
+        else:
+            row.status = "failed"
+            outcome = "failed"
+        session.commit()
+        return outcome
+    except Exception:
+        session.rollback()
+        raise
+    finally:
+        session.close()
+
+
 def drain_notifications(
     *,
     session_factory: sessionmaker = SessionLocal,
     limit: int = MAX_BATCH_SIZE,
     budget_seconds: float = RUN_BUDGET_SECONDS,
-    send: Callable[[ClaimedNotification], None] = _send_notification,
+    send: Callable[[ClaimedNotification | ClaimedLandingNotification], None] = _send_notification,
     stop_event: threading.Event | None = None,
 ) -> dict[str, int]:
     if not 1 <= limit <= MAX_BATCH_SIZE:
@@ -328,6 +534,19 @@ def drain_notifications(
         cleanup.query(models.BookingNotificationOutbox).filter(
             models.BookingNotificationOutbox.id.in_(select(expired_ids.c.id))
         ).delete(synchronize_session=False)
+        expired_landing_ids = (
+            cleanup.query(models.LandingNotificationOutbox.id)
+            .filter(
+                models.LandingNotificationOutbox.status == "sent",
+                models.LandingNotificationOutbox.sent_at < _utcnow() - timedelta(days=SENT_RETENTION_DAYS),
+            )
+            .order_by(models.LandingNotificationOutbox.sent_at)
+            .limit(MAX_PRUNED_PER_RUN)
+            .subquery()
+        )
+        cleanup.query(models.LandingNotificationOutbox).filter(
+            models.LandingNotificationOutbox.id.in_(select(expired_landing_ids.c.id))
+        ).delete(synchronize_session=False)
         cleanup.commit()
     except Exception:
         cleanup.rollback()
@@ -345,7 +564,10 @@ def drain_notifications(
             break
         session = session_factory()
         try:
-            event = _claim_next(session)
+            if claimed_count % 2 == 0:
+                event = _claim_next_landing(session) or _claim_next(session)
+            else:
+                event = _claim_next(session) or _claim_next_landing(session)
         except Exception:
             session.rollback()
             raise
@@ -359,7 +581,11 @@ def drain_notifications(
         try:
             send(event)
         except Exception as exc:
-            outcome = _finish_failure(session_factory, event, exc)
+            outcome = (
+                _finish_landing_failure(session_factory, event, exc)
+                if isinstance(event, ClaimedLandingNotification)
+                else _finish_failure(session_factory, event, exc)
+            )
             counts[outcome] += 1
             logger.warning(
                 "notification_delivery event_id=%s outcome=%s attempt=%s error_type=%s duration_ms=%.1f",
@@ -370,7 +596,12 @@ def drain_notifications(
                 (time.monotonic() - send_started) * 1000,
             )
         else:
-            if _finish_success(session_factory, event):
+            succeeded = (
+                _finish_landing_success(session_factory, event)
+                if isinstance(event, ClaimedLandingNotification)
+                else _finish_success(session_factory, event)
+            )
+            if succeeded:
                 counts["sent"] += 1
                 logger.info(
                     "notification_delivery event_id=%s outcome=sent attempt=%s duration_ms=%.1f",
@@ -387,29 +618,36 @@ def drain_notifications(
 def queue_stats(session_factory: sessionmaker = SessionLocal) -> dict[str, object]:
     session = session_factory()
     try:
-        counts = {
-            status: count
-            for status, count in session.query(
-                models.BookingNotificationOutbox.status,
-                func.count(models.BookingNotificationOutbox.id),
-            ).group_by(models.BookingNotificationOutbox.status)
-        }
-        oldest = (
+        counts: dict[str, int] = {}
+        for model in (models.BookingNotificationOutbox, models.LandingNotificationOutbox):
+            for status, count in session.query(model.status, func.count(model.id)).group_by(model.status):
+                counts[status] = counts.get(status, 0) + count
+        oldest_booking = (
             session.query(func.min(models.BookingNotificationOutbox.created_at))
             .filter(models.BookingNotificationOutbox.status.in_(("pending", "processing")))
             .scalar()
         )
+        oldest_landing = (
+            session.query(func.min(models.LandingNotificationOutbox.created_at))
+            .filter(models.LandingNotificationOutbox.status.in_(("pending", "processing")))
+            .scalar()
+        )
+        oldest = min(
+            (_as_utc(value) for value in (oldest_booking, oldest_landing) if value is not None),
+            default=None,
+        )
         oldest_age_seconds = (
-            max(0, int((_utcnow() - _as_utc(oldest)).total_seconds()))
+            max(0, int((_utcnow() - oldest).total_seconds()))
             if oldest
             else None
         )
-        failures = [
+        booking_failures = [
             {
                 "id": row.id,
                 "event_type": row.event_type,
                 "attempts": row.attempts,
                 "error": row.last_error,
+                "created_at": _as_utc(row.created_at),
             }
             for row in (
                 session.query(models.BookingNotificationOutbox)
@@ -418,6 +656,29 @@ def queue_stats(session_factory: sessionmaker = SessionLocal) -> dict[str, objec
                 .limit(5)
             )
         ]
+        landing_failures = [
+            {
+                "event_id": row.event_id,
+                "landing_id": row.landing_id,
+                "event_type": row.event_type,
+                "attempts": row.attempts,
+                "error": row.last_error,
+                "created_at": _as_utc(row.created_at),
+            }
+            for row in (
+                session.query(models.LandingNotificationOutbox)
+                .filter_by(status="failed")
+                .order_by(models.LandingNotificationOutbox.id.desc())
+                .limit(5)
+            )
+        ]
+        failures = sorted(
+            booking_failures + landing_failures,
+            key=lambda item: item["created_at"],
+            reverse=True,
+        )[:5]
+        for item in failures:
+            item.pop("created_at")
         return {
             "counts": counts,
             "oldest_waiting_age_seconds": oldest_age_seconds,
@@ -452,8 +713,27 @@ def retry_failed(session_factory: sessionmaker = SessionLocal) -> int:
                 synchronize_session=False,
             )
         )
+        landing_count = (
+            session.query(models.LandingNotificationOutbox)
+            .filter(
+                models.LandingNotificationOutbox.status == "failed",
+                models.LandingNotificationOutbox.manual_retry_count < 3,
+            )
+            .update(
+                {
+                    "status": "pending",
+                    "attempts": 0,
+                    "manual_retry_count": models.LandingNotificationOutbox.manual_retry_count + 1,
+                    "next_attempt_at": now,
+                    "locked_until": None,
+                    "lock_token": None,
+                    "last_error": None,
+                },
+                synchronize_session=False,
+            )
+        )
         session.commit()
-        return count
+        return count + landing_count
     except Exception:
         session.rollback()
         raise

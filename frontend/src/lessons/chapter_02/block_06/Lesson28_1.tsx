@@ -67,18 +67,22 @@ export function Lesson28_1({ module }: { module?: string }) {
         </p>
 
         <CodeBlock
-          caption="модули после упаковки"
-          code={`app/
+          caption="Два файла до и после переноса в пакет"
+          code={`# до переноса
+prices.py
+discounts.py
+
+# после переноса
+shop/
 ├── __init__.py
-├── main.py
-├── models.py
-├── validators.py
-├── operations.py
-└── errors.py`}
+├── prices.py
+└── discounts.py
+
+# имена модулей: shop.prices и shop.discounts`}
         />
 
         <p>
-          Каждый файл сохраняет свою ответственность. В <code>models.py</code> остаётся модель словаря задачи, в <code>validators.py</code> находятся проверки значений, в <code>operations.py</code> выполняются действия над задачами, а <code>errors.py</code> хранит типы прикладных ошибок. В этой точке маршрута <code>main.py</code> всё ещё содержит интерфейс и запуск. Выделение интерфейса командной строки (CLI) в отдельный <code>cli.py</code> относится к следующему занятию.
+          Теперь сопоставим это с Planner. В каталоге <code>app</code> те же роли получают имена <code>app.models</code>, <code>app.validators</code>, <code>app.operations</code> и <code>app.errors</code>. Их содержимое не переписываем. Файл <code>app.main</code> пока сохраняет CLI и запуск; перенос CLI в <code>app.cli</code> относится к следующему занятию.
         </p>
 
         <Callout tone="info">
@@ -95,7 +99,9 @@ export function Lesson28_1({ module }: { module?: string }) {
           Можно представить <code>__init__.py</code> как табличку с названием у входа в помещение. Табличка помогает определить границу, но не переносит внутрь все предметы и не меняет их устройство. Так же и файл инициализации не обязан импортировать каждый модуль или повторно объявлять его функции.
         </p>
 
-        <CodeBlock caption="app/__init__.py" code={`# Пакет app; пока без побочных действий`} />
+        <Callout tone="info">
+          Создадим файл <code>app/__init__.py</code> и оставим его пустым. В нём пока нет импортов и вызовов.
+        </Callout>
 
         <p>
           Импорт <code>app.operations</code> сначала подготавливает пакет <code>app</code>, поэтому Python выполняет верхнеуровневый код в <code>app/__init__.py</code>, а затем загружает нужный подмодуль. Пустой файл оставляет этот этап прозрачным. Если поместить туда запуск меню или широкие импорты, даже обращение к одному подмодулю может получить лишние действия и дополнительные связи.
@@ -122,7 +128,7 @@ export function Lesson28_1({ module }: { module?: string }) {
         </Lead>
 
         <p>
-          Точки в этом имени разделяют пакет и вложенный модуль: сначала Python находит пакет <code>app</code>, затем модуль <code>validators</code>, после чего получает из него имя <code>validate_priority</code>. Это абсолютная форма относительно корня проекта, из которого мы запускаем приложение. Она не означает абсолютный путь диска вроде <code>C:\\Project</code>.
+          Точки разделяют имена пакета и модуля: Python ищет <code>app</code>, затем <code>validators</code> и имя <code>validate_priority</code>. Абсолютный импорт начинается с доступного верхнего имени пакета, а не с точки в текущем модуле и не с пути диска. Python ищет модули в списке каталогов <code>sys.path</code>. При запуске команды курса из корня проекта эта папка доступна для поиска.
         </p>
 
         <CodeBlock
@@ -277,40 +283,42 @@ def add_task(task):
 
         <CodeBlock
           caption="отдельный проблемный фрагмент"
-          code={`# app/operations.py
-from app.validators import validate_priority
+          code={`# В каталоге demo есть пустой __init__.py
 
-def add_task(task):
-    return validate_priority(task["priority"])
+# demo/a.py
+from demo.b import second
 
-# app/validators.py
-from app.operations import add_task
+def first():
+    return 1
 
-def validate_priority(value):
-    return 1 <= value <= 5`}
+# demo/b.py
+from demo.a import first
+
+def second():
+    return 2`}
         />
 
         <p>
-          Когда <code>main</code> начинает импортировать <code>operations</code>, тот запрашивает <code>validators</code>. Затем валидатор пытается забрать <code>add_task</code> обратно из <code>operations</code>. Но определение <code>add_task</code> расположено ниже импорта <code>validators</code>, поэтому нужного имени пока нет. Python сообщает, что модуль частично инициализирован.
+          При первом <code>import demo.a</code> Python выполняет <code>a.py</code> сверху вниз и доходит до импорта <code>second</code>. Затем он начинает <code>b.py</code>, где импорт сразу просит <code>first</code> из ещё не завершённого <code>a.py</code>. Определение этой функции находится ниже первого импорта, поэтому Python ещё не выполнил эту строку. Имя пока недоступно, и импорт завершается ошибкой о частично инициализированном модуле.
         </p>
 
         <StepThrough
-          code={`main начинает import operations
-operations начинает import validators
-validators просит add_task из operations
-add_task ещё не определена
-импорт останавливается на цикле`}
+          code={`import demo.a начинает a.py
+a.py запрашивает second из b.py
+b.py запрашивает first из a.py
+строка def first ещё не выполнена
+импорт завершается ImportError`}
           steps={[
-            { line: 0, note: "Точка запуска просит модуль operations.", vars: { operations: "ещё выполняется" } },
-            { line: 1, note: "Верхнеуровневый импорт передаёт выполнение валидаторам.", vars: { validators: "начинает импорт" } },
-            { line: 2, note: "Валидаторы возвращаются к исходному модулю за add_task.", vars: { зависимость: "обратная" } },
-            { line: 3, note: "Строка определения функции ещё не выполнена.", vars: { add_task: "ещё отсутствует" } },
-            { line: 4, note: "Запрошенное имя не готово, поэтому импорт завершается ошибкой.", vars: { результат: "частично инициализированный модуль" } },
+            { line: 0, note: "Импорт начинает выполнять a.py.", vars: { a: "ещё выполняется" } },
+            { line: 1, note: "Запрос second начинает выполнять b.py.", vars: { b: "начинает импорт" } },
+            { line: 2, note: "b.py просит имя из a.py, который ещё не завершился.", vars: { зависимость: "возвращается к a" } },
+            { line: 3, note: "Строка определения first ещё не выполнена.", vars: { first: "ещё отсутствует" } },
+            { line: 4, note: "Запрошенное имя не готово, импорт сообщает ImportError.", vars: { результат: "частичная инициализация" } },
           ]}
         />
 
         <p>
-          Это подготовленный разбор порядка строк, а не реальный запуск сломанного проекта. Сам текст ошибки помогает найти место проявления, но исправление начинается с графа и ответственности модулей. Безопасный импорт из прошлого занятия тоже не устраняет цикл: он не даёт запускать CLI, но не меняет взаимную зависимость.
+          В сообщении Python обычно видны запрошенное имя и путь частично загруженного модуля. Это помогает найти место проявления. Причину ищем по графу: прослеживаем импорты до повторного модуля и проверяем, какое определение ещё не выполнено. Защита точки входа управляет запуском CLI, но не меняет связи импортов.
         </p>
 
         <p>
@@ -318,25 +326,34 @@ add_task ещё не определена
         </p>
 
         <BugHunt
-          code={`# app/validators.py
-from app.operations import add_task
+          code={`# shop/prices.py
+from shop.discounts import discounted_price
 
-# app/operations.py
-from app.validators import validate_priority`}
-          question="Какую связь уберём, чтобы проверки остались нижним независимым модулем?"
+def base_price(amount):
+    return amount
+
+# shop/discounts.py
+from shop.prices import base_price
+
+def discounted_price(amount):
+    return base_price(amount) * 0.9`}
+          question="Какое направление оставляет расчёт скидки зависимым от базовой цены?"
           options={[
-            "Импорт add_task из validators в operations",
-            "Импорт validate_priority из operations в validators",
-            "Сам файл app/__init__.py",
+            "prices импортирует скидку, а discounts импортирует цену",
+            "Только discounts импортирует base_price из prices",
+            "Удалить пакет shop вместе с __init__.py",
           ]}
-          correctIndex={0}
-          explanation="Валидатор не должен знать об операциях. Операции используют проверку, а обратная связь из validators удаляется."
-          fix={`# app/validators.py
-def validate_priority(value):
-    return 1 <= value <= 5
+          correctIndex={1}
+          explanation="Базовая цена не должна импортировать скидки. Модуль скидок может использовать функцию цены, а обратную связь из prices нужно убрать."
+          fix={`# shop/prices.py
+def base_price(amount):
+    return amount
 
-# app/operations.py
-from app.validators import validate_priority`}
+# shop/discounts.py
+from shop.prices import base_price
+
+def discounted_price(amount):
+    return base_price(amount) * 0.9`}
         />
 
         <p>
@@ -361,7 +378,7 @@ from app.validators import validate_priority`}
 
       <Section number="07" title="Что мы будем делать в практике">
         <Lead>
-          Исходная опора практики: свой функциональный Planner после занятия 28. Модули уже разнесены, безопасный запуск работает, команды обрабатывают один список в памяти. Сначала сверим фактический состав файлов с проектом, затем перенесём модули в пакет, не переписывая предметные функции.
+          Исходная опора практики: свой функциональный Planner с разнесёнными модулями и безопасным запуском. Команды обрабатывают один список в памяти. Сначала сверим фактический состав файлов с проектом, затем перенесём модули в пакет, не переписывая предметные функции.
         </Lead>
 
         <LinkedNotes
@@ -369,7 +386,7 @@ from app.validators import validate_priority`}
           items={[
             { title: "Соберём пакет", description: "Перенесём существующие файлы в app и добавим пустой __init__.py; прежние функции и команды сохранятся." },
             { title: "Обновим связи", description: "Укажем абсолютные импорты от app и оставим зависимости направленными к нижним модулям." },
-            { title: "Подтвердим результат", description: "Импорт пройдёт без меню, а python -m app.main сохранит привычную работу Planner." },
+            { title: "Проверим результат", description: "Отдельный пример покажет причину цикла; безопасный импорт, запуск python -m app.main и прежние команды проверят Planner." },
           ]}
         />
 

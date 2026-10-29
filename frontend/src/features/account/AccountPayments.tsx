@@ -1,4 +1,6 @@
-import { ArrowUpRight, CreditCard, ReceiptText, ShieldCheck } from "lucide-react";
+import { ArrowUpRight, CheckCircle2, Clock3, CreditCard, ReceiptText, ShieldCheck } from "lucide-react";
+import type { UserProfile } from "../../shared/api/contracts";
+import { formatSubscriptionDate } from "../../shared/lib/dates";
 
 export interface AccountPaymentsData {
   planName: string;
@@ -9,37 +11,65 @@ export interface AccountPaymentsData {
   invoices: { id: string; dateLabel: string; description: string; amountLabel: string; statusLabel: string }[];
 }
 
-export function AccountPayments({ data = null, onCheckout }: {
+function formatPlanName(value?: string | null) {
+  if (!value) return "Тариф не назначен";
+  return value.charAt(0).toLocaleUpperCase("ru-RU") + value.slice(1);
+}
+
+export function AccountPayments({ user, data = null, onCheckout }: {
+  user: Pick<UserProfile, "subscription_plan" | "subscription_until" | "has_active_subscription">;
   data?: AccountPaymentsData | null;
   onCheckout?: () => void;
 }) {
+  const hasActiveSubscription = user.has_active_subscription ?? false;
+  const subscriptionEndDate = user.subscription_until ? formatSubscriptionDate(user.subscription_until) : null;
+  const planName = data?.planName ?? formatPlanName(user.subscription_plan);
+
   return (
     <div className="account-section-stack">
-      <header className="account-section-heading">
-        <div><h2>Оплата и подписка</h2><p>Тариф, продление и история платежей.</p></div>
-        {!data && <span className="account-coming-soon">Скоро</span>}
-      </header>
       <div className="account-detail-grid account-detail-grid--payments">
-        <section className="account-surface account-detail-card account-plan-card">
-          <span className="account-plan-card__icon"><CreditCard size={23} aria-hidden="true" /></span>
-          <div><span className="account-metric__label">Тариф</span><h3>{data?.planName ?? "—"}</h3></div>
-          <div className="account-plan-card__price"><strong>{data?.priceLabel ?? "—"}</strong><span>{data?.periodLabel ?? "Стоимость появится позже"}</span></div>
-          <button className="account-plan-card__action" type="button" disabled={!data || !onCheckout} onClick={onCheckout}>
-            Выбрать тариф <ArrowUpRight size={16} aria-hidden="true" />
-          </button>
-          {!onCheckout && <small>Онлайн-оплата пока недоступна</small>}
+        <section className={`account-surface account-plan-card ${hasActiveSubscription ? "is-active" : "is-inactive"}`}>
+          <header className="account-plan-card__header">
+            <span className="account-plan-card__icon"><CreditCard size={21} aria-hidden="true" /></span>
+            <span className={`account-subscription-state ${hasActiveSubscription ? "is-active" : ""}`}>
+              {hasActiveSubscription ? <><CheckCircle2 size={14} aria-hidden="true" /> Активна</> : <><Clock3 size={14} aria-hidden="true" /> Не активна</>}
+            </span>
+          </header>
+          <div className="account-plan-card__name">
+            <span>ВАША ПОДПИСКА</span>
+            <h3>{planName}</h3>
+          </div>
+          <div className="account-plan-card__expiry">
+            <span>{hasActiveSubscription ? "Доступ действует до" : subscriptionEndDate ? "Подписка закончилась" : "Срок действия"}</span>
+            <strong>{subscriptionEndDate ?? "Не указан"}</strong>
+          </div>
+          {data?.priceLabel && (
+            <div className="account-plan-card__price"><strong>{data.priceLabel}</strong><span>{data.periodLabel}</span></div>
+          )}
+          {onCheckout ? (
+            <button className="account-plan-card__action" type="button" onClick={onCheckout}>
+              Продлить подписку <ArrowUpRight size={16} aria-hidden="true" />
+            </button>
+          ) : (
+            <p className="account-plan-card__note">Продление появится здесь после подключения онлайн-оплаты.</p>
+          )}
         </section>
-        <section className="account-surface account-detail-card">
-          <header><h3>Управление оплатой</h3><ShieldCheck size={18} aria-hidden="true" /></header>
+
+        <section className="account-surface account-detail-card account-payment-management">
+          <header><div><h3>Управление оплатой</h3><p>Платёжные данные аккаунта</p></div><ShieldCheck size={19} aria-hidden="true" /></header>
           <dl className="account-payment-details">
-            <div><dt>Следующий платёж</dt><dd>{data?.nextPaymentLabel ?? "—"}</dd></div>
-            <div><dt>Способ оплаты</dt><dd>{data?.paymentMethodLabel ?? "—"}</dd></div>
+            <div><dt>Следующий платёж</dt><dd>{data?.nextPaymentLabel ?? "Не настроен"}</dd></div>
+            <div><dt>Способ оплаты</dt><dd>{data?.paymentMethodLabel ?? "Не добавлен"}</dd></div>
           </dl>
-          <p className="account-section-note">Здесь можно будет управлять продлением и способами оплаты подписки.</p>
+          <div className="account-payment-info">
+            <span><ShieldCheck size={16} aria-hidden="true" /></span>
+            <p>Способ оплаты и автопродление станут доступны после подключения платёжного сервиса.</p>
+          </div>
         </section>
       </div>
-      <section className="account-surface account-detail-card">
-        <header><h3>История платежей</h3><span>Все операции в одном месте</span></header>
+
+      <section className="account-surface account-detail-card account-payment-history">
+        <header><div><h3>История платежей</h3><p>Список операций по подписке</p></div><ReceiptText size={19} aria-hidden="true" /></header>
         {data?.invoices.length ? (
           <div className="account-invoices">
             {data.invoices.map((invoice) => (
@@ -51,9 +81,9 @@ export function AccountPayments({ data = null, onCheckout }: {
           </div>
         ) : (
           <div className="account-empty-state account-empty-state--compact">
-            <span className="account-empty-state__icon"><ReceiptText size={26} aria-hidden="true" /></span>
-            <strong>История платежей появится здесь</strong>
-            <p>После подключения оплаты здесь будут отображаться операции по подписке.</p>
+            <span className="account-empty-state__icon"><ReceiptText size={24} aria-hidden="true" /></span>
+            <strong>Платежей пока нет</strong>
+            <p>Когда появится онлайн-оплата, здесь будут даты, суммы и статусы операций.</p>
           </div>
         )}
       </section>

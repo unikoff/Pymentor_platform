@@ -1,6 +1,6 @@
 """Administrative operations and student reports."""
 
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from typing import Literal
 
 from fastapi import HTTPException, Request, status
@@ -143,7 +143,24 @@ def admin_overview(request: Request, db: Session):
     today = now.date()
     now_utc = now.astimezone(timezone.utc)
     week_start_utc = now_utc - timedelta(days=7)
-    month_start_date = today.replace(day=1)
+    trend_days = 30
+    trend_start_date = today - timedelta(days=trend_days - 1)
+    trend_start_utc = datetime.combine(
+        trend_start_date,
+        datetime.min.time(),
+        tzinfo=activity.MOSCOW_TZ,
+    ).astimezone(timezone.utc)
+
+    student_totals = (
+        db.query(
+            func.count(models.User.id),
+            func.sum(case((models.User.subscription_until > now_utc, 1), else_=0)),
+        )
+        .filter(models.User.is_admin.is_(False))
+        .one()
+    )
+    total_students = int(student_totals[0] or 0)
+    active_subscriptions_count = int(student_totals[1] or 0)
 
     active_students_7d = (
         db.query(func.count(func.distinct(models.UserActivityDay.user_id)))
@@ -167,7 +184,7 @@ def admin_overview(request: Request, db: Session):
             .join(models.User, models.User.id == models.UserActivityDay.user_id)
             .filter(
                 models.User.is_admin.is_(False),
-                models.UserActivityDay.activity_date >= month_start_date,
+                models.UserActivityDay.activity_date >= trend_start_date,
                 models.UserActivityDay.activity_date <= today,
             )
             .group_by(models.UserActivityDay.activity_date)
@@ -186,6 +203,24 @@ def admin_overview(request: Request, db: Session):
         .scalar()
         or 0
     )
+
+    lessons_completed_by_date: dict[date, int] = {}
+    completion_rows = (
+        db.query(models.UserLessonProgress.completed_at)
+        .join(models.User, models.User.id == models.UserLessonProgress.user_id)
+        .filter(
+            models.User.is_admin.is_(False),
+            models.UserLessonProgress.completed_at >= trend_start_utc,
+            models.UserLessonProgress.completed_at <= now_utc,
+        )
+        .all()
+    )
+    for (completed_at,) in completion_rows:
+        normalized_at = accounts._normalize_datetime(completed_at)
+        if normalized_at is None:
+            continue
+        completed_date = normalized_at.astimezone(activity.MOSCOW_TZ).date()
+        lessons_completed_by_date[completed_date] = lessons_completed_by_date.get(completed_date, 0) + 1
 
     expiration_limit_utc = now_utc + timedelta(days=7)
     expiring_query = db.query(models.User).filter(
@@ -226,19 +261,102 @@ def admin_overview(request: Request, db: Session):
     booked_slots = upcoming_slots[1] or 0
     free_slots = total_slots - booked_slots
 
+    slots_next_week_until = today + timedelta(days=6)
+    next_week_slots = (
+        db.query(
+            func.count(models.BookingSlot.id),
+            func.sum(case((models.BookingSlot.student_id.is_not(None), 1), else_=0)),
+        )
+        .filter(
+            models.BookingSlot.slot_date <= slots_next_week_until,
+            or_(
+                models.BookingSlot.slot_date > today,
+                and_(
+                    models.BookingSlot.slot_date == today,
+                    models.BookingSlot.start_time >= now.strftime("%H:%M"),
+                ),
+            ),
+        )
+        .one()
+    )
+    next_week_total = int(next_week_slots[0] or 0)
+    next_week_booked = int(next_week_slots[1] or 0)
+
+    upcoming_bookings = [
+        {
+            "id": slot.id,
+            "date": slot.slot_date.isoformat(),
+            "start_time": slot.start_time,
+            "duration_minutes": slot.duration_minutes,
+            "student": {"id": student.id, "username": student.username, "email": student.email},
+        }
+        for slot, student in (
+            db.query(models.BookingSlot, models.User)
+            .join(models.User, models.User.id == models.BookingSlot.student_id)
+            .filter(
+                models.BookingSlot.student_id.is_not(None),
+                models.BookingSlot.slot_date <= slots_next_week_until,
+                or_(
+                    models.BookingSlot.slot_date > today,
+                    and_(
+                        models.BookingSlot.slot_date == today,
+                        models.BookingSlot.start_time >= now.strftime("%H:%M"),
+                    ),
+                ),
+            )
+            .order_by(models.BookingSlot.slot_date.asc(), models.BookingSlot.start_time.asc())
+            .limit(6)
+            .all()
+        )
+    ]
+
+    most_active_students = [
+        {"id": user_id, "username": username, "lessons_completed": int(completed_count)}
+        for user_id, username, completed_count in (
+            db.query(
+                models.User.id,
+                models.User.username,
+                func.count(models.UserLessonProgress.id),
+            )
+            .join(models.UserLessonProgress, models.UserLessonProgress.user_id == models.User.id)
+            .filter(
+                models.User.is_admin.is_(False),
+                models.UserLessonProgress.completed_at >= week_start_utc,
+                models.UserLessonProgress.completed_at <= now_utc,
+            )
+            .group_by(models.User.id, models.User.username)
+            .order_by(func.count(models.UserLessonProgress.id).desc(), models.User.username.asc())
+            .limit(6)
+            .all()
+        )
+    ]
+
     daily_active_students = [
         {
             "date": activity_date.isoformat(),
             "active_students": activity_by_date.get(activity_date, 0),
         }
         for activity_date in (
-            month_start_date + timedelta(days=day_offset)
-            for day_offset in range(today.day)
+            trend_start_date + timedelta(days=day_offset)
+            for day_offset in range(trend_days)
+        )
+    ]
+    daily_lessons_completed = [
+        {
+            "date": activity_date.isoformat(),
+            "lessons_completed": lessons_completed_by_date.get(activity_date, 0),
+        }
+        for activity_date in (
+            trend_start_date + timedelta(days=day_offset)
+            for day_offset in range(trend_days)
         )
     ]
 
     return {
+        "total_students": total_students,
         "active_students_7d": active_students_7d,
+        "inactive_students_7d": max(total_students - active_students_7d, 0),
+        "active_subscriptions_count": active_subscriptions_count,
         "lessons_completed_7d": lessons_completed_7d,
         "expiring_subscriptions_count": expiring_subscriptions_count,
         "expiring_subscriptions": expiring_subscriptions,
@@ -248,7 +366,15 @@ def admin_overview(request: Request, db: Session):
             "free": free_slots,
             "occupancy_percent": round(booked_slots / total_slots * 100) if total_slots else None,
         },
+        "slots_7d": {
+            "booked": next_week_booked,
+            "total": next_week_total,
+            "free": next_week_total - next_week_booked,
+        },
+        "upcoming_bookings": upcoming_bookings,
+        "most_active_students": most_active_students,
         "daily_active_students": daily_active_students,
+        "daily_lessons_completed": daily_lessons_completed,
     }
 
 
@@ -412,7 +538,7 @@ def admin_delete_slot(slot_id: int, request: Request, db: Session):
 
 def _build_student_profile(user: models.User, year: int, month: int, db: Session) -> dict:
     start_date, end_date = bookings._month_bounds(year, month)
-    bookings = (
+    booking_rows = (
         db.query(models.BookingSlot)
         .filter(
             models.BookingSlot.student_id == user.id,
@@ -423,12 +549,40 @@ def _build_student_profile(user: models.User, year: int, month: int, db: Session
         .all()
     )
     activity_records = activity.get_activity_records(user_id=user.id, year=year, month=month, db=db)
+    activity_summary = (
+        db.query(
+            func.count(models.UserActivityDay.id),
+            func.max(models.UserActivityDay.activity_date),
+        )
+        .filter(models.UserActivityDay.user_id == user.id)
+        .one()
+    )
+    total_bookings = (
+        db.query(func.count(models.BookingSlot.id))
+        .filter(models.BookingSlot.student_id == user.id)
+        .scalar()
+        or 0
+    )
+    completed_lessons_7d = (
+        db.query(func.count(models.UserLessonProgress.id))
+        .filter(
+            models.UserLessonProgress.user_id == user.id,
+            models.UserLessonProgress.completed_at >= datetime.now(timezone.utc) - timedelta(days=7),
+        )
+        .scalar()
+        or 0
+    )
     learning_progress, completed_lessons = _build_learning_progress(user.id, db)
 
     data = _serialize_account(user, completed_lessons=completed_lessons)
     data["quota"] = bookings.get_quota_status(user_id=user.id, year=year, month=month, db=db)
     data["activity_days_count"] = len(activity_records)
     data["activity_days"] = [record.activity_date.isoformat() for record in activity_records]
+    data["total_activity_days"] = int(activity_summary[0] or 0)
+    data["last_activity_date"] = activity_summary[1].isoformat() if activity_summary[1] else None
+    data["total_bookings"] = int(total_bookings)
+    data["completed_lessons_7d"] = int(completed_lessons_7d)
+    data["activity_summary"] = activity.get_activity_summary(user_id=user.id, db=db)
     data["learning_progress"] = learning_progress
     data["bookings"] = [
         {
@@ -437,7 +591,7 @@ def _build_student_profile(user: models.User, year: int, month: int, db: Session
             "start_time": slot.start_time,
             "duration_minutes": slot.duration_minutes,
         }
-        for slot in bookings
+        for slot in booking_rows
     ]
     return data
 

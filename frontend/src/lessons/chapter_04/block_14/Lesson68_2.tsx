@@ -22,7 +22,7 @@ export function Lesson68_2() {
   return (
     <RichLesson>
       <RichHero
-        chip="Занятие 68.2"
+        chip="Чтение из SQLite"
         title="Чтение через SELECT"
         variant="project"
         intro="Прочитаем ORM-строки из отдельной SQLite-базы и превратим их в знакомые предметные Task. Рабочие API и CLI пока продолжают использовать JSON."

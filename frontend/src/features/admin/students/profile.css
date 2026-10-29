@@ -1,5 +1,3 @@
-/* ==================== Профиль студента (админ) ==================== */
-
 .admin-row--clickable {
   width: 100%;
   cursor: pointer;
@@ -7,148 +5,118 @@
   transition: border-color 140ms ease, background 140ms ease;
 }
 
-.admin-row--clickable:hover {
-  border-color: var(--accent);
-  background: var(--surface-2);
-}
-
-.admin-row--clickable:focus-visible {
-  outline: 2px solid color-mix(in srgb, var(--accent) 64%, transparent);
-  outline-offset: 2px;
-}
-
-.admin-row-chevron {
-  color: var(--faint);
-  align-self: center;
-}
+.admin-row--clickable:hover { border-color: var(--line); background: var(--surface-2); }
+.admin-row--clickable:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.admin-row-chevron { align-self: center; color: var(--faint); }
 
 .admin-profile {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: clamp(14px, 1.7cqw, 20px);
   width: 100%;
   min-width: 0;
   min-height: 0;
   overflow-y: auto;
 }
 
-.admin-back {
-  align-self: flex-start;
-  padding: 6px var(--space-3);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-pill);
-  background: var(--surface-2);
-  color: var(--text);
-  cursor: pointer;
-}
+.profile-head { display: flex; align-items: center; gap: 12px; min-width: 0; padding: 16px; border: 1px solid var(--card-border); border-radius: var(--radius-md); background: var(--card); box-shadow: var(--admin-card-shadow); }
+.profile-head .avatar { display: inline-grid; flex: 0 0 auto; place-items: center; width: 42px; height: 42px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--accent); font-weight: 800; }
+.profile-head > div { display: grid; gap: 3px; min-width: 0; }
+.profile-head strong { display: flex; align-items: center; gap: 8px; min-width: 0; overflow-wrap: anywhere; }
+.profile-head small { color: var(--muted); overflow-wrap: anywhere; }
 
-.admin-back:hover {
-  border-color: var(--accent);
-}
+.profile-head .profile-head__meta { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 8px; margin-left: auto; }
+.profile-head__meta > span:first-child { color: var(--faint); font-size: .7rem; font-variant-numeric: tabular-nums; }
+.profile-state-pill { display: inline-flex; align-items: center; padding: 5px 8px; border: 1px solid var(--line-soft); border-radius: 999px; font-size: .67rem; font-weight: 700; white-space: nowrap; }
+.profile-state-pill.is-active { border-color: color-mix(in srgb, var(--accent) 34%, var(--line)); background: var(--accent-soft); color: var(--accent); }
+.profile-state-pill.is-inactive { background: var(--surface-2); color: var(--muted); }
 
-.profile-head {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-}
-
-.profile-head .avatar {
-  display: inline-grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: var(--accent-soft);
-  color: var(--accent);
-  font-weight: 800;
-}
-
-.profile-head strong {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.profile-head small {
-  color: var(--faint);
-}
-
-.profile-metric {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-4);
-  flex-wrap: wrap;
-  padding: var(--space-4) var(--space-4);
-  border: 1px solid var(--line-soft);
-  border-radius: var(--radius-md);
-  background: var(--card);
-}
-
-.profile-metric span {
-  color: var(--muted);
-  font-size: 0.8rem;
-}
-
-.profile-metric strong {
-  display: block;
-  margin-top: 2px;
-  font-size: 0.95rem;
-}
-
-.profile-metric strong.is-active-subscription {
-  color: var(--accent);
-}
-
-.admin-profile-calendar { width: 100%; }
-
-.admin-profile-calendar__count {
-  display: block;
-  margin-top: 4px;
-  color: var(--muted);
-  font-size: 0.82rem;
-}
-
-.admin-profile-calendar__bookings {
+.profile-summary-grid {
   display: grid;
-  align-content: start;
-  gap: var(--space-2);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
 }
 
-.admin-profile-calendar__booking {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-3);
-  border: 1px solid var(--line-soft);
+.profile-summary-card {
+  display: flex;
+  min-height: 134px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  min-width: 0;
+  padding: clamp(14px, 1.5vw, 20px);
+  border: 1px solid var(--card-border);
   border-radius: var(--radius-md);
-  background: var(--surface);
+  background: linear-gradient(145deg, var(--surface-2), var(--card));
+  box-shadow: var(--admin-card-shadow);
 }
 
-.admin-profile-calendar__booking svg {
-  color: var(--accent);
+.profile-summary-card__label { display: flex; min-height: 20px; align-items: center; gap: 8px; color: var(--muted); font-size: .76rem; font-weight: 650; }
+.profile-summary-card__label svg { flex: 0 0 auto; color: var(--accent); }
+.profile-summary-card--quota .profile-summary-card__label svg { color: var(--accent-secondary); }
+.profile-summary-card--bookings .profile-summary-card__label svg { color: var(--accent-secondary); }
+.profile-summary-card > strong { overflow: hidden; color: var(--text); font-size: clamp(1.2rem, 1.8cqw, 1.65rem); font-variant-numeric: tabular-nums; letter-spacing: -.035em; line-height: 1; text-overflow: ellipsis; white-space: nowrap; }
+.profile-summary-card > small { margin-top: auto; color: var(--muted); font-size: .68rem; line-height: 1.35; }
+
+.profile-statistics-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  align-items: start;
+  gap: clamp(12px, 1.5cqw, 18px);
+  min-width: 0;
 }
 
-.admin-profile-calendar__booking strong {
-  font-variant-numeric: tabular-nums;
-}
+.profile-statistics-grid > * { min-width: 0; }
+.profile-calendar-stack { display: grid; align-content: start; gap: clamp(12px, 1.5cqw, 18px); min-width: 0; }
+.admin-profile-activity { min-width: 0; border-color: var(--card-border); border-radius: var(--radius-lg); background: var(--card); box-shadow: var(--admin-card-shadow); }
+.admin-profile-activity > header { align-items: flex-start; }
+.admin-profile-activity .account-weekly-trends { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: none; align-items: stretch; }
+.admin-profile-activity__empty { margin: 16px 0 0; color: var(--muted); font-size: .76rem; }
 
-.admin-profile-calendar__booking span {
-  color: var(--muted);
-  font-size: 0.8rem;
-}
+.profile-management-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.profile-management-card { display: grid; align-content: start; gap: 11px; min-width: 0; padding: 14px; border: 1px solid var(--card-border); border-radius: var(--radius-md); background: var(--card); box-shadow: var(--admin-card-shadow); }
+.profile-management-card__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.profile-management-card__head > div { display: grid; gap: 4px; min-width: 0; }
+.profile-card-eyebrow { color: var(--muted); font-size: .65rem; font-weight: 750; letter-spacing: .06em; }
+.profile-management-card__head strong { overflow: hidden; color: var(--text); font-size: .9rem; text-overflow: ellipsis; white-space: nowrap; }
+.profile-management-card__head strong.is-active-subscription { color: var(--accent); }
+.profile-management-card__head small { color: var(--faint); font-size: .68rem; }
+.profile-quota-track { overflow: hidden; height: 7px; border-radius: 999px; background: var(--surface-2); }
+.profile-quota-track span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 60%, var(--accent-secondary))); transition: width 180ms ease; }
+.profile-management-card .profile-actions { gap: 6px; }
+.profile-management-card .profile-actions button { min-height: 32px; padding-inline: 9px; font-size: .7rem; }
+.admin-profile-calendar { width: 100%; min-width: 0; border-color: var(--card-border); border-radius: var(--radius-lg); background: var(--card); box-shadow: var(--admin-card-shadow); }
+.admin-profile-calendar__count { display: block; margin-top: 4px; color: var(--muted); font-size: .76rem; }
+.admin-profile-calendar__bookings { display: grid; align-content: start; gap: 7px; }
+.admin-profile-calendar__booking { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 9px; padding: 10px 12px; border: 1px solid var(--line-soft); border-radius: var(--radius-sm); background: var(--surface); }
+.admin-profile-calendar__booking svg { color: var(--accent); }
+.admin-profile-calendar__booking strong { font-size: .8rem; font-variant-numeric: tabular-nums; }
+.admin-profile-calendar__booking span { color: var(--muted); font-size: .74rem; }
 
 @container account-calendar (max-width: 850px) {
-  .admin-profile-calendar .account-calendar__layout {
-    grid-template-columns: minmax(0, 1fr);
-  }
+  .admin-profile-calendar .account-calendar__layout { grid-template-columns: minmax(0, 1fr); }
+  .admin-profile-calendar__booking { grid-template-columns: auto minmax(0, 1fr); }
+  .admin-profile-calendar__booking span { grid-column: 2; }
+}
 
-  .admin-profile-calendar__booking {
-    grid-template-columns: auto minmax(0, 1fr);
-  }
+@container admin-screen (max-width: 620px) {
+  .profile-management-grid { grid-template-columns: minmax(0, 1fr); }
+  .profile-head { align-items: flex-start; flex-wrap: wrap; }
+  .profile-head .profile-head__meta { width: 100%; justify-content: space-between; margin-left: 54px; }
+}
 
-  .admin-profile-calendar__booking span {
-    grid-column: 2;
-  }
+@container admin-screen (max-width: 900px) {
+  .profile-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .profile-statistics-grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+@container admin-screen (max-width: 480px) {
+  .profile-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+  .profile-summary-card { min-height: 120px; padding: 13px; }
+  .profile-summary-card__label { align-items: flex-start; font-size: .72rem; }
+  .admin-profile-activity .account-weekly-trends { grid-template-columns: minmax(0, 1fr); }
+}
+
+@container admin-screen (max-width: 390px) {
+  .profile-summary-grid { grid-template-columns: minmax(0, 1fr); }
 }

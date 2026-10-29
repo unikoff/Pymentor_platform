@@ -27,6 +27,7 @@ DEPLOYMENT.local.md
 
 # Local verification runs and generated artifacts.
 /output/
+/.playwright-cli/
 /docs/stage-runs/
 **/.pytest_cache/
 backend/pymentor-run-*/

@@ -33,6 +33,7 @@
 }
 
 .quiz-option {
+  font: inherit;
   min-height: 40px;
   padding: var(--space-2) var(--space-4);
   border: 1px solid var(--line);
@@ -46,11 +47,6 @@
 .quiz-option:not(:disabled):hover {
   border-color: var(--accent);
   transform: translateY(-1px);
-}
-
-.quiz-option code {
-  font-family: "JetBrains Mono", Consolas, monospace;
-  font-size: 0.88rem;
 }
 
 .quiz-option.is-correct {
