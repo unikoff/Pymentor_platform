@@ -4,6 +4,7 @@ import { runTask, submitTask } from "../api";
 import { CodeToolbar, CodeWorkbench, RunOutput } from "../code-workbench";
 import { readStoredString, writeStoredValue } from "../../../shared/lib/storage";
 import { usePracticeState } from "./session";
+import { isRequiredPracticeTask } from "../required-tasks";
 import { splitTaskPrompt } from "./task-prompt";
 import { readPracticeEditorHeight, getDefaultEditorHeight, readStoredPercent, getPracticeBriefWidthRange, clampPracticeBriefPercent } from "./pane-layout";
 import { TaskResult, formatCompilerMessage } from "./TaskResult";
@@ -13,8 +14,10 @@ import type { LessonTask, TaskRunResponse, TaskSubmitResponse, TaskContract } fr
 export function TaskRunner({
   task,
   lessonId,
+  isSafeSubmitFeedback,
   taskNumber,
   taskTotal,
+  completedTasks,
   isActive,
   onNavigateTask,
   progressOwnerKey,
@@ -22,8 +25,10 @@ export function TaskRunner({
 }: {
   task: LessonTask;
   lessonId: string;
+  isSafeSubmitFeedback: boolean;
   taskNumber: number;
   taskTotal: number;
+  completedTasks: boolean[];
   isActive: boolean;
   onNavigateTask: (taskIndex: number) => void;
   progressOwnerKey: string;
@@ -201,9 +206,20 @@ export function TaskRunner({
       >
         <div className="task-brief" aria-label="Техническое задание">
           <div className="task-brief__toolbar">
-            <div className="task-head__meta">
-              <span>Задача {taskNumber} из {taskTotal}</span>
-              {task.completed && <span className="task-head__meta-completed">Проверено</span>}
+            <div className="task-brief__position">
+              <div className="task-head__meta">
+                <span>Задача {taskNumber} из {taskTotal}</span>
+                {!isRequiredPracticeTask(task) && <span className="task-head__meta-optional">Необязательный повтор</span>}
+              </div>
+              <div
+                className="task-brief__position-track"
+                role="img"
+                aria-label={completedTasks.map((completed, index) => `Задача ${index + 1}: ${completed ? "выполнена" : "не выполнена"}${index === taskNumber - 1 ? ", текущая" : ""}`).join("; ")}
+              >
+                {completedTasks.map((completed, index) => (
+                  <i key={index} className={[completed && "is-done", index === taskNumber - 1 && "is-current"].filter(Boolean).join(" ")} />
+                ))}
+              </div>
             </div>
             <div className="practice-task-navigation" aria-label="Переключение задач">
               <button
@@ -255,7 +271,7 @@ export function TaskRunner({
             terminalOpen={isTerminalOpen} onToggleTerminal={() => setIsTerminalOpen((open) => !open)}
             status={isRunning ? "Выполняется" : isChecking ? "Проверка" : result ? (result.ok ? "Принято" : "Есть ошибки") : runResult ? (runResult.ok ? "Завершено" : "Ошибка") : "Вывод"}>
             {runResult && <RunOutput result={runResult} errorMessage={formatCompilerMessage(runResult.error)} />}
-            {result && <TaskResult result={result} />}
+            {result && <TaskResult result={result} isSafeSubmitFeedback={isSafeSubmitFeedback} />}
             {!runResult && !result && <pre className="task-terminal__empty"><code>{isBusy ? "Выполняется…" : "$ Запустите пример, чтобы увидеть вывод"}</code></pre>}
           </CodeWorkbench>
         </section>

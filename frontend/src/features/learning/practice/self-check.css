@@ -30,7 +30,7 @@
 
 .self-check-card.is-done {
   justify-content: flex-start;
-  border-color: var(--accent);
+  border-color: var(--border-tint-accent);
   background: var(--accent-soft);
 }
 
@@ -151,7 +151,7 @@
   justify-self: start;
   min-height: 32px;
   padding: 5px 11px;
-  border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--line-soft));
+  border: 1px solid color-mix(in srgb, var(--border-tint-accent) 30%, var(--line-soft));
   border-radius: var(--radius-pill);
   background: var(--accent-soft);
   color: var(--accent);
@@ -163,5 +163,5 @@
 
 .self-check-status__retry:hover,
 .self-check-status__login:hover {
-  border-color: color-mix(in srgb, var(--accent) 55%, var(--line-soft));
+  border-color: color-mix(in srgb, var(--border-tint-accent) 55%, var(--line-soft));
 }

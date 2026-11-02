@@ -62,3 +62,25 @@ class LandingTestEvent(BaseModel):
 
     event_type: Literal["telegram_connection_test.v1"]
     payload: dict = Field(default_factory=dict)
+
+
+class LandingConsultationRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    name: str = Field(min_length=2, max_length=80)
+    contact: str = Field(min_length=3, max_length=120)
+    goal: str = Field(default="", max_length=500)
+    consent: Literal[True]
+
+    @field_validator("name", "contact")
+    @classmethod
+    def trim_required_text(cls, value: str) -> str:
+        value = " ".join(value.split())
+        if len(value) < 2:
+            raise ValueError("Поле должно содержать не менее двух символов")
+        return value
+
+    @field_validator("goal")
+    @classmethod
+    def trim_goal(cls, value: str) -> str:
+        return " ".join(value.split())

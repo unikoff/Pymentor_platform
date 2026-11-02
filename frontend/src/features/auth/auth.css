@@ -75,7 +75,7 @@
 }
 
 .auth-actions .secondary-action--compact:hover {
-  border-color: color-mix(in srgb, var(--accent) 38%, var(--line));
+  border-color: color-mix(in srgb, var(--border-tint-accent) 38%, var(--line));
   background: var(--surface-2);
   color: var(--text);
 }
@@ -135,7 +135,7 @@
 }
 
 .auth-panel .auth-tabs button.is-active {
-  border-color: color-mix(in srgb, var(--accent) 30%, var(--line));
+  border-color: color-mix(in srgb, var(--border-tint-accent) 30%, var(--line));
   background: color-mix(in srgb, var(--accent) 7%, var(--card));
   color: var(--text);
   box-shadow: 0 1px 3px color-mix(in srgb, var(--text) 8%, transparent);

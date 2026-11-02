@@ -1,0 +1,109 @@
+.lesson19-trace {
+  container: lesson19-trace / inline-size;
+  min-width: 0;
+}
+
+@container lesson19-trace (max-width: 700px) {
+  .lesson19-trace .tracer {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .lesson19-trace .tracer-code,
+  .lesson19-trace .tracer-panel {
+    min-width: 0;
+  }
+
+  .lesson19-trace .tracer-nav {
+    flex-wrap: wrap;
+  }
+
+  .lesson19-trace .tracer-nav span {
+    white-space: nowrap;
+  }
+}
+
+@container lesson19-trace (max-width: 300px) {
+  .lesson19-trace .tracer-nav {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .lesson19-trace .tracer-nav span {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    text-align: center;
+  }
+
+  .lesson19-trace .tracer-nav button {
+    justify-content: center;
+  }
+}
+
+.lesson19-identity {
+  display: grid;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  gap: 0;
+  margin: 0;
+  padding: clamp(16px, 2vw, 24px);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--bg);
+}
+
+.lesson19-identity figcaption {
+  margin-bottom: 16px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.lesson19-identity__sources {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.lesson19-identity__item,
+.lesson19-identity__record {
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid var(--diagram-node-border);
+  border-radius: 12px;
+  background: var(--surface);
+  overflow-wrap: anywhere;
+}
+
+.lesson19-identity__item p,
+.lesson19-identity__record p {
+  margin: 8px 0 0;
+}
+
+.lesson19-identity__connectors {
+  display: block;
+  width: 100%;
+  height: 42px;
+  color: var(--accent);
+}
+
+.lesson19-identity__record {
+  border-color: var(--diagram-detail-line);
+  background: var(--diagram-data-bg);
+}
+
+.lesson19-identity__check {
+  margin: 16px 0 0;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 420px) {
+  .lesson19-identity__sources {
+    gap: 8px;
+  }
+
+  .lesson19-identity__item,
+  .lesson19-identity__record {
+    padding: 12px;
+  }
+}

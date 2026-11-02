@@ -12,11 +12,9 @@ import {
   MatchPairs,
   PredictOutput,
   QuizCard,
-  RecallCard,
   RichHero,
   RichLesson,
   Section,
-  StepThrough,
   TrueFalse,
 } from "../../shared";
 
@@ -72,14 +70,16 @@ export function Lesson08({ module }: { module?: string }) {
         </p>
         <CodeBlock
           caption="Одна запись с именованными полями"
-          code={'book = {"title": "Справочник", "pages": 180}\nprint(book["title"])\nprint(book["pages"])'}
+          code={'book = {\n    "title": "Справочник",\n    "pages": 180,\n}\nprint(book["title"])\nprint(book["pages"])'}
         />
         <p>
           Внутри фигурных скобок каждая пара записана в одном порядке: сначала ключ, затем
           двоеточие, затем значение. Строковые ключи и строковые значения окружают кавычки;
           число страниц записывается без кавычек, потому что это число, а не текст. Переменная
           book получает весь словарь. Запятая отделяет одну пару от следующей. Такой литерал
-          удобен, когда мы заранее знаем поля и их исходные значения.
+          удобен, когда мы заранее знаем поля и их исходные значения. Выражение
+          <code> book["title"]</code> находит значение по ключу title; подробнее сравним
+          такое обращение с индексом списка в следующем разделе.
         </p>
         <Diagram caption="Ключ выбирает связанное с ним значение">
           <DiagramFlow label="От словаря через ключ к значению">
@@ -95,8 +95,7 @@ export function Lesson08({ module }: { module?: string }) {
         <p>
           Схему читаем слева направо: в словаре book находим ключ title и получаем связанное
           значение. Стрелка показывает выбор поля, а не перемещение данных и не превращение
-          словаря в список. На узком экране схема перестроится вертикально, сохраняя порядок
-          чтения: сначала словарь, затем ключ, затем значение.
+          словаря в список.
         </p>
         <p>
           В словаре ключи уникальны, но значения могут повторяться. Если литерал дважды
@@ -105,7 +104,7 @@ export function Lesson08({ module }: { module?: string }) {
           Имена полей сравниваются точно, поэтому title и Title являются разными ключами.
         </p>
         <PredictOutput
-          code={'book = {"title": "Полевой справочник", "pages": 120, "pages": 156}\nprint(book["pages"])\nprint(len(book))'}
+          code={'book = {\n    "title": "Атлас",\n    "pages": 120,\n    "pages": 156,\n}\nprint(book["pages"])\nprint(len(book))'}
           output={"156\n2"}
           hint="Какое значение останется у повторного ключа и сколько разных пар будет в словаре?"
         />
@@ -115,7 +114,7 @@ export function Lesson08({ module }: { module?: string }) {
           равна двум: title и pages. Значение 156 не добавило третье поле.
         </p>
         <TrueFalse
-          statement={<>В словаре <code>{"{1: 'первый', 2: 'второй'}"}</code> ключ 2 означает вторую позицию, как в списке.</>}
+          statement={<>В словаре <code>{"{2: 'первый', 1: 'второй'}"}</code> обращение по ключу 2 выбирает вторую позицию, как в списке.</>}
           isTrue={false}
           explanation="Ключ 2 здесь является самим ключом. Чтобы найти его значение, обращаются по ключу, а не по позиции."
         />
@@ -125,12 +124,6 @@ export function Lesson08({ module }: { module?: string }) {
           же буквами и регистром. Значение можно найти по ключу, но ключ не ищется среди
           значений этой записью.
         </p>
-        <QuizCard
-          question={'В записи book = {"title": "Словарь", "author": "Автор"} что может повторяться?'}
-          options={["Два ключа", "Два значения", "Один ключ как два отдельных поля"]}
-          correctIndex={1}
-          explanation="Ключи в одном словаре уникальны, а значения могут повторяться. Каждое поле находится по своему точному ключу."
-        />
       </Section>
       <Section number="02" title="Читаем и меняем поле по ключу">
         <p>
@@ -142,7 +135,7 @@ export function Lesson08({ module }: { module?: string }) {
         </p>
         <CodeBlock
           caption="Читаем, заменяем и добавляем поле"
-          code={'recipe = {"name": "Суп", "portions": 4}\nprint(recipe["name"])\nrecipe["portions"] = 6\nrecipe["spice"] = "укроп"\nprint(recipe["portions"])\nprint(recipe["spice"])'}
+          code={'recipe = {\n    "name": "Суп",\n    "portions": 4,\n}\nprint(recipe["name"])\nrecipe["portions"] = 6\nrecipe["spice"] = "укроп"\nprint(recipe["portions"])\nprint(recipe["spice"])'}
         />
         <p>
           Прочтите команды по порядку. Выражение с квадратными скобками справа от print сначала
@@ -233,15 +226,15 @@ export function Lesson08({ module }: { module?: string }) {
           под ключом, а не проверяет смысл формы.
         </p>
         <CodeBlock
-          caption="Один словарь, три состояния поля"
-          code={'note = {"title": "План", "subtitle": None, "duration": 0, "available": False}\nprint(note.get("subtitle", "не указан"))\nprint(note.get("duration", 60))\nprint(note.get("available", True))\nprint(note.get("editor", "не указан"))'}
+          caption="Поле с None и отсутствующее поле"
+          code={'event = {"place": None}\nprint(event.get("place", "-"))\nprint(event.get("host", "-"))'}
         />
         <p>
           Здесь важно различать отсутствие ключа и его сохранённое значение. У
-          <code> subtitle</code> ключ есть, а значение равно <code>None</code>. У
-          <code> editor</code> ключа нет. Поэтому вызов с запасным значением вернёт для
-          <code> subtitle</code> именно <code>None</code>, а для <code>editor</code> вернёт
-          текст «не указан».
+          <code> place</code> ключ есть, а значение равно <code>None</code>. У
+          <code> host</code> ключа нет. Поэтому вызов с запасным значением вернёт для
+          <code> place</code> именно <code>None</code>, а для <code>host</code> вернёт
+          знак «-» как запасной ответ.
         </p>
         <p>
           То же правило защищает значения <code>0</code> и <code>False</code>. Если ключ
@@ -249,19 +242,16 @@ export function Lesson08({ module }: { module?: string }) {
           False. Запасное значение выбирается только при отсутствии ключа. Поэтому нельзя
           рассуждать так: «значение выглядит пустым, значит get подставит запасное».
         </p>
-                <StepThrough
-          code={'note = {"subtitle": None, "duration": 0, "available": False}\nsubtitle = note.get("subtitle", "нет")\nduration = note.get("duration", 60)\navailable = note.get("available", True)'}
-          steps={[
-            { line: 0, note: "В словаре есть три ключа. Значения None, 0 и False записаны явно.", vars: { "note": "{'subtitle': None, 'duration': 0, 'available': False}" } },
-            { line: 1, note: "Ключ subtitle найден. get возвращает сохранённый None, запасной текст не используется.", vars: { "subtitle": "None" } },
-            { line: 2, note: "Ключ duration найден. Ноль остаётся нулём, несмотря на переданное запасное число.", vars: { "duration": "0" } },
-            { line: 3, note: "Ключ available найден. False возвращается как есть, запасное True не используется.", vars: { "available": "False" } },
-          ]}
+        <PredictOutput
+          code={'card = {"qty": 0}\nprint(card.get("qty", 9))\nprint(card.get("fee", 9))'}
+          output={'0\n9'}
+          hint="Какой ключ есть в записи, а для какого понадобится запасной ответ?"
         />
+        <p>Сравните результаты: наличие ключа определяет, используем ли мы сохранённое значение или запасной ответ.</p>
         <p>
           Когда важен сам факт наличия ключа, можно сначала проверить его через
-          <code> in</code>. Выражения <code>"subtitle" in note</code> и
-          <code>"editor" in note</code> дают разные ответы, хотя чтение через
+          <code> in</code>. Выражения <code>"place" in event</code> и
+          <code>"host" in event</code> дают разные ответы, хотя чтение через
           <code>get()</code> без запасного значения вернуло бы для второго поля
           <code>None</code>. Эта разница нужна, если None может быть осознанно сохранённым
           значением. Мы проверяем наличие ключа: сохранённые <code>None</code>, <code>0</code>
@@ -269,7 +259,7 @@ export function Lesson08({ module }: { module?: string }) {
         </p>
 
         <TrueFalse
-          statement={<>Если в словаре есть ключ <code>"available"</code> со значением <code>False</code>, то <code>note.get("available", True)</code> возвращает <code>True</code>.</>}
+          statement={<>Если в словаре ticket есть ключ <code>"open"</code> со значением <code>False</code>, то <code>ticket.get("open", True)</code> возвращает <code>True</code>.</>}
           isTrue={false}
           explanation="Значение не подменяется. Ключ существует, поэтому get возвращает сохранённое False; True используется только для отсутствующего ключа."
         />
@@ -297,7 +287,7 @@ export function Lesson08({ module }: { module?: string }) {
         </p>
         <CodeBlock
           caption="Обновим несколько полей записи"
-          code={'profile = {"name": "Мира", "city": "Тула"}\nprofile.update({"city": "Рязань", "language": "русский"})\nprint(profile["city"])\nprint(profile["language"])'}
+          code={'profile = {\n    "name": "Мира",\n    "city": "Тула",\n}\nprofile.update({\n    "city": "Рязань",\n    "language": "русский",\n})\nprint(profile["city"])\nprint(profile["language"])'}
         />
         <p>
           Если мы присвоим результат вызова обратно в имя, то заменим ссылку на словарь
@@ -307,7 +297,7 @@ export function Lesson08({ module }: { module?: string }) {
           не то, что изменения не произошли.
         </p>
         <BugHunt
-          code={'profile = {"name": "Мира"}\nprofile = profile.update({"city": "Тула"})\nprint(profile["name"])'}
+          code={'profile = {"name": "Мира"}\nprofile = profile.update(\n    {"city": "Тула"}\n)\nprint(profile["name"])'}
           question="Почему последняя строка не может прочитать поле name?"
           options={[
             "update вернул None, а это значение записано в имя profile",
@@ -316,7 +306,7 @@ export function Lesson08({ module }: { module?: string }) {
           ]}
           correctIndex={0}
           explanation="update изменил исходный словарь, но вернул None. Присваивание перезаписало имя profile. Вызываем метод отдельно, сохраняя ссылку на словарь."
-          fix={'profile = {"name": "Мира"}\nprofile.update({"city": "Тула"})\nprint(profile["name"])'}
+          fix={'profile = {"name": "Мира"}\nprofile.update(\n    {"city": "Тула"}\n)\nprint(profile["name"])'}
         />
         <p>
           Например, если в profile уже есть city, update заменит старое название города;
@@ -326,21 +316,6 @@ export function Lesson08({ module }: { module?: string }) {
           передаёт обновлённую запись через результат вызова.
         </p>
         <p>
-          Для необязательного annotation сначала зададим вопрос о наличии. Это особенно важно,
-          если запасное значение совпадает с сохранённым: pop("annotation", 0) вернёт 0 и
-          когда ключа нет, и когда в нём действительно лежал ноль. Проверка in до вызова
-          сохраняет различие; после pop ключ удалён в обоих случаях.
-        </p>
-        <StepThrough
-          code={'material = {"title": "Словари", "annotation": 0, "service": "v1"}\nwas_present = "annotation" in material\nremoved = material.pop("annotation", 0)\ndel material["service"]'}
-          steps={[
-            { line: 0, note: "Словарь содержит обязательный title, нулевую пометку и служебное поле.", vars: { "material": "{'title': 'Словари', 'annotation': 0, 'service': 'v1'}" } },
-            { line: 1, note: "Проверяем наличие до удаления. True подтверждает, что ноль был сохранён.", vars: { "was_present": "True" } },
-            { line: 2, note: "pop возвращает сохранённый ноль и удаляет annotation. Запасное значение не подменяет его.", vars: { "removed": "0" } },
-            { line: 3, note: "del удаляет гарантированный ключ service; старое значение он не возвращает.", vars: { "material": "{'title': 'Словари'}" } },
-          ]}
-        />
-        <p>
           Для удаления есть два разных действия. <code>pop(key)</code> удаляет пару и
           возвращает прежнее значение. Если ключа нет, форма без второго аргумента приводит
           к KeyError; необязательному ключу можно задать запасной результат:
@@ -349,9 +324,15 @@ export function Lesson08({ module }: { module?: string }) {
           а запасное значение задано, pop вернёт его и оставит словарь без изменений. Это
           отличается от del: del не принимает запасной ответ и требует существующий ключ.
         </p>
+        <p>
+          Если запасной ответ совпадает с возможным значением поля, одного результата pop
+          недостаточно, чтобы понять, был ли ключ. Проверка через <code>in</code> до
+          удаления сохраняет эту информацию: например, ноль мог быть записан в словаре или
+          выбран как запасной ответ при отсутствии поля.
+        </p>
         <CodeBlock
           caption="pop сообщает удалённое значение"
-          code={'note = {"title": "План", "subtitle": None}\nremoved = note.pop("subtitle")\nprint(removed)\nprint("subtitle" in note)'}
+          code={'note = {\n    "title": "План",\n    "subtitle": None,\n}\nremoved = note.pop("subtitle")\nprint(removed)\nprint("subtitle" in note)'}
         />
         <p>
           Ключевое слово <code>del</code> удаляет известное поле по ключу, но не даёт нам
@@ -399,6 +380,10 @@ export function Lesson08({ module }: { module?: string }) {
           caption="Три представления одного словаря"
           code={'book = {"title": "Полевой справочник", "pages": 156}\nprint(book.keys())\nprint(book.values())\nprint(book.items())'}
         />
+        <CodeBlock
+          caption="Вывод трёх представлений"
+          code={"dict_keys(['title', 'pages'])\ndict_values(['Полевой справочник', 156])\ndict_items([('title', 'Полевой справочник'), ('pages', 156)])"}
+        />
                 <p>
           Представления отражают содержимое словаря при чтении. Метод keys отвечает только
           за имена, values показывает сохранённые значения, а items сохраняет их связь.
@@ -419,9 +404,6 @@ export function Lesson08({ module }: { module?: string }) {
         <CodeBlock
           caption="Списки ключей, значений и пар"
           code={"['title', 'pages']\n['Полевой справочник', 0]\n[('title', 'Полевой справочник'), ('pages', 0)]"}
-        />        <CodeBlock
-          caption="Точный вывод трёх вызовов print"
-          code={"dict_keys(['title', 'pages'])\ndict_values(['Полевой справочник', 156])\ndict_items([('title', 'Полевой справочник'), ('pages', 156)])"}
         />
         <p>
           В выводе Python покажет объекты-представления с их содержимым. Каждый элемент
@@ -463,16 +445,15 @@ export function Lesson08({ module }: { module?: string }) {
         />
       </Section>
       <Section number="06" title="Создаём отдельную копию записи">
-        <Lead>Сначала закрепим одну модель: ключ называет поле, а значение хранит данные. Только после этого отделим запись от её копии.</Lead>
+        <Lead>Теперь создадим отдельный вариант записи, чтобы изменение одного поля не затронуло исходный словарь.</Lead>
         <QuizCard
           question={'После variant = material какая запись изменится при variant["title"] = "Новый план"?'}
           options={["Только variant", "Только material", "Обе переменные указывают на одну изменённую запись"]}
           correctIndex={2}
           explanation="Обычное присваивание создаёт второе имя для того же объекта. Чтобы отделить внешний словарь, вызовите material.copy()."
         />
-        <p>Для формы библиотечной книги нужны название и число страниц; для читательского отзыва , текст и оценка. Это разные записи. Ключи выбираем по смыслу данных, а не по расположению значения на экране. Перед кодом выпишем поля и ожидаемые типы.</p>
         <p>Обычное присваивание связывает второе имя с тем же словарём. Знакомый метод copy создаёт отдельный внешний словарь. Здесь поля содержат строки и числа: изменение поля копии не меняет исходную запись. Выражение variant is material проверяет, ссылаются ли два имени на один объект; оно не сравнивает значения полей. После copy результат False, даже если содержимое словарей пока одинаково.</p>
-        <CodeBlock caption="Меняем простое поле отдельной копии" code={"book = {\"title\": \"Лес\", \"pages\": 120}\ndraft = book.copy()\ndraft[\"title\"] = \"Берег\"\nprint(book[\"title\"])\nprint(draft[\"title\"])"} />
+        <CodeBlock caption="Меняем простое поле отдельной копии" code={"book = {\n    \"title\": \"Парус\",\n    \"pages\": 96,\n}\ndraft = book.copy()\nprint(draft is book)\ndraft[\"pages\"] = 110\nprint(book[\"pages\"])\nprint(draft[\"pages\"])"} />
         <p>
           Здесь строки и числа являются простыми значениями полей. copy() создаёт отдельный
           внешний словарь с теми же ключами и значениями, поэтому новое присваивание полю
@@ -480,8 +461,7 @@ export function Lesson08({ module }: { module?: string }) {
           лежал список или другой изменяемый объект, оба словаря могли бы ссылаться на него;
           вложенные копии и такая граница относятся к следующему занятию.
         </p>
-        <p>Сначала получаем «Лес», затем «Берег». Для следующего занятия важно различать дополнительное имя для той же записи и отдельный словарь с такими же полями.</p>
-        <RecallCard question="Нужно описать учебный материал: его название, длительность и наличие заметки. Какие поля вы выберете и что будет означать None?" hint="Назовите данные до выбора метода чтения." answer="Например, title , строка, minutes , число, note , строка или None. None , явно сохранённое отсутствие заметки; отсутствие самого ключа проверяется отдельно." />
+        <p>Сначала получаем False: объекты разные. Затем выводятся 96 и 110: замена числа страниц в копии не изменила оригинал. Даже если значения совпадают, результат is остаётся False.</p>
       </Section>
       <Section number="07" title="Практика: от записи к самостоятельному выбору">
         <Lead>

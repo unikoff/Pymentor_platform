@@ -1,0 +1,10 @@
+.lesson16 {
+  container-type: inline-size;
+}
+
+@container (max-width: 540px) {
+  .lesson16 .method-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.35rem;
+  }
+}

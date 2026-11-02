@@ -31,12 +31,13 @@ function useWorkspace() {
   return context;
 }
 
-export function LessonsDrawerContent() {
+export function LessonsDrawerContent({ visible }: { visible: boolean }) {
   const context = useWorkspace();
   const { course } = context;
   const [isTrackMenuOpen, setIsTrackMenuOpen] = useState(false);
-  const [openModules, setOpenModules] = useState<Set<string>>(() => new Set(course.lessonModules));
-  useEffect(() => { setOpenModules(new Set(course.lessonModules)); }, [course.lessonModules]);
+  const [openModulesByTrack, setOpenModulesByTrack] = useState<Record<string, Set<string>>>({});
+  const openModules = openModulesByTrack[course.activeTrackId] ?? new Set(course.lessonModules);
+  useEffect(() => { if (!visible) setIsTrackMenuOpen(false); }, [visible]);
   const entry = course.courses[course.activeTrackId];
   if (!course.tracksLoaded && !course.tracksError) return <div className="dock-explorer"><LessonLoading /></div>;
   return <div className="dock-explorer">
@@ -45,13 +46,17 @@ export function LessonsDrawerContent() {
       <button className="secondary-action" onClick={() => { void course.loadTracks(); void course.ensureTrack(course.activeTrackId, true); }}>Повторить загрузку</button>
     </div>}
     {course.isLessonsLoading && <p className="panel-status" role="status">Загружаем занятия…</p>}
-    <LessonExplorer tracks={course.tracks} activeTrackId={course.activeTrackId} isTrackMenuOpen={isTrackMenuOpen}
+    <LessonExplorer tracks={course.tracks} activeTrackId={course.activeTrackId} isTrackMenuOpen={visible && isTrackMenuOpen}
       progress={course.progress} lessonModules={course.lessonModules} displayLessons={course.displayLessons}
       activeLessonId={context.selectedLessonId} openModules={openModules} isGuest={!context.user}
       isAuthenticated={Boolean(context.user)} hasActiveSubscription={Boolean(context.user?.has_active_subscription)}
       onToggleTrackMenu={() => setIsTrackMenuOpen((value) => !value)}
       onSelectTrack={(trackId) => { course.setActiveTrackId(trackId); setIsTrackMenuOpen(false); }}
-      onToggleModule={(name) => setOpenModules((current) => { const next = new Set(current); if (next.has(name)) next.delete(name); else next.add(name); return next; })}
+      onToggleModule={(name) => setOpenModulesByTrack((current) => {
+        const next = new Set(current[course.activeTrackId] ?? course.lessonModules);
+        if (next.has(name)) next.delete(name); else next.add(name);
+        return { ...current, [course.activeTrackId]: next };
+      })}
       onSelectLesson={context.onSelectLesson} onRequireAuth={context.onRequireAuth} onCollapse={context.onCloseLessons} />
   </div>;
 }

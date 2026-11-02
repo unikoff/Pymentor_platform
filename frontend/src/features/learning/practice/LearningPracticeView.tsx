@@ -5,6 +5,7 @@ import { SelfCheckPanel } from "./SelfCheckPanel";
 import { TaskRunner } from "./TaskRunner";
 import { usePracticeState } from "./session";
 import { useContentSwitch, focusTaskNavigation } from "./useContentSwitch";
+import { isRequiredPracticeTask } from "../required-tasks";
 import type { Lesson } from "../types";
 
 export function LearningPracticeView({
@@ -24,18 +25,32 @@ export function LearningPracticeView({
   const switchContent = useContentSwitch();
   const pendingFocus = useRef<"next" | "previous" | null>(null);
   const tasks = getLessonTasks(lesson);
+  const requiredTasks = tasks.filter(isRequiredPracticeTask);
   const manualPractice = lesson.manual_practice ?? [];
   const isLearningRoadmap = lesson.title === "Карта обучения";
   const hasMixedPractice = tasks.length > 0 && manualPractice.length > 0;
+  const sourceFile = lesson.source_file;
+  const isChapterOneLesson = typeof sourceFile === "string" && sourceFile.startsWith("chapter_01/");
+  const isSafeSubmitFeedback =
+    typeof sourceFile !== "string" || !sourceFile.trim() || sourceFile.startsWith("chapter_01/");
   const sessionKey = `${progressOwnerKey}:${lesson.id}:${tasks.map((task) => `${task.id}:${task.revision}`).join("|")}`;
   const [activeTaskIndex, setActiveTaskIndex] = usePracticeState(`${sessionKey}:active-task`, () => 0);
   const [solvedTaskIds, setSolvedTaskIds] = usePracticeState<Set<string>>(`${sessionKey}:solved`,
     () => new Set(tasks.filter((task) => task.completed).map((task) => task.id)),
   );
+  const solvedTaskIdsRef = useRef(solvedTaskIds);
+  const chapterOneCompletionNotified = useRef<string | null>(null);
 
   useEffect(() => {
-    setSolvedTaskIds(new Set(getLessonTasks(lesson).filter((task) => task.completed).map((task) => task.id)));
+    const next = new Set(getLessonTasks(lesson).filter((task) => task.completed).map((task) => task.id));
+    solvedTaskIdsRef.current = next;
+    chapterOneCompletionNotified.current = null;
+    setSolvedTaskIds(next);
   }, [lesson.id]);
+
+  useEffect(() => {
+    solvedTaskIdsRef.current = solvedTaskIds;
+  }, [solvedTaskIds]);
 
   useEffect(() => {
     const direction = pendingFocus.current;
@@ -44,7 +59,7 @@ export function LearningPracticeView({
     if (direction) focusTaskNavigation(card, direction);
   }, [activeTaskIndex]);
 
-  const completedTaskCount = tasks.filter((task) => task.completed || solvedTaskIds.has(task.id)).length;
+  const completedTaskCount = requiredTasks.filter((task) => task.completed || solvedTaskIds.has(task.id)).length;
 
   function navigateTask(index: number) {
     const nextIndex = Math.max(0, Math.min(index, tasks.length - 1));
@@ -55,10 +70,39 @@ export function LearningPracticeView({
     });
   }
 
-  function handleMixedTaskSolved(taskId: string) {
+  function handleTaskSolved(taskId: string) {
     setSolvedTaskIds((current) => new Set(current).add(taskId));
     onLessonCompleted();
   }
+
+  function handleChapterOneTaskSolved(taskId: string) {
+    const current = solvedTaskIdsRef.current;
+    if (current.has(taskId)) return;
+
+    const wasComplete = requiredTasks.every((task) => task.completed || current.has(task.id));
+    const next = new Set(current).add(taskId);
+    solvedTaskIdsRef.current = next;
+    setSolvedTaskIds(next);
+
+    const isComplete = requiredTasks.every((task) => task.completed || next.has(task.id));
+    if (!wasComplete && isComplete && chapterOneCompletionNotified.current !== sessionKey) {
+      chapterOneCompletionNotified.current = sessionKey;
+      onLessonCompleted();
+    }
+  }
+
+  const manualPanel = (
+    <SelfCheckPanel
+          lesson={lesson}
+          isAuthenticated={isAuthenticated}
+          onRequireAuth={onRequireAuth}
+          onLessonCompleted={onLessonCompleted}
+          progressOwnerKey={progressOwnerKey}
+          requiredTasksComplete={!hasMixedPractice || completedTaskCount === requiredTasks.length}
+          requiredTaskCount={hasMixedPractice ? requiredTasks.length : 0}
+          completedTaskCount={hasMixedPractice ? completedTaskCount : 0}
+        />
+  );
 
   return (
     <main className="practice-stack practice-dashboard" aria-label={`Практика: ${lesson.title}`}>
@@ -68,29 +112,26 @@ export function LearningPracticeView({
             <TaskRunner
               task={task}
               lessonId={lesson.id}
+              isSafeSubmitFeedback={isSafeSubmitFeedback}
               key={`${task.id}:${task.revision}`}
               taskNumber={taskIndex + 1}
               taskTotal={tasks.length}
+              completedTasks={tasks.map((item) => Boolean(item.completed || solvedTaskIds.has(item.id)))}
               isActive={taskIndex === Math.min(activeTaskIndex, tasks.length - 1)}
               onNavigateTask={navigateTask}
               progressOwnerKey={progressOwnerKey}
-              onSolved={hasMixedPractice ? () => handleMixedTaskSolved(task.id) : onLessonCompleted}
+              onSolved={
+                isChapterOneLesson
+                  ? () => handleChapterOneTaskSolved(task.id)
+                  : () => handleTaskSolved(task.id)
+              }
             />
           ))}
         </div>
       )}
       {lesson.self_check ? (
-        <SelfCheckPanel
-          lesson={lesson}
-          isAuthenticated={isAuthenticated}
-          onRequireAuth={onRequireAuth}
-          onLessonCompleted={onLessonCompleted}
-          progressOwnerKey={progressOwnerKey}
-          requiredTasksComplete={!hasMixedPractice || completedTaskCount === tasks.length}
-          requiredTaskCount={hasMixedPractice ? tasks.length : 0}
-          completedTaskCount={hasMixedPractice ? completedTaskCount : 0}
-        />
-      ) : tasks.length === 0 ? (
+        manualPanel
+      ) : !lesson.self_check && tasks.length === 0 ? (
         <div className="empty-task-card">
           <h2>{isLearningRoadmap ? "Карта на руках :)" : "Задания скоро появятся"}</h2>
           <p>

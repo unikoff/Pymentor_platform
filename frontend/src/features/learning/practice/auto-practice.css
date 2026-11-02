@@ -1,0 +1,183 @@
+/* The coding workspace shares the self-check practice's visual hierarchy. */
+.practice-dashboard .task-card--editor {
+  border-radius: var(--radius-xl);
+}
+
+.practice-dashboard .task-brief__toolbar {
+  min-height: 76px;
+  padding: 16px clamp(18px, 2cqw, 28px);
+}
+
+.task-brief__position {
+  display: grid;
+  gap: 9px;
+  min-width: 0;
+}
+
+.practice-dashboard .task-brief__toolbar .task-head__meta span:first-child {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--accent);
+  font-size: 0.73rem;
+  letter-spacing: 0.06em;
+}
+
+.task-brief__position-track {
+  display: flex;
+  gap: 4px;
+  width: 120px;
+  max-width: 100%;
+  height: 5px;
+}
+
+.task-brief__position-track i {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--muted) 28%, transparent);
+}
+
+.task-brief__position-track i.is-done {
+  background: var(--accent);
+}
+
+.task-brief__position-track i.is-current {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--text) 78%, var(--accent)), color-mix(in srgb, var(--text) 85%, var(--accent-secondary)));
+}
+
+.practice-dashboard .task-brief__title {
+  padding: 24px clamp(18px, 2cqw, 28px) 8px;
+  font-size: clamp(1.25rem, 1.6cqw, 1.55rem);
+}
+
+.practice-dashboard .task-spec {
+  gap: 20px;
+  padding: 14px clamp(18px, 2cqw, 28px) 24px;
+}
+
+.practice-dashboard .task-spec__item {
+  gap: 10px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.practice-dashboard .task-spec__item--given {
+  padding: 15px 17px;
+  border: 1px solid var(--line-soft);
+  border-left: 3px solid color-mix(in srgb, var(--border-tint-accent) 50%, var(--line));
+  border-radius: 12px;
+  background: var(--surface-2);
+}
+
+.practice-dashboard .task-spec__item > span {
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 850;
+  letter-spacing: 0.06em;
+}
+
+.practice-dashboard .task-spec__item--todo > span {
+  color: var(--accent);
+}
+
+.practice-dashboard .task-spec__text,
+.practice-dashboard .task-spec__list {
+  max-width: 80ch;
+  overflow-wrap: anywhere;
+  color: var(--reading);
+  line-height: 1.6;
+}
+
+.practice-dashboard .task-spec__item--given .task-spec__text,
+.practice-dashboard .task-spec__item--given .task-spec__list {
+  color: var(--reading);
+}
+
+.practice-dashboard .task-spec__list--ordered {
+  gap: 8px;
+  margin-top: 4px;
+  padding: 0;
+  list-style: none;
+  counter-reset: auto-practice-step;
+}
+
+.practice-dashboard .task-spec__list--ordered li {
+  position: relative;
+  min-width: 0;
+  padding: 12px 14px 12px 48px;
+  border: 1px solid var(--line-soft);
+  border-radius: 10px;
+  background: var(--surface-2);
+  color: var(--reading);
+  counter-increment: auto-practice-step;
+}
+
+.practice-dashboard .task-spec__list--ordered li::before {
+  position: absolute;
+  top: 13px;
+  left: 14px;
+  color: var(--accent);
+  content: counter(auto-practice-step, decimal-leading-zero);
+  font: 700 0.75rem/1.6 var(--font-code);
+}
+
+.practice-dashboard .task-hint-trigger {
+  justify-self: start;
+  min-height: 36px;
+  margin-top: 4px;
+  padding: 0 11px;
+  border: 1px solid var(--line-soft);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--surface) 60%, transparent);
+}
+
+.practice-dashboard .task-hint-trigger svg {
+  color: var(--accent);
+}
+
+.practice-dashboard .task-hint-trigger:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--border-tint-accent) 26%, var(--line-soft));
+  background: var(--surface-2);
+}
+
+.practice-dashboard .task-brief .task-examples {
+  margin: 0 clamp(18px, 2cqw, 28px) 20px;
+}
+
+.practice-dashboard .task-brief .task-hints {
+  margin: 0 clamp(18px, 2cqw, 28px) 24px;
+}
+
+@container practice-screen (max-width: 520px) {
+  .practice-dashboard .task-brief__toolbar {
+    flex-direction: row;
+    align-items: center;
+    padding: 14px 16px;
+  }
+
+  .practice-dashboard .task-brief__title {
+    padding: 20px 16px 6px;
+  }
+
+  .practice-dashboard .task-spec {
+    padding: 10px 16px 18px;
+  }
+
+  .practice-dashboard .task-spec__list--ordered li {
+    padding-left: 42px;
+  }
+
+  .practice-dashboard .task-spec__list--ordered li::before {
+    left: 12px;
+  }
+
+  .practice-dashboard .task-brief .task-examples,
+  .practice-dashboard .task-brief .task-hints {
+    margin-inline: 16px;
+  }
+}

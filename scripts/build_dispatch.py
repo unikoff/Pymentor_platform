@@ -1,13 +1,14 @@
 """Build native spawn_agent arguments for a registered stage 2/3 worker.
 
 Usage:
-    python scripts/build_dispatch.py --stage 2 --lesson-id LESSON_ID --assignment contract.json --output dispatch.json
+    python scripts/build_dispatch.py --stage 2 --lesson-id LESSON_ID --assignment contract.json --model gpt-6.1-terra --effort low --output dispatch.json
 
 Assignment is UTF-8 JSON with one `lesson_id` and non-empty `change`, `scope`,
 and `acceptance` strings. The scope must describe exactly ONE lesson from the
 ONE W1 preflight, including source paths/revisions, A/B, exceptional ranges,
 shared-file owner, last confirmed state and allowed writes. The JSON output is
-for a *native* delegated agent, not create_thread.
+for the current collaboration.spawn_agent schema, not create_thread. The caller must
+verify runtime availability and effective policy; this helper makes no model calls.
 No agent, user chat, lesson or policy override is started by this script.
 """
 
@@ -22,8 +23,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parent.parent
-MODEL = "chatgpt-web/gpt-6-sol"
-EFFORT = "high"
+ALLOWED_PROFILES = {"gpt-6.1-terra": {"low", "high", "xhigh"}, "gpt-6-luna": {"xhigh"}}
 STAGES = {
     "2": ("pymentor-plan-worker.toml", "pymentor_plan_worker"),
     "3": ("pymentor-lesson-worker.toml", "pymentor_lesson_worker"),
@@ -57,11 +57,11 @@ def read_assignment(path: Path, expected_lesson_id: str) -> dict[str, object]:
     return assignment
 
 
-def validate_effective_policy(policy: object) -> None:
+def validate_effective_policy(policy: object, model: str, effort: str) -> None:
     """Check canonical `orchestrator.py show` output, optionally enveloped.
 
     A models[] session override is an input to policy resolution, not evidence
-    that the effective model pool permits the registered worker's high effort.
+    that the effective model pool permits the chosen model and effort.
     """
     if not isinstance(policy, dict):
         raise ValueError("Effective policy must be a JSON object")
@@ -71,12 +71,12 @@ def validate_effective_policy(policy: object) -> None:
     pool = effective.get("pool")
     if not isinstance(pool, dict) or not pool:
         raise ValueError("Effective policy requires a non-empty canonical pool dict; models[] override is not a snapshot")
-    model_config = pool.get(MODEL)
+    model_config = pool.get(model)
     if not isinstance(model_config, dict):
-        raise ValueError(f"Effective pool does not permit {MODEL}")
+        raise ValueError(f"Effective pool does not permit {model}")
     efforts = model_config.get("efforts")
-    if not isinstance(efforts, list) or EFFORT not in efforts:
-        raise ValueError(f"Effective pool does not permit {MODEL} / {EFFORT}")
+    if not isinstance(efforts, list) or effort not in efforts:
+        raise ValueError(f"Effective pool does not permit {model} / {effort}")
 
 
 def build_payload(
@@ -85,14 +85,17 @@ def build_payload(
     lesson_id: str,
     worker_skill: Path | None,
     policy_file: Path | None = None,
+    *, model: str, effort: str,
 ) -> dict[str, str]:
     """Package one lesson assignment; runtime admission remains Coordinator-owned."""
     profile_name, role_name = STAGES[stage]
     profile_path = ROOT / ".codex" / "agents" / profile_name
     with profile_path.open("rb") as stream:
         profile = tomllib.load(stream)
-    if profile.get("model") != MODEL or profile.get("model_reasoning_effort") != EFFORT:
-        raise ValueError(f"Worker profile must use {MODEL} / {EFFORT}: {profile_path}")
+    if effort not in ALLOWED_PROFILES.get(model, set()):
+        raise ValueError(f"Unsupported model/effort: {model} / {effort}")
+    if profile.get("model") or profile.get("model_reasoning_effort"):
+        raise ValueError(f"Worker profile must not silently override model/effort: {profile_path}")
 
     role = profile.get("developer_instructions")
     if not isinstance(role, str) or not role.strip():
@@ -105,14 +108,16 @@ def build_payload(
         policy = json.loads(read_text(policy_file))
         # Snapshot supplied by Coordinator after central `orchestrator.py show`.
         # Do not read/write global policy, infer session IDs or spawn on behalf of root.
-        validate_effective_policy(policy)
+        validate_effective_policy(policy, model, effort)
 
     parts = [
         f"Ровно одно занятие stage {stage} для native роли {role_name}. "
         "Исходный чат остаётся единственным Coordinator. Выполняй только назначенные "
         "операции в разрешённых файлах. Сам читай применимые общие/stage инструкции "
         "однократно на контекст и актуальную методичку перед зависимым проходом. "
-        "Пройди все этапы только назначенного занятия и остановись. Не бери другое занятие, не создавай чаты или "
+        "Выполни весь Stage в одном задании и одном чате: подэтапы — логические действия, не отдельные сообщения или handoff. "
+        "Соблюдай модельные ограничения всех действий; если выбранная модель или среда не позволяют выполнить их в одном чате, сообщи точный блокер, не подменяй модель. "
+        "Заверши только назначенное занятие и остановись. Не бери другое занятие, не создавай чаты или "
         "дочерних агентов. Используй имеющуюся подтверждённую опись и точные "
         "source revisions. Сначала устрани конкретный дефект или внеси указанную "
         "содержательную правку. Повторно читать полный source или повторять полный "
@@ -125,6 +130,7 @@ def build_payload(
         "Применимые инструкции (читать по месту): docs/make les stage/AGENTS.md, "
         "docs/make les stage/BATCH_WORKFLOW.md и AGENTS.md/README.md выбранного stage.",
     ]
+    parts.append("ИНСТРУКЦИИ РОЛИ:\n" + role.strip())
     if worker_skill is not None:
         parts.append("ВЫБРАННЫЙ WORKER-SKILL:\n" + read_text(worker_skill))
     parts.append(
@@ -145,9 +151,11 @@ def build_payload(
         "SCOPE ОДНОГО ЗАНЯТИЯ И ГРАНИЦЫ ЗАПИСИ:\n" + str(contract["scope"]).strip() + "\n"
         "ПРИЕМКА:\n" + str(contract["acceptance"]).strip()
     )
-    # These are valid native multi_agent_v1.spawn_agent arguments. The role's
-    # registered developer_instructions/model/high are already supplied by Codex.
-    return {"agent_type": role_name, "message": "\n\n".join(parts)}
+    # Explicitly include the role because the current spawn schema has no agent_type.
+    safe_id = re.sub(r"[^a-z0-9_]+", "_", lesson_id.lower()).strip("_")
+    task_name = f"stage{stage}_{safe_id}"
+    return {"task_name": task_name, "message": "\n\n".join(parts),
+            "fork_turns": "none", "model": model, "reasoning_effort": effort}
 
 
 def main() -> int:
@@ -157,6 +165,8 @@ def main() -> int:
     parser.add_argument("--assignment", type=Path, required=True, help="JSON object: lesson_id, change, scope, acceptance strings")
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--worker-skill", type=Path)
+    parser.add_argument("--model", required=True, choices=sorted(ALLOWED_PROFILES))
+    parser.add_argument("--effort", required=True, choices=("low", "high", "xhigh"))
     parser.add_argument(
         "--policy-file", type=Path,
         help="Optional orchestrator.py show JSON (canonical pool/efforts, optional effective envelope); models[] override is not accepted as a snapshot",
@@ -172,7 +182,7 @@ def main() -> int:
         source_files.add((ROOT / ".codex" / "agents" / STAGES[args.stage][0]).resolve())
         if args.output.resolve() in source_files:
             raise ValueError("Output must not overwrite an input file")
-        result = build_payload(args.stage, args.assignment, args.lesson_id, args.worker_skill, args.policy_file)
+        result = build_payload(args.stage, args.assignment, args.lesson_id, args.worker_skill, args.policy_file, model=args.model, effort=args.effort)
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     except (OSError, ValueError, tomllib.TOMLDecodeError, json.JSONDecodeError) as error:

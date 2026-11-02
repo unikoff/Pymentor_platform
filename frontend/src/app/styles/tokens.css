@@ -1,4 +1,17 @@
 :root {
+  /* Borders should support the surface, while text, icons and focus retain their contrast. */
+  --border-tint-accent: color-mix(in srgb, var(--accent) 28%, transparent);
+  --border-tint-accent-secondary: color-mix(in srgb, var(--accent-secondary) 28%, transparent);
+  --border-tint-accent-secondary-glow: color-mix(in srgb, var(--accent-secondary-glow) 28%, transparent);
+  --border-tint-achievement: color-mix(in srgb, var(--achievement) 28%, transparent);
+  --border-tint-attendance: color-mix(in srgb, var(--attendance) 28%, transparent);
+  --border-tint-success: color-mix(in srgb, var(--success) 32%, transparent);
+  --border-tint-success-border: color-mix(in srgb, var(--success-border) 32%, transparent);
+  --border-tint-info: color-mix(in srgb, var(--info) 32%, transparent);
+  --border-tint-warning: color-mix(in srgb, var(--warning) 32%, transparent);
+  --border-tint-negative: color-mix(in srgb, var(--negative) 32%, transparent);
+  --border-tint-danger: color-mix(in srgb, var(--danger) 32%, transparent);
+  --border-tint-error: color-mix(in srgb, var(--error) 32%, transparent);
   --motion-fast: 140ms;
   --motion-normal: 240ms;
   --motion-slow: 340ms;

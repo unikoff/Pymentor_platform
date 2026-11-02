@@ -9,6 +9,7 @@ from routers.admin.router import admin_router
 from routers.accounts.router import user_router
 from routers.bookings.router import booking_router
 from routers.courses.router import learning_router
+from routers.landings.public import router as public_landing_router
 
 app = FastAPI(lifespan=lifespan)
 ensure_schema()
@@ -47,6 +48,7 @@ app.include_router(admin_router, prefix="/admin")
 app.include_router(user_router, prefix="/user")
 app.include_router(booking_router, prefix="/user")
 app.include_router(learning_router, prefix="/learning")
+app.include_router(public_landing_router, prefix="/api/landings", tags=["landing-public"])
 app.include_router(admin_router, prefix="/api/admin")
 app.include_router(user_router, prefix="/api/user")
 app.include_router(booking_router, prefix="/api/user")

@@ -32,7 +32,7 @@
   width: 46px;
   height: 46px;
   flex: 0 0 auto;
-  border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--line));
+  border: 1px solid color-mix(in srgb, var(--border-tint-accent) 28%, var(--line));
   border-radius: 18px;
   background: var(--accent-soft);
   color: var(--accent);
@@ -213,7 +213,7 @@
 }
 
 .admin-row-actions button:hover:not(:disabled) {
-  border-color: var(--accent);
+  border-color: var(--border-tint-accent);
 }
 
 .admin-row-actions button:disabled {
@@ -222,7 +222,7 @@
 }
 
 .admin-row-actions .is-danger:hover:not(:disabled) {
-  border-color: var(--error);
+  border-color: var(--border-tint-error);
   color: var(--error);
 }
 
@@ -259,7 +259,7 @@
 
 .admin-tabs button.is-active {
   background: var(--accent-soft);
-  border-color: color-mix(in srgb, var(--accent) 24%, var(--line));
+  border-color: color-mix(in srgb, var(--border-tint-accent) 24%, var(--line));
   color: var(--text);
 }
 
@@ -311,7 +311,7 @@
   cursor: pointer;
 }
 
-.admin-filters__reset:hover { color: var(--text); border-color: var(--accent); }
+.admin-filters__reset:hover { color: var(--text); border-color: var(--border-tint-accent); }
 
 .admin-row-quota {
   display: block;

@@ -23,7 +23,7 @@
   left: 5px;
   width: 28px;
   height: 28px;
-  border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--line));
+  border: 1px solid color-mix(in srgb, var(--border-tint-accent) 24%, var(--line));
   border-radius: 9px;
   background: var(--accent-soft);
   pointer-events: none;

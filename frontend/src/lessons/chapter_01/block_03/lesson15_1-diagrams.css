@@ -1,0 +1,33 @@
+/* Keep the four-step flow readable when the lesson shares space with practice. */
+@container lesson-diagram (min-width: 721px) and (max-width: 1000px) {
+  .lesson15-1-transfer-diagram .lesson-diagram-flow {
+    flex-direction: column;
+  }
+
+  .lesson15-1-transfer-diagram .lesson-diagram-connector {
+    display: flex;
+    min-width: 0;
+    min-height: 54px;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding-inline: 18px;
+    text-align: left;
+  }
+
+  .lesson15-1-transfer-diagram .lesson-diagram-connector > span:first-child {
+    position: static;
+    padding: 0;
+    background: transparent;
+  }
+
+  .lesson15-1-transfer-diagram .lesson-diagram-arrow {
+    align-self: stretch;
+    width: 12px;
+    height: auto;
+    min-height: 50px;
+    flex: 0 0 12px;
+    clip-path: polygon(40% 0, 60% 0, 60% calc(100% - 9px), 100% calc(100% - 9px), 50% 100%, 0 calc(100% - 9px), 40% calc(100% - 9px));
+  }
+}

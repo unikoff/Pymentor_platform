@@ -74,7 +74,7 @@
   background: var(--surface-2);
 }
 
-.admin-overview__metric.is-amber { border-color: color-mix(in srgb, var(--accent-secondary) 22%, var(--line-soft)); }
+.admin-overview__metric.is-amber { border-color: color-mix(in srgb, var(--border-tint-accent-secondary) 22%, var(--line-soft)); }
 
 .admin-overview__metric small {
   overflow: hidden;
@@ -340,7 +340,7 @@
 }
 
 .admin-overview__student-list button:hover {
-  border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+  border-color: color-mix(in srgb, var(--border-tint-accent) 45%, var(--line));
   transform: translateY(-1px);
   background: var(--surface);
   color: var(--text);
@@ -375,7 +375,7 @@
   transition: transform 140ms ease, border-color 140ms ease, background 140ms ease;
 }
 
-.admin-overview__booking-list button:hover { transform: translateY(-1px); border-color: var(--accent); background: var(--surface); }
+.admin-overview__booking-list button:hover { transform: translateY(-1px); border-color: var(--border-tint-accent); background: var(--surface); }
 .admin-overview__booking-list button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .admin-overview__booking-list button > svg { color: var(--faint); }
 .admin-overview__booking-time { display: grid; gap: 3px; }

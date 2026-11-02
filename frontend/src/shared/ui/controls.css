@@ -12,7 +12,7 @@
 
 .form-error {
   padding: var(--space-3) var(--space-3);
-  border: 1px solid color-mix(in srgb, var(--negative) 34%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border-tint-negative) 34%, transparent);
   border-radius: var(--radius-sm);
   color: var(--negative);
   background: color-mix(in srgb, var(--negative) 8%, transparent);
@@ -29,7 +29,7 @@
 }
 
 .primary-action {
-  background: var(--accent);
+  background: var(--brand);
   color: var(--brand-contrast);
   font-weight: 900;
 }

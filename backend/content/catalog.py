@@ -412,7 +412,8 @@ def get_public_lessons(track_id: str) -> list[dict[str, Any]]:
             for key, value in lesson.items()
             if key not in {"theory_markdown", "legacy_id"}
         }
-        if lesson.get("source_file", "").startswith("chapter_02/block_05/"):
+        if (lesson.get("source_file", "").startswith("chapter_02/block_05/")
+                or lesson.get("source_file") == "chapter_01/block_04/20.1 - Проверяем чистую копию.md"):
             item["manual_practice"] = [
                 {
                     **exercise,

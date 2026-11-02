@@ -45,9 +45,10 @@
 .admin-tabs button:hover { color: var(--text); background: var(--surface-2); }
 
 .admin-tabs button.is-active {
-  border-color: color-mix(in srgb, var(--accent) 32%, var(--line));
-  background: var(--accent-soft);
+  border-color: var(--line);
+  background: var(--surface-2);
   color: var(--text);
+  box-shadow: inset 0 -2px color-mix(in srgb, var(--accent) 55%, transparent);
 }
 
 .admin-tabs button.is-active svg { color: var(--accent); }
@@ -94,7 +95,7 @@
   cursor: pointer;
 }
 
-.admin-back:hover { border-color: var(--accent); color: var(--text); }
+.admin-back:hover { border-color: var(--border-tint-accent); color: var(--text); }
 
 .admin-section-heading--profile {
   display: grid;
@@ -144,7 +145,7 @@
 
 .admin-row--clickable:hover {
   transform: translateY(-1px);
-  border-color: color-mix(in srgb, var(--accent) 40%, var(--line));
+  border-color: color-mix(in srgb, var(--border-tint-accent) 40%, var(--line));
   background: var(--surface-2);
   box-shadow: var(--admin-card-shadow);
 }
@@ -207,7 +208,7 @@
   transition: transform 140ms ease, border-color 140ms ease, background 140ms ease;
 }
 
-.admin-account-card:hover { transform: translateY(-1px); border-color: color-mix(in srgb, var(--accent) 42%, var(--line)); background: var(--surface-2); }
+.admin-account-card:hover { transform: translateY(-1px); border-color: color-mix(in srgb, var(--border-tint-accent) 42%, var(--line)); background: var(--surface-2); }
 .admin-account-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .admin-account-card__identity { display: grid; gap: 4px; min-width: 0; }
 .admin-account-card__identity > strong { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; font-size: .88rem; }

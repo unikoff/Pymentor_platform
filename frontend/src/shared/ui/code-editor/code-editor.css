@@ -24,7 +24,7 @@
   color: var(--faint);
   text-align: right;
   user-select: none;
-  font: 0.95rem/1.65 var(--font-code);
+  font: 0.875rem/1.65 var(--font-code);
 }
 
 .code-area {
@@ -34,7 +34,7 @@
 
 .code-highlight,
 .code-input {
-  font: 0.95rem/1.65 var(--font-code);
+  font: 0.875rem/1.65 var(--font-code);
   padding: var(--space-4);
   white-space: pre;
   tab-size: 4;

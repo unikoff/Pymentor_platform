@@ -1,16 +1,11 @@
 .workspace {
   display: grid;
   position: relative;
-  background:
-    radial-gradient(circle at 8% 10%, var(--accent-soft), transparent 25%),
-    var(--bg);
+  background: var(--bg);
 }
 
 :root[data-color-scheme="light"] .workspace {
-  background:
-    radial-gradient(circle at 10% 8%, color-mix(in srgb, var(--success) 16%, transparent), transparent 25%),
-    radial-gradient(circle at 92% 12%, color-mix(in srgb, var(--accent-secondary) 12%, transparent), transparent 28%),
-    linear-gradient(180deg, var(--workspace-gradient-start) 0%, var(--workspace-gradient-mid) 52%, var(--workspace-gradient-end) 100%);
+  background: var(--bg);
 }
 
 .activity-bar,
@@ -77,7 +72,8 @@
 .activity-button:hover { border-color: var(--line); }
 .activity-button--active {
   border-color: var(--line);
-  background: color-mix(in srgb, var(--accent) 7%, var(--surface-2));
+  background: color-mix(in srgb, var(--accent) 4%, var(--surface-2));
+  color: var(--text);
 }
 .activity-button--active::before {
   position: absolute;
@@ -85,7 +81,7 @@
   width: 3px;
   height: 18px;
   border-radius: var(--radius-pill);
-  background: color-mix(in srgb, var(--accent) 68%, var(--muted));
+  background: var(--accent);
   content: "";
 }
 .activity-button:focus-visible,
@@ -99,8 +95,8 @@
 :root[data-color-scheme="light"] .activity-button:hover,
 :root[data-color-scheme="light"] .activity-button--active,
 :root[data-color-scheme="light"] .icon-button:hover {
-  background: color-mix(in srgb, var(--accent) 7%, var(--surface));
-  border-color: color-mix(in srgb, var(--success) 18%, transparent);
+  background: color-mix(in srgb, var(--accent) 4%, var(--surface-2));
+  border-color: var(--line);
   box-shadow: none;
 }
 
@@ -303,9 +299,9 @@
 }
 
 .track-menu button.is-active {
-  border-color: color-mix(in srgb, var(--accent) 25%, var(--line));
-  background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 10%, var(--surface-2)), color-mix(in srgb, var(--accent) 3%, var(--surface-2)));
-  box-shadow: none;
+  border-color: color-mix(in srgb, var(--border-tint-accent) 48%, var(--line));
+  background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 6%, var(--surface-2)), var(--surface-2));
+  box-shadow: inset 2px 0 color-mix(in srgb, var(--accent) 55%, transparent);
 }
 
 .track-menu button strong {
@@ -333,7 +329,7 @@
   font-size: inherit;
 }
 
-.track-menu button.is-active > span { border-color: color-mix(in srgb, var(--accent) 20%, var(--line)); background: var(--accent-soft); }
+.track-menu button.is-active > span { border-color: color-mix(in srgb, var(--border-tint-accent) 20%, var(--line)); background: var(--accent-soft); }
 
 .progress-line {
   height: 7px;
@@ -350,7 +346,7 @@
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(90deg, var(--accent), var(--accent-secondary));
+  background: var(--accent);
 }
 
 .lesson-tree {
@@ -447,37 +443,42 @@
 }
 
 .lesson-row.is-active {
-  border-color: color-mix(in srgb, var(--accent) 25%, var(--line));
-  background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 10%, var(--surface-2)), color-mix(in srgb, var(--accent) 3%, var(--surface-2)));
-  box-shadow: none;
+  border-color: color-mix(in srgb, var(--border-tint-accent) 50%, var(--line));
+  background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 6%, var(--surface-2)), var(--surface-2));
+  box-shadow: inset 2px 0 color-mix(in srgb, var(--accent) 55%, transparent);
 }
 
 :root[data-color-scheme="light"] .lesson-row.is-active {
-  border-color: color-mix(in srgb, var(--accent) 27%, var(--line));
-  background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 10%, var(--surface)), color-mix(in srgb, var(--accent) 3%, var(--surface)));
-  box-shadow: none;
+  border-color: color-mix(in srgb, var(--border-tint-accent) 45%, var(--line));
+  background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 5%, var(--surface-2)), var(--surface-2));
+  box-shadow: inset 2px 0 color-mix(in srgb, var(--accent) 55%, transparent);
 }
 
 .lesson-row.is-active svg { color: var(--accent); }
 
 .lesson-row.is-completed,
 :root[data-color-scheme="light"] .lesson-row.is-completed {
-  border-color: color-mix(in srgb, var(--achievement) 30%, var(--line));
-  background: linear-gradient(115deg, color-mix(in srgb, var(--achievement) 13%, var(--surface)), color-mix(in srgb, var(--achievement) 5%, var(--surface)));
-  box-shadow: inset 0 0 22px color-mix(in srgb, var(--achievement) 5%, transparent);
+  border-color: color-mix(in srgb, var(--border-tint-achievement) 30%, var(--line));
+  background: linear-gradient(115deg, color-mix(in srgb, var(--achievement) 7%, var(--surface)), var(--surface));
+  box-shadow: inset 0 0 22px color-mix(in srgb, var(--achievement) 3%, transparent);
   color: var(--text);
 }
 
 .lesson-row.is-completed:hover,
 :root[data-color-scheme="light"] .lesson-row.is-completed:hover {
-  border-color: color-mix(in srgb, var(--achievement) 52%, var(--line));
-  background: color-mix(in srgb, var(--achievement) 15%, var(--surface));
+  border-color: color-mix(in srgb, var(--border-tint-achievement) 52%, var(--line));
+  background: color-mix(in srgb, var(--achievement) 10%, var(--surface));
 }
 
 .lesson-row.is-completed.is-active,
 :root[data-color-scheme="light"] .lesson-row.is-completed.is-active {
-  border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
-  box-shadow: inset 3px 0 var(--accent), inset 0 0 22px color-mix(in srgb, var(--achievement) 7%, transparent);
+  border-color: color-mix(in srgb, var(--border-tint-accent) 55%, var(--line));
+  background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 6%, var(--surface-2)), var(--surface-2));
+  box-shadow: inset 2px 0 color-mix(in srgb, var(--accent) 55%, transparent), inset 0 0 22px color-mix(in srgb, var(--achievement) 7%, transparent);
+}
+
+:root[data-color-scheme="light"] .lesson-row.is-completed.is-active {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 5%, var(--surface-2)), var(--surface-2));
 }
 
 .lesson-row svg.lesson-done-icon {
@@ -506,7 +507,7 @@
   font: 600 0.72rem/1 ui-monospace, "Cascadia Code", Consolas, monospace;
 }
 
-.lesson-row.is-active small { border-color: color-mix(in srgb, var(--accent) 20%, transparent); background: var(--accent-soft); color: var(--accent); }
+.lesson-row.is-active small { border-color: color-mix(in srgb, var(--border-tint-accent) 20%, transparent); background: var(--accent-soft); color: var(--accent); }
 
 .top-bar {
   justify-content: space-between;

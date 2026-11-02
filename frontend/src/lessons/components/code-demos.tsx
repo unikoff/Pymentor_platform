@@ -82,6 +82,7 @@ export function FillBlank({
   options,
   answer,
   explanation,
+  wrongExplanation,
 }: {
   prompt: string;
   before: string;
@@ -89,6 +90,7 @@ export function FillBlank({
   options: string[];
   answer: string;
   explanation: string;
+  wrongExplanation?: string;
 }) {
   const [picked, setPicked] = useState<string | null>(null);
   const isCorrect = picked === answer;
@@ -120,7 +122,7 @@ export function FillBlank({
       </div>
       {picked && (
         <p className={`fill-explanation ${isCorrect ? "is-correct" : "is-wrong"}`}>
-          {isCorrect ? <Check size={14} /> : <X size={14} />} {isCorrect ? explanation : "Пробуем другой вариант."}
+          {isCorrect ? <Check size={14} /> : <X size={14} />} {isCorrect ? explanation : (wrongExplanation ?? "Пробуем другой вариант.")}
         </p>
       )}
     </div>

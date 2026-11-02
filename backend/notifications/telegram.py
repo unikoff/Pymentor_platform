@@ -254,14 +254,30 @@ def send_landing_notification(
     event_type: str,
     payload: dict,
 ) -> None:
-    """Send the only enabled v1 landing event: an admin-requested connection test."""
-    if event_type != "telegram_connection_test.v1" or payload != {}:
+    """Send an allowlisted landing event to its versioned Telegram destination."""
+    if event_type == "telegram_connection_test.v1" and payload == {}:
+        message = (
+            "🧪 *Проверка подключения Telegram*\n\n"
+            f"Лендинг: *{_escape_markdown_v2(landing_slug)}*\n"
+            f"Событие: `{_escape_markdown_v2(event_id)}`"
+        )
+    elif event_type == "consultation_request.v1" and set(payload) == {
+        "name", "contact", "goal", "consented_at", "consent_version"
+    }:
+        lines = [
+            "📨 *Заявка на консультацию*",
+            "",
+            f"Лендинг: `{_escape_markdown_v2(landing_slug)}`",
+            f"Имя: {_escape_markdown_v2(str(payload['name']))}",
+            f"Контакт: {_escape_markdown_v2(str(payload['contact']))}",
+        ]
+        goal = str(payload["goal"]).strip()
+        if goal:
+            lines.append(f"Цель: {_escape_markdown_v2(goal)}")
+        lines.append(f"Событие: `{_escape_markdown_v2(event_id)}`")
+        message = "\n".join(lines)
+    else:
         raise TelegramDeliveryError("Unknown landing notification event", retryable=False)
-    message = (
-        "🧪 *Проверка подключения Telegram*\n\n"
-        f"Лендинг: *{_escape_markdown_v2(landing_slug)}*\n"
-        f"Событие: `{_escape_markdown_v2(event_id)}`"
-    )
     _send_telegram_message(token=token, chat_id=chat_id, text=message)
 
 

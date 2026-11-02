@@ -2,7 +2,6 @@ import {
   BugHunt,
   Callout,
   CodeBlock,
-  CodeSequence,
   Diagram,
   DiagramArrow,
   DiagramFlow,
@@ -14,7 +13,6 @@ import {
   RichHero,
   RichLesson,
   Section,
-  StepThrough,
   TrueFalse,
 } from "../../shared";
 
@@ -40,7 +38,7 @@ export function Lesson13_2({ module }: { module?: string }) {
             {
               title: "Точка старта",
               description:
-                "В своём проекте запускаем main.py и видим Hello world. Ветка main уже опубликована, а рабочий файл и index чисты; если это пока не так, сначала восстанавливаем результат 12.1–13.1.",
+                "В своём проекте запускаем main.py и видим Hello world. Ветка main уже опубликована, а рабочий файл и index чисты; если это пока не так, сначала восстанавливаем создание проекта и публикацию первого commit.",
             },
             {
               title: "Новый вопрос",
@@ -68,13 +66,12 @@ export function Lesson13_2({ module }: { module?: string }) {
           файл работает. Команда <code>git remote -v</code> покажет адрес <code>origin</code>, то есть привязанного
           удалённого репозитория. Сверяем адрес со своим GitHub, а не с чужим примером.
         </p>
-        <CodeBlock caption="Проверяем существующий проект без изменения файлов" code={"python main.py\ngit status --short --branch\ngit branch --show-current\ngit remote -v\ngit log -1 --oneline"} />
+        <CodeBlock caption="Проверяем существующий проект без изменения файлов" code={"python main.py\ngit status --short --branch\ngit branch --show-current\ngit remote -v\ngit log -1 --oneline\ngit rev-parse HEAD"} />
         <p>
           <code>git status --short --branch</code> показывает ветку и состояние файлов; при чистом исходном
           состоянии строк с изменениями нет. <code>git log -1 --oneline</code> показывает последний commit.
-          У опубликованной <code>main</code> ожидаем связь с <code>origin/main</code> и отсутствие расхождения.
-          Если видим незнакомые правки, другую ветку или неожиданную историю, сначала выясним причину по занятиям
-          12.1–13.1. Команды просмотра безопасны; сбрасывать или автоматически добавлять чужие файлы не будем.
+          У опубликованной <code>main</code> ожидаем связь с <code>origin/main</code> и отсутствие расхождения с последней известной локально версией remote. Это сравнение само по себе не проверяет сервер: откройте свой репозиторий на GitHub и сверьте полный ID последнего commit с результатом <code>git rev-parse HEAD</code>.
+          Если видим незнакомые правки, другую ветку или неожиданную историю, сначала вернёмся к созданию проекта и первому push, чтобы выяснить причину. Команды просмотра безопасны; сбрасывать или автоматически добавлять чужие файлы не будем.
         </p>
         <Diagram caption="Два способа продолжить один и тот же репозиторий">
           <DiagramFlow label="Выбор до изменения main.py">
@@ -90,7 +87,7 @@ export function Lesson13_2({ module }: { module?: string }) {
         </Diagram>
         <p>
           Ветка – имя линии commit в одном репозитории. Самостоятельно остаёмся в <code>main</code>:
-          для прохождения занятия отдельная ветка и Pull Request не нужны. Если работаем с ментором,
+          для прохождения занятия отдельная ветка и Pull Request не нужны. Если работаем с ментором,{" "}
           <strong>до первого редактирования</strong> из чистой опубликованной <code>main</code> выполняем
           <code> git switch -c develop</code>. Если согласованная ветка <code>develop</code> уже существует,
           проверяем её происхождение и переключаемся командой <code>git switch develop</code>.
@@ -114,7 +111,7 @@ export function Lesson13_2({ module }: { module?: string }) {
         <p>
           Метод <code>strip()</code> вызывается у строки и возвращает <strong>новую</strong> строку без пробельных символов слева
           и справа. Он не меняет сохранённое значение исходной переменной. Внутренние пробелы и регистр букв остаются
-          такими же: <code>"  План  дня  ".strip()</code> даст <code>"План  дня"</code>, с двумя пробелами между словами.
+          такими же: <code style={{ whiteSpace: "pre-wrap" }}>"  План  дня  ".strip()</code> даст <code style={{ whiteSpace: "pre-wrap" }}>"План  дня"</code>, с двумя пробелами между словами.
         </p>
         <CodeBlock caption="Независимый пример с названием города" code={"city = '  Казань  '\nclean_city = city.strip()\nprint('[' + city + ']')\nprint('[' + clean_city + ']')"} />
         <p>
@@ -144,15 +141,12 @@ export function Lesson13_2({ module }: { module?: string }) {
           вызывающему коду. <code>print</code> лишь показывает значение в терминале и сам возвращает <code>None</code>.
           Поэтому функция, которая только печатает очищенное название, не подходит для будущей фабрики задач.
         </p>
-        <StepThrough
-          code={'def clean_city(city):\n    return city.strip()\n\nresult = clean_city("  Омск  ")\nprint(result)'}
-          steps={[
-            { line: 0, note: "Python запоминает определение clean_city. Тело пока не выполнено." },
-            { line: 3, note: "Вызов передаёт строку с пробелами в параметр city.", vars: { city: "'  Омск  '" } },
-            { line: 1, note: "strip возвращает новое значение, return передаёт его из функции.", vars: { city: "'  Омск  '", "результат return": "'Омск'" } },
-            { line: 4, note: "Переменная result хранит 'Омск'; print показывает Омск человеку.", vars: { result: "'Омск'" } },
-          ]}
-        />
+        <CodeBlock caption="Как функция возвращает строку" code={'def clean_city(city):\n    return city.strip()\n\nresult = clean_city("  Омск  ")\nprint(result)'} />
+        <p>
+          При вызове строка попадает в параметр <code>city</code>. Метод убирает пробелы по краям,
+          <code> return</code> передаёт очищенную строку обратно, а имя <code>result</code> сохраняет её.
+          Затем <code>print(result)</code> показывает Омск в терминале.
+        </p>
         <p>
           Попробуем разобрать ошибку до собственной практики. Если вместо <code>return</code> написать внутри функции
           <code>print(city.strip())</code>, текст на экране появится, но переменная, которой присвоили результат
@@ -196,7 +190,7 @@ export function Lesson13_2({ module }: { module?: string }) {
         </p>
         <CodeBlock caption="Один файл, две разные пары для сравнения" code={"последний commit  <--- git diff --cached ---  index\n                                               |\n                                    git diff -- main.py\n                                               |\n                                         рабочий файл"} />
         <p>
-          Команда <code>git status --short</code> сначала покажет, <strong>какие</strong> файлы изменены; diff покажет,
+          Команда <code>git status --short</code> сначала покажет, <strong>какие</strong> файлы изменены; diff покажет,{" "}
           <strong>какие строки</strong> различаются. Пока мы ничего не подготовили, index совпадает с commit. Значит,
           обычный diff покажет функцию и первые проверочные вызовы, а cached diff будет пустым.
         </p>
@@ -248,17 +242,17 @@ export function Lesson13_2({ module }: { module?: string }) {
           с другим входом. Сохраним файл, повторим запуск, но пока не делаем второй add. Теперь один файл имеет три
           версии: последний commit, первый подготовленный вариант и новый рабочий вариант.
         </p>
-        <Callout tone="info">Схема ниже использует короткие условные строки вместо готовой функции. В практике у нас будут собственные проверки <code>normalize_title</code>; принцип Git тот же.</Callout>
+        <Callout tone="info">На схеме H - прежнее приветствие, A - первая проверка, B - поздняя. Это условные строки вместо готовой функции. В практике у нас будут собственные проверки <code>normalize_title</code>; принцип Git тот же.</Callout>
         <Diagram caption="Три версии одного main.py после второй правки">
           <DiagramFlow label="Последний commit, подготовленная версия и текущий рабочий файл">
             <DiagramNode title="Последний commit" shape="database">
-              <CodeBlock code={'print("Hello world")'} />
+              <CodeBlock code={'print("H")'} />
             </DiagramNode>
             <DiagramArrow direction="both" label="git diff --staged / --cached" />
             <DiagramNode title="Index после первого git add">
               <CodeBlock
                 code={
-                  'print("Hello world")\nprint("Первая проверка")'
+                  'print("H")\nprint("A")'
                 }
               />
             </DiagramNode>
@@ -266,7 +260,7 @@ export function Lesson13_2({ module }: { module?: string }) {
             <DiagramNode title="Рабочий файл после второй правки">
               <CodeBlock
                 code={
-                  'print("Hello world")\nprint("Первая проверка")\nprint("Поздняя проверка")'
+                  'print("H")\nprint("A")\nprint("B")'
                 }
               />
             </DiagramNode>
@@ -275,12 +269,12 @@ export function Lesson13_2({ module }: { module?: string }) {
         <CodeBlock
           caption="Фрагмент git diff --staged -- main.py, он же --cached"
           code={
-            '+print("Первая проверка")'
+            '+print("A")'
           }
         />
         <CodeBlock
           caption="Фрагмент git diff -- main.py"
-          code={'+print("Поздняя проверка")'}
+          code={'+print("B")'}
         />
         <p>
           Если после подготовки файл не менялся, обычный diff пуст, хотя staged diff всё ещё показывает изменение
@@ -354,19 +348,6 @@ export function Lesson13_2({ module }: { module?: string }) {
           Мы не применяем здесь <code>git reset --hard</code> или массовый restore: они могут привести к потере
           рабочих правок. Безопасная проверка состоит из просмотра, одного выбранного пути и повторного просмотра.
         </p>
-        <CodeSequence
-          title="Восстанавливаем подготовку проверенного файла"
-          prompt="Составим порядок действий после успешного запуска и обнаружения MM main.py. Команды уже разобраны выше."
-          pieces={[
-            { id: "status", code: "git status --short" },
-            { id: "unstage", code: "git restore --staged -- main.py" },
-            { id: "stage", code: "git add -- main.py" },
-            { id: "compare", code: "git diff -- main.py\ngit diff --cached -- main.py" },
-          ]}
-          correctOrder={["status", "unstage", "stage", "compare"]}
-          explanation="Сначала проверяем scope, затем снимаем staging только с main.py, снова готовим запущенную версию и сравниваем рабочую и подготовленную разницы."
-          incorrectExplanation="Сначала проверяем статус. Если повторный add выполнен до restore, мы уже не увидим безопасное снятие старой версии; если diff просмотрен раньше подготовки, он описывает другой снимок."
-        />
         <CodeBlock
           caption="Безопасная последовательность для одного известного файла"
           code={"git status --short\ngit restore --staged -- main.py\ngit status --short\ngit diff -- main.py\ngit diff --cached -- main.py\ngit add -- main.py\ngit diff -- main.py\ngit diff --cached -- main.py"}
@@ -376,11 +357,6 @@ export function Lesson13_2({ module }: { module?: string }) {
           что подготовлена именно проверенная версия. При любом новом исправлении рабочий файл снова меняется:
           потребуется новый запуск и add перед commit.
         </p>
-        <TrueFalse
-          statement="После git restore --staged -- main.py текст, который мы сохранили в рабочем файле, остаётся на месте."
-          isTrue={true}
-          explanation="Команда с параметром --staged обновляет index для указанного пути. Рабочий main.py она не восстанавливает и не перезаписывает."
-        />
         <p>
           После контрольного <code>python main.py</code> сверяем ветку, адрес origin, status и оба diff.
           Затем создаём содержательный <code>git commit -m "Add title normalization"</code> и смотрим

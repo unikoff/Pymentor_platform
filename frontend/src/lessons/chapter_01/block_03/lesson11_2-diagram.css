@@ -1,0 +1,93 @@
+.lesson-diagram--vertical.lesson11-2-error-diagram {
+  max-width: 100%;
+}
+
+.lesson-diagram--vertical.lesson11-2-data-diagram {
+  max-width: 100%;
+}
+
+.lesson11-2-data-diagram .lesson-diagram-flow {
+  gap: 32px;
+}
+
+.lesson11-2-data-diagram .lesson-diagram-node + .lesson-diagram-node::after {
+  position: absolute;
+  top: 50%;
+  left: -25px;
+  color: var(--accent);
+  content: "→";
+  transform: translateY(-50%);
+}
+
+@container lesson-diagram (max-width: 720px) {
+  .lesson11-2-data-diagram .lesson-diagram-node + .lesson-diagram-node::after {
+    top: -28px;
+    left: 50%;
+    content: "↓";
+    transform: translateX(-50%);
+  }
+}
+
+.lesson11-2-error-diagram .lesson-diagram-flow--vertical {
+  gap: 28px;
+}
+
+.lesson11-2-error-diagram .lesson-diagram-branches {
+  position: relative;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.lesson11-2-error-diagram .lesson-diagram-branches::before {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  height: 14px;
+  margin-bottom: 14px;
+  border-left: 2px solid var(--diagram-detail-line);
+  content: "";
+}
+
+.lesson11-2-error-diagram .lesson-diagram-branches::after {
+  position: absolute;
+  right: calc((100% - 32px) / 6);
+  bottom: calc(100% + 13px);
+  left: calc((100% - 32px) / 6);
+  border-top: 2px solid var(--diagram-detail-line);
+  content: "";
+}
+
+.lesson11-2-error-diagram .lesson-diagram-branch {
+  position: relative;
+  gap: 12px;
+  padding: 18px;
+}
+
+.lesson11-2-error-diagram .lesson-diagram-branch::before {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  height: 14px;
+  border-left: 2px solid var(--diagram-detail-line);
+  content: "";
+}
+
+.lesson11-2-error-diagram .lesson-diagram-branch p {
+  margin: 0;
+}
+
+@container lesson-diagram (max-width: 620px) {
+  .lesson11-2-error-diagram .lesson-diagram-branches {
+    grid-template-columns: 1fr;
+  }
+
+  .lesson11-2-error-diagram .lesson-diagram-branches::before {
+    height: 28px;
+    margin-bottom: 0;
+  }
+
+  .lesson11-2-error-diagram .lesson-diagram-branches::after,
+  .lesson11-2-error-diagram .lesson-diagram-branch::before {
+    display: none;
+  }
+}

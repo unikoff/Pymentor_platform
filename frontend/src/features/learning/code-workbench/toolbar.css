@@ -44,13 +44,13 @@
 }
 
 .task-code-action:hover:not(:disabled) {
-  border-color: color-mix(in srgb, var(--accent) 34%, var(--line));
+  border-color: color-mix(in srgb, var(--border-tint-accent) 34%, var(--line));
   background: color-mix(in srgb, var(--accent) 8%, var(--surface));
   color: var(--accent);
 }
 
 .task-code-action--check {
-  border-color: color-mix(in srgb, var(--accent) 26%, var(--line-soft));
+  border-color: color-mix(in srgb, var(--border-tint-accent) 26%, var(--line-soft));
   background: color-mix(in srgb, var(--accent) 7%, var(--surface));
   color: var(--accent);
 }

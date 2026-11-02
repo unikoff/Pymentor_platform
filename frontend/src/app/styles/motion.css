@@ -33,7 +33,7 @@
     translate: 0 -1px;
   }
   .lesson-row:hover:not(:disabled):not(.is-locked):not(.is-active):not(.is-completed) {
-    border-color: color-mix(in srgb, var(--accent) 22%, var(--line));
+    border-color: color-mix(in srgb, var(--border-tint-accent) 22%, var(--line));
     background: linear-gradient(125deg,
       color-mix(in srgb, var(--accent) 8%, var(--surface-2)),
       color-mix(in srgb, var(--accent) 3%, var(--surface-2)));

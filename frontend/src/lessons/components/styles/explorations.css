@@ -32,24 +32,24 @@
 }
 
 .match-item:hover:not(:disabled) {
-  border-color: var(--accent);
+  border-color: var(--border-tint-accent);
 }
 
 .match-item.is-active {
-  border-color: var(--accent);
+  border-color: var(--border-tint-accent);
   background: var(--accent-soft);
   transform: translateX(3px);
 }
 
 .match-item.is-matched {
-  border-color: var(--accent);
+  border-color: var(--border-tint-accent);
   background: var(--accent-soft);
   opacity: 0.65;
   cursor: default;
 }
 
 .match-item.is-wrong {
-  border-color: var(--error);
+  border-color: var(--border-tint-error);
   background: color-mix(in srgb, var(--error) 12%, transparent);
   animation: shake 0.3s ease;
 }
@@ -80,7 +80,7 @@
 }
 
 .slice-char.is-selected {
-  border-color: var(--accent);
+  border-color: var(--border-tint-accent);
   background: var(--accent-soft);
 }
 
@@ -142,7 +142,7 @@
 }
 
 .slice-stepper button:hover {
-  border-color: var(--accent);
+  border-color: var(--border-tint-accent);
 }
 
 .slice-result {
@@ -195,7 +195,7 @@
 }
 
 .branch-chip.is-active {
-  border-color: var(--accent);
+  border-color: var(--border-tint-accent);
   background: var(--accent-soft);
 }
 
@@ -214,6 +214,14 @@
   color: var(--code-text);
   white-space: pre;
   transition: background 160ms ease;
+}
+
+.rich-lesson .branch-code .branch-line > code {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  font-size: inherit;
 }
 
 .branch-line.is-active {
@@ -302,7 +310,7 @@
 
 .flip-back {
   background: var(--accent-soft);
-  border-color: var(--accent);
+  border-color: var(--border-tint-accent);
   color: var(--text);
   transform: rotateY(180deg);
   font-size: 0.9rem;

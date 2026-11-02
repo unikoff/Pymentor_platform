@@ -60,7 +60,7 @@
   display: grid;
   place-items: center;
   border-radius: 16px;
-  background: var(--accent);
+  background: var(--brand);
   color: var(--brand-contrast);
   font-weight: 900;
 }
@@ -86,7 +86,7 @@
 }
 
 .account-metric.is-active-subscription {
-  border-color: color-mix(in srgb, var(--success) 36%, transparent);
+  border-color: color-mix(in srgb, var(--border-tint-success) 36%, transparent);
 }
 
 .account-metric.is-active-subscription strong {
@@ -94,7 +94,7 @@
 }
 
 .account-metric.is-expired-subscription {
-  border-color: color-mix(in srgb, var(--warning) 36%, transparent);
+  border-color: color-mix(in srgb, var(--border-tint-warning) 36%, transparent);
 }
 
 .account-metric.is-expired-subscription strong {

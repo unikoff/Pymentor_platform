@@ -41,8 +41,11 @@ function getProfileHint(user: UserProfile | null): { tier?: string; detail: stri
 
 function getInitialExplorerWidth() {
   try {
-    const width = Number(localStorage.getItem("pymentor-explorer-width"));
-    if (Number.isFinite(width)) return Math.min(EXPLORER_MAX_WIDTH, Math.max(EXPLORER_MIN_WIDTH, width));
+    const savedWidth = localStorage.getItem("pymentor-explorer-width");
+    if (savedWidth !== null && savedWidth.trim() !== "") {
+      const width = Number(savedWidth);
+      if (Number.isFinite(width)) return Math.min(EXPLORER_MAX_WIDTH, Math.max(EXPLORER_MIN_WIDTH, width));
+    }
   } catch { /* Storage is optional. */ }
   return EXPLORER_DEFAULT_WIDTH;
 }
@@ -77,6 +80,7 @@ export function Workspace({ user, onLogout, onRequireAuth }: {
   const entry = course.courses[course.activeTrackId];
   const ready = Boolean(course.tracksError || (course.tracksLoaded && (!course.activeTrackId || (entry && !entry.loading))));
   const workspaceStyle = { "--explorer": `${explorerWidth}px` } as CSSProperties;
+  const isDrawerVisible = isExplorerOpen || lessonMenuPeek === "open";
 
   useEffect(() => {
     try { localStorage.setItem("pymentor-explorer-width", String(explorerWidth)); }
@@ -134,7 +138,7 @@ export function Workspace({ user, onLogout, onRequireAuth }: {
       lessonMenuTimers.current.push(window.setTimeout(() => {
         setLessonMenuPeek("closed");
         lessonMenuTimers.current = [];
-      }, 170));
+      }, 370));
     }, 110));
   }, [clearLessonMenuTimers, compact, isExplorerOpen]);
   const toggleLessons = useCallback(() => {
@@ -180,20 +184,35 @@ export function Workspace({ user, onLogout, onRequireAuth }: {
       selectedLessonId: lessonTarget?.trackId === course.activeTrackId ? lessonTarget.lessonId : "", onSelectLesson, openLesson, onRequireAuth, onLogout: handleLogout,
       onCloseLessons: closeLessons }}>
       <main ref={workspaceRef} className={`workspace workspace--dock ${compact ? "workspace--compact" : ""} ${isExplorerOpen ? "workspace--explorer-open" : "workspace--explorer-closed"}`} style={workspaceStyle}>
-        <WorkspaceActivityBar isExplorerOpen={isExplorerOpen || lessonMenuPeek !== "closed"} isAdmin={Boolean(user?.is_admin)}
+        <WorkspaceActivityBar isExplorerOpen={isDrawerVisible} isAdmin={Boolean(user?.is_admin)}
           isAdminOpen={activePanel?.id === "admin"} isAccountOpen={activePanel?.id === "account"} isInterpreterOpen={activePanel?.id === "interpreter"} activeView={activePanel?.kind}
           onOpenLessons={toggleLessons} onLessonsPointerEnter={previewLessonsOnHover} onLessonsPointerLeave={closeLessonPreview}
           onOpenTheory={() => openStudy("theory")} onOpenPractice={() => openStudy("practice")}
           onOpenAdmin={() => commands.current?.openAdmin()} onOpenAccount={openAccount} onOpenInterpreter={() => commands.current?.openInterpreter()} />
-        {(isExplorerOpen || lessonMenuPeek !== "closed") && <aside
+        <aside
+          id="workspace-lessons-drawer"
           className={`workspace-drawer${lessonMenuPeek !== "closed" && !isExplorerOpen ? ` workspace-drawer--peek workspace-drawer--peek-${lessonMenuPeek}` : ""}`}
+          ref={(element) => { if (element) element.inert = !isDrawerVisible; }}
+          aria-hidden={!isDrawerVisible}
           aria-label="Список занятий"
           onPointerEnter={(event) => previewLessonsOnHover(event.pointerType)}
           onPointerLeave={(event) => closeLessonPreview(event.pointerType)}>
-          <LessonsDrawerContent />
-        </aside>}
-        {isExplorerOpen && !compact && <button className="explorer-resizer" type="button" aria-label="Изменить ширину списка занятий"
-          onPointerDown={(event: PointerEvent<HTMLButtonElement>) => { event.preventDefault(); setIsResizingExplorer(true); }} />}
+          <LessonsDrawerContent visible={isDrawerVisible} />
+        </aside>
+        {isExplorerOpen && !compact && <button className="explorer-resizer" type="button" role="separator"
+          aria-label="Ширина списка занятий" aria-controls="workspace-lessons-drawer" aria-orientation="vertical" aria-valuemin={EXPLORER_MIN_WIDTH}
+          aria-valuemax={EXPLORER_MAX_WIDTH} aria-valuenow={explorerWidth} title="Изменить ширину: стрелки влево и вправо"
+          onPointerDown={(event: PointerEvent<HTMLButtonElement>) => { event.preventDefault(); setIsResizingExplorer(true); }}
+          onKeyDown={(event) => {
+            if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+              event.preventDefault();
+              const delta = event.key === "ArrowLeft" ? -16 : 16;
+              setExplorerWidth((width) => Math.min(EXPLORER_MAX_WIDTH, Math.max(EXPLORER_MIN_WIDTH, width + delta)));
+            } else if (event.key === "Home" || event.key === "End") {
+              event.preventDefault();
+              setExplorerWidth(event.key === "Home" ? EXPLORER_MIN_WIDTH : EXPLORER_MAX_WIDTH);
+            }
+          }} />}
         <div className="workspace-body">
           <header className="top-bar">
             <div className="breadcrumbs" title={workspaceHeading ? [workspaceHeading.chapter, workspaceHeading.number, workspaceHeading.title].filter(Boolean).join(" · ") : undefined}>

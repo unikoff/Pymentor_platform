@@ -6,10 +6,10 @@
 
 .manual-practice-card {
   display: grid;
-  gap: 16px;
+  gap: 20px;
   min-width: 0;
   max-width: 100%;
-  padding: clamp(18px, 2.2cqw, 28px);
+  padding: clamp(20px, 2.5cqw, 36px);
   border: 1px solid var(--line-soft);
   border-radius: var(--radius-xl);
   background: var(--surface);
@@ -30,13 +30,11 @@
 
 .manual-practice-card__head {
   display: grid;
-  gap: 7px;
-  padding-bottom: 13px;
-  border-bottom: 1px solid var(--line-soft);
+  gap: 10px;
 }
 
 .manual-practice-card__head > span {
-  color: var(--accent);
+  color: var(--muted);
   font-size: 0.68rem;
   font-weight: 850;
   letter-spacing: 0.09em;
@@ -45,8 +43,9 @@
 
 .manual-practice-card h2 {
   margin: 0;
-  font-size: clamp(1.18rem, 1.8cqw, 1.5rem);
+  font-size: clamp(1.3rem, 2cqw, 1.75rem);
   letter-spacing: -0.02em;
+  line-height: 1.25;
 }
 
 .manual-practice-card__result,
@@ -74,6 +73,12 @@
   min-width: 0;
   padding-left: 13px;
   border-left: 2px solid var(--line-soft);
+}
+
+.manual-practice-card__context {
+  max-width: 88ch;
+  padding-left: 14px;
+  border-left-color: color-mix(in srgb, var(--border-tint-accent) 50%, var(--line-soft));
 }
 
 .manual-practice-card__context p,
@@ -128,7 +133,7 @@
   display: inline;
   max-width: 100%;
   padding: 0.04em 0.34em;
-  border: 1px solid color-mix(in srgb, var(--accent) 20%, var(--line));
+  border: 1px solid color-mix(in srgb, var(--border-tint-accent) 20%, var(--line));
   border-radius: 6px;
   background: color-mix(in srgb, var(--accent-soft) 34%, var(--surface-2));
   color: var(--text);
@@ -168,24 +173,24 @@
 
 .manual-practice-task {
   display: grid;
-  gap: 14px;
-  padding: 18px;
+  gap: 20px;
+  padding: clamp(18px, 2cqw, 28px);
   border: 1px solid var(--line-soft);
-  border-radius: 18px;
-  background: var(--surface-2);
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--surface-2) 72%, var(--surface));
   transition: border-color 160ms ease, background 160ms ease;
 }
 
 .manual-practice-task.is-done {
-  border-color: color-mix(in srgb, var(--accent) 30%, var(--line-soft));
+  border-color: color-mix(in srgb, var(--border-tint-accent) 30%, var(--line-soft));
   background: color-mix(in srgb, var(--accent) 3%, var(--surface-2));
 }
 
 .manual-practice-task__sections {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.5fr);
   align-items: start;
-  gap: 14px 20px;
+  gap: 24px clamp(24px, 3cqw, 44px);
 }
 
 .manual-practice-task__toolbar {
@@ -193,16 +198,45 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
-  padding-bottom: 10px;
+  padding-bottom: 14px;
   border-bottom: 1px solid var(--line-soft);
 }
 
-.manual-practice-task__toolbar > span {
-  color: var(--muted);
+.manual-practice-task__position {
+  display: grid;
+  gap: 9px;
+  min-width: 0;
+}
+
+.manual-practice-task__position > span {
+  color: var(--accent);
   font-size: 0.73rem;
   font-weight: 750;
   letter-spacing: 0.06em;
   text-transform: uppercase;
+}
+
+.manual-practice-task__position-track {
+  display: flex;
+  gap: 4px;
+  width: min(120px, 100%);
+  height: 5px;
+}
+
+.manual-practice-task__position-track i {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--muted) 28%, transparent);
+}
+
+.manual-practice-task__position-track i.is-done {
+  background: var(--accent);
+}
+
+.manual-practice-task__position-track i.is-current {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--text) 78%, var(--accent)), color-mix(in srgb, var(--text) 85%, var(--accent-secondary)));
 }
 
 .practice-task-navigation {
@@ -226,13 +260,13 @@
 }
 
 .practice-task-navigation__button:hover:not(:disabled) {
-  border-color: color-mix(in srgb, var(--accent) 30%, var(--line));
+  border-color: color-mix(in srgb, var(--border-tint-accent) 30%, var(--line));
   color: var(--accent);
 }
 
 .practice-task-navigation__button--next {
-  border-color: color-mix(in srgb, var(--accent) 24%, var(--line));
-  background: var(--accent-soft);
+  border-color: color-mix(in srgb, var(--border-tint-accent) 45%, var(--line));
+  background: color-mix(in srgb, var(--accent) 16%, var(--surface));
   color: var(--accent);
 }
 
@@ -253,8 +287,9 @@
 
 .manual-practice-task__head h3 {
   margin: 0;
-  font-size: 1.18rem;
+  font-size: clamp(1.18rem, 1.5cqw, 1.4rem);
   letter-spacing: -0.015em;
+  line-height: 1.3;
 }
 
 .manual-practice-task__requirements,
@@ -265,33 +300,31 @@
 }
 
 .manual-practice-task__requirements {
-  gap: 10px;
-  min-height: 100%;
-  padding: 13px 15px;
-  border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--line-soft));
-  border-radius: 12px;
-  background: color-mix(in srgb, var(--accent-soft) 16%, transparent);
+  gap: 12px;
+  padding-left: clamp(20px, 2.5cqw, 36px);
+  border-left: 1px solid var(--line-soft);
 }
 
 .manual-practice-task__summary-section {
   align-content: start;
-  gap: 8px;
-  min-height: 100%;
-  padding: 13px 15px;
-  border: 1px solid var(--line-soft);
-  border-radius: 12px;
-  background: color-mix(in srgb, var(--surface) 56%, transparent);
+  gap: 10px;
+  padding: 0;
+  border: 0;
 }
 
 .manual-practice-task__requirements h4,
 .manual-practice-task__panel strong,
 .manual-practice-task__checks strong {
   margin: 0;
-  color: var(--accent);
+  color: var(--muted);
   font-size: 0.7rem;
   font-weight: 850;
   letter-spacing: 0.06em;
   text-transform: uppercase;
+}
+
+.manual-practice-task__requirements h4 {
+  color: var(--accent);
 }
 
 .manual-practice-task__requirements ol,
@@ -308,8 +341,34 @@
 
 .manual-practice-task__requirements li::marker,
 .manual-practice-task__panel li::marker {
-  color: var(--accent);
+  color: var(--muted);
   font-weight: 800;
+}
+
+.manual-practice-task__requirements ol {
+  gap: 0;
+  max-width: 80ch;
+  padding: 0;
+  list-style: none;
+  counter-reset: manual-requirement;
+  font-size: 0.96rem;
+  line-height: 1.65;
+}
+
+.manual-practice-task__requirements li {
+  position: relative;
+  padding: 10px 0 10px 36px;
+  border-top: 1px solid var(--line-soft);
+  counter-increment: manual-requirement;
+}
+
+.manual-practice-task__requirements li::before {
+  content: counter(manual-requirement, decimal-leading-zero);
+  position: absolute;
+  left: 0;
+  top: 12px;
+  color: var(--accent);
+  font: 700 0.75rem/1.5 var(--font-code);
 }
 
 .manual-practice-task__criterion {
@@ -318,10 +377,11 @@
   align-items: flex-start;
   gap: 10px;
   min-width: 0;
-  padding: 12px 15px;
-  border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--line-soft));
+  padding: 16px 18px;
+  border: 0;
+  border-left: 3px solid color-mix(in srgb, var(--border-tint-accent) 70%, transparent);
   border-radius: 12px;
-  background: color-mix(in srgb, var(--accent-soft) 18%, var(--surface-2));
+  background: color-mix(in srgb, var(--accent) 7%, var(--surface));
 }
 
 .manual-practice-task__criterion > svg {
@@ -356,11 +416,25 @@
   .manual-practice-task__criterion {
     grid-column: auto;
   }
+
+  .manual-practice-task__requirements {
+    padding: 20px 0 0;
+    border-left: 0;
+    border-top: 1px solid var(--line-soft);
+  }
+}
+
+@container practice-screen (max-width: 520px) {
+  .practice-dashboard .manual-practice-card,
+  .practice-dashboard .manual-practice-task {
+    padding: 16px;
+  }
 }
 
 .manual-practice-task__actions {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
   padding-top: 12px;
   border-top: 1px solid var(--line-soft);
@@ -373,15 +447,19 @@
   justify-content: center;
   gap: 7px;
   padding: 0 11px;
-  border: 1px solid transparent;
+  border: 1px solid var(--line-soft);
   border-radius: 10px;
-  background: transparent;
+  background: color-mix(in srgb, var(--surface) 60%, transparent);
   color: var(--muted);
   cursor: pointer;
   font: inherit;
   font-size: 0.84rem;
   font-weight: 700;
   transition: border-color 140ms ease, background 140ms ease, color 140ms ease;
+}
+
+.manual-practice-task__action:not(.manual-practice-task__done) svg {
+  color: var(--accent);
 }
 
 .manual-practice-task__action:hover:not(:disabled):not(.manual-practice-task__done),
@@ -392,7 +470,7 @@
 }
 
 .manual-practice-task__action:hover:not(:disabled):not(.manual-practice-task__done) {
-  border-color: color-mix(in srgb, var(--accent) 26%, var(--line-soft));
+  border-color: color-mix(in srgb, var(--border-tint-accent) 26%, var(--line-soft));
   color: var(--accent);
 }
 
@@ -404,20 +482,20 @@
 .manual-practice-task__done {
   min-width: 140px;
   margin-left: auto;
-  border-color: color-mix(in srgb, var(--accent) 24%, var(--line));
-  background: var(--accent);
+  border-color: color-mix(in srgb, var(--border-tint-accent) 24%, var(--line));
+  background: var(--brand);
   color: var(--brand-contrast);
 }
 
 .manual-practice-task__done.is-done {
-  border-color: color-mix(in srgb, var(--accent) 30%, var(--line));
+  border-color: color-mix(in srgb, var(--border-tint-accent) 30%, var(--line));
   background: var(--accent-soft);
   color: var(--accent);
 }
 
 .manual-practice-task__done:hover:not(:disabled):not(.is-done) {
-  border-color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 88%, var(--surface));
+  border-color: var(--border-tint-accent);
+  background: color-mix(in srgb, var(--brand) 88%, var(--surface));
   color: var(--brand-contrast);
 }
 
@@ -427,7 +505,7 @@
 
 .manual-practice-task__panel--hint {
   padding: 14px;
-  border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--line-soft));
+  border: 1px solid color-mix(in srgb, var(--border-tint-accent) 24%, var(--line-soft));
   border-radius: 12px;
   background: color-mix(in srgb, var(--accent) 5%, var(--surface));
 }
@@ -451,7 +529,7 @@
 .manual-practice-task__panel p,
 .manual-practice-task__text {
   margin: 0;
-  color: var(--muted);
+  color: var(--reading);
   line-height: 1.65;
 }
 

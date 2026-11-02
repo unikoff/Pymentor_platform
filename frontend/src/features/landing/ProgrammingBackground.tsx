@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 
-const DESKTOP_COLUMNS = 8;
-const DESKTOP_ROWS = 30;
+const DESKTOP_COLUMNS = 30;
+const DESKTOP_ROWS = 120;
 const PANEL_COUNT = DESKTOP_COLUMNS * DESKTOP_ROWS;
 
 type GridMetrics = {
@@ -11,8 +11,6 @@ type GridMetrics = {
   paddingTop: number;
   columnStep: number;
   rowStep: number;
-  tileWidth: number;
-  tileHeight: number;
 };
 
 export function ProgrammingBackground() {
@@ -24,8 +22,7 @@ export function ProgrammingBackground() {
     if (!field || !root) return;
 
     const panels = Array.from(field.children, (child) => child as HTMLElement);
-    const panelIndices = new Map<HTMLElement, number>();
-    panels.forEach((panel, index) => panelIndices.set(panel, index));
+    panels.forEach((panel) => panel.classList.remove('is-active', 'is-near', 'is-far'));
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
     let activePanel = -1;
     let activeTiles: HTMLElement[] = [];
@@ -38,8 +35,6 @@ export function ProgrammingBackground() {
       paddingTop: 0,
       columnStep: 1,
       rowStep: 1,
-      tileWidth: 1,
-      tileHeight: 1,
     };
 
     const setActivePanel = (index: number) => {
@@ -47,9 +42,6 @@ export function ProgrammingBackground() {
 
       activeTiles.forEach((panel) => {
         panel.classList.remove('is-active', 'is-near', 'is-far');
-        panel.style.removeProperty('--panel-rotate-x');
-        panel.style.removeProperty('--panel-rotate-y');
-        panel.style.removeProperty('--panel-lift');
       });
       activeTiles = [];
 
@@ -68,36 +60,6 @@ export function ProgrammingBackground() {
           activeTiles.push(panel);
         }
       }
-    };
-
-    const applyPointerForce = (clientX: number, clientY: number) => {
-      const bounds = field.getBoundingClientRect();
-
-      activeTiles.forEach((panel) => {
-        const panelIndex = panelIndices.get(panel);
-        if (panelIndex === undefined) return;
-        const column = panelIndex % metrics.columns;
-        const row = Math.floor(panelIndex / metrics.columns);
-        const centerX = bounds.left + metrics.paddingLeft + column * metrics.columnStep + metrics.tileWidth / 2;
-        const centerY = bounds.top + metrics.paddingTop + row * metrics.rowStep + metrics.tileHeight / 2;
-        const offsetX = (clientX - centerX) / metrics.tileWidth;
-        const offsetY = (clientY - centerY) / metrics.tileHeight;
-        const distance = Math.hypot(offsetX, offsetY);
-        const influence = 1 / (1 + distance * 0.75);
-        const activeRow = Math.floor(activePanel / metrics.columns);
-        const activeColumn = activePanel % metrics.columns;
-        const ring = Math.max(Math.abs(row - activeRow), Math.abs(column - activeColumn));
-        const rotationScale = ring === 0 ? 2 : ring === 1 ? 1.45 : 0.7;
-        const maxRotation = ring === 0 ? 12 : ring === 1 ? 12 : 4;
-        const rotationRate = ring === 2 ? 12 : 18;
-        const rotateX = Math.max(-maxRotation, Math.min(maxRotation, offsetY * rotationScale * rotationRate * influence));
-        const rotateY = Math.max(-maxRotation, Math.min(maxRotation, -offsetX * rotationScale * rotationRate * influence));
-        const lift = ring === 0 ? 18 * influence : ring === 1 ? 14 * influence : 1.5 * influence;
-
-        panel.style.setProperty('--panel-rotate-x', `${rotateX.toFixed(2)}deg`);
-        panel.style.setProperty('--panel-rotate-y', `${rotateY.toFixed(2)}deg`);
-        panel.style.setProperty('--panel-lift', `${lift.toFixed(2)}px`);
-      });
     };
 
     const refreshMetrics = () => {
@@ -120,8 +82,6 @@ export function ProgrammingBackground() {
         paddingTop,
         columnStep: Math.max(1, (width - columnGap * (columns - 1)) / columns + columnGap),
         rowStep: Math.max(1, (height - rowGap * (rows - 1)) / rows + rowGap),
-        tileWidth: Math.max(1, (width - columnGap * (columns - 1)) / columns),
-        tileHeight: Math.max(1, (height - rowGap * (rows - 1)) / rows),
       };
       setActivePanel(-1);
     };
@@ -137,7 +97,6 @@ export function ProgrammingBackground() {
 
       const index = row * metrics.columns + column;
       setActivePanel(index);
-      applyPointerForce(clientX, clientY);
     };
 
     const onPointerMove = (event: PointerEvent) => {
@@ -170,6 +129,7 @@ export function ProgrammingBackground() {
     reducedMotion.addEventListener('change', onMotionPreferenceChange);
 
     return () => {
+      setActivePanel(-1);
       resizeObserver.disconnect();
       root.removeEventListener('scroll', onScroll);
       root.removeEventListener('pointermove', onPointerMove);
