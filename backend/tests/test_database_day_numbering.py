@@ -70,10 +70,10 @@ class DatabaseDayNumberingTests(unittest.TestCase):
     def test_concept_passports_match_the_menu_and_mapping(self):
         numbers = []
         for block in range(13, 17):
-            text = (self.repo / f"docs/make les stage/1 stage/concept/chapter_04/BLOCK_{block}.md").read_text(encoding="utf-8")
+            text = (self.repo / f"docs/concept/chapter_04/BLOCK_{block}.md").read_text(encoding="utf-8")
             numbers.extend(re.findall(r"^### (\d+(?:\.\d+)*)\. ", text, re.M))
         self.assertEqual(numbers, NUMBERS)
-        text = (self.repo / "docs/make les stage/1 stage/concept/chapter_04/COURSE.md").read_text(encoding="utf-8")
+        text = (self.repo / "docs/concept/chapter_04/COURSE.md").read_text(encoding="utf-8")
         self.assertEqual(re.findall(r"^\| \*\*(\d+(?:\.\d+)*) / ", text, re.M), NUMBERS)
         self.assertEqual(list(LESSON_NUMBERS.values()), NUMBERS)
 
