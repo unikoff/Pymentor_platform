@@ -35,8 +35,8 @@ RUNNER_ENABLED_ENV = "PYMENTOR_PUBLIC_RUNNER_ENABLED"
 
 
 def _require_runner_enabled() -> None:
-    """Fail closed unless public code execution is explicitly enabled by deployment config."""
-    if os.getenv(RUNNER_ENABLED_ENV, "").strip().lower() not in {"1", "true", "yes", "on"}:
+    """Allow legacy execution by default; an explicit false value disables it."""
+    if os.getenv(RUNNER_ENABLED_ENV, "1").strip().lower() not in {"1", "true", "yes", "on"}:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Runner execution is temporarily disabled",

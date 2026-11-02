@@ -36,9 +36,13 @@ class RunnerFeatureFlagTests(unittest.IsolatedAsyncioTestCase):
                     service._require_runner_enabled()
                 self.assertEqual(503, raised.exception.status_code)
 
-    async def test_runner_is_disabled_by_default_before_all_execution_paths(self):
+    def test_runner_enabled_by_default(self):
+        with patch.dict("os.environ", {}, clear=True):
+            service._require_runner_enabled()
+
+    async def test_runner_is_disabled_when_configured_before_all_execution_paths(self):
         request = Request({"type": "http", "headers": []})
-        with patch.dict("os.environ", {}, clear=True), \
+        with patch.dict("os.environ", {service.RUNNER_ENABLED_ENV: "0"}, clear=True), \
                 patch.object(service, "_prepare_task") as prepare, \
                 patch.object(service, "get_runner_executor") as executor, \
                 patch.object(service, "run_python_task") as submit_runner, \
