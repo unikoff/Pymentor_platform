@@ -10,6 +10,7 @@ type CodeSequencePiece = {
 
 export function CodeSequence({
   prompt,
+  plainText = false,
   pieces,
   correctOrder,
   explanation,
@@ -18,6 +19,7 @@ export function CodeSequence({
   incorrectExplanation = "Проверьте последовательность: Python выполняет инструкции сверху вниз, а лишние фрагменты можно не добавлять.",
 }: {
   prompt: string;
+  plainText?: boolean;
   pieces: CodeSequencePiece[];
   correctOrder: string[];
   explanation: string;
@@ -48,7 +50,7 @@ export function CodeSequence({
   }
 
   return (
-    <section className="sequence-card">
+    <section className={plainText ? "sequence-card sequence-card--text" : "sequence-card"}>
       <div className="interactive-heading">
         <ListOrdered size={17} />
         <div>
@@ -64,7 +66,7 @@ export function CodeSequence({
           <div className="sequence-pieces">
             {availablePieces.map((piece) => (
               <button className="sequence-piece" type="button" key={piece.id} onClick={() => addPiece(piece.id)}>
-                <code>{piece.code}</code>
+                {plainText ? <span className="sequence-text">{piece.code}</span> : <code>{piece.code}</code>}
                 {piece.note && <small>{piece.note}</small>}
               </button>
             ))}
@@ -85,7 +87,7 @@ export function CodeSequence({
                   aria-label={`Убрать строку ${index + 1}: ${piece.code}`}
                 >
                   <span>{index + 1}</span>
-                  <code>{piece.code}</code>
+                  {plainText ? <span className="sequence-text">{piece.code}</span> : <code>{piece.code}</code>}
                   <X size={14} />
                 </button>
               ))

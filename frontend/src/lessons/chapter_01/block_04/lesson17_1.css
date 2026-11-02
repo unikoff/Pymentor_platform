@@ -1,0 +1,125 @@
+.lesson17-1-path {
+  container-type: inline-size;
+  margin: 1.5rem 0;
+  padding: clamp(1rem, 3cqi, 1.5rem);
+  border: 1px solid var(--diagram-node-border);
+  border-radius: 18px;
+  background: var(--diagram-group-bg);
+}
+
+.lesson17-1-path__caption {
+  color: var(--text);
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.lesson17-1-path__entry {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  margin-top: 1rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--diagram-node-border);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--text);
+}
+
+.lesson17-1-path__entry > span:nth-child(2) { color: var(--accent); }
+
+.lesson17-1-path__question {
+  margin: 1.1rem 0 0.75rem;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.lesson17-1-path__branches {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.9rem;
+}
+
+.lesson17-1-path__branch {
+  min-width: 0;
+  padding: 1rem;
+  border: 1px solid var(--diagram-node-border);
+  border-radius: 14px;
+  background: var(--surface);
+}
+
+.lesson17-1-path__branch--filled { background: var(--diagram-data-bg); }
+
+.lesson17-1-path__branch-header h3 {
+  margin: 0.55rem 0 0.25rem;
+  color: var(--text);
+  font-size: 1.05rem;
+  line-height: 1.35;
+}
+
+.lesson17-1-path__branch-header p,
+.lesson17-1-path__repeat,
+.lesson17-1-path__note {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.lesson17-1-path__badge {
+  display: inline-block;
+  padding: 0.25rem 0.6rem;
+  border: 1px solid var(--diagram-node-border);
+  border-radius: 999px;
+  color: var(--text);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.lesson17-1-path__steps {
+  display: grid;
+  gap: 0;
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lesson17-1-path__steps li {
+  position: relative;
+  display: grid;
+  gap: 0.2rem;
+  min-width: 0;
+  padding: 0 0 1rem 1.4rem;
+  color: var(--muted);
+  line-height: 1.45;
+  overflow-wrap: break-word;
+}
+
+.lesson17-1-path__steps li::before {
+  position: absolute;
+  top: 0.45rem;
+  left: 0.08rem;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--accent);
+  content: "";
+}
+
+.lesson17-1-path__steps li:not(:last-child)::after {
+  position: absolute;
+  top: 1.1rem;
+  bottom: 0.15rem;
+  left: 0.3rem;
+  border-left: 1px solid var(--diagram-detail-line);
+  content: "";
+}
+
+.lesson17-1-path__steps li:last-child { padding-bottom: 0; }
+.lesson17-1-path__steps strong { color: var(--text); }
+.lesson17-1-path__repeat { margin-top: 1rem; }
+.lesson17-1-path__note { margin-top: 1rem; }
+
+@container (min-width: 660px) {
+  .lesson17-1-path__branches { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

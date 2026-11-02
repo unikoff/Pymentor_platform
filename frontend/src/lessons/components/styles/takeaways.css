@@ -1,11 +1,11 @@
 /* ---- Итоги урока (KeyTakeaways) ---- */
 .takeaways {
   padding: var(--space-5) var(--space-5);
-  border: 1px solid var(--line);
+  border: 1px solid color-mix(in srgb, var(--border-tint-accent) 26%, var(--line));
   border-radius: var(--radius-md);
   background:
-    radial-gradient(circle at 92% 10%, var(--accent-soft), transparent 40%),
-    var(--card);
+    radial-gradient(circle at 92% 10%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 48%),
+    var(--surface);
 }
 
 .takeaways-head {

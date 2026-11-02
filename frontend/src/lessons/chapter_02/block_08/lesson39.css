@@ -35,7 +35,7 @@
 .lesson39 .rich-lead {
   max-width: none;
   padding-left: var(--space-5);
-  border-left: 2px solid color-mix(in srgb, var(--accent) 50%, var(--line));
+  border-left: 2px solid color-mix(in srgb, var(--border-tint-accent) 50%, var(--line));
   color: color-mix(in srgb, var(--text) 76%, var(--muted));
 }
 
@@ -44,7 +44,7 @@
   gap: 0;
   inline-size: 100%;
   padding: var(--space-1) var(--space-6);
-  border: 1px solid color-mix(in srgb, var(--line) 84%, var(--accent));
+  border: 1px solid color-mix(in srgb, var(--line) 84%, var(--border-tint-accent));
   border-radius: var(--radius-md);
   background:
     linear-gradient(135deg, color-mix(in srgb, var(--accent-soft) 78%, transparent), transparent 58%),

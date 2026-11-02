@@ -1,0 +1,32 @@
+.lesson12-setup {
+  container-type: inline-size;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 2rem 0;
+  padding: clamp(18px, 2.5vw, 28px);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--bg);
+}
+.lesson12-setup figcaption { font-size: 1.1rem; font-weight: 700; }
+.lesson12-setup > p { margin: .4rem 0 1.3rem; color: var(--muted); }
+.lesson12-setup-steps { list-style: none; counter-reset: setup; padding: 0; margin: 0; }
+.lesson12-setup-steps li {
+  counter-increment: setup;
+  position: relative;
+  display: grid;
+  grid-template-columns: 2.25rem minmax(10rem, .85fr) minmax(0, 1.7fr) minmax(0, 1.2fr);
+  gap: 1rem;
+  align-items: baseline;
+  padding: 1rem 0;
+  border-top: 1px solid var(--line);
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+.lesson12-setup-steps li::before { content: counter(setup, decimal-leading-zero); color: var(--accent); font-weight: 700; }
+.lesson12-setup-steps strong { font-size: 1rem; }
+.lesson12-setup-steps small { font-size: .9rem; color: var(--muted); }
+@container (max-width: 700px) {
+  .lesson12-setup-steps li { grid-template-columns: 2rem minmax(0, 1fr); gap: .3rem .75rem; }
+  .lesson12-setup-steps li span, .lesson12-setup-steps li small { grid-column: 2; }
+}

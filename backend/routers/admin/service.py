@@ -33,17 +33,29 @@ def _serialize_account(user: models.User, completed_lessons: int) -> dict:
 def _build_learning_progress(user_id: int, db: Session) -> tuple[list[dict], int]:
     """Собирает компактное дерево треков, блоков, уроков и заданий для админки."""
     completed_ids = progress.get_completed_lesson_ids(user_id, db)
-    block_three_tasks = [
+    tracked_tasks = [
         task
         for track_summary in get_tracks_summary()
         if (track := find_track(track_summary["id"])) is not None
         for lesson in track["lessons"]
-        if str(lesson.get("source_file", "")).startswith("foundations/block_03/")
+        if str(lesson.get("source_file", "")).startswith(("foundations/block_03/", "chapter_01/"))
         for task in lesson.get("tasks", [])
+    ]
+    chapter_one_self_checks = [
+        lesson
+        for track_summary in get_tracks_summary()
+        if (track := find_track(track_summary["id"])) is not None
+        for lesson in track["lessons"]
+        if str(lesson.get("source_file", "")).startswith("chapter_01/")
+        and lesson.get("self_check")
+        and (lesson.get("manual_practice") or not lesson.get("tasks"))
     ]
     completed_task_revisions = progress.get_completed_task_revisions(
         user_id=user_id,
-        task_ids=[task["id"] for task in block_three_tasks],
+        task_ids=[task["id"] for task in tracked_tasks] + [
+            progress.chapter_one_completion_task_id(lesson["id"])
+            for lesson in chapter_one_self_checks
+        ],
         db=db,
     )
     tracks: list[dict] = []
@@ -71,13 +83,15 @@ def _build_learning_progress(user_id: int, db: Session) -> tuple[list[dict], int
             )
 
             lesson_completed = lesson["id"] in completed_ids
-            is_block_three = str(lesson.get("source_file", "")).startswith("foundations/block_03/")
+            source_file = str(lesson.get("source_file", ""))
+            is_chapter_one = source_file.startswith("chapter_01/")
+            is_revision_tracked = is_chapter_one or source_file.startswith("foundations/block_03/")
             countable = bool(lesson.get("tasks") or lesson.get("self_check"))
             tasks = []
             for task in lesson.get("tasks", []):
                 task_completed = (
                     completed_task_revisions.get(task["id"]) == task.get("revision")
-                    if is_block_three
+                    if is_revision_tracked
                     else lesson_completed
                 )
                 tasks.append(
@@ -88,7 +102,24 @@ def _build_learning_progress(user_id: int, db: Session) -> tuple[list[dict], int
                         "completed": task_completed,
                     }
                 )
-            if is_block_three and tasks:
+            if is_chapter_one:
+                if not lesson_completed:
+                    required_tasks = [
+                        task for task in tasks if progress.is_task_required(task)
+                    ]
+                    all_tasks_complete = all(task["completed"] for task in required_tasks)
+                    if required_tasks and not all_tasks_complete:
+                        lesson_completed = False
+                    elif lesson.get("manual_practice") or not tasks:
+                        if lesson.get("self_check"):
+                            marker_id = progress.chapter_one_completion_task_id(lesson["id"])
+                            lesson_completed = (
+                                completed_task_revisions.get(marker_id)
+                                == progress.chapter_one_completion_revision(lesson)
+                            )
+                    else:
+                        lesson_completed = bool(required_tasks) and all_tasks_complete
+            elif is_revision_tracked and tasks:
                 all_tasks_complete = all(task["completed"] for task in tasks)
                 if lesson.get("manual_practice"):
                     lesson_completed = lesson_completed and all_tasks_complete

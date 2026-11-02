@@ -56,7 +56,7 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: var(--accent);
+  color: var(--muted);
   font-size: 0.7rem;
   font-weight: 900;
   letter-spacing: 0.12em;
@@ -84,7 +84,7 @@
 
 :root[data-color-scheme="light"] .account-overview,
 :root[data-color-scheme="light"] .account-calendar {
-  border-color: var(--line-strong);
+  border-color: var(--line);
 }
 
 :root[data-color-scheme="light"] .account-calendar__details {
@@ -144,9 +144,9 @@
   display: grid;
   place-items: center;
   flex: 0 0 auto;
-  color: var(--accent);
+  color: var(--muted);
 }
-.account-calendar__icon { width: 44px; height: 44px; border: 1px solid var(--line); border-radius: 16px; background: var(--accent-soft); }
+.account-calendar__icon { width: 44px; height: 44px; border: 1px solid var(--line); border-radius: 16px; background: var(--surface-2); }
 .account-calendar__title > div { min-width: 0; }
 .account-calendar__title h2 { margin: 5px 0 0; font-size: clamp(1.15rem, 2cqw, 1.6rem); text-transform: capitalize; }
 .account-calendar__navigation { display: flex; gap: 8px; }
@@ -162,7 +162,7 @@
   cursor: pointer;
   transition: border-color 140ms ease, background 140ms ease, transform 140ms ease;
 }
-.account-calendar__navigation button:hover { transform: translateY(-1px); border-color: var(--accent); background: var(--accent-soft); }
+.account-calendar__navigation button:hover { transform: translateY(-1px); border-color: var(--border-tint-accent); background: var(--accent-soft); }
 .account-calendar__navigation button.account-calendar__today {
   display: inline-flex;
   width: auto;
@@ -208,31 +208,31 @@
 
 button.account-calendar__day { cursor: pointer; }
 .account-calendar__day.is-empty { visibility: hidden; }
-.account-calendar__day.is-today { border-color: color-mix(in srgb, var(--accent) 55%, var(--line)); color: var(--accent); }
+.account-calendar__day.is-today { border-color: color-mix(in srgb, var(--border-tint-accent) 55%, var(--line)); color: var(--accent); }
 .account-calendar__day.has-activity {
-  border-color: color-mix(in srgb, var(--attendance) 34%, var(--line));
+  border-color: color-mix(in srgb, var(--border-tint-attendance) 34%, var(--line));
   background: color-mix(in srgb, var(--attendance) 16%, var(--surface-2));
 }
 .account-calendar__day.has-activity .account-calendar__day-number { color: var(--attendance); }
-.account-calendar__day.has-free { border-color: color-mix(in srgb, var(--accent) 36%, var(--line)); }
-.account-calendar__day.has-booking { border-color: color-mix(in srgb, var(--accent) 55%, var(--line)); color: var(--text); }
-.account-calendar__day.has-completed { border-color: color-mix(in srgb, var(--accent-secondary) 48%, var(--line)); background: color-mix(in srgb, var(--accent-secondary) 15%, var(--surface-2)); }
+.account-calendar__day.has-free { border-color: color-mix(in srgb, var(--border-tint-accent) 36%, var(--line)); }
+.account-calendar__day.has-booking { border-color: color-mix(in srgb, var(--border-tint-accent) 55%, var(--line)); color: var(--text); }
+.account-calendar__day.has-completed { border-color: color-mix(in srgb, var(--border-tint-accent-secondary) 48%, var(--line)); background: color-mix(in srgb, var(--accent-secondary) 15%, var(--surface-2)); }
 .account-calendar__day.has-completed .account-calendar__day-number { color: var(--accent-secondary); }
 .account-calendar__day.has-booking:not(.has-activity) { background: color-mix(in srgb, var(--accent) 14%, var(--surface-2)); }
-button.account-calendar__day:hover { transform: translateY(-2px); border-color: var(--accent); color: var(--text); }
+button.account-calendar__day:hover { transform: translateY(-2px); border-color: var(--border-tint-accent); color: var(--text); }
 .account-calendar__day.is-selected { outline: 2px solid var(--accent); outline-offset: 2px; box-shadow: 0 0 0 5px var(--accent-soft); }
 .account-calendar__day-number { font-variant-numeric: tabular-nums; }
 .account-calendar__day-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 2px 4px; width: 100%; min-width: 0; }
-.account-calendar__visit-check { flex: 0 0 auto; color: var(--attendance); }
+.account-calendar__visit-check { flex: 0 0 auto; color: var(--accent); }
 .account-calendar__legend i { display: block; width: 6px; height: 6px; border-radius: 50%; background: var(--faint); }
-.account-calendar__legend .is-activity { background: var(--attendance-soft); border: 1px solid var(--attendance); border-radius: 3px; }
+.account-calendar__legend .is-activity { background: var(--attendance-soft); border: 1px solid var(--border-tint-attendance); border-radius: 3px; }
 .account-calendar__legend .is-free { background: transparent; box-shadow: inset 0 0 0 1.5px var(--accent); }
 .account-calendar__legend .is-booking { background: var(--accent); }
 .account-calendar__legend .is-completed { background: var(--accent-secondary); }
 .account-calendar__day-events { display: grid; width: 100%; align-content: start; gap: 4px; pointer-events: none; }
-.account-calendar__day-event { display: block; overflow: hidden; min-width: 0; padding: 4px 5px; border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--line)); border-left: 3px solid var(--accent); border-radius: 7px; background: color-mix(in srgb, var(--accent-soft) 58%, var(--card)); color: var(--text); font-size: 0.64rem; font-weight: 650; line-height: 1.25; text-overflow: ellipsis; white-space: nowrap; }
-.account-calendar__day-event.is-booking { border-color: var(--line-soft); border-left-color: var(--attendance); background: var(--surface-2); color: var(--muted); }
-.account-calendar__day-event.is-completed { border-color: color-mix(in srgb, var(--accent-secondary) 28%, var(--line)); border-left-color: var(--accent-secondary); background: color-mix(in srgb, var(--accent-secondary) 10%, var(--surface-2)); }
+.account-calendar__day-event { display: block; overflow: hidden; min-width: 0; padding: 4px 5px; border: 1px solid color-mix(in srgb, var(--border-tint-accent) 30%, var(--line)); border-left: 3px solid var(--border-tint-accent); border-radius: 7px; background: color-mix(in srgb, var(--accent-soft) 58%, var(--card)); color: var(--text); font-size: 0.64rem; font-weight: 650; line-height: 1.25; text-overflow: ellipsis; white-space: nowrap; }
+.account-calendar__day-event.is-booking { border-color: var(--line-soft); border-left-color: var(--border-tint-attendance); background: var(--surface-2); color: var(--muted); }
+.account-calendar__day-event.is-completed { border-color: color-mix(in srgb, var(--border-tint-accent-secondary) 28%, var(--line)); border-left-color: var(--border-tint-accent-secondary); background: color-mix(in srgb, var(--accent-secondary) 10%, var(--surface-2)); }
 .account-calendar__markers { display: flex; min-height: 6px; align-items: center; gap: 5px; }
 .account-calendar__markers i { display: block; width: 7px; height: 7px; border-radius: 50%; background: var(--faint); }
 .account-calendar__markers .is-free { background: transparent; box-shadow: inset 0 0 0 1.5px var(--accent); }
@@ -273,7 +273,7 @@ button.account-calendar__day:hover { transform: translateY(-2px); border-color: 
   justify-content: center;
   gap: 4px;
   padding: 10px 12px;
-  border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--line));
+  border: 1px solid color-mix(in srgb, var(--border-tint-accent) 30%, var(--line));
   border-radius: 15px;
   background: var(--surface);
   color: var(--text);
@@ -282,7 +282,7 @@ button.account-calendar__day:hover { transform: translateY(-2px); border-color: 
   transition: border-color 140ms ease, background 140ms ease, transform 140ms ease;
 }
 
-.account-calendar__slot:hover:not(:disabled) { transform: translateY(-1px); border-color: var(--accent); background: var(--accent-soft); }
+.account-calendar__slot:hover:not(:disabled) { transform: translateY(-1px); border-color: var(--border-tint-accent); background: var(--accent-soft); }
 .account-calendar__slot.is-booked { background: var(--accent-soft); }
 .account-calendar__slot:disabled { cursor: not-allowed; opacity: 0.62; }
 .account-calendar__slot-time { font-size: 0.95rem; font-variant-numeric: tabular-nums; font-weight: 850; }
@@ -357,15 +357,16 @@ button.account-calendar__day:hover { transform: translateY(-2px); border-color: 
   background: var(--card);
 }
 .account-calendar--booking .account-calendar__day.is-today .account-calendar__day-number { color: var(--accent); text-decoration: underline; text-underline-offset: 4px; }
-.account-calendar--booking .account-calendar__day.has-activity { border-color: color-mix(in srgb, var(--attendance) 42%, var(--line)); background: color-mix(in srgb, var(--attendance) 17%, var(--card)); }
+.account-calendar--booking .account-calendar__day.has-activity { border-color: color-mix(in srgb, var(--border-tint-attendance) 42%, var(--line)); background: color-mix(in srgb, var(--attendance) 17%, var(--card)); }
 .account-calendar--booking .account-calendar__day.has-activity .account-calendar__day-number { color: var(--attendance); }
-.account-calendar--booking .account-calendar__day.has-completed:not(.is-selected) { border-color: color-mix(in srgb, var(--accent-secondary) 48%, var(--line)); background: linear-gradient(145deg, color-mix(in srgb, var(--accent-secondary) 16%, var(--card)), var(--card) 82%); box-shadow: inset 3px 0 0 color-mix(in srgb, var(--accent-secondary) 76%, transparent); }
-.account-calendar--booking .account-calendar__day.has-completed.is-selected { box-shadow: inset 3px 0 0 var(--accent-secondary), inset 0 0 0 1px var(--accent); }
+.account-calendar--booking .account-calendar__day.has-completed:not(.is-selected) { border-color: color-mix(in srgb, var(--border-tint-accent-secondary) 48%, var(--line)); background: linear-gradient(145deg, color-mix(in srgb, var(--accent-secondary) 16%, var(--card)), var(--card) 82%); box-shadow: inset 3px 0 0 color-mix(in srgb, var(--accent-secondary) 76%, transparent); }
+.account-calendar--booking .account-calendar__day.has-completed.is-selected { box-shadow: inset 3px 0 0 var(--border-tint-accent-secondary), inset 0 0 0 1px var(--border-tint-accent); }
 .account-calendar--booking .account-calendar__day.has-completed .account-calendar__day-number { color: var(--accent-secondary); }
 .account-calendar--booking .account-calendar__day.has-booking:not(.has-activity) { background: var(--card); }
 .account-calendar--booking .account-calendar__day.has-booking.has-completed:not(.has-activity) { background: color-mix(in srgb, var(--accent-secondary) 15%, var(--card)); }
-.account-calendar--booking button.account-calendar__day:hover { transform: translateY(-1px); border-color: var(--accent); }
-.account-calendar--booking .account-calendar__day.is-selected { outline: 0; border-color: var(--accent); background: var(--accent-soft); box-shadow: inset 0 0 0 1px var(--accent); }
+.account-calendar--booking button.account-calendar__day:hover { transform: translateY(-1px); border-color: var(--border-tint-accent); }
+.account-calendar--booking .account-calendar__day.is-selected { outline: 0; border-color: var(--border-tint-accent); background: var(--accent-soft); box-shadow: inset 0 0 0 1px var(--border-tint-accent); }
+.account-calendar--booking .account-calendar__day:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .account-calendar--booking .account-calendar__details {
   min-height: 0;
   gap: 12px;
@@ -376,11 +377,11 @@ button.account-calendar__day:hover { transform: translateY(-2px); border-color: 
   box-shadow: 0 8px 24px color-mix(in srgb, var(--surface-shadow) 14%, transparent);
 }
 .account-calendar--booking .account-calendar__details-heading { min-width: 0; gap: 10px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
-.account-calendar--booking .account-calendar__details-icon { width: 36px; height: 36px; border: 1px solid var(--line-soft); border-radius: 12px; background: var(--accent-soft); }
+.account-calendar--booking .account-calendar__details-icon { width: 36px; height: 36px; border: 1px solid var(--line-soft); border-radius: 12px; background: var(--surface-2); }
 .account-calendar--booking .account-calendar__details-heading > div { flex: 1; }
 .account-calendar--booking .account-calendar__details-heading h3 { margin-top: 4px; font-size: 0.98rem; }
 .account-calendar__clear-day { display: grid; width: 30px; height: 30px; flex: 0 0 auto; place-items: center; border: 1px solid var(--line-soft); border-radius: 10px; background: var(--surface-2); color: var(--muted); cursor: pointer; }
-.account-calendar__clear-day:hover { border-color: var(--accent); color: var(--text); }
+.account-calendar__clear-day:hover { border-color: var(--border-tint-accent); color: var(--text); }
 .account-calendar--booking .account-calendar__activity-time { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 10px; border: 1px solid var(--line-soft); border-radius: 12px; background: var(--surface); font-size: 0.75rem; }
 .account-calendar__activity-icon { display: grid; width: 34px; height: 34px; place-items: center; border-radius: 10px; background: var(--accent-soft); color: var(--accent); }
 .account-calendar__activity-time > div { display: grid; gap: 3px; }
@@ -388,23 +389,23 @@ button.account-calendar__day:hover { transform: translateY(-2px); border-color: 
 .account-calendar__activity-time > div span { color: var(--muted); font-size: 0.68rem; }
 .account-calendar--booking .account-calendar__activity-time > time { color: var(--accent); font-size: 0.82rem; font-variant-numeric: tabular-nums; font-weight: 800; }
 .account-calendar__empty-state { display: flex; align-items: flex-start; gap: 10px; min-height: 72px; padding: 12px; border: 1px solid var(--line-soft); border-radius: 12px; background: var(--surface); }
-.account-calendar__empty-state svg { color: var(--accent); }
+.account-calendar__empty-state svg { color: var(--muted); }
 .account-calendar__empty-state > div { display: grid; gap: 4px; }
 .account-calendar__empty-state strong { font-size: 0.78rem; }
 .account-calendar__empty-state span { color: var(--muted); font-size: 0.7rem; line-height: 1.45; }
 .account-calendar__overview { display: grid; align-content: start; gap: 13px; }
 .account-calendar__overview-intro { display: flex; align-items: center; gap: 10px; padding: 12px; border: 1px solid var(--line-soft); border-radius: 12px; background: var(--surface); }
-.account-calendar__overview-icon { display: grid; width: 34px; height: 34px; flex: 0 0 auto; place-items: center; border-radius: 10px; background: var(--accent-soft); color: var(--accent); }
+.account-calendar__overview-icon { display: grid; width: 34px; height: 34px; flex: 0 0 auto; place-items: center; border-radius: 10px; background: var(--surface-2); color: var(--muted); }
 .account-calendar__overview-intro > div { display: grid; gap: 4px; }
 .account-calendar__overview-intro strong { font-size: 0.78rem; }
 .account-calendar__overview-intro > div > span { color: var(--muted); font-size: 0.68rem; line-height: 1.4; }
 .account-calendar__overview-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .account-calendar__overview-stats > div { display: grid; gap: 4px; padding: 11px; border: 1px solid var(--line-soft); border-radius: 11px; background: var(--surface-2); }
 .account-calendar__overview-stats strong { color: var(--accent-secondary); font-size: 1.1rem; font-variant-numeric: tabular-nums; }
-.account-calendar__overview-stats > div + div strong { color: var(--accent); }
+.account-calendar__overview-stats > div + div strong { color: var(--text); }
 .account-calendar__overview-stats span { color: var(--muted); font-size: 0.66rem; }
 .account-calendar__next-booking { display: grid; grid-template-columns: 16px minmax(0, 1fr); gap: 4px 8px; padding: 11px; border: 1px solid var(--line-soft); border-radius: 11px; background: var(--surface); }
-.account-calendar__next-booking svg { grid-row: span 2; color: var(--accent); }
+.account-calendar__next-booking svg { grid-row: span 2; color: var(--muted); }
 .account-calendar__next-booking > span { color: var(--muted); font-size: 0.67rem; }
 .account-calendar__next-booking strong { font-size: 0.75rem; font-variant-numeric: tabular-nums; }
 .account-calendar__slots-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 4px 0 8px; border-bottom: 1px solid var(--line-soft); }
@@ -416,19 +417,19 @@ button.account-calendar__day:hover { transform: translateY(-2px); border-color: 
 .account-calendar--booking .account-calendar__details.is-completed-day { align-self: start; }
 .account-calendar--booking .account-calendar__details.is-completed-day .account-calendar__slots { flex: initial; }
 .account-calendar--booking .account-calendar__slot { display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 8px; min-height: 48px; padding: 8px 10px; border: 1px solid var(--line-soft); border-radius: 11px; background: var(--surface); text-align: left; }
-.account-calendar--booking .account-calendar__slot:hover:not(:disabled) { transform: none; border-color: var(--accent); background: var(--accent-soft); }
+.account-calendar--booking .account-calendar__slot:hover:not(:disabled) { transform: none; border-color: var(--border-tint-accent); background: var(--accent-soft); }
 .account-calendar--booking .account-calendar__slot.is-booked { background: transparent; }
-.account-calendar--booking .account-calendar__slot.is-completed { min-height: 72px; padding: 10px 12px; border-color: color-mix(in srgb, var(--accent-secondary) 40%, var(--line)); background: linear-gradient(120deg, color-mix(in srgb, var(--accent-secondary) 13%, var(--surface)), var(--surface) 76%); cursor: default; }
+.account-calendar--booking .account-calendar__slot.is-completed { min-height: 72px; padding: 10px 12px; border-color: color-mix(in srgb, var(--border-tint-accent-secondary) 40%, var(--line)); background: linear-gradient(120deg, color-mix(in srgb, var(--accent-secondary) 13%, var(--surface)), var(--surface) 76%); cursor: default; }
 .account-calendar--booking .account-calendar__slot-time { display: inline-flex; align-items: center; gap: 8px; font-size: 0.8rem; }
 .account-calendar--booking .account-calendar__slot-time svg { color: var(--muted); }
-.account-calendar__slot-completed-icon { display: grid; width: 32px; height: 32px; flex: 0 0 auto; place-items: center; border: 1px solid color-mix(in srgb, var(--accent-secondary) 30%, var(--line)); border-radius: 10px; background: color-mix(in srgb, var(--accent-secondary) 14%, var(--surface)); color: var(--accent-secondary); }
+.account-calendar__slot-completed-icon { display: grid; width: 32px; height: 32px; flex: 0 0 auto; place-items: center; border: 1px solid color-mix(in srgb, var(--border-tint-accent-secondary) 30%, var(--line)); border-radius: 10px; background: color-mix(in srgb, var(--accent-secondary) 14%, var(--surface)); color: var(--accent-secondary); }
 .account-calendar--booking .account-calendar__slot-time .account-calendar__slot-completed-icon svg { color: var(--accent-secondary); }
 .account-calendar__slot-completed-copy { display: grid; gap: 3px; }
 .account-calendar__slot-completed-copy strong { font-size: 0.84rem; font-variant-numeric: tabular-nums; font-weight: 850; }
 .account-calendar__slot-completed-copy > span { color: var(--muted); font-size: 0.68rem; }
 .account-calendar--booking .account-calendar__slot-action { display: inline-flex; align-items: center; gap: 5px; padding: 5px 8px; border: 1px solid var(--line-soft); border-radius: 9px; background: var(--surface-2); color: var(--accent); font-size: 0.68rem; white-space: nowrap; }
 .account-calendar--booking .account-calendar__slot.is-booked .account-calendar__slot-action { color: var(--attendance); }
-.account-calendar--booking .account-calendar__slot.is-completed .account-calendar__slot-action { border-color: color-mix(in srgb, var(--accent-secondary) 30%, var(--line)); background: color-mix(in srgb, var(--accent-secondary) 12%, var(--surface)); color: var(--accent-secondary); }
+.account-calendar--booking .account-calendar__slot.is-completed .account-calendar__slot-action { border-color: color-mix(in srgb, var(--border-tint-accent-secondary) 30%, var(--line)); background: color-mix(in srgb, var(--accent-secondary) 12%, var(--surface)); color: var(--accent-secondary); }
 .account-calendar--booking .account-calendar__quota { gap: 8px; padding-top: 12px; }
 .account-calendar--booking .account-calendar__notice { margin: 0; }
 

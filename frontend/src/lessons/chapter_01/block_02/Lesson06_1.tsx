@@ -3,18 +3,14 @@ import {
   CodeBlock,
   Diagram,
   DiagramArrow,
-  DiagramBranch,
-  DiagramBranches,
   DiagramFlow,
   DiagramNode,
   FillBlank,
   KeyTakeaways,
   Lead,
   LinkedNotes,
-  MatchPairs,
   MethodGrid,
   PredictOutput,
-  QuizCard,
   RichHero,
   RichLesson,
   Section,
@@ -86,12 +82,6 @@ export function Lesson06_1({ module }: { module?: string }) {
         <p>
           Перед чтением мы называем индекс, затем проверяем соответствующий элемент. Не подставляем привычный порядковый номер «первый» как индекс 1: первому элементу соответствует 0. Значение длины тоже не является индексом существующего элемента.
         </p>
-        <QuizCard
-          question="В списке из трёх элементов как прочитать второй элемент?"
-          options={["items[2]", "items[1]", "items[len(items)]"]}
-          correctIndex={1}
-          explanation="Первый элемент имеет индекс 0, поэтому второй имеет индекс 1. Индекс, равный длине, уже находится за последним элементом."
-        />
       </Section>
 
       <Section number="02" title="Замена меняет элемент на его позиции">
@@ -153,14 +143,10 @@ export function Lesson06_1({ module }: { module?: string }) {
               <code>materials.append("фонарь")</code>
             </DiagramNode>
             <DiagramArrow label="после вызова" />
-            <DiagramBranches label="Что видим после вызова">
-              <DiagramBranch label="Изменённый список">
-                <code>materials = ["карта", "вода", "фонарь"]</code>
-              </DiagramBranch>
-              <DiagramBranch label="Возвращаемое значение">
-                <code>None</code>
-              </DiagramBranch>
-            </DiagramBranches>
+            <DiagramNode title="После вызова" shape="process">
+              <div>Список: <code>["карта", "вода", "фонарь"]</code></div>
+              <div>Результат метода: <code>None</code></div>
+            </DiagramNode>
           </DiagramFlow>
         </Diagram>
         <p>
@@ -191,7 +177,7 @@ export function Lesson06_1({ module }: { module?: string }) {
         <PredictOutput
           code={'items = ["чай"]\nanswer = items.append("вода")\nprint(items)\nprint(answer)'}
           output={"['чай', 'вода']\nNone"}
-          hint="Сначала проследите, что меняет append, а затем определите его возвращаемое значение."
+          hint="Сначала проследим изменение списка, затем определим результат вызова."
         />
       </Section>
 
@@ -212,10 +198,10 @@ export function Lesson06_1({ module }: { module?: string }) {
         <PredictOutput
           code={'materials = ["карта", "вода", "перекус"]\nremoved = materials.pop(0)\nprint(removed)\nprint(materials)'}
           output={"карта\n['вода', 'перекус']"}
-          hint="Найдите элемент с индексом 0, уберите его, затем прочитайте оба print."
+          hint="Найдём элемент с индексом 0, уберём его, затем прочитаем оба print."
         />
         <p>
-          Метод <code>pop</code> требует существующую позицию. Если вызвать <code>pop(0)</code> на пустом списке, Python сообщит об ошибке <code>IndexError</code>. Поэтому при удалении первого элемента сначала проверяем, что список не пуст, как и перед чтением по индексу 0.
+          Метод <code>pop</code> требует существующую позицию. Если вызвать <code>pop(0)</code> на пустом списке, Python сообщит об ошибке <code>IndexError</code>. Для проверки первого элемента используем знакомое ветвление: пустой список даёт в условии <code>if</code> ложный результат, а непустой даёт истинный. Поэтому <code>if materials:</code> проверяет, есть ли хотя бы один элемент, до удаления.
         </p>
         <CodeBlock
           caption="Удаляем первый элемент только при его наличии"
@@ -246,7 +232,7 @@ export function Lesson06_1({ module }: { module?: string }) {
           hint="append считает переданный список одним элементом, а extend переносит его элементы по отдельности."
         />
         <p>
-          Обрати внимание на дополнительные скобки внутри первого результата: <code>append</code> положил целый список на одно новое место. <code>extend</code> добавил две строки на два новых места. Оба метода возвращают <code>None</code>, поэтому результат наблюдаем через <code>print</code> исходных списков.
+          Посмотрим на дополнительные скобки внутри первого результата: <code>append</code> положил целый список на одно новое место. <code>extend</code> добавил две строки на два новых места. Оба метода возвращают <code>None</code>, поэтому результат наблюдаем через <code>print</code> исходных списков.
         </p>
         <MethodGrid
           rows={[
@@ -259,7 +245,7 @@ export function Lesson06_1({ module }: { module?: string }) {
           ]}
         />
         <p>
-          Посмотрим на действия как на ответы на разные вопросы. Где вставить новое значение? Это знает <code>insert</code>. Какое значение убрать? Его указывает <code>remove</code>, который удаляет первое совпадение. Какой элемент забрать и сохранить? Для этого подходит <code>pop</code>. Команда <code>del</code> тоже удаляет по позиции, но не выдаёт удалённое значение. Самостоятельно писать каждый вызов не нужно: сейчас достаточно понять различие.
+          Посмотрим на действия как на ответы на разные вопросы. Где вставить новое значение? Это знает <code>insert</code>. Какое значение убрать? Его указывает <code>remove</code>, который удаляет первое совпадение. Какой элемент забрать и сохранить? Для этого подходит <code>pop</code>. Команда <code>del</code> тоже удаляет по позиции, но не выдаёт удалённое значение. Для <code>insert</code> и <code>del</code> пока достаточно понять различие; <code>pop</code> и <code>remove</code> применим самостоятельно.
         </p>
         <CodeBlock
           caption="remove убирает первое совпадение, сохраняя остальные"
@@ -269,35 +255,22 @@ export function Lesson06_1({ module }: { module?: string }) {
           Здесь <code>remove("вода")</code> удаляет элемент с индексом <code>0</code>. Второе значение <code>"вода"</code> остаётся, но после сдвига находится на позиции 1. Получим список <code>['карта', 'вода', 'фонарь']</code> длины 3. Вызов <code>remove</code> возвращает <code>None</code>, поэтому сохранять удалённую строку через него нельзя. Для этого мы уже использовали <code>pop</code> с индексом.
         </p>
         <CodeBlock
-          caption="Проверяем наличие значения перед remove"
-          code={'materials = ["карта", "вода", "фонарь"]\nneeded = "термос"\nif needed in materials:\n    materials.remove(needed)\n    print("Удалено")\nelse:\n    print("Такого значения нет")\nprint(materials)'}
+          caption="Сначала проверяем наличие целого значения"
+          code={'labels = ["чай", "кофе"]\nprint("чай" in labels)\nprint("какао" in labels)'}
         />
         <p>
-          Если передать <code>remove</code> значение, которого нет в списке, Python выдаст ошибку <code>ValueError</code>. Поэтому сначала спрашиваем <code>if needed in materials:</code>, есть ли целый совпадающий элемент. При отсутствии <code>"термос"</code> напечатаем «Такого значения нет», и список останется прежним. Эта проверка подходит и для пустого списка.
+          Первая проверка даст <code>True</code>, вторая <code>False</code>. Если передать <code>remove</code> отсутствующее значение, Python выдаст <code>ValueError</code>. Результат проверки <code>in</code> можно использовать как условие <code>if</code>: только при наличии значения выполнять удаление. Для пустого списка проверка тоже даст <code>False</code>.
         </p>
         <Callout tone="info">
           <code>insert(1, "сок")</code> вставляет значение <code>"сок"</code> перед элементом с индексом 1 и сдвигает остальные вправо. <code>del materials[1]</code> удаляет элемент по индексу 1 без сохранения удалённого значения. Эти две формы полезно узнавать, но в практике сосредоточимся на <code>pop</code> и <code>remove</code>.
         </Callout>
-        <MatchPairs
-          prompt="Соединим способ выбора элемента с действием над ним."
-          leftTitle="Вызов или команда"
-          rightTitle="Что определяет выбор"
-          pairs={[
-            { left: <code>insert(index, value)</code>, right: <>Добавить по позиции</> },
-            { left: <code>remove(value)</code>, right: <>Удалить по значению</> },
-            { left: <code>del items[index]</code>, right: <>Удалить по позиции без результата</> },
-            { left: <code>pop(index)</code>, right: <>Удалить по позиции и вернуть элемент</> },
-          ]}
-          explanation="Позиция указывает место в списке, а значение выбирает совпадающий элемент. Только pop возвращает удалённый элемент."
-        />
         <p>
           При сравнении мы каждый раз называем исходный список, критерий выбора и результат. Если сравнить только короткие названия методов, легко спутать удаление по позиции с удалением по значению или принять изменение списка за возвращённое значение.
         </p>
-        <QuizCard
-          question={'В списке два одинаковых значения. Что удалит remove("вода")?'}
-          options={["Первый элемент со значением «вода»", "Элемент с индексом 1", "Все элементы со значением «вода»"]}
-          correctIndex={0}
-          explanation="remove получает значение и убирает первое совпадение. Для выбора по позиции используется другой способ."
+        <PredictOutput
+          code={'first = ["чай", "кофе", "чай"]\nsecond = ["чай", "кофе", "чай"]\nremoved = first.pop(1)\nresult = second.remove("чай")\nprint(first, removed)\nprint(second, result)'}
+          output={"['чай', 'чай'] кофе\n['кофе', 'чай'] None"}
+          hint="В первом списке выбираем позицию, во втором значение. Отдельно посмотрим, что возвращает каждый метод."
         />
       </Section>
 
@@ -323,11 +296,17 @@ export function Lesson06_1({ module }: { module?: string }) {
         </p>
         <CodeBlock
           caption="Проверяем заданную позицию перед чтением"
-          code={'materials = ["карта", "вода"]\nposition = 1\nif position < len(materials):\n    print(materials[position])\nelse:\n    print("Нет элемента в этой позиции")'}
+          code={'materials = ["карта", "вода"]\nposition = 1\nif position < len(materials):\n    print(materials[position])\nelse:\n    print("Нет позиции")'}
         />
-        <ul>
-          <li><code>if materials:</code> проверяет, что список не пуст, чтобы безопасно прочитать <code>materials[0]</code>.</li>
-          <li><code>if position &lt; len(materials):</code> проверяет, что заданная неотрицательная позиция существует.</li>
+        <ul className="linked-notes">
+          <li className="linked-note" style={{ gridTemplateColumns: "minmax(0, 1fr)" }}>
+            <h3><code>if materials:</code></h3>
+            <p>Проверяет, что список не пуст, чтобы безопасно прочитать <code>materials[0]</code>.</p>
+          </li>
+          <li className="linked-note" style={{ gridTemplateColumns: "minmax(0, 1fr)" }}>
+            <h3><code>if position &lt; len(materials):</code></h3>
+            <p>Проверяет, что заданная неотрицательная позиция существует.</p>
+          </li>
         </ul>
         <p>
           Например, при длине 2 допустимы позиции 0 и 1. Позиция 2 уже равна длине, значит, элемента там нет. Для пустого списка длина равна 0, поэтому позиция 0 тоже не проходит проверку. Отрицательные позиции сейчас не используем.
@@ -335,19 +314,9 @@ export function Lesson06_1({ module }: { module?: string }) {
         <p>
           Ещё одна частая ошибка связана с результатом <code>append</code>. Если записать его обратно в имя списка, это имя получит <code>None</code>. Чтобы исправить строку, оставим вызов <code>append</code> отдельным, а затем напечатаем исходный список.
         </p>
-        <CodeBlock
-          caption="Проверяем наличие значения, прежде чем удалять его"
-          code={'materials = []\nneeded = "вода"\nif needed in materials:\n    materials.remove(needed)\nelse:\n    print("Нечего удалять")'}
-        />
         <p>
-          При пустом списке проверка <code>needed in materials</code> ложна, поэтому до <code>remove</code> выполнение не дойдёт. Мы применили ту же идею, что при проверке индекса, но задали другой вопрос: существует ли значение, а не позиция.
+          Для удаления по значению вопрос другой: есть ли в списке элемент, равный искомому значению? Проверку <code>in</code> мы разобрали выше. Только после неё можно безопасно выбирать действие с <code>remove</code>.
         </p>
-        <QuizCard
-          question="Список содержит три элемента. Допустим ли индекс 3?"
-          options={["Да, индекс совпадает с длиной", "Нет, последний индекс равен 2", "Да, если список не пуст"]}
-          correctIndex={1}
-          explanation="При длине 3 индексы идут от 0 до 2. Индекс 3 равен длине и находится за последним элементом."
-        />
       </Section>
 
       <Section number="07" title="Что мы будем делать в практике">

@@ -22,7 +22,7 @@
 .lesson-template-highlight {
   padding: 0 0.12em;
   border-radius: 3px;
-  background: color-mix(in srgb, var(--accent) 24%, var(--surface-2));
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface-2));
   color: var(--text);
   font-weight: 650;
 }
@@ -40,9 +40,9 @@
   max-width: 100%;
   min-height: auto;
   padding: 0.04em 0.34em;
-  border: 1px solid color-mix(in srgb, var(--accent) 20%, var(--line));
+  border: 1px solid var(--line);
   border-radius: 6px;
-  background: color-mix(in srgb, var(--accent-soft) 34%, var(--surface-2));
+  background: var(--surface-2);
   color: var(--text);
   box-shadow: none;
   font: 650 0.9em/1.35 var(--font-code);
@@ -54,7 +54,7 @@
 .rich-lead code.lesson-token--danger,
 .lesson-practice-steps code.lesson-token--danger,
 .lesson-route code.lesson-token--danger {
-  border-color: color-mix(in srgb, var(--negative) 24%, var(--line));
+  border-color: color-mix(in srgb, var(--border-tint-negative) 24%, var(--line));
   background: color-mix(in srgb, var(--negative) 7%, var(--surface-2));
   color: color-mix(in srgb, var(--negative) 58%, var(--text));
 }
@@ -64,8 +64,8 @@
   background:
     linear-gradient(
       180deg,
-      color-mix(in srgb, var(--accent-soft) 48%, var(--card)),
-      var(--card) 74%
+      var(--surface-2),
+      var(--surface) 85%
     );
 }
 
@@ -84,8 +84,8 @@
 :root[data-color-scheme="light"] .lesson-practice-steps code.lesson-token,
 :root[data-color-scheme="light"] .takeaways code.lesson-token,
 :root[data-color-scheme="light"] .lesson-route code.lesson-token {
-  border-color: color-mix(in srgb, var(--accent) 18%, var(--line));
-  background: color-mix(in srgb, var(--accent) 5%, var(--surface-2));
+  border-color: var(--line);
+  background: var(--surface-2);
   color: var(--text);
   box-shadow: none;
 }
@@ -93,7 +93,7 @@
 :root[data-color-scheme="light"] .lesson-token--danger,
 :root[data-color-scheme="light"] .lesson-practice-steps code.lesson-token--danger,
 :root[data-color-scheme="light"] .lesson-route code.lesson-token--danger {
-  border-color: color-mix(in srgb, var(--negative) 20%, var(--line));
+  border-color: color-mix(in srgb, var(--border-tint-negative) 20%, var(--line));
   background: color-mix(in srgb, var(--negative) 5%, var(--surface-2));
   color: color-mix(in srgb, var(--negative) 62%, var(--text));
 }

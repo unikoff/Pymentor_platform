@@ -1,0 +1,34 @@
+.lesson-diagram--vertical.lesson19-statistics-diagram {
+  width: 100%;
+  max-width: 100%;
+  margin-inline: 0;
+}
+
+.lesson19-statistics-diagram .lesson-diagram-flow--vertical > .lesson-diagram-connector {
+  display: flex;
+  min-height: 56px;
+  flex: 0 0 auto;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 6px 0;
+  text-align: center;
+}
+
+.lesson19-statistics-diagram .lesson-diagram-flow--vertical > .lesson-diagram-connector > span:first-child {
+  position: static;
+  padding: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.lesson19-statistics-diagram .lesson-diagram-flow--vertical > .lesson-diagram-connector > .lesson-diagram-arrow {
+  align-self: center;
+  width: 12px;
+  height: 28px;
+  min-height: 28px;
+  flex: 0 0 28px;
+  clip-path: polygon(40% 0, 60% 0, 60% calc(100% - 9px), 100% calc(100% - 9px), 50% 100%, 0 calc(100% - 9px), 40% calc(100% - 9px));
+}

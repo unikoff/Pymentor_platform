@@ -47,7 +47,7 @@
 
 .task-head__meta span {
   padding: var(--space-1) var(--space-2);
-  border: 1px solid color-mix(in srgb, var(--accent) 32%, var(--line));
+  border: 1px solid color-mix(in srgb, var(--border-tint-accent) 32%, var(--line));
   border-radius: var(--radius-pill);
   color: var(--accent);
   background: var(--accent-soft);
@@ -64,7 +64,7 @@
 }
 
 .task-head__meta .task-head__meta-completed {
-  border-color: color-mix(in srgb, var(--accent) 48%, var(--line));
+  border-color: color-mix(in srgb, var(--border-tint-accent) 48%, var(--line));
   color: var(--accent);
   background: color-mix(in srgb, var(--accent) 8%, var(--surface));
 }
@@ -115,7 +115,7 @@
 
 .task-brief .task-requirements {
   margin: 0;
-  border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--line));
+  border: 1px solid color-mix(in srgb, var(--border-tint-accent) 28%, var(--line));
   border-radius: var(--radius-sm);
   background: linear-gradient(135deg, color-mix(in srgb, var(--accent-soft) 72%, transparent), transparent 72%), var(--surface);
 }
@@ -154,7 +154,7 @@
   width: 26px;
   height: 26px;
   place-items: center;
-  border: 1px solid color-mix(in srgb, var(--accent) 48%, var(--line));
+  border: 1px solid color-mix(in srgb, var(--border-tint-accent) 48%, var(--line));
   border-radius: 50%;
   background: color-mix(in srgb, var(--accent-soft) 78%, transparent);
   color: var(--accent);
@@ -217,13 +217,13 @@
 }
 
 .task-actions .run-button:not(.run-button--ghost):not(.run-button--hint) {
-  border-color: var(--accent);
-  background: var(--accent);
+  border-color: var(--border-tint-accent);
+  background: var(--brand);
   color: var(--brand-contrast);
 }
 
 .task-actions .run-button--hint {
-  border-color: color-mix(in srgb, var(--info) 44%, transparent);
+  border-color: color-mix(in srgb, var(--border-tint-info) 44%, transparent);
   background: color-mix(in srgb, var(--info) 10%, transparent);
   color: var(--info);
 }
@@ -236,7 +236,7 @@
   display: grid;
   gap: var(--space-3);
   padding: var(--space-4);
-  border: 1px solid color-mix(in srgb, var(--info) 40%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border-tint-info) 40%, transparent);
   border-radius: var(--radius-sm);
   background: color-mix(in srgb, var(--info) 8%, transparent);
 }
@@ -315,7 +315,7 @@
 }
 
 .task-spec__item--check {
-  border-color: color-mix(in srgb, var(--accent) 35%, var(--line));
+  border-color: color-mix(in srgb, var(--border-tint-accent) 35%, var(--line));
   background: linear-gradient(135deg, var(--accent-soft), transparent 82%), var(--surface);
 }
 
@@ -358,7 +358,7 @@
 .task-requirements {
   margin: var(--space-3) var(--space-5) 0;
   padding: var(--space-4);
-  border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--line));
+  border: 1px solid color-mix(in srgb, var(--border-tint-accent) 28%, var(--line));
   border-radius: var(--radius-sm);
   background: linear-gradient(135deg, color-mix(in srgb, var(--accent-soft) 72%, transparent), transparent 72%), var(--surface);
 }
@@ -427,10 +427,6 @@
     margin-inline: 14px;
   }
 
-  .practice-dashboard .task-code-panel {
-    padding: 12px;
-  }
-
   .practice-task-navigation {
     margin-left: 0;
   }
@@ -458,7 +454,7 @@
   gap: var(--space-3);
   margin: var(--space-4) var(--space-5) 0;
   padding: var(--space-4);
-  border: 1px solid color-mix(in srgb, var(--accent) 34%, var(--line));
+  border: 1px solid color-mix(in srgb, var(--border-tint-accent) 34%, var(--line));
   border-radius: var(--radius-md);
   background: linear-gradient(135deg, var(--accent-soft), transparent 72%), var(--surface);
 }
@@ -504,7 +500,7 @@
 }
 
 .task-example-cell--output {
-  border-color: color-mix(in srgb, var(--accent) 28%, var(--line-soft));
+  border-color: color-mix(in srgb, var(--border-tint-accent) 28%, var(--line-soft));
 }
 
 .task-example-arrow {

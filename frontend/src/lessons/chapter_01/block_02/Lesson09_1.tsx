@@ -14,13 +14,20 @@ import {
   RichLesson,
   Section,
   StepThrough,
-  TrueFalse,
 } from "../../shared";
 
 // 9.1. Суммы, счётчики и максимум
 export function Lesson09_1({ module }: { module?: string }) {
   return (
-    <RichLesson>
+    <RichLesson className="lesson09-one">
+      <style>{`
+        .lesson09-one { container-type: inline-size; }
+        .lesson19-sum-flow > .lesson-diagram-connector > .lesson-diagram-arrow { align-self: center; }
+        @container (max-width: 520px) {
+          .lesson09-one .method-row { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+          .lesson09-one .tracer { grid-template-columns: minmax(0, 1fr); }
+        }
+      `}</style>
       <RichHero
         chip={module ?? "Блок 2 · Условия, данные и циклы"}
         title="Суммы, счётчики и максимум"
@@ -178,10 +185,10 @@ export function Lesson09_1({ module }: { module?: string }) {
           Если подходящих записей нет, условное тело ни разу не выполняется и его счётчик остаётся равен 0. Если сам список пустой, не выполняется и внешний цикл, поэтому оба счётчика сохраняют начальный ноль. Эти результаты совпадают по числу, но объясняются разными входами.
         </p>
         <QuizCard
-          question="В списке три элемента: [4, 0, 6]. Сколько элементов обработает цикл, если мы считаем количество?"
-          options={["0, потому что ноль не считается", "3, потому что каждый элемент проходит цикл", "10, потому что нужно сложить значения"]}
-          correctIndex={1}
-          explanation="Счётчик увеличивается один раз на каждый элемент, включая значение 0. Сумма 10 отвечает на другой вопрос."
+          question="Для [4, 0, 6] счётчик увеличивают только при условии if value. Почему итог отличается от количества всех элементов?"
+          options={["Ноль не проходит условие, поэтому получается 2 вместо 3", "Ноль прерывает цикл и получается 1", "Счётчик складывает значения и получается 10"]}
+          correctIndex={0}
+          explanation="При if value ноль даёт ложное условие, хотя остаётся элементом списка. Для общего количества единицу добавляют на каждом проходе."
         />
       </Section>
 
@@ -194,10 +201,10 @@ export function Lesson09_1({ module }: { module?: string }) {
         </p>
         <CodeBlock
           caption="Считаем только завершённые посещения"
-          code={'visits = [{"completed": False}, {"completed": True}, {"completed": False}]\ncompleted_count = 0\nfor visit in visits:\n    if visit["completed"]:\n        completed_count += 1\nprint(completed_count)'}
+          code={'visits = [\n    {"completed": False},\n    {"completed": True},\n    {"completed": False},\n]\ndone_count = 0\nfor visit in visits:\n    if visit["completed"]:\n        done_count += 1\nprint(done_count)'}
         />
         <p>
-          Сначала <code>completed_count</code> равен 0. Первая запись содержит <code>False</code>: строка с прибавлением пропущена, итог 0. Вторая содержит <code>True</code>: выполняется вложенная строка с отступом, итог 1. Третья снова содержит <code>False</code>: итог остаётся 1. Цикл просмотрел все три записи, но напечатал только количество завершённых: 1.
+          Сначала <code>done_count</code> равен 0. Первая запись содержит <code>False</code>: строка с прибавлением пропущена, итог 0. Вторая содержит <code>True</code>: выполняется вложенная строка с отступом, итог 1. Третья снова содержит <code>False</code>: итог остаётся 1. Цикл просмотрел все три записи, но напечатал только количество завершённых: 1.
         </p>
         <MethodGrid
           rows={[
@@ -207,10 +214,10 @@ export function Lesson09_1({ module }: { module?: string }) {
           ]}
         />
         <p>
-          Отступ здесь определяет правило подсчёта. Если написать <code>completed_count += 1</code> на одном уровне с <code>if</code>, эта строка станет частью тела <code>for</code> и выполнится для всех трёх записей. Получим 3 вместо 1. Если перенести весь счётчик внутрь <code>for</code> и каждый раз задавать 0, сохранённый результат тоже потеряется.
+          Отступ здесь определяет правило подсчёта. Если написать <code>done_count += 1</code> на одном уровне с <code>if</code>, эта строка станет частью тела <code>for</code> и выполнится для всех трёх записей. Получим 3 вместо 1. Если перенести весь счётчик внутрь <code>for</code> и каждый раз задавать 0, сохранённый результат тоже потеряется.
         </p>
         <PredictOutput
-          code={'visits = [{"completed": True}, {"completed": True}, {"completed": False}]\ncompleted_count = 0\nfor visit in visits:\n    if visit["completed"]:\n        completed_count += 1\nprint(completed_count)'}
+          code={'visits = [\n    {"completed": True},\n    {"completed": True},\n    {"completed": False},\n]\ndone_count = 0\nfor visit in visits:\n    if visit["completed"]:\n        done_count += 1\nprint(done_count)'}
           output="2"
           hint="Отметим каждую запись с True и увеличим счёт только для неё."
         />
@@ -228,31 +235,31 @@ export function Lesson09_1({ module }: { module?: string }) {
         </p>
         <CodeBlock
           caption="Один проход, три независимых состояния"
-          code={'total_minutes = 0\nroute_count = 0\ncompleted_count = 0\nfor route in routes:\n    total_minutes += route["minutes"]\n    route_count += 1\n    if route["completed"]:\n        completed_count += 1'}
+          code={'total = 0\ncount = 0\ndone_count = 0\nfor visit in visits:\n    total += visit["mins"]\n    count += 1\n    if visit["done"]:\n        done_count += 1'}
         />
         <p>
-          Пока код показывает обновления. Вывод после цикла добавим в трассировке ниже.
+          Здесь <code>visits</code> содержит подготовленные записи: поле <code>mins</code> хранит минуты, а <code>done</code> показывает завершение. Имена полей зависят от данных задачи. Пока код показывает обновления; вывод после цикла добавим в трассировке ниже.
         </p>
         <p>
           Проследим все три результата на двух маршрутах. У первого длительность 2 минуты, он ещё не завершён. У второго длительность 5 минут, он завершён.
         </p>
         <StepThrough
-          code={'routes = [{"minutes": 2, "completed": False}, {"minutes": 5, "completed": True}]\ntotal = 0\ncount = 0\ncompleted_count = 0\nfor route in routes:\n    total += route["minutes"]\n    count += 1\n    if route["completed"]:\n        completed_count += 1\nprint(total)\nprint(count)\nprint(completed_count)'}
+          code={'visits = [\n    {"mins": 2,\n     "done": False},\n    {"mins": 5,\n     "done": True},\n]\ntotal = 0\ncount = 0\ndone_count = 0\nfor visit in visits:\n    total += visit["mins"]\n    count += 1\n    if visit["done"]:\n        done_count += 1\nprint(total)\nprint(count)\nprint(done_count)'}
           steps={[
-            { line: 0, note: "В списке два маршрута: первый на 2 минуты, второй на 5.", vars: { routes: "2 маршрута" } },
-            { line: 3, note: "До цикла все три результата равны нулю.", vars: { routes: "2 маршрута", total: "0", count: "0", completed_count: "0" } },
-            { line: 4, note: "Первым берём маршрут на 2 минуты. Он ещё не завершён.", vars: { routes: "2 маршрута", route: "2 минуты, completed=False", total: "0", count: "0", completed_count: "0" } },
-            { line: 5, note: "Прибавляем его 2 минуты к сумме.", vars: { routes: "2 маршрута", route: "2 минуты, completed=False", total: "2", count: "0", completed_count: "0" } },
-            { line: 6, note: "Считаем первый маршрут.", vars: { routes: "2 маршрута", route: "2 минуты, completed=False", total: "2", count: "1", completed_count: "0" } },
-            { line: 7, note: "completed равно False, поэтому число завершённых не меняется.", vars: { routes: "2 маршрута", route: "2 минуты, completed=False", total: "2", count: "1", completed_count: "0" } },
-            { line: 4, note: "Теперь берём второй маршрут на 5 минут. Он завершён.", vars: { routes: "2 маршрута", route: "5 минут, completed=True", total: "2", count: "1", completed_count: "0" } },
-            { line: 5, note: "Добавляем к прежним 2 минутам ещё 5.", vars: { routes: "2 маршрута", route: "5 минут, completed=True", total: "7", count: "1", completed_count: "0" } },
-            { line: 6, note: "Счётчик всех маршрутов становится равен 2.", vars: { routes: "2 маршрута", route: "5 минут, completed=True", total: "7", count: "2", completed_count: "0" } },
-            { line: 7, note: "completed равно True, значит, увеличиваем счёт завершённых.", vars: { routes: "2 маршрута", route: "5 минут, completed=True", total: "7", count: "2", completed_count: "0" } },
-            { line: 8, note: "Завершённых маршрутов теперь 1.", vars: { routes: "2 маршрута", route: "5 минут, completed=True", total: "7", count: "2", completed_count: "1" } },
-            { line: 9, note: "После цикла печатаем сумму минут: 7.", vars: { total: "7", count: "2", completed_count: "1", вывод: "7" } },
-            { line: 10, note: "На следующей строке печатаем общее количество: 2.", vars: { total: "7", count: "2", completed_count: "1", вывод: "7, 2" } },
-            { line: 11, note: "Последняя строка показывает число завершённых маршрутов: 1.", vars: { total: "7", count: "2", completed_count: "1", вывод: "7, 2, 1" } },
+            { line: 0, note: "В списке два маршрута: первый на 2 минуты, второй на 5.", vars: { visits: "2 маршрута" } },
+            { line: 8, note: "До цикла все три результата равны нулю.", vars: { visits: "2 маршрута", total: "0", count: "0", done_count: "0" } },
+            { line: 9, note: "Первым берём маршрут на 2 минуты. Он ещё не завершён.", vars: { visits: "2 маршрута", visit: "2 минуты, done=False", total: "0", count: "0", done_count: "0" } },
+            { line: 10, note: "Прибавляем его 2 минуты к сумме.", vars: { visits: "2 маршрута", visit: "2 минуты, done=False", total: "2", count: "0", done_count: "0" } },
+            { line: 11, note: "Считаем первый маршрут.", vars: { visits: "2 маршрута", visit: "2 минуты, done=False", total: "2", count: "1", done_count: "0" } },
+            { line: 12, note: "done равно False, поэтому число завершённых не меняется.", vars: { visits: "2 маршрута", visit: "2 минуты, done=False", total: "2", count: "1", done_count: "0" } },
+            { line: 9, note: "Теперь берём второй маршрут на 5 минут. Он завершён.", vars: { visits: "2 маршрута", visit: "5 минут, done=True", total: "2", count: "1", done_count: "0" } },
+            { line: 10, note: "Добавляем к прежним 2 минутам ещё 5.", vars: { visits: "2 маршрута", visit: "5 минут, done=True", total: "7", count: "1", done_count: "0" } },
+            { line: 11, note: "Счётчик всех маршрутов становится равен 2.", vars: { visits: "2 маршрута", visit: "5 минут, done=True", total: "7", count: "2", done_count: "0" } },
+            { line: 12, note: "done равно True, значит, увеличиваем счёт завершённых.", vars: { visits: "2 маршрута", visit: "5 минут, done=True", total: "7", count: "2", done_count: "0" } },
+            { line: 13, note: "Завершённых маршрутов теперь 1.", vars: { visits: "2 маршрута", visit: "5 минут, done=True", total: "7", count: "2", done_count: "1" } },
+            { line: 14, note: "После цикла печатаем сумму минут: 7.", vars: { total: "7", count: "2", done_count: "1", вывод: "7" } },
+            { line: 15, note: "На следующей строке печатаем общее количество: 2.", vars: { total: "7", count: "2", done_count: "1", вывод: "7, 2" } },
+            { line: 16, note: "Последняя строка показывает число завершённых маршрутов: 1.", vars: { total: "7", count: "2", done_count: "1", вывод: "7, 2, 1" } },
           ]}
         />
         <p>
@@ -260,16 +267,16 @@ export function Lesson09_1({ module }: { module?: string }) {
         </p>
         <MethodGrid
           rows={[
-            ["Сумма минут", <>Любая запись добавляет <code>route["minutes"]</code>, даже незавершённая.</>],
+            ["Сумма минут", <>Любая запись добавляет <code>visit["mins"]</code>, даже незавершённая.</>],
             ["Число маршрутов", <>Любая запись добавляет <code>1</code>, даже с нулевой длительностью.</>],
-            ["Завершённые", <>Добавляем <code>1</code> только внутри <code>if route["completed"]:</code>.</>],
+            ["Завершённые", <>Добавляем <code>1</code> только внутри <code>if visit["done"]:</code>.</>],
           ]}
         />
         <p>
-          Проверим особый случай: незавершённый маршрут на 0 минут. Он увеличивает общее количество на единицу, но не меняет сумму и число завершённых. Если все три обновления ошибочно поставить под <code>if</code>, такой маршрут исчезнет сразу из двух ответов. Пустой список, наоборот, вообще не запускает тело цикла, поэтому все три результата остаются нулевыми.
+          Проверим особый случай: незавершённый маршрут на 0 минут. Он увеличивает общее количество на единицу, но не меняет сумму и число завершённых. Если все три обновления ошибочно поставить под <code>if</code>, он не попадёт в общее количество. У незавершённого маршрута с ненулевой длительностью тогда потеряются ещё и минуты. Пустой список вообще не запускает тело цикла, поэтому все три результата остаются нулевыми.
         </p>
         <PredictOutput
-          code={'routes = [{"minutes": 3, "completed": False}, {"minutes": 4, "completed": True}]\ntotal = 0\ncount = 0\ncompleted_count = 0\nfor route in routes:\n    total += route["minutes"]\n    count += 1\n    if route["completed"]:\n        completed_count += 1\nprint(total)\nprint(count)\nprint(completed_count)'}
+          code={'visits = [\n    {"mins": 3,\n     "done": False},\n    {"mins": 4,\n     "done": True},\n]\ntotal = 0\ncount = 0\ndone_count = 0\nfor visit in visits:\n    total += visit["mins"]\n    count += 1\n    if visit["done"]:\n        done_count += 1\nprint(total)\nprint(count)\nprint(done_count)'}
           output={"7\n2\n1"}
           hint="Проследим три числа отдельно: сумму минут, все маршруты и только завершённые маршруты."
         />
@@ -297,10 +304,10 @@ export function Lesson09_1({ module }: { module?: string }) {
         </p>
         <CodeBlock
           caption="Максимум для неупорядоченных положительных значений"
-          code={'heights = [4, 9, 6]\nbest_height = None\nfor height in heights:\n    if best_height is None:\n        best_height = height\n    elif height > best_height:\n        best_height = height\nprint(best_height)'}
+          code={'heights = [3, 9, 4]\nbest_height = None\nfor height in heights:\n    if best_height is None:\n        best_height = height\n    elif height > best_height:\n        best_height = height\nprint(best_height)'}
         />
         <p>
-          Здесь первое значение 4 уже просмотрено и становится кандидатом. Значение 9 больше 4, поэтому кандидат меняется. Значение 6 меньше 9, поэтому сохраняется 9. Сначала мы проверяем, есть ли кандидат, затем сравниваем только числовые значения. Этот порядок сохранится и для отрицательных данных, а пустой список не создаст кандидата.
+          Здесь первое значение 3 уже просмотрено и становится кандидатом. Значение 9 больше 3, поэтому кандидат меняется. Значение 4 меньше 9, поэтому сохраняется 9. Сначала мы проверяем, есть ли кандидат, затем сравниваем только числовые значения. Этот порядок сохранится и для отрицательных данных, а пустой список не создаст кандидата.
         </p>
         <MethodGrid
           rows={[
@@ -316,21 +323,21 @@ export function Lesson09_1({ module }: { module?: string }) {
           Посмотрим на кандидата после каждого значения в неупорядоченном ряду. Текущая переменная и сохранённый лучший результат здесь имеют разные роли.
         </p>
         <StepThrough
-          code={'best = None\nfor value in [4, 9, 6]:\n    if best is None:\n        best = value\n    elif value > best:\n        best = value'}
+          code={'best = None\nfor value in [3, 9, 4]:\n    if best is None:\n        best = value\n    elif value > best:\n        best = value'}
           steps={[
             { line: 0, note: "До первого числа кандидата нет. None явно обозначает отсутствие числа.", vars: { best: "None" } },
-            { line: 1, note: "Начинается проход. Первое значение равно 4.", vars: { best: "None", value: "4" } },
-            { line: 2, note: "Проверка подтверждает, что кандидата ещё нет.", vars: { best: "None", value: "4" } },
-            { line: 3, note: "Первое число становится кандидатом.", vars: { best: "4", value: "4" } },
-            { line: 1, note: "Следующее значение 9 сравним с сохранённым кандидатом 4.", vars: { best: "4", value: "9" } },
-            { line: 4, note: "Кандидат существует, поэтому проверяется числовое сравнение.", vars: { best: "4", value: "9" } },
-            { line: 5, note: "9 больше 4, значит, сохраняем 9.", vars: { best: "9", value: "9" } },
-            { line: 1, note: "Последнее значение 6 меньше кандидата 9.", vars: { best: "9", value: "6" } },
-            { line: 4, note: "Условие сравнения ложно, кандидат остаётся равен 9.", vars: { best: "9", value: "6" } },
+            { line: 1, note: "Начинается проход. Первое значение равно 3.", vars: { best: "None", value: "3" } },
+            { line: 2, note: "Проверка подтверждает, что кандидата ещё нет.", vars: { best: "None", value: "3" } },
+            { line: 3, note: "Первое число становится кандидатом.", vars: { best: "3", value: "3" } },
+            { line: 1, note: "Следующее значение 9 сравним с сохранённым кандидатом 3.", vars: { best: "3", value: "9" } },
+            { line: 4, note: "Кандидат существует, поэтому проверяется числовое сравнение.", vars: { best: "3", value: "9" } },
+            { line: 5, note: "9 больше 3, значит, сохраняем 9.", vars: { best: "9", value: "9" } },
+            { line: 1, note: "Последнее значение 4 меньше кандидата 9.", vars: { best: "9", value: "4" } },
+            { line: 4, note: "Условие сравнения ложно, кандидат остаётся равен 9.", vars: { best: "9", value: "4" } },
           ]}
         />
         <p>
-          В подготовленной трассировке сначала показывается отсутствие кандидата, затем число 4 становится первым кандидатом. После сравнения с 9 кандидат меняется, а сравнение с 6 оставляет его прежним. В реальном цикле ветви выполняются для каждого элемента в том же порядке.
+          В подготовленной трассировке сначала показывается отсутствие кандидата, затем число 3 становится первым кандидатом. После сравнения с 9 кандидат меняется, а сравнение с 4 оставляет его прежним. В реальном цикле ветви выполняются для каждого элемента в том же порядке.
         </p>
       </Section>
 
@@ -355,16 +362,11 @@ export function Lesson09_1({ module }: { module?: string }) {
         <p>
           Сумму можно начинать с нуля: прибавление к нулю не искажает ответ. Максимум так начинать нельзя: для отрицательного набора ноль оказался бы выдуманным элементом. Для списка <code>[-7, -2, -5]</code> правильный ответ <code>-2</code>, а не последнее <code>-5</code>. Каждое состояние выбираем по смыслу результата, поэтому одинаковое начальное число подходит не всем алгоритмам.
         </p>
-        <TrueFalse
-          statement={<>Если список содержит только <code>-8</code> и <code>-3</code>, можно начать искать максимум с нуля.</>}
-          isTrue={false}
-          explanation="Ноль больше обоих элементов, но в списке его нет. Первый элемент должен стать кандидатом, а пустой список должен оставить None."
-        />
         <QuizCard
-          question="Что останется в best после прохода по пустому списку, если до цикла записано best = None?"
-          options={["0", "None", "Ошибка сравнения с None"]}
+          question="Алгоритм с начальным максимумом 0 верно ответил для [0, -2]. Как проверить, подходит ли такой старт для любых чисел?"
+          options={["Повторить тот же список", "Проверить список только с отрицательными числами", "Посмотреть только на последний элемент"]}
           correctIndex={1}
-          explanation="Тело цикла не выполняется, поэтому начальное состояние None сохраняется. Числовое сравнение не запускается."
+          explanation="На отрицательных числах ноль может оказаться больше всех элементов, хотя его нет в списке. Первый элемент подходит как кандидат, а пустой список оставляет None."
         />
         <p>
           На практике будем писать свой цикл. Готовая функция <code>max()</code> умеет находить максимум, но не показывает, как менялся кандидат на каждом проходе.
@@ -389,24 +391,24 @@ export function Lesson09_1({ module }: { module?: string }) {
           Кандидата максимума мы уже проверили на отрицательных и пустых данных. Теперь найдём другую ошибку: потерю накопленного итога при обычном присваивании.
         </p>
         <BugHunt
-          code={'values = [3, 8, 2]\ntotal = 0\nfor value in values:\n    total = value\nprint(total)'}
+          code={'volumes = [6, 3, 5]\ncombined = 0\nfor volume in volumes:\n    combined = volume\nprint(combined)'}
           question="Почему эта программа показывает только последнее значение вместо суммы?"
           options={[
-            "Внутри цикла total заменяется текущим числом, а не складывает его с прежним итогом.",
+            "Внутри цикла combined заменяется текущим числом, а не складывает его с прежним итогом.",
             "Число 0 нельзя использовать как начальное состояние суммы.",
             "Команда print должна находиться внутри цикла.",
           ]}
           correctIndex={0}
-          explanation="Присваивание total = value стирает прежний итог. Для суммы нужно прибавить текущее значение к уже сохранённому."
-          fix={'values = [3, 8, 2]\ntotal = 0\nfor value in values:\n    total += value\nprint(total)'}
+          explanation="Присваивание combined = volume стирает прежний итог. Для суммы нужно прибавить текущее значение к уже сохранённому."
+          fix={'volumes = [6, 3, 5]\ncombined = 0\nfor volume in volumes:\n    combined += volume\nprint(combined)'}
         />
         <p>
-          Исправленная сумма равна 13. Проверим тот же принцип на новом наборе и отдельно на пустом, где останется 0.
+          Исправленная сумма равна 14. Проверим тот же принцип на новом наборе и отдельно на пустом, где останется 0.
         </p>
         <PredictOutput
-          code={'values = [5, 2]\ntotal = 0\nfor value in values:\n    total += value\nprint(total)'}
-          output="7"
-          hint="После первого числа total равен 5. Второй проход прибавляет к пяти ещё 2."
+          code={'values = [7, 4]\ntotal = 0\nfor value in values:\n    total += value\nprint(total)'}
+          output="11"
+          hint="После первого числа total равен 7. Второй проход прибавляет к семи ещё 4."
         />
         <p>
           Если сбрасывается сумма или счётчик, найдём строку, где переписывается состояние. При <code>total = 0</code> внутри цикла накопление каждый раз начинается заново. При <code>print(total)</code> внутри цикла появится по строке для каждого элемента вместо одного ответа. Если ошибся максимум, проверим, не заменяется ли кандидат последним элементом без сравнения и не используется ли произвольный ноль. Для пустого входа выясним, выполнился ли цикл и какое начальное состояние осталось.

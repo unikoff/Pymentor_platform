@@ -19,6 +19,7 @@ import {
   Section,
   StepThrough,
 } from "../../shared";
+import "./lesson20-diagrams.css";
 
 // 20. Проверяем работу Planner
 export function Lesson20({ module }: { module?: string }) {
@@ -43,7 +44,7 @@ export function Lesson20({ module }: { module?: string }) {
             {
               title: "Точка старта",
               description:
-                "Открываем собственный проект после 19.1: проверяем семь команд, пустую stats и переход одной задачи через add, list, done, stats.",
+                "Открываем свой Planner после работы со статистикой: проверяем семь команд, пустую stats и переход одной задачи через add, list, done, stats.",
             },
             {
               title: "Новый вопрос",
@@ -57,7 +58,7 @@ export function Lesson20({ module }: { module?: string }) {
             },
           ]}
         />
-        <Diagram caption="Что делает проверку доказательством" orientation="vertical">
+        <Diagram caption="Что делает проверку доказательством" orientation="vertical" className="lesson20-diagram lesson20-check-diagram">
           <DiagramFlow label="От требования к наблюдению" orientation="vertical">
             <DiagramNode title="Предсказание" shape="terminator">
               <p>Записываем ожидаемый вывод и состояние задач до запуска.</p>
@@ -74,7 +75,8 @@ export function Lesson20({ module }: { module?: string }) {
         </Diagram>
         <p>
           Если стартовая проверка не прошла, запишите ввод и ответ, восстановите
-          нужный шаг 19.1. Пока он не подтверждён, полную приёмку не засчитываем.
+          нужный шаг при создании статистики. Пока он не подтверждён, полную
+          приёмку не засчитываем.
         </p>
       </Section>
 
@@ -135,7 +137,7 @@ export function Lesson20({ module }: { module?: string }) {
           и спрашивает снова. Положительное число он принимает, даже если
           задачи с таким id нет: тогда уже поиск возвращает отсутствие.
         </p>
-        <Diagram caption="Два исхода после ввода id" orientation="vertical">
+        <Diagram caption="Два исхода после ввода id" orientation="vertical" className="lesson20-diagram lesson20-id-diagram">
           <DiagramFlow label="От запроса id к следующему шагу" orientation="vertical">
             <DiagramNode title="run(): один tasks, повторяющееся меню" shape="terminator" />
             <DiagramArrow label="find или done вызывает reader" />
@@ -285,6 +287,27 @@ export function Lesson20({ module }: { module?: string }) {
           показанные stats с фактическими карточками, включая повтор done и
           последующее добавление третьей задачи.
         </p>
+        <p>
+          Вывод меню ещё не подтверждает, что функции принимают и возвращают
+          нужные данные. Проверим их отдельно в своём проекте. В терминале из
+          папки проекта запустим <code>main.py</code> с ключом <code>-i</code>,
+          например <code>py -3.12 -i main.py</code> в Windows. Используйте ту
+          системную команду Python 3.12, которая работает у вас. Ключ оставит
+          интерактивную сессию после завершения программы: введём в меню
+          <code> exit</code> и дождёмся приглашения <code>&gt;&gt;&gt;</code>.
+        </p>
+        <p>
+          Теперь вызов <code>build_statistics([])</code> должен вернуть словарь
+          <code> {'{"total": 0, "completed": 0, "left": 0}'}</code>.
+          Вызов <code>completion_percent(build_statistics([]))</code> вернёт
+          число <code>0.0</code>. Проверим также вызов{" "}
+          <code>{'completion_percent({"total": 3, "completed": 1, "left": 2})'}</code>:
+          он должен дать <code>33.3</code>. Передаём отдельные данные: список
+          <code> tasks</code> внутри завершённого <code>run()</code> снаружи
+          недоступен. Эти вызовы не нужно добавлять в файл. После проверки
+          закройте интерактивную сессию и начните основной сценарий новым
+          обычным запуском.
+        </p>
       </Section>
 
       <Section number="06" title="Разделяем память программы и файлы Git">
@@ -377,8 +400,16 @@ export function Lesson20({ module }: { module?: string }) {
           секреты. При пустом diff проверим публикацию существующего commit.
         </p>
         <p>
-          Сверим, что опубликованный commit содержит проверенный README и код.
-          При изменении повторим затронутые проверки; чистый clone ждёт в 20.1.
+          После отправки выполним <code>git fetch origin</code>, если наш remote
+          называется origin; иначе подставим его имя. Команда обновляет сведения
+          об удалённых ветках и не переписывает рабочие
+          файлы. Сравним полный результат <code>git rev-parse HEAD</code> с
+          <code> git rev-parse origin/имя-ветки</code>, подставив свою ветку и
+          свой remote, если он называется не origin. Совпадение показывает,
+          что удалённая ветка указывает на проверенный commit; различие нужно
+          выяснить до передачи. Сам hash запишем отдельно после публикации:
+          если вписать его в README и снова создать commit, hash изменится.
+          Чистую копию проверим в следующем занятии.
         </p>
       </Section>
 
@@ -393,7 +424,7 @@ export function Lesson20({ module }: { module?: string }) {
             {
               title: "Подтвердим A",
               description:
-                "Найдём свой Planner после 19.1, проверим семь команд и пробную задачу.",
+                "Найдём свой Planner, проверим семь команд, пробную задачу и отдельно функции статистики.",
             },
             {
               title: "Пройдём сценарий",
@@ -418,65 +449,6 @@ export function Lesson20({ module }: { module?: string }) {
           и причину в вызванной функции. Исправляем её и повторяем ошибочный
           случай и соседний ранее успешный: проверяем отсутствие регрессии.
         </p>
-        <p>
-          В таблице заранее заполнены только ожидания. В колонку «Наблюдение»
-          внесём реальный вывод и состояние задач. Не выполненное действие
-          пометим «не проверено»; после исправления отметим повторные проверки.
-        </p>
-        <div className="lesson-acceptance-table-wrap">
-          <table className="lesson-acceptance-table">
-            <caption>Лист итоговой приёмки Planner</caption>
-            <thead>
-              <tr>
-                <th scope="col">Действие</th>
-                <th scope="col">Ожидаемый ответ</th>
-                <th scope="col">Наблюдение</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <th scope="row">Точка A: меню и пробная задача</th>
-                <td>Семь команд, пустая stats; add и done одной задачи согласованы с list и stats. Затем exit.</td>
-                <td>Путь проекта, реальный запуск, ответы; новый пустой процесс.</td>
-              </tr>
-              <tr>
-                <th scope="row">Свежий запуск: list и stats</th>
-                <td>Пустой список; total/completed/left/percent = 0/0/0/0.0.</td>
-                <td>Фактический вывод обеих команд.</td>
-              </tr>
-              <tr>
-                <th scope="row">Неизвестная команда, пробелы и id</th>
-                <td>Меню доступно; текст, 0, -2 повторяют ввод id; отсутствующий положительный id даёт сообщение.</td>
-                <td>Отдельные ответы reader и обработчика, затем list.</td>
-              </tr>
-              <tr>
-                <th scope="row">Неправильные поля, затем первый add</th>
-                <td>Неверные поля повторяют вопрос; затем одна полная карточка is_done=False.</td>
-                <td>Порядок вызовов по коду, фактический итоговый list.</td>
-              </tr>
-              <tr>
-                <th scope="row">Второй add и разные поисковые запросы</th>
-                <td>Разные id; общий запрос найдёт две записи, частный одну; list неизменен.</td>
-                <td>Свои запросы, ответы, пустой и без совпадений, полный list.</td>
-              </tr>
-              <tr>
-                <th scope="row">find, done дважды, stats и третий add</th>
-                <td>done и повтор done: 2/1/1/50.0; третий add: 3/1/2/33.3.</td>
-                <td>Состояния задач, три stats, total = completed + left.</td>
-              </tr>
-              <tr>
-                <th scope="row">exit, повторный запуск, list и stats</th>
-                <td>Новый процесс: пустой list, stats 0/0/0/0.0.</td>
-                <td>Вывод перезапуска; файлы на месте.</td>
-              </tr>
-              <tr>
-                <th scope="row">Команда из README и передача версии</th>
-                <td>README-команда работает, .gitignore и оба diff сверены, commit опубликован.</td>
-                <td>Команда, вывод, remote, ветка, полный id.</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
       </Section>
     </RichLesson>
   );

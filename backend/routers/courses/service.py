@@ -45,11 +45,30 @@ def _require_runner_enabled() -> None:
 
 
 def _uses_persisted_task_progress(lesson: dict) -> bool:
-    return str(lesson.get("source_file", "")).startswith("foundations/block_03/")
+    source_file = str(lesson.get("source_file", ""))
+    return source_file.startswith(("foundations/block_03/", "chapter_01/"))
+
+
+def _chapter_one_needs_self_check_progress(lesson: dict) -> bool:
+    return _is_chapter_one_lesson(lesson) and bool(lesson.get("self_check")) and (
+        bool(lesson.get("manual_practice")) or not lesson.get("tasks")
+    )
+
+
+def _lesson_progress_task_ids(lesson: dict) -> list[str]:
+    if not _uses_persisted_task_progress(lesson):
+        return []
+    task_ids = [task["id"] for task in lesson.get("tasks", [])]
+    if lesson["id"] == "lesson-fa661256326bd13784d1c88d":
+        # Read historical completion even though the old code task no longer exists.
+        task_ids.append("lesson-fa661256326bd13784d1c88d-task-01")
+    if _chapter_one_needs_self_check_progress(lesson):
+        task_ids.append(progress.chapter_one_completion_task_id(lesson["id"]))
+    return task_ids
 
 
 def _lesson_tasks_are_complete(lesson: dict, user_id: int, db: Session) -> bool:
-    tasks = lesson.get("tasks", [])
+    tasks = progress.required_lesson_tasks(lesson)
     if not tasks:
         return True
 
@@ -66,6 +85,33 @@ def _lesson_completion_status(lesson: dict, completed_ids: set[str], task_revisi
         stored_lesson_completion = False
     else:
         stored_lesson_completion = True
+
+    if _is_chapter_one_lesson(lesson):
+        # Historical lesson-only rows predate per-card revision tracking. Keep
+        # them visible; all completions created by this version use current
+        # task revisions (and a private self-check key for mixed practice).
+        if stored_lesson_completion:
+            return True
+        # Preserve completions earned under the previously required 20.1 task.
+        # New completions require the project self-check.
+        if (lesson["id"] == "lesson-fa661256326bd13784d1c88d"
+                and task_revisions.get("lesson-fa661256326bd13784d1c88d-task-01")
+                == "fc0a533cfbb824248e6d6f6031e019045c4a77c07030a920a0e226a6953c5675"):
+            return True
+        tasks = lesson.get("tasks", [])
+        required_tasks = progress.required_lesson_tasks(lesson)
+        all_tasks_complete = all(
+            task_revisions.get(task["id"]) == task.get("revision")
+            for task in required_tasks
+        )
+        if required_tasks and not all_tasks_complete:
+            return False
+        if lesson.get("manual_practice") or not tasks:
+            if not _chapter_one_needs_self_check_progress(lesson):
+                return False
+            marker_id = progress.chapter_one_completion_task_id(lesson["id"])
+            return task_revisions.get(marker_id) == progress.chapter_one_completion_revision(lesson)
+        return bool(required_tasks) and all_tasks_complete
 
     if not _uses_persisted_task_progress(lesson) or not lesson.get("tasks"):
         return stored_lesson_completion
@@ -84,16 +130,13 @@ def build_lessons_payload(track_id: str, user: models.User | None, db: Session, 
     if lesson_id is not None:
         lessons = [lesson for lesson in lessons if lesson["id"] == lesson_id]
     completed_ids = progress.get_completed_lesson_ids(user.id, db) if user else set()
-    block_three_tasks = [
-        task
-        for lesson in lessons
-        if _uses_persisted_task_progress(lesson)
-        for task in lesson.get("tasks", [])
+    tracked_progress_ids = [
+        task_id for lesson in lessons for task_id in _lesson_progress_task_ids(lesson)
     ]
     completed_task_revisions = (
         progress.get_completed_task_revisions(
             user_id=user.id,
-            task_ids=[task["id"] for task in block_three_tasks],
+            task_ids=tracked_progress_ids,
             db=db,
         )
         if user
@@ -128,16 +171,13 @@ def list_tracks(request: Request, db: Session):
         countable_ids = track.pop("countable_lesson_ids")
         source_track = find_track(track["id"])
         source_lessons = source_track["lessons"] if source_track else []
-        block_three_tasks = [
-            task
-            for lesson in source_lessons
-            if _uses_persisted_task_progress(lesson)
-            for task in lesson.get("tasks", [])
+        tracked_progress_ids = [
+            task_id for lesson in source_lessons for task_id in _lesson_progress_task_ids(lesson)
         ]
         task_revisions = (
             progress.get_completed_task_revisions(
                 user_id=user.id,
-                task_ids=[task["id"] for task in block_three_tasks],
+                task_ids=tracked_progress_ids,
                 db=db,
             )
             if user
@@ -181,10 +221,10 @@ def learning_catalog(request: Request, db: Session):
     summaries = get_tracks_summary()
     source_tracks = {track["id"]: find_track(track["id"]) for track in summaries}
     task_ids = [
-        task["id"]
+        task_id
         for track in source_tracks.values() if track
-        for lesson in track["lessons"] if _uses_persisted_task_progress(lesson)
-        for task in lesson.get("tasks", [])
+        for lesson in track["lessons"]
+        for task_id in _lesson_progress_task_ids(lesson)
     ]
     revisions = progress.get_completed_task_revisions(user.id, task_ids, db) if user and task_ids else {}
     courses = {}
@@ -242,9 +282,12 @@ def manual_practice_answer(
     request: Request,
     db: Session,
 ):
-    """Возвращает разбор block 05 только после явного запроса и проверки доступа."""
+    """Возвращает закрытый разбор только после явного запроса и проверки доступа."""
     lesson = find_lesson(lesson_id)
-    if lesson is None or not lesson.get("source_file", "").startswith("chapter_02/block_05/"):
+    if lesson is None or not (
+        lesson.get("source_file", "").startswith("chapter_02/block_05/")
+        or lesson["id"] == "lesson-fa661256326bd13784d1c88d"
+    ):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Разбор не найден")
 
     user = get_optional_user(request=request, db=db)
@@ -287,7 +330,15 @@ def complete_lesson(lesson_id: str, request: Request, db: Session):
 
     # Старые вкладки с позиционным ID по-прежнему принимаются find_lesson(),
     # но прогресс всегда сохраняется под постоянным идентификатором урока.
-    progress.mark_lesson_completed(user_id=user.id, lesson_id=lesson["id"], db=db)
+    if _chapter_one_needs_self_check_progress(lesson):
+        progress.mark_task_completed(
+            user_id=user.id,
+            task_id=progress.chapter_one_completion_task_id(lesson["id"]),
+            task_revision=progress.chapter_one_completion_revision(lesson),
+            db=db,
+        )
+    elif not _is_chapter_one_lesson(lesson):
+        progress.mark_lesson_completed(user_id=user.id, lesson_id=lesson["id"], db=db)
     return {"lesson_id": lesson["id"], "completed": True}
 
 
@@ -367,7 +418,8 @@ def _save_task_progress(context: dict) -> None:
                 progress.mark_task_completed(
                     user_id=user_id, task_id=task["id"], task_revision=task["revision"], db=db,
                 )
-                if not has_mixed_practice and _lesson_tasks_are_complete(lesson, user_id, db):
+                if not has_mixed_practice and _lesson_tasks_are_complete(lesson, user_id, db) \
+                        and not _is_chapter_one_lesson(lesson):
                     progress.mark_lesson_completed(user_id=user_id, lesson_id=lesson["id"], db=db)
             elif not has_mixed_practice:
                 progress.mark_lesson_completed(user_id=user_id, lesson_id=lesson["id"], db=db)
@@ -392,13 +444,78 @@ async def _execute_task(function, code: str, task: dict) -> dict:
         ) from None
 
 
+_SAFE_SUBMIT_CHECK_ERROR = "Не удалось проверить решение. Проверьте код и попробуйте ещё раз."
+_CHAPTER_ONE_TEST_FAILURE = "Одна из проверок не пройдена. Сверьте решение с условием задачи."
+
+
+def _has_valid_lesson_source_file(lesson: dict | None) -> bool:
+    source_file = lesson.get("source_file") if isinstance(lesson, dict) else None
+    return isinstance(source_file, str) and bool(source_file.strip())
+
+
+def _is_chapter_one_lesson(lesson: dict | None) -> bool:
+    """Identify chapter 01 using the resolved lesson metadata, not a client ID."""
+    source_file = lesson.get("source_file") if isinstance(lesson, dict) else None
+    return isinstance(source_file, str) and source_file.startswith("chapter_01/")
+
+
+def _project_chapter_one_submit_result(result: Any) -> dict[str, Any]:
+    """Keep the submit response shape while omitting runner-controlled details."""
+    result = result if isinstance(result, dict) else {}
+    ok = result.get("ok") is True
+    raw_score = result.get("score")
+    score = raw_score if type(raw_score) is int and 0 <= raw_score <= 100 else 0
+
+    tests = []
+    raw_tests = result.get("tests")
+    if isinstance(raw_tests, list):
+        for index, test in enumerate(raw_tests, start=1):
+            passed = isinstance(test, dict) and test.get("passed") is True
+            public_test = {"name": f"Проверка {index}", "passed": passed}
+            if not passed:
+                public_test["error"] = _CHAPTER_ONE_TEST_FAILURE
+            tests.append(public_test)
+
+    has_failed_test = any(not test["passed"] for test in tests)
+    has_runner_error = bool(result.get("error"))
+    show_general_error = has_runner_error or (not ok and (not tests or not has_failed_test))
+
+    return {
+        "ok": ok,
+        "score": score,
+        "tests": tests,
+        "stdout": "",
+        "stderr": None,
+        "error": _SAFE_SUBMIT_CHECK_ERROR if show_general_error else None,
+        "traceback": None,
+    }
+
+
+def _invalid_source_file_submit_result() -> dict[str, Any]:
+    """Fail closed when resolved lesson metadata cannot scope a public submit."""
+    return {
+        "ok": False,
+        "score": 0,
+        "tests": [],
+        "stdout": "",
+        "stderr": None,
+        "error": _SAFE_SUBMIT_CHECK_ERROR,
+        "traceback": None,
+    }
+
+
 async def submit_task(task_id: str, payload: CodeSubmitRequest, request: Request):
     _require_runner_enabled()
     context = await run_in_threadpool(_prepare_task, task_id, payload.task_revision, request)
+    if not _has_valid_lesson_source_file(context.get("lesson")):
+        return _invalid_source_file_submit_result()
+
     result = await _execute_task(run_python_task, payload.code, context["task"])
     if result.get("ok"):
         await run_in_threadpool(_save_task_progress, context)
 
+    if _is_chapter_one_lesson(context.get("lesson")):
+        return _project_chapter_one_submit_result(result)
     return result
 
 

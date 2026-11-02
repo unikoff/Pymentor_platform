@@ -6,7 +6,6 @@ import {
   KeyTakeaways,
   Lead,
   LinkedNotes,
-  MethodGrid,
   PredictOutput,
   QuizCard,
   RichHero,
@@ -14,6 +13,7 @@ import {
   Section,
   StepThrough,
 } from "../../shared";
+import "./lesson16_1.css";
 
 // 16.1. Проверяем ввод задачи
 export function Lesson16_1({ module }: { module?: string }) {
@@ -36,7 +36,7 @@ export function Lesson16_1({ module }: { module?: string }) {
           items={[
             {
               title: "Точка старта",
-              description: "По маршруту здесь ожидаются готовые normalize_title, input, преобразование int, цикл и каркас меню. Фактическое прохождение и исходный проект нужно подтвердить отдельно.",
+              description: "В своём проекте мы уже подготовили normalize_title и каркас меню. Для нового шага пригодятся input, int и цикл while.",
             },
             {
               title: "Новый вопрос",
@@ -53,10 +53,6 @@ export function Lesson16_1({ module }: { module?: string }) {
           внутри нового reader-а, а для приоритета отдельно освоим преобразование текста в целое число. Этот порядок
           подготовит значения для будущего добавления, но не будет создавать задачу в этом разделе.
         </p>
-        <Callout tone="info">
-          План описывает ожидаемую опору, а не доказывает, что именно этот проект уже прошёл предыдущий шаг. Перед
-          практикой сверим собственный файл с исходной точкой; более поздняя версия Planner не заменяет её.
-        </Callout>
       </Section>
 
       <Section number="01" title="Reader возвращает значение для следующего действия">
@@ -144,13 +140,11 @@ export function Lesson16_1({ module }: { module?: string }) {
           Аналогия заканчивается на расположении пробелов: Python не обрезает настоящий лист, а возвращает строковое
           значение без пробельных символов по краям.
         </p>
-        <MethodGrid
-          rows={[
-            [<code>"  План  недели  "</code>, <span>После очистки: <code>"План  недели"</code>; два внутренних пробела сохранены.</span>],
-            [<code>"   "</code>, <span>После очистки получается пустая строка <code>""</code>.</span>],
-            [<code>"Завершить!"</code>, <span>Регистр и восклицательный знак в конце не меняются.</span>],
-          ]}
-        />
+        <ul>
+          <li><code style={{ whiteSpace: "pre-wrap" }}>"  План  недели  "</code> после очистки становится <code style={{ whiteSpace: "pre-wrap" }}>"План  недели"</code>: два внутренних пробела сохранены.</li>
+          <li>Строка из одних пробелов после очистки становится пустой строкой <code>""</code>.</li>
+          <li>В строке <code>"Завершить!"</code> регистр и восклицательный знак не меняются.</li>
+        </ul>
         <p>
           Поэтому порядок имеет значение: сначала получаем очищенную строку, потом сравниваем её с пустой строкой.
           Если очистка вернула пустоту, в названии нет содержимого. Если строка непустая, именно очищенное значение
@@ -166,12 +160,13 @@ export function Lesson16_1({ module }: { module?: string }) {
           normalize_title для каждого ответа, проверяем результат и оставляем внутренние пробелы без изменений. Для
           чтения названия пустой результат означает новый запрос, а не создание пустой задачи.
         </p>
+        <p>В следующем вопросе точка «·» обозначает один пробел, чтобы их было удобно посчитать.</p>
         <QuizCard
-          question="Что вернёт normalize_title для строки с краевыми и внутренними пробелами?"
+          question={'Что вернёт normalize_title для строки "··Купить··блокнот··"?'}
           options={[
-            '"Купить  блокнот" для исходной строки "  Купить  блокнот  "',
-            '"купить блокнот"',
-            '"Купить блокнот"',
+            '"Купить··блокнот"',
+            '"купить·блокнот"',
+            '"Купить·блокнот"',
           ]}
           correctIndex={0}
           explanation="strip убирает только пробелы по краям. Внутренние пробелы и регистр остаются такими, какими были."
@@ -190,47 +185,46 @@ export function Lesson16_1({ module }: { module?: string }) {
           возвращает старую строку назад и не завершает функцию. return делает другое: завершает весь вызов и отдаёт
           пригодное название.
         </p>
-        <Diagram caption="Путь одного ответа внутри reader-а" orientation="vertical">
-          <div style={{ display: "grid", justifyItems: "center", gap: 12 }} role="group" aria-label="Получение ответа, проверка и два результата">
-            <div style={{ width: "min(100%, 520px)", padding: "16px 20px", border: "1px solid var(--diagram-node-border)", borderRadius: 12, background: "var(--diagram-data-bg)", textAlign: "center" }}>
-              <strong>1. Получаем новый ответ</strong>
-              <div>Внутри каждого прохода вызывается <code>input()</code>.</div>
+        <Diagram caption="Путь одного ответа внутри reader-а" orientation="vertical" className="lesson16-1-reader-diagram">
+          <div className="lesson16-1-reader-flow" role="group" aria-label="Получение ответа, проверка и два результата">
+            <div className="lesson16-1-reader-step">
+              <span className="lesson16-1-reader-step-label">01 · ВВОД</span>
+              <strong>Получаем новый ответ</strong>
+              <span>На каждом проходе вызывается <code>input()</code>.</span>
             </div>
-            <div aria-hidden="true" style={{ color: "var(--accent)", fontSize: 26, lineHeight: 1 }}>↓</div>
-            <div style={{ width: "min(100%, 520px)", padding: "16px 20px", border: "1px solid var(--diagram-node-border)", borderRadius: 12, background: "var(--diagram-decision-bg)", textAlign: "center" }}>
-              <strong>2. Проверяем результат</strong>
-              <div>Для названия проверяем результат <code>normalize_title</code>; у приоритета свои проверки.</div>
+            <span className="lesson16-1-reader-arrow" aria-hidden="true">↓</span>
+            <div className="lesson16-1-reader-step lesson16-1-reader-step--check">
+              <span className="lesson16-1-reader-step-label">02 · ПРОВЕРКА</span>
+              <strong>Подходит ли результат?</strong>
+              <span>Для названия проверяем результат <code>normalize_title</code>; у приоритета свои правила.</span>
             </div>
-            <div aria-hidden="true" style={{ color: "var(--accent)", fontSize: 26, lineHeight: 1 }}>↓</div>
-            <div style={{ width: "100%", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 240px), 1fr))", gap: 12 }}>
-              <section aria-label="Ответ не подходит" style={{ padding: 16, border: "1px solid var(--diagram-node-border)", borderRadius: 12, background: "var(--diagram-group-bg)" }}>
-                <div style={{ color: "var(--accent)", fontWeight: 700, textAlign: "center" }}>НЕТ: ответ не подходит</div>
-                <p>Поясняем причину и выполняем <code>continue</code>.</p>
-                <p>↶ Следующий проход снова вызывает <code>input()</code>.</p>
+            <div className="lesson16-1-reader-branches">
+              <section className="lesson16-1-reader-branch" aria-label="Ответ не подходит">
+                <strong>Нет, ответ не подходит</strong>
+                <p>Объясняем причину и выполняем <code>continue</code>.</p>
+                <p className="lesson16-1-reader-outcome">↶ Новый проход снова вызывает <code>input()</code>.</p>
               </section>
-              <section aria-label="Ответ подходит" style={{ padding: 16, border: "1px solid var(--diagram-node-border)", borderRadius: 12, background: "var(--diagram-group-bg)" }}>
-                <div style={{ color: "var(--accent)", fontWeight: 700, textAlign: "center" }}>ДА: ответ подходит</div>
+              <section className="lesson16-1-reader-branch" aria-label="Ответ подходит">
+                <strong>Да, ответ подходит</strong>
                 <p>Выполняем <code>return</code> подготовленного значения.</p>
-                <p>Вызов заканчивается, а значение получает caller, то есть место вызова.</p>
+                <p className="lesson16-1-reader-outcome">Результат получает тот код, который вызвал функцию.</p>
               </section>
             </div>
-            <div style={{ width: "100%", padding: "12px 16px", borderInlineStart: "3px solid var(--diagram-detail-line)", borderRadius: 8, background: "var(--diagram-group-bg)" }}>
-              <strong>Граница ответственности.</strong> Reader заканчивается на возвращённом значении. Список tasks в этой схеме не меняется.
+            <div className="lesson16-1-reader-boundary">
+              <strong>Граница ответственности.</strong> Reader возвращает значение, но не меняет список <code>tasks</code>.
             </div>
           </div>
         </Diagram>
         <p>
           Читаем схему сверху вниз. Сначала функция получает новую строку, затем проверяет её. Ветка отказа ведёт к
           следующему проходу, а успешная ветка отдаёт результат вызывающему коду. Действия с tasks здесь нет, потому
-          что получение данных и добавление записи принадлежат разным частям Planner. Перед таблицей предскажите, где
+          что получение данных и добавление записи принадлежат разным частям Planner. Перед примерами предскажите, где
           будет повтор <code>input()</code>, а где <code>return</code>, и только потом сверьте ответы.
         </p>
-        <MethodGrid
-          rows={[
-            [<code>Enter</code>, <span>После очистки получаем <code>""</code>. Показываем причину и возвращаемся к новому <code>input()</code>.</span>],
-            [<code>"  Учить Python  "</code>, <span>Получаем <code>"Учить Python"</code>. Только здесь завершаем reader через <code>return</code>.</span>],
-          ]}
-        />
+        <ul>
+          <li><code>Enter</code>: после очистки получаем <code>""</code>, сообщаем причину и снова вызываем <code>input()</code>.</li>
+          <li>Название «Учить Python» с пробелами по краям: очищаем его и возвращаем <code>"Учить Python"</code>.</li>
+        </ul>
         <p>
           Как в поле анкеты, после отказа мы просим заполнить <em>это же поле заново</em>; старый ответ не проверяем
           бесконечно. Теперь полностью пройдём независимый reader для выбора резервной копии. Он принимает только «да» и
@@ -366,13 +360,20 @@ export function Lesson16_1({ module }: { module?: string }) {
           Это как проверка билета: сначала читаем номер (преобразование), затем проверяем допустимый ряд (диапазон).
           Неудача на первом шаге и отказ на втором требуют разных сообщений.
         </p>
-        <MethodGrid
-          rows={[
-            ['"много" или "2.5"', <span><code>int()</code> вызывает <code>ValueError</code>. Сообщаем, что нужно целое число, и снова спрашиваем приоритет.</span>],
-            ['"0" или "6"', <span><code>int()</code> успешен. Условие <code>1 &lt;= priority &lt;= 5</code> ложно: поясняем диапазон и спрашиваем снова.</span>],
-            ['"1" или "5"', <span>Оба шага успешны: <code>return</code> передаёт <code>int</code>, запрос заканчивается.</span>],
-          ]}
-        />
+        <ul className="lesson16-1-priority-path" aria-label="Результаты проверки приоритета">
+          <li>
+            <strong>«много» или «2.5»</strong>
+            <p><code>int()</code> вызывает <code>ValueError</code>. Сообщаем, что нужно целое число, и спрашиваем снова.</p>
+          </li>
+          <li>
+            <strong>«0» или «6»</strong>
+            <p>Преобразование успешно, но число вне диапазона. Поясняем границы и спрашиваем снова.</p>
+          </li>
+          <li>
+            <strong>«1» или «5»</strong>
+            <p>Обе проверки пройдены, <code>return</code> передаёт целое число.</p>
+          </li>
+        </ul>
         <p>
           Проследим ввод <code>"6" → "2"</code>: первый <code>int()</code> возвращает <code>6</code>, но сравнение
           не проходит, и reader снова задаёт вопрос. Вторая строка превращается в целое <code>2</code> и проходит
@@ -420,13 +421,11 @@ export function Lesson16_1({ module }: { module?: string }) {
           значения. В следующем шаге отдельная операция сможет принять оба результата и решить, когда добавить новую
           задачу.
         </p>
-        <MethodGrid
-          rows={[
-            [<code>read_title()</code>, <span>Принимает <code>"  Заметка  "</code> и возвращает <code>"Заметка"</code>. Ни одной записи пока нет.</span>],
-            [<code>read_priority()</code>, <span>На <code>"6"</code> объясняет границу и повторяет вопрос. Название не требуется вводить снова.</span>],
-            [<code>read_priority()</code>, <span>На новом <code>"2"</code> возвращает целое <code>2</code>. Только будущая операция добавления сможет изменить <code>tasks</code>.</span>],
-          ]}
-        />
+        <ul>
+          <li><code>read_title()</code> принимает название «Заметка» с пробелами по краям и возвращает <code>"Заметка"</code>. Записи пока нет.</li>
+          <li><code>read_priority()</code> получает <code>"6"</code>, объясняет границу и повторяет вопрос. Название вводить снова не нужно.</li>
+          <li>Та же функция получает <code>"2"</code> и возвращает целое <code>2</code>. Изменение <code>tasks</code> остаётся будущей операции добавления.</li>
+        </ul>
         <p>
           В примере название уже прочитано, но неправильный приоритет задержал только второй reader.
           Локальный <code>tasks</code> создаётся внутри <code>run()</code>, поэтому после выхода в приглашение
@@ -457,7 +456,7 @@ export function Lesson16_1({ module }: { module?: string }) {
           items={[
             {
               title: "Подтвердим исходный проект и проверим read_title",
-              description: "Сверим B3 и каркас предыдущего шага, затем проверим обычный ответ, названия «стоп» и exit, пустоту, пробелы и новый допустимый ввод.",
+              description: "Найдём прежние функции и проверим меню, затем проверим обычный ответ, названия «стоп» и exit, пустоту, пробелы и новый допустимый ввод.",
             },
             {
               title: "Напишем read_priority и различим отказы",
@@ -470,12 +469,17 @@ export function Lesson16_1({ module }: { module?: string }) {
           ]}
         />
         <p>
-          В прямом запуске используем только объяснённый ранее порядок: запускаем файл в интерактивном режиме, штатно
-          выходим из <code>run()</code> командой <code>exit</code> и дожидаемся <code>&gt;&gt;&gt;</code>. Команда
-          <code>python -i main.py</code> запускает файл и оставляет интерпретатор открытым для прямых вызовов функций.
-          Мы не создаём второй проект или
-          временную копию. Если собственный checkpoint или ожидаемая точка после предыдущего шага недоступны, более
-          поздний checkout не выдаём за исходный и не считаем проектное изменение принятым.
+          Сохраним файл и запустим в терминале проекта <code>python -i main.py</code>. Сначала откроется меню:
+          введём в нём <code>exit</code> и дождёмся приглашения Python <code>&gt;&gt;&gt;</code>. Теперь можно вызвать
+          функцию напрямую и проверить возвращённое значение. Приглашение появляется после завершения <code>run()</code>.
+          Если нужных функций или каркаса меню в своём файле пока нет, сначала восстановим предыдущий шаг.
+        </p>
+        <p>
+          После изменения кода сохраним файл, выйдем из интерпретатора командой <code>exit()</code> при
+          <code>&gt;&gt;&gt;</code> и снова запустим <code>python -i main.py</code>: прежний процесс не перечитывает файл
+          автоматически. Если вызов зациклился или ждёт лишний ввод, прервём его клавишами <code>Ctrl+C</code>,
+          исправим код и повторим запуск. Команда <code>exit()</code> в Python и слово <code>exit</code> в меню
+          относятся к разным приглашениям.
         </p>
         <p>
           В самостоятельной проверке получим другие ответы, сначала предскажем количество вопросов и тип возвращаемых

@@ -72,40 +72,8 @@ print(rooms)
             'if book["available"]:\n            total += book["pages"]',
         ))
 
-    def test_final_report_excludes_completed_tasks_and_preserves_input(self):
-        task = exercise("20.1", "Самостоятельная миниработа: отчёт по открытым задачам")
-        code = task["reference_code"]
-        self.assert_accepted(task, code)
-        self.assert_rejected(task, code.replace('if not task["is_done"]:', "if True:"))
-        self.assert_rejected(task, code.replace("largest_priority = None", "largest_priority = 0"))
-        self.assert_rejected(task, code.replace("print(tasks)", "tasks.clear()\nprint(tasks)"))
-
-    def test_final_report_accepts_student_defined_helpers(self):
-        task = exercise("20.1", "Самостоятельная миниработа: отчёт по открытым задачам")
-        self.assert_accepted(task, '''def choose_open(records):
-    chosen = []
-    for record in records:
-        if not record["is_done"]:
-            chosen.append(record)
-    return chosen
-
-def biggest_priority(records):
-    candidate = None
-    for record in records:
-        if candidate is None:
-            candidate = record["priority"]
-        elif record["priority"] > candidate:
-            candidate = record["priority"]
-    return candidate
-
-chosen = choose_open(tasks)
-print(len(chosen))
-print(biggest_priority(chosen))
-print(tasks)
-''')
-
     def test_file_builtin_stays_blocked_with_and_without_spaces(self):
-        task = exercise("20.1", "Самостоятельная миниработа: отчёт по открытым задачам")
+        task = exercise("9.1", "Самостоятельно построим накопление")
         for code in ['open("file.txt")', 'open ("file.txt")']:
             with self.subTest(code=code):
                 result = run_python_task(code, task)

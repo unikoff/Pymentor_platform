@@ -19,6 +19,7 @@ import {
   TypeCard,
   TypeCards,
 } from "../../shared";
+import "./lesson13_1-github.css";
 
 // 13.1. Отправляем код на GitHub
 export function Lesson13_1({ module }: { module?: string }) {
@@ -57,7 +58,7 @@ export function Lesson13_1({ module }: { module?: string }) {
         <p>
           Локальный commit даёт точку сравнения с серверной историей. Мы сначала выясним направление передачи, а после
           публикации проверим GitHub по фактическим данным проекта. Если собственного clone, нужного commit или пустого
-          удалённого репозитория ещё нет, вернёмся к соответствующему шагу 12.1 или 13 и отложим push.
+          удалённого репозитория ещё нет, вернёмся к созданию проекта или первого commit и отложим push.
         </p>
       </Section>
 
@@ -120,7 +121,8 @@ export function Lesson13_1({ module }: { module?: string }) {
         <p>
           <code>origin</code> - короткое имя для сохранённого адреса удалённого репозитория. Команда
           <code>git remote -v</code> показывает отдельно адрес получения (fetch) и отправки (push). Проверяем
-          именно <strong>push URL</strong>: владелец и название репозитория должны совпасть с нашим пустым GitHub-проектом.
+          оба адреса: для этого учебного маршрута fetch и push должны совпадать и вести в наш пустой GitHub-проект.
+          Иначе остановимся: проверка через <code>git ls-remote origin</code> читает fetch-адрес, а push может отправить в другое место.
         </p>
         <TerminalDemo
           title="проверка перед отправкой"
@@ -164,7 +166,7 @@ export function Lesson13_1({ module }: { module?: string }) {
         </p>
         <Callout tone="warn">
           <code>git ls-remote origin</code> запрашивает ссылки удалённого репозитория без изменения его истории.
-          Для исходно пустого GitHub-репозитория успешная команда не выводит ссылок. Если появились строки либо произошла
+          Только после сверки одинаковых fetch и push адресов эта проверка относится к месту отправки. Для исходно пустого GitHub-репозитория успешная команда не выводит ссылок. Если появились строки либо произошла
           ошибка доступа, считать remote пустым нельзя; сначала выясним состояние и не выполняем push.
         </Callout>
         <LinkedNotes
@@ -335,7 +337,7 @@ export function Lesson13_1({ module }: { module?: string }) {
           explanation="Отказ относится к аккаунту или его доступу. Автор commit остаётся сведением о снимке, а force изменил бы риск истории без связи с причиной."
         />
         <p>
-          Сообщение <code>non-fast-forward</code> означает, что серверная ветка содержит историю, которой нет в нашей локальной ветке.
+          Сообщение <code>non-fast-forward</code> означает, что Git не может обновить серверную ветку обычным продвижением истории. Нужно отдельно выяснить состояние веток.
           В текущем маршруте remote ожидался пустым, поэтому такой случай означает, что исходное состояние отличается от
           плана. Мы останавливаем push и передаём вопрос на отдельное согласование истории. Не используем pull, merge,
           rebase или force наугад.
@@ -348,48 +350,34 @@ export function Lesson13_1({ module }: { module?: string }) {
           commit на странице с ID, который получили из локального log. Затем посмотрим содержимое main.py и .gitignore.
           В задании это Hello world и правила для __pycache__/ и *.pyc, подготовленные в предыдущих шагах.
         </p>
-        <figure style={{ width: "100%", maxWidth: "960px", margin: "24px auto" }}>
-          <a
-            href="https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-branches-in-your-repository/viewing-branches-in-your-repository?apiVersion=2022-11-28"
-            target="_blank"
-            rel="noreferrer"
-            style={{ display: "flex", justifyContent: "center" }}
-          >
-            <img
-              src="https://docs.github.com/assets/cb-36152/images/help/repository/file-tree-view-branch-dropdown-expanded.png"
-              alt="Пример GitHub: открыто меню выбора ветки над списком файлов; текущая ветка main, ниже видна другая ветка"
-              style={{ display: "block", maxWidth: "100%", height: "auto", borderRadius: "8px" }}
-            />
-          </a>
-          <figcaption style={{ marginTop: "8px" }}>
-            <strong>1. Выберем ветку.</strong> В меню над списком файлов выберем ветку из команды push. На снимке показаны
-            примерные имена, поэтому сверим свою ветку с именем из команды.
-          </figcaption>
-        </figure>
-        <figure style={{ width: "100%", maxWidth: "960px", margin: "24px auto" }}>
-          <a
-            href="https://docs.github.com/en/pull-requests/how-tos/commit-changes/troubleshooting-commits"
-            target="_blank"
-            rel="noreferrer"
-            style={{ display: "flex", justifyContent: "center" }}
-          >
-            <img
-              src="https://docs.github.com/assets/cb-48469/images/help/commits/commits-page.png"
-              alt="Пример GitHub: над списком файлов показана выбранная ветка main и выделенная ссылка на список commits"
-              style={{ display: "block", maxWidth: "100%", height: "auto", borderRadius: "8px" }}
-            />
-          </a>
-          <figcaption style={{ marginTop: "8px" }}>
-            <strong>2. Откроем commits.</strong> Нажмём ссылку с количеством commits над списком файлов, затем выберем
-            сообщение нужного commit. Это официальные примеры интерфейса GitHub Docs.
-          </figcaption>
-        </figure>
-        <p>
-          <strong>3. Найдём полный ID.</strong> На странице выбранного commit найдём адрес вида{" "}
-          <code>https://github.com/OWNER/REPOSITORY/commit/FULL_COMMIT_ID</code>. Сравним часть после /commit/ с полным
-          ID из git log. В списке commits часто отображается только короткая запись. Открывайте сам commit либо используйте
-          отдельную проверку Git ниже: по первым семи символам равенство всей версии установить нельзя.
-        </p>
+        <div className="github-check" aria-label="Как найти опубликованный commit на GitHub">
+          <div className="github-check__heading">
+            <span>Проверяем на GitHub</span>
+            <h3>От ветки к нужному commit</h3>
+            <p>Два ориентира на странице репозитория помогут найти опубликованную версию.</p>
+          </div>
+          <div className="github-check__steps">
+            <figure className="github-check__step">
+              <figcaption>
+                <span className="github-check__number">01</span>
+                <div><strong>Выберите ветку</strong><p>Над файлами откройте меню веток и выберите <code>main</code>.</p></div>
+              </figcaption>
+              <a href="https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-branches-in-your-repository/viewing-branches-in-your-repository?apiVersion=2022-11-28" target="_blank" rel="noreferrer" aria-label="Открыть справку GitHub о выборе ветки">
+                <img src="https://docs.github.com/assets/cb-36152/images/help/repository/file-tree-view-branch-dropdown-expanded.png" alt="Меню выбора ветки GitHub: выбрана main" />
+              </a>
+            </figure>
+            <figure className="github-check__step">
+              <figcaption>
+                <span className="github-check__number">02</span>
+                <div><strong>Откройте историю commits</strong><p>Над списком файлов нажмите на количество commits и выберите нужное сообщение.</p></div>
+              </figcaption>
+              <a href="https://docs.github.com/en/pull-requests/how-tos/commit-changes/troubleshooting-commits" target="_blank" rel="noreferrer" aria-label="Открыть справку GitHub об истории commits">
+                <img src="https://docs.github.com/assets/cb-48469/images/help/commits/commits-page.png" alt="Страница GitHub: ссылка на историю commits над списком файлов" />
+              </a>
+            </figure>
+          </div>
+          <p className="github-check__next"><strong>Дальше:</strong> на странице commit найдите полный ID в адресе после <code>/commit/</code> и сравните с локальным. Короткого ID из списка недостаточно.</p>
+        </div>
         <TerminalDemo
           title="независимая сверка двух полных ID после успешного push"
           lines={[

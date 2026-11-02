@@ -36,17 +36,17 @@
 }
 
 .truefalse-buttons button:hover:not(:disabled) {
-  border-color: var(--accent);
+  border-color: var(--border-tint-accent);
   transform: translateY(-1px);
 }
 
 .truefalse-buttons button.is-correct {
-  border-color: var(--accent);
+  border-color: var(--border-tint-accent);
   background: var(--accent-soft);
 }
 
 .truefalse-buttons button.is-wrong {
-  border-color: var(--error);
+  border-color: var(--border-tint-error);
   background: color-mix(in srgb, var(--error) 10%, transparent);
 }
 

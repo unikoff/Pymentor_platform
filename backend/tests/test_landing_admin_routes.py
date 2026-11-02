@@ -17,6 +17,8 @@ from core.web import configure_web
 from db import models
 from db.engine import Base
 from routers.admin.router import admin_router
+from routers.landings import service as landing_service
+from routers.landings.public import router as public_landing_router
 
 
 async def _request(
@@ -83,6 +85,7 @@ class LandingAdminRouteTests(TestCase):
         self.app = FastAPI()
         configure_web(self.app)
         self.app.include_router(admin_router, prefix="/api/admin")
+        self.app.include_router(public_landing_router, prefix="/api/landings")
 
         def override_get_db():
             with self.sessions() as db:
@@ -285,3 +288,55 @@ class LandingAdminRouteTests(TestCase):
         )
 
         self.assertEqual(status_code, 413)
+
+    def test_public_consultation_submission_is_queued_and_idempotent(self) -> None:
+        with self.sessions() as db:
+            landing = landing_service.create_landing(
+                db,
+                slug="backend",
+                title="Pymentor",
+                description="Основной лендинг",
+            )
+            landing_service.configure_landing_telegram(
+                db,
+                landing.id,
+                secret_ref="backend-bot-v1",
+                chat_id="12345",
+                bot_username="pymentor_bot",
+            )
+
+        payload = {
+            "name": "Анна",
+            "contact": "@anna",
+            "goal": "Начать учить Python",
+            "consent": True,
+        }
+        headers = {"Idempotency-Key": "123e4567-e89b-12d3-a456-426614174000"}
+        with patch.dict(
+            os.environ,
+            {"PYMENTOR_LANDING_BOT_CREDENTIALS": json.dumps({"backend-bot-v1": "external-token"})},
+        ):
+            first_status, first = asyncio.run(
+                _request(
+                    self.app,
+                    "POST",
+                    "/api/landings/backend/consultations",
+                    payload=payload,
+                    extra_headers=headers,
+                )
+            )
+            repeated_status, repeated = asyncio.run(
+                _request(
+                    self.app,
+                    "POST",
+                    "/api/landings/backend/consultations",
+                    payload=payload,
+                    extra_headers=headers,
+                )
+            )
+
+        self.assertEqual(first_status, 202)
+        self.assertEqual(repeated_status, 200)
+        self.assertTrue(first["accepted"])
+        self.assertTrue(repeated["duplicate"])
+        self.assertNotIn("@anna", json.dumps(first))

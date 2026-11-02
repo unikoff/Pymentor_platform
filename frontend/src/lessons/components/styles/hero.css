@@ -1,28 +1,13 @@
 .rich-hero {
   position: relative;
   padding: var(--space-8);
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-soft);
   border-radius: var(--radius-lg);
   background:
-    radial-gradient(circle at 85% 15%, var(--accent-soft), transparent 46%),
-    radial-gradient(circle at 8% 90%, color-mix(in srgb, var(--accent-secondary-glow) 14%, transparent), transparent 42%),
-    var(--card);
+    radial-gradient(ellipse at 90% 0%, color-mix(in srgb, var(--accent) 7%, transparent), transparent 60%),
+    linear-gradient(120deg, var(--surface-2), var(--surface) 75%);
   box-shadow: var(--shadow);
   overflow: hidden;
-}
-
-.rich-hero--project {
-  background:
-    radial-gradient(circle at 88% 12%, color-mix(in srgb, var(--accent-secondary-glow) 18%, transparent), transparent 44%),
-    radial-gradient(circle at 6% 92%, var(--accent-soft), transparent 44%),
-    var(--card);
-}
-
-.rich-hero--bool {
-  background:
-    radial-gradient(circle at 82% 16%, color-mix(in srgb, var(--info) 16%, transparent), transparent 46%),
-    radial-gradient(circle at 10% 88%, var(--accent-soft), transparent 42%),
-    var(--card);
 }
 
 .rich-hero h1 {
@@ -53,7 +38,7 @@
   display: inline-block;
   padding: var(--space-1) var(--space-3);
   border-radius: var(--radius-pill);
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-soft);
   background: var(--surface-2);
   color: var(--accent);
   font-size: 0.75rem;
@@ -83,7 +68,7 @@
 }
 
 .rich-hero-tags svg {
-  color: var(--accent);
+  color: var(--muted);
 }
 
 .rich-section-title {
@@ -144,7 +129,7 @@
 }
 
 .linked-note p {
-  color: var(--muted);
+  color: var(--reading);
   line-height: 1.65;
 }
 
@@ -183,7 +168,7 @@
   width: 0.45rem;
   height: 0.45rem;
   transform: translateY(-50%);
-  border: 1px solid var(--accent);
+  border: 1px solid var(--line);
   border-radius: 50%;
   background: var(--accent);
   content: "";

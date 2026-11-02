@@ -3,6 +3,7 @@ import "./progress.css";
 import { Check, CheckCircle2, ChevronDown } from "lucide-react";
 import { ADMIN_LEVEL_LABELS } from "../../../shared/api/contracts";
 import type { AdminProgressTrack } from "../../../shared/api/contracts";
+import { isRequiredPracticeTask } from "../../learning/required-tasks";
 
 function getProgressPercent(completed: number, total: number) {
   return total > 0 ? Math.max(0, Math.min(100, Math.round((completed / total) * 100))) : 0;
@@ -61,9 +62,10 @@ export function AdminLearningProgress({ progress }: { progress: AdminProgressTra
                           {module.lessons.length ? (
                             <ul className="account-course-block__lessons">
                               {module.lessons.map((lesson) => {
-                                const completedTasks = lesson.tasks.filter((task) => task.completed).length;
+                                const requiredTasks = lesson.tasks.filter(isRequiredPracticeTask);
+                                const completedTasks = requiredTasks.filter((task) => task.completed).length;
                                 const lessonMeta = lesson.countable
-                                  ? lesson.completed ? "Выполнено" : `${completedTasks} из ${lesson.tasks.length} заданий`
+                                  ? lesson.completed ? "Выполнено" : `${completedTasks} из ${requiredTasks.length} заданий`
                                   : "Без отметки";
                                 const lessonContent = (
                                   <>
@@ -94,6 +96,7 @@ export function AdminLearningProgress({ progress }: { progress: AdminProgressTra
                                                 <span className="admin-progress-task-dot" aria-hidden="true" />
                                               )}
                                               <span className="admin-progress-task-title">{task.title}</span>
+                                              {!isRequiredPracticeTask(task) && <span className="admin-progress-task-level is-manual">{"\u041d\u0435\u043e\u0431\u044f\u0437\u0430\u0442\u0435\u043b\u044c\u043d\u044b\u0439 \u043f\u043e\u0432\u0442\u043e\u0440"}</span>}
                                               <span className={`admin-progress-task-level ${task.level ? `is-${task.level}` : "is-manual"}`}>
                                                 {task.level ? ADMIN_LEVEL_LABELS[task.level] : "Самопроверка"}
                                               </span>

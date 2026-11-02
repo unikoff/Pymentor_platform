@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
   BugHunt,
   CompareSolutions,
@@ -18,55 +17,21 @@ import {
 } from "../../shared";
 
 function LogicOperatorDemo() {
-  const [first, setFirst] = useState(true);
-  const [second, setSecond] = useState(false);
-  const label = (value: boolean) => (value ? "True" : "False");
-
   return (
     <section className="slice-card">
       <div className="interactive-heading">
         <div>
-          <span>ПОПРОБУЙТЕ</span>
-          <h3>Что получится у and и or?</h3>
+          <span>СРАВНИМ ОТВЕТЫ</span>
+          <h3>Когда and и or расходятся</h3>
         </div>
       </div>
       <p className="interactive-prompt">
-        Изменим два готовых булевых ответа и сравним результат при всех четырёх сочетаниях.
+        Возьмём пару, в которой только один ответ равен True. Она показывает различие между двумя связками.
       </p>
-      <div className="interactive-actions">
-        <button
-          className="interactive-secondary"
-          type="button"
-          role="switch"
-          aria-checked={first}
-          onClick={() => setFirst((value) => !value)}
-        >
-          Первый ответ: {label(first)}
-        </button>
-        <button
-          className="interactive-secondary"
-          type="button"
-          role="switch"
-          aria-checked={second}
-          onClick={() => setSecond((value) => !value)}
-        >
-          Второй ответ: {label(second)}
-        </button>
-      </div>
       <MethodGrid
         rows={[
-          [
-            <>{label(first)} and {label(second)}</>,
-            <>
-              <code>and</code> даёт <code>{label(first && second)}</code>.
-            </>,
-          ],
-          [
-            <>{label(first)} or {label(second)}</>,
-            <>
-              <code>or</code> даёт <code>{label(first || second)}</code>.
-            </>,
-          ],
+          [<><code>True and False</code></>, <><code>False</code>: нужны оба ответа True.</>],
+          [<><code>True or False</code></>, <><code>True</code>: достаточно одного ответа True.</>],
         ]}
       />
     </section>
@@ -74,103 +39,76 @@ function LogicOperatorDemo() {
 }
 
 function RangeBoundaryDemo() {
-  const [value, setValue] = useState(14);
-  const [includeStart, setIncludeStart] = useState(true);
-  const [includeEnd, setIncludeEnd] = useState(false);
-  const start = 10;
-  const end = 20;
-  const lowerPasses = includeStart ? value >= start : value > start;
-  const upperPasses = includeEnd ? value <= end : value < end;
-  const lowerOperator = includeStart ? ">=" : ">";
-  const upperOperator = includeEnd ? "<=" : "<";
-  const valuePasses = lowerPasses && upperPasses;
-  const boolLabel = (answer: boolean) => (answer ? "True" : "False");
-  const startPosition = ((start - 8) / 14) * 100;
-  const endPosition = ((end - 8) / 14) * 100;
+  const startPosition = ((10 - 8) / 14) * 100;
+  const endPosition = ((20 - 8) / 14) * 100;
 
   return (
-    <section className="slice-card">
+    <figure className="slice-card" aria-labelledby="range-boundary-caption" style={{ margin: 0 }}>
       <div className="interactive-heading">
         <div>
-          <span>ПОПРОБУЙТЕ</span>
-          <h3>Передвиньте точку по диапазону</h3>
+          <span>ЧИСЛОВАЯ ПРЯМАЯ</span>
+          <h3>От 10 включительно до 20 не включительно</h3>
         </div>
       </div>
-      <p className="interactive-prompt">
-        Выберите число от 8 до 22. Затем решите, входят ли сами числа 10 и 20 в диапазон.
+      <p className="interactive-prompt" id="range-boundary-caption">
+        Закрашенная точка включает 10, пустая точка исключает 20. Между ними находятся значения диапазона.
       </p>
-      <label style={{ display: "grid", gap: 6 }}>
-        <span style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-          <span>Выбранное число</span>
-          <output
-            htmlFor="lesson08-range-value"
-            aria-live="polite"
-            style={{ minWidth: 42, padding: "2px 10px", borderRadius: 999, background: "var(--accent-soft)", color: "var(--text)", fontWeight: 700, textAlign: "center" }}
-          >
-            {value}
-          </output>
-        </span>
-        <span style={{ position: "relative", display: "block" }}>
-          <input
-            id="lesson08-range-value"
-            type="range"
-            min={8}
-            max={22}
-            step={1}
-            value={value}
-            onChange={(event) => setValue(Number(event.target.value))}
-            aria-label="Положение точки на числовой прямой"
-            aria-valuetext={`Число ${value}`}
-            style={{ display: "block", width: "100%", accentColor: "var(--accent)" }}
-          />
-          {[{ point: startPosition, included: includeStart }, { point: endPosition, included: includeEnd }].map(({ point, included }) => (
-            <span
-              key={point}
-              aria-hidden="true"
-              style={{
-                position: "absolute", left: `${point}%`, top: "50%", width: 12, height: 12,
-                border: "2px solid var(--accent)", borderRadius: "50%",
-                background: included ? "var(--accent)" : "var(--card)",
-                boxSizing: "border-box", transform: "translate(-50%, -50%)", pointerEvents: "none",
-              }}
-            />
-          ))}
-        </span>
+      <div
+        aria-hidden="true"
+        style={{ position: "relative", height: 68, marginInline: 12, marginTop: 10 }}
+      >
         <span
-          aria-hidden="true"
-          style={{ position: "relative", display: "block", height: 20, marginInline: 10, color: "var(--muted)", fontSize: "0.78rem" }}
-        >
-          {[8, 10, 20, 22].map((tick) => (
-            <span key={tick} style={{ position: "absolute", left: `${((tick - 8) / 14) * 100}%`, transform: "translateX(-50%)" }}>
-              {tick}
-            </span>
-          ))}
-        </span>
-      </label>
-      <div className="interactive-actions">
-        <label><input type="checkbox" checked={includeStart} onChange={(event) => setIncludeStart(event.target.checked)} /> Включать нижний край 10</label>
-        <label><input type="checkbox" checked={includeEnd} onChange={(event) => setIncludeEnd(event.target.checked)} /> Включать верхний край 20</label>
+          style={{ position: "absolute", left: 0, right: 0, top: 18, borderTop: "2px solid var(--border, #b8c0cc)" }}
+        />
+        <span
+          style={{ position: "absolute", left: `${startPosition}%`, width: `${endPosition - startPosition}%`, top: 16, borderTop: "5px solid var(--accent)" }}
+        />
+        {[{ value: 10, included: true, position: startPosition }, { value: 20, included: false, position: endPosition }].map(({ value, included, position }) => (
+          <span
+            key={value}
+            style={{
+              position: "absolute",
+              left: `${position}%`,
+              top: 10,
+              width: 18,
+              height: 18,
+              border: "2px solid var(--accent)",
+              borderRadius: "50%",
+              background: included ? "var(--accent)" : "var(--card)",
+              boxSizing: "border-box",
+              transform: "translateX(-50%)",
+            }}
+          />
+        ))}
+        {[8, 10, 20, 22].map((tick) => (
+          <span
+            key={tick}
+            style={{
+              position: "absolute",
+              left: `${((tick - 8) / 14) * 100}%`,
+              top: 36,
+              transform: "translateX(-50%)",
+              color: "var(--muted)",
+              fontSize: "0.8rem",
+            }}
+          >
+            {tick}
+          </span>
+        ))}
       </div>
-      <p className="interactive-feedback" aria-live="polite">
-        Число {value} {valuePasses ? "входит" : "не входит"} в диапазон.
-      </p>
       <MethodGrid
         rows={[
-          [<>value {lowerOperator} {start}</>, <code>{boolLabel(lowerPasses)}</code>],
-          [<>value {upperOperator} {end}</>, <code>{boolLabel(upperPasses)}</code>],
+          ["9, ниже нижней границы", <><code>False</code>: не входит.</>],
+          ["10, нижняя граница", <><code>True</code>: входит.</>],
+          ["15, внутри", <><code>True</code>: входит.</>],
+          ["20, верхняя граница", <><code>False</code>: не входит.</>],
+          ["21, выше верхней границы", <><code>False</code>: не входит.</>],
         ]}
       />
-      <div className="branch-code" aria-live="polite">
-        <code className="branch-line">
-          (value {lowerOperator} {start}) and (value {upperOperator} {end}) → {boolLabel(valuePasses)}
-        </code>
-      </div>
-      <p className="interactive-prompt">
-        На шкале закрашенный кружок отмечает включённую границу, пустой отмечает исключённую.
-        Для включённого края используем <code>&gt;=</code> или <code>&lt;=</code>,
-        для исключённого <code>&gt;</code> или <code>&lt;</code>.
-      </p>
-    </section>
+      <figcaption style={{ color: "var(--muted)", fontSize: "0.9rem", marginTop: 10 }}>
+        На числовой прямой отмечены включённый левый и исключённый правый края диапазона.
+      </figcaption>
+    </figure>
   );
 }
 
@@ -179,30 +117,26 @@ export function Lesson04_1({ module }: { module?: string }) {
     <RichLesson>
       <RichHero
         chip={module ?? "Блок 1 · Первые шаги в Python"}
-        title="4.1. Сравнения и логика"
-        intro="Проверим числа и составим правило, которое возвращает понятный ответ True или False."
+        title="Сравнения и логика"
+        intro="Рассмотрим сравнения чисел и разберём, как ответы True и False соединяются в логическое правило."
       />
 
-      <Section number="00" title="От знакомых значений к точному ответу">
+      <Section number="00" title="Знакомая опора и новый вопрос">
         <Lead>
-          Мы уже работали с числами, выражениями и сообщениями из данных. Теперь впервые в этом
-          блоке научимся задавать значениям вопросы: достигло ли число порога, подходят ли сразу два
-          признака, входит ли число в диапазон? Python вернёт ответ, а мы научимся его читать. Пока
-          программа только получает ответ и показывает его.
+          Знакомая опора состоит из числовых значений, имён, арифметических выражений и вывода. Теперь добавим вопрос к этим данным: подходит ли значение под правило?
         </Lead>
         <LinkedNotes
           variant="connected"
           items={[
-            { title: "Точка старта", description: "Знакомые числа, строки, выражения и вывод результата." },
-            { title: "Новый вопрос", description: "Как проверить границу и объединить несколько отдельных ответов?" },
-            { title: "Результат", description: "Получим True или False и проверим правило на изменённых данных." },
+            { title: "Знакомая опора", description: "Числа, имена, арифметические выражения и print." },
+            { title: "Новый механизм", description: "Сравнение возвращает True или False; ответы можно соединять." },
+            { title: "Результат", description: "Объяснить порог, составное правило и две формы диапазона." },
           ]}
         />
         <p>
-          Сравнения и слова <code>and</code>, <code>or</code>, <code>not</code> мы разбираем впервые
-          в этом блоке. Сначала научимся читать каждый ответ, затем соединять их в правило. Цепное
-          сравнение прочитаем по шагам и сравним с двумя отдельными проверками. Пока мы не выбираем
-          следующую команду и не используем строки как логические ответы.
+          Сначала проверим сложение и вывод: во вкладке «Практика» стрелкой перейдём к заданию
+          «Складываем страницы двух частей». После проверки вернёмся во вкладку «Теория» и разберём
+          сравнения. Если в опоре обнаружится ошибка, разберём обратную связь и попробуем ещё раз.
         </p>
       </Section>
 
@@ -245,29 +179,17 @@ export function Lesson04_1({ module }: { module?: string }) {
           <code>True</code> или <code>False</code>.
         </p>
         <PredictOutput
-          code={'pages_read = 7\npage_goal = 10\nprint(pages_read < page_goal)'}
-          output="True"
-          hint="Сначала прочитаем знак как вопрос «меньше ли», затем сравним 7 и 10."
-        />
-        <p>
-          Теперь мысленно заменим 7 на 12. Вопрос остаётся «меньше ли десяти», поэтому ответ станет
-          <code>False</code>. Проверим, как изменится ответ, если страниц ровно десять.
-        </p>
-        <TrueFalse
-          statement={<>При <code>pages_read = 10</code> вопрос <code>pages_read &lt; page_goal</code> вернёт <code>True</code>, если <code>page_goal = 10</code>.</>}
-          isTrue={false}
-          explanation="Равные числа не удовлетворяют знаку <. Для 10 < 10 ответ False. Ни переменные, ни сами числа сравнение не меняет."
+          code={'first = True\nsecond = False\nprint(first, second)'}
+          output="True False"
+          hint="Запятая передаёт print два значения в исходном порядке; на экране между ними один пробел."
         />
         <p>
           Слово <code>True</code> без кавычек показывает значение типа <code>bool</code>. Кавычки
           меняют смысл: <code>"False"</code> становится строкой из букв, а <code>False</code> без
           кавычек остаётся ответом типа <code>bool</code>. <code>print(False)</code> и
           <code>print("False")</code> выглядят одинаково на экране, но внутри у них разные значения.
-        </p>
-        <p>
           Само слово <code>True</code> не означает «всё хорошо». Оно означает только, что наш вопрос
-          получил ответ «да». Для выражения <code>pages_read &lt; page_goal</code> это значит, что мы
-          прочитали меньше запланированного. Сначала читаем вопрос, потом объясняем ответ.
+          получил ответ «да».
         </p>
         <PredictOutput
           code={'coins = 3\nmore_than_two = coins > 2\nprint(more_than_two)\nprint(coins > 4)'}
@@ -289,7 +211,7 @@ export function Lesson04_1({ module }: { module?: string }) {
         <MethodGrid
           rows={[
             [<code>==</code>, "Значения равны?"],
-            [<code>!=</code>, "Значения различаются?"],
+            [<code>!=</code>, "Значения не равны?"],
             [<code>&lt;</code>, "Первое значение строго меньше второго?"],
             [<code>&gt;</code>, "Первое значение строго больше второго?"],
             [<code>&lt;=</code>, "Первое значение меньше второго или равно ему?"],
@@ -380,23 +302,9 @@ export function Lesson04_1({ module }: { module?: string }) {
           <code>temp = 21</code> оба дадут <code>False</code>. Только само число 20 различает
           эти два правила. Мы всегда проверяем три положения: до границы, на ней и после неё.
         </p>
-        <p>Сравним строгое правило с правилом, которое включает порог.</p>
-        <BugHunt
-          code={'solved = 18\nminimum = 18\nmeets_goal = solved > minimum\nprint(meets_goal)'}
-          question="В правиле «не меньше 18» число 18 должно пройти. Какая деталь не совпадает с этим правилом?"
-          options={[
-            "Знак > исключает равенство, хотя граница включена",
-            "Знак > изменяет значение solved",
-            "Сравнение обязано использовать строки",
-          ]}
-          correctIndex={0}
-          explanation="При solved = 18 строгое > возвращает False. Мы включаем порог знаком >=, чтобы равенство тоже подходило."
-          fix={'solved = 18\nminimum = 18\nmeets_goal = solved >= minimum\nprint(meets_goal)'}
-        />
         <p>
-          После исправления число 18 подходит, а 17 нет. Число 19 тоже подходит. Если правило
-          изменится на «строго больше 18», вернём <code>&gt;</code>, и на самой границе получим
-          <code>False</code>. Знак выбираем по смыслу правила.
+          В практике мы перенесём это различие на другое правило о минимуме и проверим результат
+          ниже порога, на нём и выше него.
         </p>
       </Section>
 
@@ -414,10 +322,10 @@ export function Lesson04_1({ module }: { module?: string }) {
         </p>
         <LogicOperatorDemo />
         <p>
-          Добьёмся того, чтобы <code>or</code> дал <code>True</code>, а <code>and</code> дал
-          <code>False</code>. Для этого ровно один из двух ответов должен быть <code>True</code>.
-          Затем включим оба: <code>or</code> тоже останется <code>True</code>, оно означает
-          «хотя бы один», а не «ровно один».
+          На этой паре <code>and</code> даёт <code>False</code>, потому что один ответ ложный,
+          а <code>or</code> даёт <code>True</code>, потому что второй ответ истинный. Если оба
+          ответа равны <code>True</code>, обе связки дадут <code>True</code>: для <code>or</code>
+          достаточно хотя бы одного истинного ответа.
         </p>
         <p>
           Представим вход на выставку. Для входа нужен билет и свободное место. Оба пункта обязательны,
@@ -427,12 +335,12 @@ export function Lesson04_1({ module }: { module?: string }) {
           только вычисляем ответ, а не управляем настоящим входом.
         </p>
         <PredictOutput
-          code={'pages = 12\nminutes = 8\nprint(pages >= 10)\nprint(minutes <= 5)\nprint((pages >= 10) and (minutes <= 5))\nprint((pages >= 10) or (minutes <= 5))'}
+          code={'books = 7\ndays = 5\nprint(books >= 6)\nprint(days <= 3)\nprint((books >= 6) and (days <= 3))\nprint((books >= 6) or (days <= 3))'}
           output={'True\nFalse\nFalse\nTrue'}
-          hint="Сначала два отдельных вопроса: 12 >= 10 и 8 <= 5. Они дают True и False. Затем подставим эту пару в and и or."
+          hint="Сначала два отдельных вопроса: 7 >= 6 и 5 <= 3. Они дают True и False. Затем подставим эту пару в and и or."
         />
         <p>
-          Мы получили <code>True</code> для страниц и <code>False</code> для времени. Правило
+          Мы получили <code>True</code> для числа книг и <code>False</code> для числа дней. Правило
           «оба требования» не выполнено, зато правило «достаточно одного» выполнено. Скобки вокруг
           сравнений помогают видеть два независимых вопроса; <code>and</code> и <code>or</code>
           соединяют уже понятные ответы, а не сравнивают числа между собой.
@@ -444,11 +352,11 @@ export function Lesson04_1({ module }: { module?: string }) {
           возвращает обратный ответ. Представим две карточки: на первой записан факт, на второй
           ответ на обратный вопрос.
         </p>
-        <TrueFalse
-          statement={<>Если <code>has_invitation = False</code>, то <code>not has_invitation</code> даст <code>True</code>.</>}
-          isTrue={true}
-          explanation="not меняет один ответ на противоположный: False становится True."
-        />
+        <p>
+          Например, если <code>seat_reserved</code> равно <code>False</code>, то
+          <code>not seat_reserved</code> возвращает <code>True</code>. Сначала читаем имя, к
+          которому относится <code>not</code>, затем переворачиваем его bool-ответ.
+        </p>
         <MethodGrid
           rows={[
             [<>False и False</>, <>and: <code>False</code>, or: <code>False</code></>],
@@ -460,8 +368,8 @@ export function Lesson04_1({ module }: { module?: string }) {
         <p>
           Таблица перечисляет все четыре сочетания двух ответов. <code>and</code> требует два
           <code>True</code>, а <code>or</code> допускает один или два. <code>not</code> относится
-          к одному готовому ответу: <code>not (pages &gt;= 10)</code> при <code>pages = 12</code>
-          вернёт <code>False</code>. Оно не меняет сами страницы.
+          к одному готовому ответу: <code>not (books &gt;= 6)</code> при <code>books = 7</code>
+          вернёт <code>False</code>. Оно не меняет число книг.
         </p>
         <MethodGrid
           rows={[
@@ -490,15 +398,28 @@ export function Lesson04_1({ module }: { module?: string }) {
           если сработало хотя бы одно из двух: есть приглашение или покупка. Если спросим «есть
           приглашение или билет куплен?», ответ <code>or</code> будет <code>True</code>, потому что
           билет куплен. Чтобы спросить, отсутствует ли приглашение, поставим перед именем
-          <code>not</code>: <code>not has_invitation</code>. Оно меняет только следующий за ним ответ.
+          <code>not</code>: <code>not has_invitation</code>. Оно меняет ответ своего выражения; скобки помогают явно задать его границу.
         </p>
         <p>
           Скобки могут менять вопрос. <code>not (has_ticket and has_seat)</code> переворачивает общий
           ответ о билете и месте. А <code>(not has_ticket) and has_seat</code> сначала меняет только
           ответ о билете, затем соединяет его со вторым. Без скобок действует установленный порядок:
-          сначала <code>not</code>, потом <code>and</code>, затем <code>or</code>. Пока проще
-          поставить скобки явно и читать выражение по частям.
+          сначала <code>not</code>, потом <code>and</code>, затем <code>or</code>. Сравним два
+          вопроса на значениях <code>is_closed = True</code>, <code>has_seat = False</code> и
+          <code>staff_override = False</code>.
         </p>
+        <MethodGrid
+          rows={[
+            [
+              <>Без скобок: <code>not is_closed and has_seat or staff_override</code></>,
+              <>Сначала <code>not True</code> даёт False, затем <code>False and False</code> даёт False, и <code>False or False</code> тоже даёт False.</>,
+            ],
+            [
+              <>Скобки вокруг общего сравнения: <code>not (is_closed and has_seat) or staff_override</code></>,
+              <>Сначала <code>True and False</code> даёт False, затем <code>not False</code> даёт True, и <code>True or False</code> остаётся True.</>,
+            ],
+          ]}
+        />
         <CompareSolutions
           question="Билет есть, но свободного места нет. Какое выражение означает «общее правило о билете и месте не выполнено»?"
           left={{ title: "Отрицаем общее правило", code: "not (has_ticket and has_seat)", note: "Сперва проверим вместе билет и место, затем перевернём общий ответ." }}
@@ -516,7 +437,7 @@ export function Lesson04_1({ module }: { module?: string }) {
       <Section number="05" title="Читаем диапазон одной цепочкой">
         <Lead>
           Мы уже умеем проверять две границы отдельно и соединять ответы через <code>and</code>.
-          Теперь запишем тот же диапазон короче.
+          Теперь представим ту же проверку одной короткой цепочкой.
         </Lead>
         <p>
           Возьмём числа от 10 включительно до 20, не включая 20. Отдельно спросим: «value не меньше
@@ -551,7 +472,7 @@ export function Lesson04_1({ module }: { module?: string }) {
           explanation="Правая проверка 20 < 20 даёт False. Строгий знак исключает верхнюю границу, даже если левая проверка верна."
         />
         <p>
-          Перед записью цепочки прочитаем её как два вопроса. Так мы заметим, если край должен
+          При чтении цепочки представим её как два вопроса. Так мы заметим, если край должен
           входить в диапазон, а знак его исключает. Можно развернуть цепочку через <code>and</code> и
           проверить, что обе записи принимают одни и те же числа.
         </p>
@@ -575,39 +496,33 @@ export function Lesson04_1({ module }: { module?: string }) {
           различаются, один знак выбран неверно. В цепочке каждый знак отвечает за свою границу.
         </p>
         <p>
-          В практике сами составим обе формы для другого диапазона. Проверим число ниже нижней
-          границы, сами границы и число выше верхней: так выявим неверный знак даже тогда, когда
-          на обычном значении две записи случайно совпадают.
+          Задача о диапазоне в практике сопоставляет две формы на числе ниже границы, на обоих краях, внутри диапазона и выше него. Так видно, что обе записи проверяют одни и те же пределы.
         </p>
       </Section>
 
       <Section number="06" title="Что мы будем делать в практике">
         <Lead>
-          Мы начнём с подготовленных числовых значений в редакторе платформы. В каждом коротком
-          скрипте сначала предскажем bool, затем запустим программу и объясним расхождение, если
-          ответ окажется неожиданным.
+          Сравнения дают ответы True или False; логические операции позволяют объединить их. В практике проверим пороги, диапазоны и составные правила.
         </Lead>
         <LinkedNotes
           variant="connected"
           items={[
-            { title: "Сравним два порога", description: "Выберем знаки для «не меньше 50» и «строго больше 50» и увидим разницу при равенстве." },
-            { title: "Соединим две проверки", description: "Самостоятельно сравним места и цену, затем получим результаты and, or и not." },
-            { title: "Запишем диапазон двумя способами", description: "Составим обе формы для роста и сравним ответы на двух границах и вне их." },
+            { title: "Порог", description: "Два пороговых сравнения и их ответы." },
+            { title: "Логические операции", description: "Две числовые проверки, соединённые and, or и not." },
+            { title: "Диапазон", description: "Отдельные сравнения через and и цепная форма диапазона." },
+            { title: "Арифметика", description: "Арифметическая опора: сумма страниц двух частей." },
+            { title: "Равенство границе", description: "Исправление правила, которое включает равенство порогу." },
+            { title: "Знаки сравнения", description: "Шесть знаков сравнения для двух значений расстояния." },
+            { title: "Составное правило", description: "Одно смешанное правило с pages, minutes и paused." },
           ]}
         />
         <p>
-          Сначала сами запишем два сравнения баллов. Затем отдельно выясним, достаточно ли мест и
-          подходит ли цена; проверим, чем «нужны обе проверки» отличается от «достаточно одной».
-          В последней части применим две границы к одному числу и сравним цепочку с записью через
-          <code>and</code>.
-        </p>
-        <p>
-          В каждом задании платформа задаст исходные числа, а мы напишем сами сравнения и выведем
-          результаты. Предскажем ответы до запуска и проверим их на новых значениях, особенно на
-          равенстве и при одной истинной части. Если прогноз не совпадёт, вернёмся к таблице знаков,
-          таблице <code>and</code>/<code>or</code> или числовой прямой. Проект и файлы пока не нужны.
+          Перед запуском предположим результат для предложенных данных. Если вывод отличается от
+          прогноза, вернёмся к нужному знаку или связке и разберём каждую часть выражения отдельно.
+          Затем проверим исправленную программу на предложенных наборах.
         </p>
       </Section>
+
     </RichLesson>
   );
 }

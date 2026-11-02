@@ -45,17 +45,17 @@
 }
 
 .quiz-option:not(:disabled):hover {
-  border-color: var(--accent);
+  border-color: var(--border-tint-accent);
   transform: translateY(-1px);
 }
 
 .quiz-option.is-correct {
-  border-color: var(--accent);
+  border-color: var(--border-tint-accent);
   background: var(--accent-soft);
 }
 
 .quiz-option.is-wrong {
-  border-color: var(--error);
+  border-color: var(--border-tint-error);
   background: color-mix(in srgb, var(--error) 10%, transparent);
 }
 

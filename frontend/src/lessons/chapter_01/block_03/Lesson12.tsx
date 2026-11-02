@@ -1,3 +1,4 @@
+import "./lesson12-flow.css";
 import {
   Callout,
   CodeBlock,
@@ -181,8 +182,9 @@ export function Lesson12({ module }: { module?: string }) {
           вкладке редактора.
         </p>
         <p>
-          Для первого запуска сохраним один файл lesson12_check.py в существующей папке. Его достаточно, чтобы
-          проверить связь между редактором, интерпретатором и результатом.
+          Для первого запуска сохраним один файл в существующей папке. Например, назовём его lesson12_check.py.
+          Если файл с таким именем уже есть, выберем другое свободное имя с окончанием .py и не будем
+          перезаписывать существующие данные. Этого файла достаточно для проверки запуска.
         </p>
         <PredictOutput
           code={sampleCode}
@@ -190,7 +192,7 @@ export function Lesson12({ module }: { module?: string }) {
           hint="Вначале count получает значение 2. Для print сначала вычисляется count + 3, затем число выводится."
         />
         <p>
-          Сохраним эти две строки как lesson12_check.py и до запуска предскажем число на экране. Затем заменим
+          Сохраним эти две строки под выбранным свободным именем .py и до запуска предскажем число на экране. Затем заменим
           count = 2 на count = 4, сохраним и заново вычислим ожидаемый результат. Сравнение двух выводов покажет,
           что запускается актуальное содержимое файла.
           Само сохранение код не выполняет: строки должен прочитать интерпретатор Python.
@@ -296,29 +298,17 @@ export function Lesson12({ module }: { module?: string }) {
           команды PowerShell и где появляется вывод print. Код программы пишем в редакторе; для запуска используем
           кнопку, а результат ищем в терминале.
         </p>
-        <Diagram caption="Первый запуск в VS Code: что нажать и что появится" orientation="vertical">
-          <DiagramFlow label="Последовательность экранов при подготовке и запуске файла" orientation="vertical">
-            <DiagramNode title="Extensions">
-              <><strong>Нажимаем:</strong> Extensions, вводим Python<br /><strong>Видим:</strong> Python by Microsoft и статус Installed / Enabled; если видим Install, устанавливаем расширение</>
-            </DiagramNode>
-            <DiagramArrow label="переходим к редактору" />
-            <DiagramNode title="Новый текстовый файл">
-              <><strong>Нажимаем:</strong> Ctrl+N или File → New Text File<br /><strong>Видим:</strong> новую пустую вкладку Untitled-1</>
-            </DiagramNode>
-            <DiagramArrow label="вводим пример и сохраняем" />
-            <DiagramNode title="Save As">
-              <><strong>Нажимаем:</strong> вставляем пример, Ctrl+S, выбираем существующую папку и имя lesson12_check.py<br /><strong>Видим:</strong> вкладку с именем файла без маркера несохранённых изменений</>
-            </DiagramNode>
-            <DiagramArrow label="выбираем Python" />
-            <DiagramNode title="Python: Select Interpreter">
-              <><strong>Нажимаем:</strong> Ctrl+Shift+P, выбираем Python: Select Interpreter и Python 3.12<br /><strong>Видим:</strong> выбранную версию в строке состояния VS Code</>
-            </DiagramNode>
-            <DiagramArrow label="запускаем сохранённую вкладку" />
-            <DiagramNode title="Run Python File in Terminal">
-              <><strong>Нажимаем:</strong> кнопку запуска в правом верхнем углу редактора<br /><strong>Видим:</strong> терминал с командой запуска и выводом программы</>
-            </DiagramNode>
-          </DiagramFlow>
-        </Diagram>
+        <figure className="lesson12-setup" aria-labelledby="lesson12-setup-title">
+          <figcaption id="lesson12-setup-title">Первый запуск в VS Code</figcaption>
+          <p>Пять шагов от проверки расширения до результата в терминале.</p>
+          <ol className="lesson12-setup-steps">
+            <li><strong>Проверь расширение</strong><span>В Extensions найди Python от Microsoft. Установи его, если нужно.</span><small>Результат: расширение включено.</small></li>
+            <li><strong>Открой новый файл</strong><span>Нажми Ctrl+N или выбери File → New Text File.</span><small>Результат: пустая вкладка.</small></li>
+            <li><strong>Сохрани код</strong><span>Введи пример, нажми Ctrl+S и выбери свободное имя с окончанием .py.</span><small>Результат: сохранённый файл в выбранной папке.</small></li>
+            <li><strong>Выбери Python</strong><span>Нажми Ctrl+Shift+P, открой Python: Select Interpreter и выбери Python 3.12.</span><small>Результат: выбранный интерпретатор.</small></li>
+            <li><strong>Запусти файл</strong><span>В открытом файле нажми Run Python File in Terminal.</span><small>Результат: команда и вывод программы в терминале.</small></li>
+          </ol>
+        </figure>
         <p>
           Кнопка Run Python File in Terminal запускает активную сохранённую вкладку. Терминал показывает команду и
           результат print: для нашего исходного count = 2 это 5. Слева в команде может стоять полный путь к python.exe,
@@ -333,7 +323,7 @@ export function Lesson12({ module }: { module?: string }) {
           слово python, путь исполнителя увидим следующим способом.
         </p>
         <CodeBlock
-          caption="Временно дописываем в конец того же lesson12_check.py"
+          caption="Временно дописываем в конец своего файла .py"
           code={diagnosticCode}
         />
         <p>
@@ -343,13 +333,9 @@ export function Lesson12({ module }: { module?: string }) {
           сначала 5, затем версию и путь. Если версия начинается с 3.12, цель достигнута даже тогда, когда отдельная
           команда python --version показывает 3.11. Если здесь 3.11, повторно выбираем 3.12 и запускаем ещё раз.
         </p>
-        <MethodGrid
-          rows={[
-            [<code>python --version</code>, <>Версия программы, которую PowerShell находит по слову python.</>],
-            [<code>Get-Command python</code>, <>Если команда существует, показывает, к какому исполняемому файлу она ведёт в этом терминале.</>],
-            [<code>sys.executable</code>, <>Путь Python, исполняющего наш сохранённый .py при запуске кнопкой.</>],
-          ]}
-        />
+        <p><code>python --version</code> показывает версию программы, которую PowerShell находит по слову python.</p>
+        <p><code>Get-Command python</code> показывает, куда ведёт это имя в терминале, если команда существует.</p>
+        <p><code>sys.executable</code> показывает путь Python, исполняющего сохранённый файл при запуске кнопкой.</p>
         <p>
           Для перехода в интерактивную оболочку возьмём путь, полученный через sys.executable. В PowerShell вводим
           <code> &amp; "&lt;этот полный путь&gt;"</code> без угловых скобок, заменив текст внутри кавычек реальным путём.
@@ -357,12 +343,13 @@ export function Lesson12({ module }: { module?: string }) {
           ввести просто python. Для новой проверки версии по точному пути добавим параметр --version после кавычек.
         </p>
         <CodeSequence
+          plainText
           title="Собираем один локальный запуск"
           label="ПОРЯДОК ДЕЙСТВИЙ"
           prompt="Расставь действия от проверки расширения до подтверждения реального Python, исполняющего файл."
           pieces={[
             { id: "extension", code: "Extensions → Python by Microsoft → Installed / Enabled" },
-            { id: "save", code: "Ctrl+N → код → Ctrl+S → lesson12_check.py" },
+            { id: "save", code: "Ctrl+N → код → Ctrl+S → свободное имя .py" },
             { id: "select", code: "Python: Select Interpreter → Python 3.12" },
             { id: "run", code: "Run Python File in Terminal" },
             { id: "inspect", code: "Дополнить файл sys.version и sys.executable, сохранить, запустить и прочитать путь" },
@@ -432,7 +419,7 @@ export function Lesson12({ module }: { module?: string }) {
           items={[
             { title: "Проверим инструменты", description: "Проверим VS Code, расширение Microsoft Python и доступность 3.12, отдельно запишем ответ короткой команды PowerShell." },
             { title: "Различим оболочки", description: "Найдём текущую папку, вычислим выражение после >>> и вернёмся к приглашению PS." },
-            { title: "Запустим файл", description: "Создадим один lesson12_check.py, дважды предскажем вывод, сохраним и запустим его выбранным Python 3.12." },
+            { title: "Запустим файл", description: "Создадим один файл с незанятым именем .py, дважды предскажем вывод, сохраним и запустим его выбранным Python 3.12." },
             { title: "Сверим две версии", description: "Сравним python --version с sys.version и sys.executable, которые сообщает сам запущенный файл." },
             { title: "Разберём ошибки", description: "Отличим неизвестную команду, неверный путь и NameError от ситуации, когда версии двух команд просто различаются." },
           ]}

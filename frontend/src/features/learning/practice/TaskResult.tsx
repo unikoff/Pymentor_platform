@@ -34,14 +34,22 @@ function formatTestValue(value: unknown): string {
   }
 }
 
-export function TaskResult({ result }: { result: TaskSubmitResponse }) {
+export function TaskResult({ result, isSafeSubmitFeedback = false }: {
+  result: TaskSubmitResponse;
+  isSafeSubmitFeedback?: boolean;
+}) {
   const errorMessage = formatCompilerMessage(result.error);
   const hasExecutionError = Boolean(errorMessage);
+  const summary = result.ok
+    ? "Задание принято"
+    : hasExecutionError
+      ? isSafeSubmitFeedback ? "Проверка не выполнена" : "Ошибка в коде"
+      : isSafeSubmitFeedback ? "Решение не прошло проверку" : "Нужно доработать";
 
   return (
     <div className={`task-result ${result.ok ? "is-success" : "is-failed"}`}>
       <div className="task-result-summary">
-        <strong>{result.ok ? "Задание принято" : hasExecutionError ? "Ошибка в коде" : "Нужно доработать"}</strong>
+        <strong>{summary}</strong>
         <span>{result.score}%</span>
       </div>
       {errorMessage && <p className="task-result__error">{errorMessage}</p>}
@@ -63,7 +71,11 @@ export function TaskResult({ result }: { result: TaskSubmitResponse }) {
               <strong>{test.name}</strong>
               {!test.passed && (
                 test.error ? (
-                  <p className="test-diff__error">Выполнение прервано: {formatCompilerMessage(test.error)}</p>
+                  <p className="test-diff__error">
+                    {isSafeSubmitFeedback
+                      ? formatCompilerMessage(test.error)
+                      : `Выполнение прервано: ${formatCompilerMessage(test.error)}`}
+                  </p>
                 ) : (
                   <div className="test-diff">
                     <div>

@@ -1,12 +1,21 @@
 const API_PREFIX = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/api`;
 
-export async function apiRequest<T>(url: string, body?: unknown, method?: string): Promise<T> {
+export async function apiRequest<T>(
+  url: string,
+  body?: unknown,
+  method?: string,
+  extraHeaders: Record<string, string> = {},
+): Promise<T> {
   const response = await fetch(API_PREFIX + url, {
     method: method ?? (body ? "POST" : "GET"),
     credentials: "include",
     // Never reuse a cached SPA response (or another session's API response).
     cache: "no-store",
-    headers: { Accept: "application/json", ...(body ? { "Content-Type": "application/json" } : {}) },
+    headers: {
+      Accept: "application/json",
+      ...(body ? { "Content-Type": "application/json" } : {}),
+      ...extraHeaders,
+    },
     body: body ? JSON.stringify(body) : undefined,
   });
 

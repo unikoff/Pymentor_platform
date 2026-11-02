@@ -26,7 +26,7 @@
 .predict-btn {
   justify-self: start;
   padding: var(--space-2) var(--space-4);
-  border: 1px solid var(--accent);
+  border: 1px solid var(--border-tint-accent);
   border-radius: var(--radius-pill);
   background: var(--accent-soft);
   color: var(--text);
@@ -205,7 +205,7 @@
 }
 
 .fill-gap.is-correct {
-  background: var(--accent);
+  background: var(--brand);
   color: var(--brand-contrast);
 }
 
@@ -230,16 +230,16 @@
 }
 
 .fill-option:hover:not(:disabled) {
-  border-color: var(--accent);
+  border-color: var(--border-tint-accent);
 }
 
 .fill-option.is-correct {
-  border-color: var(--accent);
+  border-color: var(--border-tint-accent);
   background: var(--accent-soft);
 }
 
 .fill-option.is-wrong {
-  border-color: var(--error);
+  border-color: var(--border-tint-error);
   background: color-mix(in srgb, var(--error) 10%, transparent);
 }
 
@@ -311,7 +311,7 @@
   justify-content: space-between;
   gap: var(--space-4);
   padding: var(--space-5) var(--space-6);
-  border: 1px solid var(--accent);
+  border: 1px solid var(--border-tint-accent);
   border-radius: var(--radius-lg);
   background: var(--accent-soft);
 }

@@ -15,6 +15,18 @@ function renderInlineCode(value: React.ReactNode, keyPrefix: string): React.Reac
 
   if (Array.isArray(value)) {
     return value.map((item, index) => {
+      // Older lessons sometimes put the separator before an inline token inside
+      // <code>. Move a single separator after adjacent prose outside the token.
+      // Explicit whitespace examples and indentation must stay untouched.
+      const previous = value[index - 1];
+      if (
+        typeof previous === "string" && /\S$/.test(previous) &&
+        React.isValidElement<{ children?: React.ReactNode; "data-preserve-space"?: boolean }>(item) &&
+        item.type === "code" && !item.props["data-preserve-space"] &&
+        typeof item.props.children === "string" && /^ [^\s](?:[\s\S]*\S)?$/.test(item.props.children)
+      ) {
+        return <React.Fragment key={`${keyPrefix}-${index}`}>{" "}{React.cloneElement(item, {}, item.props.children.slice(1))}</React.Fragment>;
+      }
       const rendered = renderInlineCode(item, `${keyPrefix}-${index}`);
       return React.isValidElement(rendered) && rendered.key == null
         ? React.cloneElement(rendered, { key: `${keyPrefix}-${index}` })

@@ -1,7 +1,8 @@
 import { useEffect } from 'react';
+import { ArrowDownRight } from 'lucide-react';
 import { ProgrammingBackground } from './ProgrammingBackground';
 import { CodeReviewDemo } from './CodeReviewDemo';
-import mentorPhoto from './assets/mentor.jpg';
+import mentorPhoto from './assets/mentor-portrait.png';
 import './landing.css';
 import './programming-background.css';
 
@@ -34,9 +35,9 @@ export function BackendLandingPage() {
   useEffect(() => {
     const previousTitle = document.title;
     const metadata = [
-      ['name', 'description', 'Путь в backend с нуля: личное менторство, практика на проектах и обучение на Pymentor.'],
-      ['property', 'og:title', 'В backend — вместе | Pymentor'],
-      ['property', 'og:description', 'От основ до подготовки к первой работе: проекты, code review и поддержка ментора.'],
+      ['name', 'description', 'Backend с личным наставником: индивидуальные занятия, практика на Pymentor и персональный разбор кода.'],
+      ['property', 'og:title', 'Backend с личным наставником | Pymentor'],
+      ['property', 'og:description', 'Начните с нуля или развивайте навыки с личным наставником.'],
     ] as const;
     const originalMetadata = metadata.map(([attribute, name]) => {
       const selector = `meta[${attribute}="${name}"]`;
@@ -44,7 +45,7 @@ export function BackendLandingPage() {
       return { selector, element, content: element?.content ?? null };
     });
 
-    document.title = 'В backend — вместе | Pymentor';
+    document.title = 'Backend с личным наставником | Pymentor';
     metadata.forEach(([attribute, name, content], index) => {
       const current = originalMetadata[index].element ?? document.createElement('meta');
       current.setAttribute(attribute, name);
@@ -106,48 +107,51 @@ export function BackendLandingPage() {
         </header>
 
         <section className="landing-hero" aria-labelledby="landing-title" data-scene="hero">
-          <div className="landing-hero__copy">
-            <h1 id="landing-title">Backend с нуля.<br /><span>Вместе — к первой работе.</span></h1>
-            <p className="landing-hero__lead">Не нужно заранее знать, с чего начать: пойдём по понятному плану. Вы будете писать код, а я — разбирать его с вами и помогать увидеть следующий шаг.</p>
-            <ul className="landing-hero__benefits" aria-label="Как устроено менторство">
-              <li><span>01</span><div><strong>Практика на своих проектах</strong><small>Закрепляете основы в backend-задачах и коде.</small></div></li>
-              <li><span>02</span><div><strong>Личный разбор кода</strong><small>Понимаете причину ошибки и учитесь находить решение.</small></div></li>
-              <li><span>03</span><div><strong>Портфолио и путь к работе</strong><small>Практика и план обучения собраны на Pymentor.</small></div></li>
-            </ul>
-            <p className="landing-hero__promise">Дальше покажу занятия, code review и платформу, на которой будем учиться.</p>
-          </div>
-          <aside className="landing-hero__mentor-card" aria-label="Ваш ментор">
-            <p className="landing-hero__mentor-label">Ваш ментор</p>
-            <div className="landing-hero__profile">
-              <div className="landing-hero__portrait"><img src={mentorPhoto} alt="Никита Кирюхин, backend-ментор" /></div>
-              <div className="landing-hero__identity"><strong>Никита Кирюхин</strong><small>Лично сопровождаю обучение backend</small></div>
+          <div className="hero-main">
+            <h1 id="landing-title">Backend с ментором<span>Вместе к первой работе в IT</span></h1>
+            <p className="hero-main__lead">Хотите начать с нуля или застряли в самостоятельном обучении? Вместе найдём понятный путь: разберём сложные темы, напишем код и создадим проекты. Я помогу вам двигаться дальше и увереннее идти к цели.</p>
+            <div className="hero-features">
+              <div className="hero-features__heading"><p className="hero-mentor__label">Почему выбирают меня</p></div>
+              <ul aria-label="Преимущества обучения">
+                <li><a href="#format"><strong>1:1 <ArrowDownRight size={16} aria-hidden="true" /></strong><span>Занимаемся один на один: подстрою темп под вас и помогу разобраться в сложных темах.</span></a></li>
+                <li><a href="#platform"><strong>Pymentor <ArrowDownRight size={16} aria-hidden="true" /></strong><span>Теория и практика собраны в понятный маршрут. Загляните на платформу и посмотрите сами.</span></a></li>
+                <li><a href="#demo"><strong>Code review <ArrowDownRight size={16} aria-hidden="true" /></strong><span>Проверяю каждое изменение в вашем проекте: покажу ошибки и объясню, как их исправить.</span></a></li>
+              </ul>
             </div>
-            <p className="landing-hero__mentor-note">Вместе разберём, где проект буксует, и определим следующий шаг.</p>
+          </div>
+          <aside className="hero-mentor" aria-label="Ваш ментор Никита Кирюхин">
+            <div className="hero-mentor__profile">
+              <img src={mentorPhoto} alt="Никита Кирюхин, backend-ментор" />
+              <div><p className="hero-mentor__label">Ваш личный ментор</p><h2>Никита Кирюхин</h2><p className="hero-mentor__bio">Мой опыт в разработке и менторстве помогает вам расти в backend.</p></div>
+            </div>
+            <div className="hero-mentor__experience">
+              <ul>
+                <li><strong>30+</strong><span>учеников уже работают backend-разработчиками</span><span className="hero-mentor__caption">От обучения к работе</span></li>
+                <li><strong>180 000 ₽</strong><span>средний оффер в месяц после менторства</span></li>
+                <li><strong>100%</strong><span>учеников получили заметный результат и ясный следующий шаг</span></li>
+              </ul>
+            </div>
           </aside>
         </section>
 
         <section className="landing-section landing-path landing-reveal" id="path" aria-labelledby="path-title" data-reveal data-scene="path">
           <div className="landing-path__intro">
-            <p className="landing-overline">Как начать</p>
             <h2 id="path-title">Начать можно с простого <span>разговора</span></h2>
             <p className="landing-path__lead">Напишите мне, чтобы договориться о времени консультации.</p>
             <a className="primary-action landing-action landing-path__cta" href="https://t.me/unikoff" target="_blank" rel="noopener noreferrer">Написать в Telegram <span aria-hidden="true">↗</span></a>
-            <p className="landing-path__reassurance">Бесплатная консультация <span aria-hidden="true">·</span> ни к чему не обязывает</p>
           </div>
           <div className="landing-path__invitation">
-            <div className="landing-path__invitation-top"><span>ПЕРВОЕ ЗНАКОМСТВО</span><span>БЕСПЛАТНО</span></div>
             <div className="landing-path__invitation-heading">
               <div><h3>Первая<br />встреча</h3><p>Подготовка не нужна. Просто расскажите, что хотите изучить.</p></div>
               <div className="landing-path__price">
                 <strong>0<span>₽</span></strong>
-                <small>КОНСУЛЬТАЦИЯ</small>
               </div>
             </div>
             <ol className="landing-path__journey">
-              <li><span className="landing-path__marker">01 · СОЗВОН</span><div><strong>Обсудим ваши цели</strong><p>Познакомимся, разберём ваш опыт и определим первый шаг.</p></div></li>
+              <li><span className="landing-path__marker landing-path__marker--connected"><span>01 · СОЗВОН</span><span className="landing-path__flow" aria-hidden="true" /></span><div><strong>Обсудим ваши цели</strong><p>Познакомимся, разберём ваш опыт и определим первый шаг.</p></div></li>
               <li><span className="landing-path__marker">02 · ДОСТУП</span><div><strong>Посмотрите Pymentor</strong><p>Открою бесплатный доступ на несколько дней. Вы изучите платформу и решите, подходит ли формат.</p></div></li>
             </ol>
-            <div className="landing-path__optional"><span>После знакомства сами решите, продолжать ли обучение.</span><a className="landing-inline-link" href="#start">«Старт в Python» для новичков <span aria-hidden="true">↓</span></a></div>
+            <div className="landing-path__optional"><a className="landing-inline-link" href="#start">«Старт в Python» для новичков <span aria-hidden="true">↓</span></a></div>
           </div>
         </section>
 

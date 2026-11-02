@@ -29,6 +29,21 @@
   container-name: practice-screen;
 }
 
+/* Keep the editor and terminal close to the reading surface during long practice. */
+.practice-dashboard {
+  --code-bg: color-mix(in srgb, var(--surface) 48%, var(--bg));
+  --code-text: #c8c8c8;
+  --code-surface-start: var(--code-bg);
+  --code-surface-end: var(--code-bg);
+  --syntax-comment: #a0a0a0;
+}
+
+:root[data-color-scheme="light"] .practice-dashboard {
+  --code-bg: color-mix(in srgb, var(--surface) 35%, var(--bg));
+  --code-text: var(--reading);
+  --syntax-comment: var(--muted);
+}
+
 .practice-intro,
 .task-card,
 .empty-task-card {
@@ -69,6 +84,7 @@
   min-height: 58px;
   padding: 9px 18px;
   border-bottom: 1px solid var(--line-soft);
+  background: var(--surface);
 }
 
 .task-brief__toolbar .task-head__meta {
@@ -122,9 +138,9 @@
 }
 
 .practice-dashboard .task-spec__item--todo {
-  border-color: color-mix(in srgb, var(--accent) 28%, var(--line-soft));
-  border-left: 3px solid var(--accent);
-  background: color-mix(in srgb, var(--accent) 5%, var(--surface-2));
+  border-color: color-mix(in srgb, var(--border-tint-accent) 38%, var(--line-soft));
+  border-left: 3px solid var(--border-tint-accent);
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface-2));
 }
 
 .practice-dashboard .task-spec__item > span {
@@ -137,8 +153,8 @@
 
 .practice-dashboard .task-spec__text,
 .practice-dashboard .task-spec__item p {
-  font-size: 0.94rem;
-  line-height: 1.62;
+  font-size: 1.0625rem;
+  line-height: 1.7;
 }
 
 .practice-dashboard .task-spec__list {
@@ -156,9 +172,21 @@
 
 .practice-dashboard .task-code-panel {
   align-content: start;
-  gap: 12px;
-  padding: 16px;
-  background: var(--surface-2);
+  gap: 0;
+  padding: 0;
+  background: var(--code-bg);
+}
+
+.practice-dashboard .task-code-panel > .task-code-toolbar {
+  min-height: 60px;
+  padding: 12px 16px;
+  box-sizing: border-box;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.practice-dashboard .task-code-panel > .task-editor-workbench {
+  border: 0;
+  border-radius: 0;
 }
 
 .task-workspace-splitter {
@@ -250,7 +278,7 @@
   gap: 9px;
   margin: 0 18px 18px;
   padding: 12px;
-  border-color: color-mix(in srgb, var(--accent) 24%, var(--line-soft));
+  border-color: color-mix(in srgb, var(--border-tint-accent) 24%, var(--line-soft));
   border-radius: 12px;
   background: color-mix(in srgb, var(--accent) 5%, var(--surface-2));
 }

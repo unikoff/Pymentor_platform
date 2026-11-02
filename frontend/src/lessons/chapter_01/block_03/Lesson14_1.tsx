@@ -42,11 +42,6 @@ export function Lesson14_1({ module }: { module?: string }) {
         <p>
           Сначала проверим три функции из прошлого занятия на отдельных входах. Затем добавим независимый расчёт минут и передадим результаты функций по цепочке. Сумма не участвует в создании карточек.
         </p>
-        <TrueFalse
-          statement="Если format_task вернула строку карточки, карточка обязательно уже появилась в консоли."
-          isTrue={false}
-          explanation="return передаёт строку месту вызова. Только отдельный print показывает её в консоли; получение значения и вывод на экран являются разными действиями."
-        />
       </Section>
 
       <Section number="01" title="Проверяем, что уже умеют функции">
@@ -58,10 +53,10 @@ export function Lesson14_1({ module }: { module?: string }) {
         </p>
         <CodeBlock
           caption="Проверяем знакомые функции по отдельности в своём main.py"
-          code={'raw_title = "  План  на  день  "\nclean_title = normalize_title(raw_title)\nprint(clean_title)\nprint(raw_title)\n\nsample_task = create_task(7, "Прогулка", 3)\nsample_card = format_task(sample_task)\nprint(sample_task)\nprint(sample_card)'}
+          code={'raw_title = "  План  на  день  "\nclean_title = normalize_title(raw_title)\nprint("|" + clean_title + "|")\nprint("|" + raw_title + "|")\n\nsample_task = create_task(7, "Прогулка", 3)\nsample_card = format_task(sample_task)\nprint(sample_task)\nprint(sample_card)'}
         />
         <p>
-          Первые две строки вывода различаются: очищенное название «План  на  день» без краевых пробелов и прежняя исходная строка с ними. Далее увидим словарь с четырьмя полями и строку <code>[7] Прогулка | приоритет: 3 | не завершена</code>. Если это не происходит, до следующего раздела проверим реализации прежних функций.
+          Вертикальные черты при выводе показывают границы названия: у очищенного текста рядом с ними пробелов нет, а у исходного они остались. Между словами пробелы сохраняются в обоих случаях. Черты нужны только для показа и не входят в название. Далее увидим словарь с четырьмя полями и строку <code>[7] Прогулка | приоритет: 3 | не завершена</code>. Если это не происходит, до следующего раздела проверим реализации прежних функций.
         </p>
       </Section>
 
@@ -111,14 +106,6 @@ export function Lesson14_1({ module }: { module?: string }) {
       <Section number="03" title="Пустой список и новый вызов">
         <p>
           Начальный ноль нужен ещё до первого прохода. Если список пуст, цикл не выполняет ни одного шага, но строка <code>return</code> после цикла всё равно возвращает 0. Нам не требуется искать первый элемент и отдельным условием защищать его индекс.
-        </p>
-        <PredictOutput
-          code={"empty_total = 0\nfor page_count in []:\n    empty_total = empty_total + page_count\nprint(empty_total)\n\npage_counts = [4, 6]\ntotal_pages = 0\nfor page_count in page_counts:\n    total_pages = total_pages + page_count\nprint(total_pages)\nprint(page_counts)\n\ndef section_pages(page_count):\n    total = 0\n    total = total + page_count\n    return total\n\nprint(section_pages(4))\nprint(section_pages(9))"}
-          output={"0\n10\n[4, 6]\n4\n9"}
-          hint="В пустом цикле исходный ноль остаётся. Для следующего отдельного расчёта мы снова создаём накопитель со значением 0."
-        />
-        <p>
-          Пустой проход оставляет ноль. Следующий расчёт даёт 10, а список сохраняет исходные элементы. Затем два вызова <code>section_pages</code> дают 4 и 9. Каждый начинает своё локальное <code>total</code> с нуля. В целевой функции то же правило действует, когда мы передаём ей другой список.
         </p>
         <p>
           Представим, что для каждого нового подсчёта мы открываем чистую строку в тетради. Итог предыдущего расчёта не переносится в новую строку. В коде это локальное имя <code>total</code>, которое заново получает 0 при каждом вызове; если нужен старый результат, вызывающий код должен отдельно его сохранить.
@@ -181,29 +168,15 @@ export function Lesson14_1({ module }: { module?: string }) {
         <p>
           Представим эстафету: один участник передаёт палочку следующему, а тот продолжает маршрут. В нашем коде роль палочки играет возвращённое значение: очищенная строка поступает в фабрику записи, словарь поступает в форматтер, а готовая строка доходит до внешнего вывода. Граница аналогии: вызовы не происходят автоматически. Мы явно пишем каждый шаг и передаём его результат.
         </p>
-        <Diagram caption="Возвращённое значение одного вызова становится входом следующего">
-          <DiagramFlow label="Передача значения от названия к видимой карточке">
-            <DiagramNode title="Название" shape="process">
-              <p><code>raw_title</code></p>
-            </DiagramNode>
-            <DiagramArrow label="строка" />
-            <DiagramNode title="normalize_title">
-              <p>Возвращает очищенную строку.</p>
-            </DiagramNode>
-            <DiagramArrow label="очищенная строка" />
-            <DiagramNode title="create_task">
-              <p>Возвращает словарь записи.</p>
-            </DiagramNode>
-            <DiagramArrow label="словарь" />
-            <DiagramNode title="format_task">
-              <p>Возвращает строку карточки.</p>
-            </DiagramNode>
-            <DiagramArrow label="строка" />
-            <DiagramNode title="print">
-              <p>Показывает карточку снаружи.</p>
-            </DiagramNode>
-          </DiagramFlow>
-        </Diagram>
+        <LinkedNotes
+          variant="connected"
+          items={[
+            { title: "normalize_title", description: "Получает исходное название и возвращает очищенную строку." },
+            { title: "create_task", description: "Получает очищенное название и другие данные, возвращает словарь." },
+            { title: "format_task", description: "Получает словарь и возвращает строку карточки." },
+            { title: "print", description: "Получает готовую строку и показывает её снаружи функций." },
+          ]}
+        />
         <p>
           В такой цепочке сохраняются прежние договоры функций. <code>normalize_title</code> меняет только края строки; <code>create_task</code> создаёт отдельный словарь из подготовленных аргументов; <code>format_task</code> возвращает карточку, не изменяя словарь. Последний вызов <code>print</code> показывает готовый текст и остаётся вне этих функций.
         </p>
@@ -274,7 +247,7 @@ export function Lesson14_1({ module }: { module?: string }) {
           </DiagramFlow>
           <DiagramFlow label="Независимая сумма">
             <DiagramNode title="Список минут" shape="process" />
-            <DiagramArrow label="calculate_study_minutes" />
+            <DiagramArrow label="сумма" />
             <DiagramNode title="print(study_minutes)" />
           </DiagramFlow>
         </Diagram>

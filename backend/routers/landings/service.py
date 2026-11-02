@@ -15,8 +15,13 @@ from db import models
 
 LANDING_EVENT_CONTRACTS = {
     "telegram_connection_test.v1": {"schema_version": 1, "payload_keys": frozenset()},
+    "consultation_request.v1": {
+        "schema_version": 1,
+        "payload_keys": frozenset({"name", "contact", "goal", "consented_at", "consent_version"}),
+    },
 }
 MAX_TEST_EVENTS_PER_HOUR = 3
+MAX_CONSULTATION_REQUESTS_PER_HOUR = 50
 MAX_MANUAL_RETRIES = 3
 _SECRET_REF_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9_.:-]{0,63}$")
 
@@ -176,6 +181,16 @@ def enqueue_landing_event(
     )
     if existing is not None:
         if existing.payload_sha256 != digest:
+            if event_type == "consultation_request.v1":
+                try:
+                    previous_payload = json.loads(existing.payload_json)
+                except (TypeError, json.JSONDecodeError):
+                    previous_payload = None
+                stable_fields = contract["payload_keys"] - {"consented_at"}
+                if isinstance(previous_payload, dict) and all(
+                    previous_payload.get(field) == payload.get(field) for field in stable_fields
+                ):
+                    return existing, True
             raise HTTPException(status_code=409, detail="Ключ события уже использован с другими данными")
         return existing, True
 
@@ -199,8 +214,18 @@ def enqueue_landing_event(
         )
         .count()
     )
-    if recent_count >= MAX_TEST_EVENTS_PER_HOUR:
-        raise HTTPException(status_code=429, detail="Лимит тестовых уведомлений на час исчерпан")
+    rate_limit = (
+        MAX_TEST_EVENTS_PER_HOUR
+        if event_type == "telegram_connection_test.v1"
+        else MAX_CONSULTATION_REQUESTS_PER_HOUR
+    )
+    if recent_count >= rate_limit:
+        detail = (
+            "Лимит тестовых уведомлений на час исчерпан"
+            if event_type == "telegram_connection_test.v1"
+            else "Лимит заявок на консультацию на час исчерпан"
+        )
+        raise HTTPException(status_code=429, detail=detail)
 
     event = models.LandingNotificationOutbox(
         landing_id=landing.id,

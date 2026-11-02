@@ -28,7 +28,7 @@
 .profile-head .profile-head__meta { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 8px; margin-left: auto; }
 .profile-head__meta > span:first-child { color: var(--faint); font-size: .7rem; font-variant-numeric: tabular-nums; }
 .profile-state-pill { display: inline-flex; align-items: center; padding: 5px 8px; border: 1px solid var(--line-soft); border-radius: 999px; font-size: .67rem; font-weight: 700; white-space: nowrap; }
-.profile-state-pill.is-active { border-color: color-mix(in srgb, var(--accent) 34%, var(--line)); background: var(--accent-soft); color: var(--accent); }
+.profile-state-pill.is-active { border-color: color-mix(in srgb, var(--border-tint-accent) 34%, var(--line)); background: var(--accent-soft); color: var(--accent); }
 .profile-state-pill.is-inactive { background: var(--surface-2); color: var(--muted); }
 
 .profile-summary-grid {

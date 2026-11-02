@@ -28,9 +28,10 @@
 
 .account-tabs > button:hover { color: var(--text); background: var(--surface-2); }
 .account-tabs > button[aria-selected="true"] {
-  border-color: color-mix(in srgb, var(--accent) 32%, var(--line));
-  background: var(--accent-soft);
+  border-color: var(--line);
+  background: var(--surface-2);
   color: var(--text);
+  box-shadow: inset 0 -2px color-mix(in srgb, var(--accent) 55%, transparent);
 }
 .account-tabs > button[aria-selected="true"] svg { color: var(--accent); }
 .account-tabs svg { flex-shrink: 0; }
@@ -48,7 +49,7 @@
   background: linear-gradient(145deg, var(--surface-2), var(--surface));
   box-shadow: 0 8px 24px color-mix(in srgb, var(--line-soft) 14%, transparent);
 }
-:root[data-color-scheme="light"] .account-surface { border-color: var(--line-strong); background: var(--card); box-shadow: 0 2px 8px color-mix(in srgb, var(--surface-shadow) 8%, transparent); }
+:root[data-color-scheme="light"] .account-surface { border-color: var(--line); background: var(--card); box-shadow: 0 2px 8px color-mix(in srgb, var(--surface-shadow) 6%, transparent); }
 .account-metrics { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
 .account-metric { display: flex; min-height: 142px; flex-direction: column; gap: 12px; padding: clamp(16px, 1.6vw, 22px); }
 .account-metric__label { display: flex; align-items: center; gap: 9px; color: var(--muted); font-size: 0.8rem; font-weight: 650; }
@@ -78,14 +79,14 @@
 .account-settings-email { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .account-settings-email > span { min-width: 0; overflow-wrap: anywhere; }
 .account-settings-email button { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 6px; min-height: 30px; padding: 0 8px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface-2); color: var(--muted); font-size: 0.7rem; font-weight: 650; cursor: pointer; }
-.account-settings-email button:hover { border-color: var(--accent); color: var(--text); }
+.account-settings-email button:hover { border-color: var(--border-tint-accent); color: var(--text); }
 .account-settings-note { margin: 12px 0 0; color: var(--muted); font-size: 0.74rem; line-height: 1.5; }
-.account-settings-logout { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 20px; border: 1px solid color-mix(in srgb, var(--negative) 28%, var(--line-soft)); border-radius: var(--radius-lg); background: color-mix(in srgb, var(--negative) 5%, var(--surface)); }
+.account-settings-logout { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 20px; border: 1px solid color-mix(in srgb, var(--border-tint-negative) 28%, var(--line-soft)); border-radius: var(--radius-lg); background: color-mix(in srgb, var(--negative) 5%, var(--surface)); }
 .account-settings-logout > div { display: grid; gap: 4px; }
 .account-settings-logout > div strong { font-size: 0.84rem; font-weight: 650; }
 .account-settings-logout > div span { color: var(--muted); font-size: 0.74rem; }
 .account-settings-logout > button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 36px; flex: 0 0 auto; padding: 0 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-2); color: var(--muted); font-size: 0.78rem; cursor: pointer; transition: color 140ms ease, border-color 140ms ease, background 140ms ease; }
-.account-settings-logout > button:hover { border-color: color-mix(in srgb, var(--negative) 45%, var(--line)); background: color-mix(in srgb, var(--negative) 9%, var(--surface-2)); color: var(--text); }
+.account-settings-logout > button:hover { border-color: color-mix(in srgb, var(--border-tint-negative) 45%, var(--line)); background: color-mix(in srgb, var(--negative) 9%, var(--surface-2)); color: var(--text); }
 .account-session-list { display: grid; margin-top: 14px; }
 .account-session { display: flex; align-items: center; gap: 12px; padding-block: 14px; border-bottom: 1px solid var(--line-soft); }
 .account-session__icon { display: grid; width: 38px; height: 38px; flex: 0 0 auto; place-items: center; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-2); color: var(--accent); }
@@ -104,17 +105,17 @@
 .account-week-chart__day > span { color: var(--muted); font-size: 0.66rem; font-weight: 750; text-transform: uppercase; }
 .account-week-chart__day > strong { align-self: center; color: var(--text); font-size: 0.95rem; font-variant-numeric: tabular-nums; line-height: 1; }
 .account-week-chart__day > i { display: grid; width: 17px; height: 17px; place-items: center; border-radius: 50%; background: var(--surface-3); color: var(--faint); font-style: normal; }
-.account-week-chart__day.is-active { border-color: color-mix(in srgb, var(--attendance) 40%, var(--line)); background: color-mix(in srgb, var(--attendance) 12%, var(--surface-2)); }
+.account-week-chart__day.is-active { border-color: color-mix(in srgb, var(--border-tint-attendance) 40%, var(--line)); background: color-mix(in srgb, var(--attendance) 9%, var(--surface-2)); }
 .account-week-chart__day.is-active > span,
 .account-week-chart__day.is-active > strong { color: var(--attendance); }
-.account-week-chart__day.is-active > i { background: color-mix(in srgb, var(--attendance) 18%, var(--surface)); color: var(--attendance); }
+.account-week-chart__day.is-active > i { background: color-mix(in srgb, var(--accent) 12%, var(--surface)); color: var(--accent); }
 .account-week-chart__day.is-future { opacity: 0.58; }
 .account-weekly-trends { display: grid; min-height: 0; flex: 1; grid-template-rows: repeat(2, minmax(148px, 1fr)); gap: 10px; margin-top: 12px; }
 .account-weekly-trend { display: grid; min-width: 0; min-height: 120px; grid-template-rows: auto minmax(0, 1fr); gap: 8px; padding: 11px 13px; border: 1px solid var(--line-soft); border-radius: 14px; background: var(--surface-2); }
 .account-weekly-trend > header { display: flex; align-items: start; justify-content: space-between; gap: 10px; }
 .account-weekly-trend h4 { margin: 0; font-size: 0.78rem; font-weight: 750; }
 .account-weekly-trend > header p { margin: 3px 0 0; color: var(--muted); font-size: 0.65rem; }
-.account-weekly-trend__badge { flex: 0 0 auto; padding: 4px 8px; border: 1px solid color-mix(in srgb, var(--accent-secondary) 35%, var(--line)); border-radius: var(--radius-pill); background: color-mix(in srgb, var(--accent-secondary) 10%, var(--surface)); color: var(--accent-secondary); font-size: 0.62rem; font-weight: 800; text-transform: uppercase; }
+.account-weekly-trend__badge { flex: 0 0 auto; padding: 4px 8px; border: 1px solid color-mix(in srgb, var(--border-tint-accent-secondary) 35%, var(--line)); border-radius: var(--radius-pill); background: color-mix(in srgb, var(--accent-secondary) 10%, var(--surface)); color: var(--accent-secondary); font-size: 0.62rem; font-weight: 800; text-transform: uppercase; }
 .account-weekly-trend__plot { display: grid; min-height: 0; grid-template-rows: minmax(120px, 1fr) auto; }
 .account-weekly-trend__canvas { position: relative; min-width: 0; min-height: 120px; }
 .account-weekly-trend__canvas svg { display: block; width: 100%; height: 100%; overflow: visible; }
@@ -169,26 +170,26 @@
 .account-course-block__lessons { display: grid; gap: 2px; margin: 0; padding: 7px 12px 11px; border-top: 1px solid var(--line-soft); list-style: none; }
 .account-course-lesson { display: grid; min-width: 0; grid-template-columns: 18px minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 7px 0; }
 .account-course-lesson__mark { display: grid; width: 18px; height: 18px; place-items: center; border: 1px solid var(--line); border-radius: 50%; color: transparent; }
-.account-course-lesson__mark.is-complete { border-color: color-mix(in srgb, var(--accent) 40%, var(--line)); background: var(--accent-soft); color: var(--accent); }
+.account-course-lesson__mark.is-complete { border-color: color-mix(in srgb, var(--border-tint-accent) 40%, var(--line)); background: var(--accent-soft); color: var(--accent); }
 .account-course-lesson__title { min-width: 0; color: var(--text); font-size: 0.75rem; line-height: 1.4; }
 .account-course-lesson__status { color: var(--muted); font-size: 0.68rem; white-space: nowrap; }
 .account-course-lesson__status.is-complete { color: var(--accent); font-weight: 700; }
 .account-course-block__empty { margin: 0; padding: 12px; border-top: 1px solid var(--line-soft); color: var(--muted); font-size: 0.76rem; }
 .account-course-accordion__empty { margin: 0; padding: 13px 15px; border-top: 1px solid var(--line-soft); color: var(--muted); font-size: 0.76rem; }
 .account-plan-card { display: grid; align-content: start; gap: 20px; padding: clamp(20px, 2.3cqw, 30px); }
-.account-plan-card.is-active { border-color: color-mix(in srgb, var(--accent) 35%, var(--line-soft)); }
+.account-plan-card.is-active { border-color: color-mix(in srgb, var(--border-tint-accent) 35%, var(--line-soft)); }
 .account-plan-card__header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .account-plan-card__name > span, .account-plan-card__expiry > span { color: var(--muted); font-size: 0.69rem; font-weight: 750; letter-spacing: 0.08em; text-transform: uppercase; }
 .account-plan-card h3 { margin: 7px 0 0; font-size: clamp(1.5rem, 2.6vw, 2rem); }
 .account-plan-card__expiry { display: grid; gap: 6px; padding: 14px 0; border-block: 1px solid var(--line-soft); }
 .account-plan-card__expiry strong { font-size: 1rem; font-variant-numeric: tabular-nums; }
 .account-subscription-state { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border: 1px solid var(--line); border-radius: var(--radius-pill); background: var(--surface-2); color: var(--muted); font-size: 0.72rem; font-weight: 700; }
-.account-subscription-state.is-active { border-color: color-mix(in srgb, var(--accent) 35%, var(--line)); background: var(--accent-soft); color: var(--accent); }
+.account-subscription-state.is-active { border-color: color-mix(in srgb, var(--border-tint-accent) 35%, var(--line)); background: var(--accent-soft); color: var(--accent); }
 .account-plan-card__price { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px; }
 .account-plan-card__price strong { font-size: 2rem; letter-spacing: -0.04em; }
 .account-plan-card__price span, .account-plan-card__note { color: var(--muted); font-size: 0.78rem; line-height: 1.55; }
 .account-plan-card__note { margin: 0; }
-.account-plan-card__action { display: flex; min-height: 44px; align-items: center; justify-content: center; gap: 10px; padding: 10px 16px; border: 1px solid var(--line); border-radius: 13px; background: var(--accent); color: var(--brand-contrast); font-weight: 750; cursor: pointer; }
+.account-plan-card__action { display: flex; min-height: 44px; align-items: center; justify-content: center; gap: 10px; padding: 10px 16px; border: 1px solid var(--line); border-radius: 13px; background: var(--brand); color: var(--brand-contrast); font-weight: 750; cursor: pointer; }
 .account-plan-card__action:disabled { background: var(--surface-3); color: var(--muted); cursor: not-allowed; }
 .account-payment-management, .account-payment-history { min-width: 0; }
 .account-payment-details { display: grid; gap: 0; margin: 20px 0; }
@@ -211,9 +212,9 @@
 .account-achievements-summary { display: flex; justify-content: flex-end; }
 .account-achievements-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 .account-achievement { display: grid; grid-template-columns: 42px minmax(0, 1fr); align-items: center; gap: 12px; padding: 17px; }
-.account-achievement.is-earned { border-color: color-mix(in srgb, var(--accent) 36%, var(--line-soft)); }
+.account-achievement.is-earned { border-color: color-mix(in srgb, var(--border-tint-accent) 36%, var(--line-soft)); }
 .account-achievement__icon { display: grid; width: 42px; height: 42px; place-items: center; border: 1px solid var(--line-soft); border-radius: 13px; background: var(--surface-2); color: var(--faint); }
-.account-achievement.is-earned .account-achievement__icon { border-color: color-mix(in srgb, var(--accent) 28%, var(--line)); background: var(--accent-soft); color: var(--accent); }
+.account-achievement.is-earned .account-achievement__icon { border-color: color-mix(in srgb, var(--border-tint-accent) 28%, var(--line)); background: var(--accent-soft); color: var(--accent); }
 .account-achievement__copy { display: grid; min-width: 0; gap: 4px; }
 .account-achievement__copy strong { font-size: 0.84rem; }
 .account-achievement__copy p { margin: 0; color: var(--muted); font-size: 0.72rem; line-height: 1.45; }
@@ -228,13 +229,13 @@
 .account-history-list { display: grid; margin-top: 18px; }
 .account-history-row { display: grid; grid-template-columns: 36px minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 12px 0; border-top: 1px solid var(--line-soft); }
 .account-history-row__icon { display: grid; width: 34px; height: 34px; place-items: center; border: 1px solid var(--line-soft); border-radius: 11px; background: var(--surface-2); color: var(--faint); }
-.account-history-row__icon.is-active { border-color: color-mix(in srgb, var(--accent) 30%, var(--line)); background: var(--accent-soft); color: var(--accent); }
+.account-history-row__icon.is-active { border-color: color-mix(in srgb, var(--border-tint-accent) 30%, var(--line)); background: var(--accent-soft); color: var(--accent); }
 .account-history-row__icon.is-future { color: var(--muted); }
 .account-history-row > strong { font-size: 0.82rem; font-weight: 650; text-transform: capitalize; }
 .account-history-row__status { color: var(--muted); font-size: 0.72rem; }
 .account-history-row__status.is-active { color: var(--accent); font-weight: 700; }
 .account-history-row__status.is-future { color: var(--faint); }
-.account-calendar__notice { margin: 0; padding: 10px 12px; border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--line)); border-radius: 11px; background: var(--accent-soft); color: var(--text); font-size: 0.78rem; line-height: 1.45; }
+.account-calendar__notice { margin: 0; padding: 10px 12px; border: 1px solid color-mix(in srgb, var(--border-tint-accent) 35%, var(--line)); border-radius: 11px; background: var(--accent-soft); color: var(--text); font-size: 0.78rem; line-height: 1.45; }
 
 @container account-dashboard (max-width: 900px) {
   .account-metrics { grid-template-columns: repeat(3, minmax(0, 1fr)); }

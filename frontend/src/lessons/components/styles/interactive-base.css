@@ -67,8 +67,8 @@
 }
 
 .interactive-primary {
-  border: 1px solid var(--accent);
-  background: var(--accent);
+  border: 1px solid var(--border-tint-accent);
+  background: var(--brand);
   color: var(--brand-contrast);
 }
 
@@ -106,7 +106,7 @@
 }
 
 .interactive-feedback.is-correct {
-  border-color: var(--accent);
+  border-color: var(--border-tint-accent);
   background: var(--accent-soft);
   color: var(--text);
 }
@@ -116,7 +116,7 @@
 }
 
 .interactive-feedback.is-wrong {
-  border-color: color-mix(in srgb, var(--error) 40%, transparent);
+  border-color: color-mix(in srgb, var(--border-tint-error) 40%, transparent);
   background: color-mix(in srgb, var(--error) 9%, transparent);
 }
 

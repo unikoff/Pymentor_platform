@@ -83,10 +83,10 @@ class DeeperDayNumberingTests(unittest.TestCase):
     def test_concept_passports_and_menu_have_the_same_sequence(self):
         numbers = []
         for block in range(5, 9):
-            text = (self.repo / f"docs/make les stage/1 stage/concept/chapter_02/BLOCK_{block}.md").read_text(encoding="utf-8")
+            text = (self.repo / f"docs/concept/chapter_02/BLOCK_{block}.md").read_text(encoding="utf-8")
             numbers.extend(re.findall(r"^### (\d+(?:\.\d+)*)\. ", text, re.M))
         self.assertEqual(numbers, NEW_NUMBERS)
-        course_text = (self.repo / "docs/make les stage/1 stage/concept/chapter_02/COURSE.md").read_text(encoding="utf-8")
+        course_text = (self.repo / "docs/concept/chapter_02/COURSE.md").read_text(encoding="utf-8")
         self.assertEqual(re.findall(r"^\| \*\*(\d+(?:\.\d+)*)\. ", course_text, re.M), NEW_NUMBERS)
 
     def test_tenth_sublesson_is_sorted_numerically(self):

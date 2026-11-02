@@ -1,21 +1,14 @@
 import {
-  BugHunt,
   Callout,
   CodeBlock,
-  Diagram,
-  DiagramArrow,
-  DiagramFlow,
-  DiagramNode,
   Lead,
   LinkedNotes,
   MatchPairs,
-  MethodGrid,
   QuizCard,
   RecallCard,
   RichHero,
   RichLesson,
   Section,
-  TrueFalse,
 } from "../../shared";
 
 // 20.1. Проверяем чистую копию
@@ -46,12 +39,12 @@ export function Lesson20_1({ module }: { module?: string }) {
             },
             {
               title: "Результат",
-              description: "Независимая копия подтверждает функциональную B главы и показывает границы проверки.",
+              description: "Независимая копия поможет проверить программу и показать границы этой проверки.",
             },
           ]}
         />
         <p>
-          Раньше мы уже получали clone. Теперь связываем его файлы с точным опубликованным commit, выполняем README и сверяем продукт с договором B. Отсутствующую публикацию не подменяем более поздней версией общего репозитория.
+          Раньше мы уже получали clone. Теперь связываем его файлы с точным опубликованным commit, выполняем README и проверяем возможности собранного Planner. Отсутствующую публикацию не подменяем более поздней версией общего репозитория.
         </p>
         <p>
           Опираемся на результат предыдущего занятия: собственный Planner с проверенными командами, README и опубликованным commit. Если публикации или проверенного запуска ещё нет, сначала завершаем этот шаг. Проверка чужой копии не исправит пропущенный <code>push</code>.
@@ -63,7 +56,7 @@ export function Lesson20_1({ module }: { module?: string }) {
           Есть три состояния проекта: файл на диске, локальный commit и опубликованный commit. Clone получит опубликованное состояние; определим его точно.
         </Lead>
         <p>
-          <code>origin</code> обычно обозначает удалённый репозиторий, ветка указывает на commit. <code>git remote -v</code> показывает адрес, <code>git branch --show-current</code> имя ветки, <code>git rev-parse HEAD</code> полный ID локального commit, а <code>git status --short</code> несохранённые в commit изменения.
+          <code>origin</code> обычно называют удалённый репозиторий, но его имя может отличаться. Ветка указывает на commit. <code style={{ whiteSpace: "nowrap" }}>git remote -v</code> показывает имена и адреса для получения и отправки, <code style={{ whiteSpace: "nowrap" }}>git branch --show-current</code> имя ветки, <code style={{ whiteSpace: "nowrap" }}>git rev-parse HEAD</code> полный ID локального commit, а <code style={{ whiteSpace: "nowrap" }}>git status --short</code> изменения, ещё не вошедшие в commit.
         </p>
         <CodeBlock
           caption="Сверяем источник и состояние основной папки"
@@ -85,20 +78,15 @@ export function Lesson20_1({ module }: { module?: string }) {
           explanation="Мы читаем сигналы вместе. Только адрес, ветка и опубликованный commit определяют, какой проект получим; status отдельно показывает несохранённую работу."
         />
         <p>
-          <code>git fetch origin</code> обновляет сведения об удалённых ветках без изменения рабочих файлов. Узнайте имя своей ветки и подставьте его вместо <code>main</code>. После fetch запись <code>origin/main</code> указывает на опубликованный commit ветки main.
+          Выберите в выводе адрес получения нужного репозитория и имя remote рядом с ним. Для remote с именем <code>origin</code> команда <code>git fetch origin</code> обновляет сведения об удалённых ветках без изменения рабочих файлов. Если имя другое, подставьте его вместо <code>origin</code> во всех командах ниже. Вместо <code>main</code> подставьте свою ветку. Только после успешного fetch запись <code>origin/main</code> отражает полученную вершину этой ветки.
         </p>
         <CodeBlock
           caption="Сравнение локальной и опубликованной версий для ветки main (замените main своей веткой)"
           code={"git fetch origin\ngit rev-parse HEAD\ngit rev-parse origin/main\ngit status --short"}
         />
         <p>
-          Сравните полные ID: равные означают, что <code>HEAD</code> совпал с вершиной опубликованной ветки на момент fetch. Разные требуют проверки публикации по предыдущему занятию. Пустой <code>status</code> означает отсутствие местных правок, но не подтверждает push.
+          Сравните полные ID: равные означают, что <code>HEAD</code> совпал с вершиной опубликованной ветки на момент успешного fetch. При ошибке fetch, отсутствии ветки или разных ID публикация пока не подтверждена. Пустой <code>status</code> сам по себе не доказывает push. Если есть изменения, <code>git diff</code> покажет неподготовленные, а <code style={{ whiteSpace: "nowrap" }}>git diff --cached</code> подготовленные к commit изменения; новые файлы видны в <code>status</code>. Сверьте, что проверенные код и README входят именно в опубликованный commit: локальная правка в clone не попадёт.
         </p>
-        <TrueFalse
-          statement="После изменения README без commit и push новый clone получит изменённую строку, если обе папки используют ветку main."
-          isTrue={false}
-          explanation="Clone получает файлы из опубликованного commit. Локальную строку Git не передал: проверяйте именно хеш удалённой ветки после fetch."
-        />
         <QuizCard
           question="Какой набор позволяет точно назвать версию, которую мы передаём?"
           options={[
@@ -118,48 +106,23 @@ export function Lesson20_1({ module }: { module?: string }) {
         <p>
           <code>git clone</code> создаёт отдельную папку с историей; <code>git init</code> только начинает новый репозиторий. В основной папке убедитесь, что знаете опубликованный ID, а соседнее имя <code>studyhub-check</code> свободно. Опция <code>--branch</code> выбирает нужную ветку.
         </p>
-        <CodeBlock
-          caption="Получаем выбранную опубликованную ветку в свободную папку"
-          code={"$remote = git remote get-url origin\n$branch = git branch --show-current\ngit clone --branch $branch $remote ..\\studyhub-check"}
-        />
+        <p><strong>Пример PowerShell для свободной папки:</strong> каждая команда начинается с новой строки; на узком экране она может переноситься только визуально.</p>
+        <pre style={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}><code>{"$remote = git remote get-url origin\n$branch = git branch --show-current\ngit clone --branch $branch $remote ..\\studyhub-check"}</code></pre>
+        <p>Здесь показан PowerShell для remote <code>origin</code>. Если ваш remote называется иначе, замените <code>origin</code> его именем и используйте тот же источник, который проверили через fetch.</p>
         <p>
-          Перейдите в новый каталог командой <code>cd ..\studyhub-check</code>. Команда <code>pwd</code> покажет его полный путь. Найдите <code>main.py</code>, README и <code>.gitignore</code>; проверьте <code>git remote -v</code>, имя ветки, <code>git rev-parse HEAD</code> и <code>git status --short</code>. Hash должен совпасть с опубликованным из §01, а status быть пустым. Если за время clone ветка сдвинулась, заново выясните опубликованный ID. Если папка уже есть, выберите другое свободное имя: чужие данные не удаляем.
+          Перейдите в новый каталог командой <code>cd ..\studyhub-check</code>. Команда <code>pwd</code> покажет его полный путь. Найдите <code>main.py</code>, README и <code>.gitignore</code>; проверьте <code style={{ whiteSpace: "nowrap" }}>git remote -v</code>, имя ветки, <code style={{ whiteSpace: "nowrap" }}>git rev-parse HEAD</code> и <code style={{ whiteSpace: "nowrap" }}>git status --short</code>. Hash должен совпасть с опубликованным из §01, а status быть пустым. Если за время clone ветка сдвинулась, заново выясните опубликованный ID. Если папка уже есть, выберите другое свободное имя: чужие данные не удаляем.
         </p>
-        <BugHunt
-          code={'# Основной каталог\npublished_commit = "точка после предыдущей публикации"\nlocal_edit = True\n\n# Clone получен из origin/main\nclone_commit = published_commit\nclone_has_local_edit = False'}
-          question="Какое утверждение верно?"
-          options={[
-            "В clone должна появиться локальная правка, потому что каталог скопирован",
-            "В clone будет состояние опубликованного commit, а локальная правка останется в основной папке",
-            "Обе папки автоматически начнут хранить один список задач",
-          ]}
-          correctIndex={1}
-          explanation="Мы проверяем именно публикацию: clone получает файлы из репозитория. Локальная незакоммиченная правка туда не попадает, даже если основной проект уже запускается."
-        />
         <p>
           Путь, источник и версию сверяем до запуска; затем выполняем README именно в clone.
         </p>
-        <Diagram caption="От основной папки к доказательству опубликованного Planner" orientation="vertical">
-          <DiagramFlow label="Путь проверки чистой передачи" orientation="vertical">
-            <DiagramNode title="Основной StudyHub" shape="terminator">
-              <p>Проверяем, какой commit действительно опубликован.</p>
-            </DiagramNode>
-            <DiagramArrow label="получаем опубликованную версию отдельно" />
-            <DiagramNode title="Независимый clone">
-              <p>Сверяем remote, ветку, полный ID и чистое состояние.</p>
-            </DiagramNode>
-            <DiagramArrow label="выполняем инструкцию README" />
-            <DiagramNode title="Запуск проверенным системным Python 3.12">
-              <p>Тем же способом проверяем версию и запускаем Planner.</p>
-            </DiagramNode>
-            <DiagramArrow label="сопоставляем поведение и файлы с B" />
-            <DiagramNode title="Подтверждённая передача" shape="terminator">
-              <p>Называем точный checkpoint и пределы проверки.</p>
-            </DiagramNode>
-          </DiagramFlow>
-        </Diagram>
+        <LinkedNotes variant="connected" items={[
+          { title: "Основной StudyHub", description: "Устанавливаем, какой commit опубликован." },
+          { title: "Независимый clone", description: "Получаем этот commit отдельно и сверяем его ID." },
+          { title: "Запуск по README", description: "Проверяем версию Python и запускаем Planner в копии." },
+          { title: "Результат проверки", description: "Сопоставляем поведение и файлы, записываем версию и пределы проверки." },
+        ]} />
         <p>
-          Стрелки задают порядок проверки, а не синхронизацию. Исправление делаем в основном проекте и лишь затем обновляем clone.
+          Этот порядок не синхронизирует папки автоматически. Исправление делаем в основном проекте, публикуем его и получаем новую независимую копию.
         </p>
       </Section>
 
@@ -181,7 +144,7 @@ export function Lesson20_1({ module }: { module?: string }) {
           explanation="После запуска программа читает свои команды. Версия Python и путь проверяются до появления меню."
         />
         <p>
-          Windows README может указывать <code>py -3.12 main.py</code>. Launcher <code>py</code> с опцией <code>-3.12</code> выбирает Python 3.12. Проверьте его наличие командой <code>py --version</code>, нужную версию через <code>py -3.12 --version</code>. Если README использует <code>python main.py</code>, проверьте <code>python --version</code>: это может быть другой Python.
+          Windows README может указывать <code style={{ whiteSpace: "nowrap" }}>py -3.12 main.py</code>. Launcher <code>py</code> с опцией <code>-3.12</code> выбирает Python 3.12. Проверьте его наличие командой <code style={{ whiteSpace: "nowrap" }}>py --version</code>, нужную версию через <code style={{ whiteSpace: "nowrap" }}>py -3.12 --version</code>. Если README использует <code style={{ whiteSpace: "nowrap" }}>python main.py</code>, проверьте <code style={{ whiteSpace: "nowrap" }}>python --version</code>: это может быть другой Python.
         </p>
         <CodeBlock
           caption="Windows-пример, только если именно такая команда записана в вашем README"
@@ -202,14 +165,12 @@ export function Lesson20_1({ module }: { module?: string }) {
         <p>
           Разберём учебный пример с двумя задачами «Читать API» (приоритет 2) и «Читать SQL» (приоритет 5). Если обе открыты, <code>stats</code> показывает всего 2, выполнено 0, осталось 2. Поиск по слову «читать» без учёта регистра найдёт обе записи в исходном порядке, но не удалит их из <code>tasks</code>. Если дважды выполнить <code>done</code> для второй, она останется выполненной, а сводка будет 2/1/1 и 50.0%. Повторный <code>done</code> не прибавляет новую выполненную задачу.
         </p>
-        <MethodGrid
-          rows={[
-            ["После add двух записей", "total=2, completed=0, left=2"],
-            ["После done второй записи", "total=2, completed=1, left=1, 50.0%"],
-            ["После повторного done второй", "Те же 2/1/1 и 50.0%, поскольку запись уже выполнена"],
-            ["После search по слову «читать»", "Обе исходные записи остаются в list"],
-          ]}
-        />
+        <LinkedNotes variant="connected" items={[
+          { title: "После двух add", description: "Всего 2, выполнено 0, осталось 2." },
+          { title: "После done второй записи", description: "Всего 2, выполнено 1, осталось 1: 50.0%." },
+          { title: "После повторного done", description: "Сводка не изменилась: задача уже выполнена." },
+          { title: "После search по слову «читать»", description: "Обе исходные записи остаются в list." },
+        ]} />
         <p>
           Всегда выполняется <code>total = completed + left</code>. Счёт вызовов <code>done</code> вместо состояния записей нарушит результат. В самостоятельной проверке возьмите <strong>другие названия</strong> и запишите свои наблюдения.
         </p>
@@ -234,46 +195,22 @@ export function Lesson20_1({ module }: { module?: string }) {
         <p>
           Ответ меню не проверяет интерфейс функций: имя, аргументы и результат. Меню может вывести «50.0%» само, хотя <code>completion_percent</code> ошибочно принимает два числа вместо одного словаря. Нужны и меню, и прямой вызов.
         </p>
-        <Diagram caption="Одна команда проходит через функции, сохраняя общий список" orientation="vertical">
-          <DiagramFlow label="Кто вызывает код и где результат" orientation="vertical">
-            <DiagramNode title="run(): меню и один tasks" shape="terminator">
-              <p>Создаёт список до while и выбирает действие по команде.</p>
-            </DiagramNode>
-            <DiagramArrow label="для add/find/done/search" />
-            <DiagramNode title="handle_*: обработчик команды">
-              <p>Читает данные пользователя и вызывает функцию операции над тем же tasks.</p>
-            </DiagramNode>
-            <DiagramArrow label="операция и показ результата" />
-            <DiagramNode title="list, поиск, изменение или статистика" shape="terminator">
-              <p>Показывают текущее состояние задач; ветка stats выполняется прямо в run().</p>
-            </DiagramNode>
-          </DiagramFlow>
-        </Diagram>
+        <LinkedNotes variant="connected" items={[
+          { title: "Меню в run()", description: "Создаёт tasks до цикла и выбирает действие по команде." },
+          { title: "Обработчик команды", description: "Для add, find, done и search читает ввод и вызывает операцию с тем же tasks." },
+          { title: "Операция и результат", description: "Работают с текущими задачами; ветка stats находится непосредственно в run()." },
+        ]} />
         <p>
           <code>run()</code> вызывают один раз внизу <code>main.py</code>. Он создаёт <code>tasks</code> <strong>до</strong> цикла <code>while</code> и передаёт его обработчикам <code>handle_*</code>. Новый список на каждой итерации терял бы предыдущие задачи. Список локален для <code>run()</code> и снаружи напрямую недоступен.
         </p>
-        <MethodGrid
-          rows={[
-            [
-              "create_task, normalize_title, get_next_id, add_task, find_task, mark_task_done, search_tasks",
-              "Создание и работа с задачами",
-            ],
-            [
-              "read_title, read_priority, read_task_id",
-              "Повторный запрос и проверка ввода",
-            ],
-            [
-              "build_statistics, completion_percent, calculate_study_minutes, format_task, show_menu, show_tasks",
-              "Расчёт и единый вывод",
-            ],
-            [
-              "handle_add, handle_find, handle_done, handle_search, run",
-              "Действия меню и главный цикл",
-            ],
-          ]}
-        />
+        <LinkedNotes variant="connected" items={[
+          { title: "Создание и работа с задачами", description: "create_task, normalize_title, get_next_id, add_task, find_task, mark_task_done, search_tasks" },
+          { title: "Проверка ввода", description: "read_title, read_priority, read_task_id" },
+          { title: "Расчёт и вывод", description: "build_statistics, completion_percent, calculate_study_minutes, format_task, show_menu, show_tasks" },
+          { title: "Действия меню и цикл", description: "handle_add, handle_find, handle_done, handle_search, run" },
+        ]} />
         <p>
-          В точку B передаём 21 функцию из таблицы с уже изученными обязанностями. Все записи содержат ровно <code>id</code>, <code>title</code>, <code>priority</code>, <code>is_done</code>. Семь команд остаются <code>add</code>, <code>list</code>, <code>find</code>, <code>done</code>, <code>search</code>, <code>stats</code>, <code>exit</code>. Команда <code>stats</code> обрабатывается прямо внутри <code>run()</code>, постоянный <code>handle_stats</code> не нужен. <code>format_task</code> возвращает строку и не меняет задачу.
+          В проекте остаётся 21 перечисленная функция с уже изученными обязанностями. Все записи содержат ровно <code>id</code>, <code>title</code>, <code>priority</code>, <code>is_done</code>. Семь команд остаются <code>add</code>, <code>list</code>, <code>find</code>, <code>done</code>, <code>search</code>, <code>stats</code>, <code>exit</code>. Команда <code>stats</code> обрабатывается прямо внутри <code>run()</code>, постоянный <code>handle_stats</code> не нужен. <code>format_task</code> возвращает строку и не меняет задачу.
         </p>
         <p>
           Для прямой проверки используем диагностический флаг <code>-i</code>. Запуск <code>py -3.12 -i main.py</code> сначала выполняет программу, включая вызов <code>run()</code>. В меню набираем <code>exit</code>, после чего Python показывает приглашение <code>&gt;&gt;&gt;</code>. Теперь можно обращаться к определённым в файле функциям. Это <strong>не строки для main.py</strong>. Чтобы закрыть сам Python, у приглашения <code>&gt;&gt;&gt;</code> введите <code>exit()</code>.
@@ -285,19 +222,18 @@ export function Lesson20_1({ module }: { module?: string }) {
         <Callout tone="info">
           Вызовы ниже вводят по одному после <code>&gt;&gt;&gt;</code>. <code>build_statistics</code> принимает список и возвращает словарь с тремя ключами; <code>completion_percent</code> принимает <strong>один такой словарь</strong> и возвращает число. Пустой набор должен давать 0.0 без деления на ноль. Если в README выбрана другая команда Python, используйте её интерпретатор с добавленным флагом <code>-i</code>.
         </Callout>
-        <CodeBlock
-          caption="Прямые вызовы у приглашения Python после выхода из меню"
-          code={'build_statistics([])\n# {"total": 0, "completed": 0, "left": 0}\ncompletion_percent(build_statistics([]))\n# 0.0\ncompletion_percent({"total": 3, "completed": 1, "left": 2})\n# 33.3\nget_next_id([])\n# 1\nget_next_id([{"id": 10}, {"id": 3}, {"id": 20}])\n# 21'}
-        />
+        <p><strong>Прямые вызовы у приглашения Python после выхода из меню:</strong></p>
+        <p>На узком экране длинная строка может визуально переноситься. Вводите каждый вызов целиком, без дополнительного нажатия Enter внутри него.</p>
+        <pre style={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}><code>{'build_statistics([])\n# {"total": 0, "completed": 0, "left": 0}\ncompletion_percent(build_statistics([]))\n# 0.0\ncompletion_percent({"total": 3, "completed": 1, "left": 2})\n# 33.3\nget_next_id([])\n# 1\nget_next_id([{"id": 10}, {"id": 3}, {"id": 20}])\n# 21'}</code></pre>
         <p>
           Новый id берут после максимального, даже если записи стоят не по порядку; <code>get_next_id</code> не меняет список. <code>find_task</code> возвращает найденный словарь или <code>None</code>. <code>mark_task_done</code> меняет нужный <code>is_done</code> и возвращает булев результат.
         </p>
         <QuizCard
           question="Меню stats вывело 50.0%, но completion_percent(словарь) выдаёт ошибку числа аргументов. Что это значит?"
           options={[
-            "Контракт B нарушен, даже если меню выглядит правильно",
-            "Контракт B выполнен: важно только меню",
-            "Надо добавить постоянный handle_stats для обхода ошибки",
+            "Интерфейс нарушен",
+            "Достаточно верного меню",
+            "Нужен новый обработчик",
           ]}
           correctIndex={0}
           explanation="Интерфейс функции проверяем независимо от экрана: словарь из build_statistics должен подходить completion_percent без дополнительных аргументов."
@@ -318,10 +254,10 @@ export function Lesson20_1({ module }: { module?: string }) {
           explanation="Сначала находим источник несовпадения, затем меняем только затронутую часть."
         />
         <p>
-          Исправление выполняем <strong>в основном каталоге</strong>. Повторяем проваленный шаг и ближайший успешный шаг, сверяем README, затем проверяем <code>git status</code> и <code>git diff</code>. При действительном изменении готовим commit и публикуем его по знакомому маршруту из предыдущего занятия. После push снова сравниваем хеши через fetch.
+          Исправление выполняем <strong>в основном каталоге</strong>. Повторяем проваленный шаг и ближайший успешный шаг, сверяем README, затем проверяем <code>git status</code>, <code>git diff</code> и <code style={{ whiteSpace: "nowrap" }}>git diff --cached</code>. При действительном изменении готовим commit и публикуем его по знакомому маршруту. После push снова сравниваем хеши выбранной ветки через успешный fetch.
         </p>
         <p>
-          Для повторной независимой проверки создаём <strong>другой свободный clone</strong> уже исправленного опубликованного commit и повторяем затронутый сценарий. Старый каталог не удаляем и не сбрасываем. Если дефектов нет, фиксируем «изменений нет», commit не создаём. Наше подтверждение означает воспроизводимость на проверенной машине с известной версией Python, а не обещание работы на любой системе.
+          Для повторной независимой проверки создаём <strong>другой свободный clone</strong> исправленной ветки и сравниваем его полный ID с опубликованным. Повторяем затронутый сценарий и ближайшую связанную проверку, затем завершаем пропущенные шаги. Старый каталог не удаляем и не сбрасываем. Если дефектов нет, фиксируем «изменений нет», commit не создаём. Наше подтверждение означает воспроизводимость на проверенной машине с известной версией Python, а не обещание работы на любой системе.
         </p>
         <RecallCard
           question="В основном каталоге и clone разные результаты. Почему нельзя сразу исправить только clone и назвать передачу успешной?"
@@ -332,43 +268,13 @@ export function Lesson20_1({ module }: { module?: string }) {
 
       <Section number="07" title="Что мы будем делать в практике">
         <p>
-          Теперь пройдите семь контрольных точек на <strong>своём</strong> StudyHub. Не переписывайте готовый проект ради проверки: каждая точка отвечает на конкретный вопрос о передаче главы.
+          В практике проверим, сможет ли другой человек получить и запустить ваш проект.
         </p>
-        <MethodGrid
-          rows={[
-            ["1. Публикация", "Из основной папки предъявите remote, ветку, локальный и опубликованный hash; сверьте README и имеющиеся результаты предыдущего занятия."],
-            ["2. Независимость", "Получите новый clone в свободную папку; сверьте pwd, remote, ветку, HEAD и пустой status."],
-            ["3. Инструкция", "Проверьте Python 3.12 и буквально выполните README; установите, появились ли все семь команд меню."],
-            ["4. Поведение", "Пустые list/stats; ошибочный ввод; две задачи и проверки поиска/done; третья задача; exit и новый запуск."],
-            ["5. Контракт", "Проверьте 21 функцию, четыре поля записи, прямые вызовы расчёта, один tasks, README и .gitignore."],
-            ["6. Расхождение", "Если обнаружен дефект, исправьте основной проект, проверьте, опубликуйте и получите новый независимый clone."],
-            ["7. Передача", "Предъявите путь clone, команду запуска, опубликованный hash, таблицу наблюдений и ограничения проверки."],
-          ]}
-        />
-        <p>
-          Для каждого значимого случая заполните четыре колонки: <strong>ввод, ожидаемое поведение, фактически увиденное, совпало ли</strong>. Например, после повторного <code>done</code> ожидание равно «completed не увеличился», а наблюдение оставьте пустым до настоящего запуска. Не подменяйте собственный результат числами из примера §04.
-        </p>
-        <Callout tone="info">После проверки ошибочного ввода убедитесь, что список всё ещё пуст; лишь затем начинайте счёт 1, 2, 3. Если опубликованного checkpoint нет, запишите этот конкретный блокер и закончите публикацию по предыдущему занятию.</Callout>
-      </Section>
-      <Section number="08" title="Самостоятельно применяем изученное">
-        <Lead>После передачи Planner попробуйте отдельно построить новый отчёт по знакомым словарям без готового алгоритма.</Lead>
-        <p>
-          В миниработе платформа создаёт список <code>tasks</code>. Поле <code>is_done</code> содержит <code>True</code> для выполненной задачи и <code>False</code> для открытой. Числовой <code>priority</code> здесь лежит между 1 и 5. Нужно вывести на отдельных строках число открытых задач, наибольший <code>priority</code> <strong>только среди открытых</strong> и исходный список без изменений. Используйте изученные <code>for</code> и <code>print</code>; собственные переменные и функции придумайте сами. <code>main.py</code> менять не нужно.
-        </p>
-        <p>
-          Проверьте логику сначала на бумаге: если две открытые задачи имеют приоритеты 2 и 4, а уже выполненная имеет приоритет 5, то открытых две, а подходящий максимум равен 4. Значение 5 исключено по <code>is_done</code>. Если открытых вообще нет, выведите число <code>0</code> и специальное значение <code>None</code> («подходящего максимума не существует»), а не приоритет выполненной задачи.
-        </p>
-        <LinkedNotes
-          variant="connected"
-          items={[
-            { title: "Доказательство B", description: "Свои опубликованный hash, clone, README, семь команд, контракты функций и журнал фактических результатов." },
-            { title: "Самостоятельный перенос", description: "Свой способ выбрать открытые записи, посчитать их, найти максимум и сохранить порядок и содержимое tasks." },
-            { title: "Критерий завершения", description: "Три точные строки на пустом, смешанном и полностью выполненном наборе; объяснение каждой проверки без готового образца." },
-          ]}
-        />
-        <p>
-          Сначала составьте план своими словами и попробуйте решить без подсказки. После запуска сравните крайние случаи: пустой список, все задачи выполнены, одна открыта, самый высокий приоритет у выполненной, максимум открытых находится в середине списка. Объясните, почему ни записи, ни их порядок не изменились. Это и есть перенос знаний за пределы заученного сценария.
-        </p>
+        <LinkedNotes variant="connected" items={[
+          { title: "Публикация", description: "Проверим опубликованную версию и получим чистую копию." },
+          { title: "Проверка", description: "Запустим проект по инструкции и проверим его работу." },
+          { title: "Передача", description: "Исправим найденные ошибки и подготовим сведения для получателя." },
+        ]} />
       </Section>
     </RichLesson>
   );

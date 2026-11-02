@@ -1,0 +1,148 @@
+.first-run-demo {
+  container-type: inline-size;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+}
+
+.first-run-demo__heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: 8px 24px;
+  padding: 22px 24px 18px;
+}
+
+.first-run-demo__eyebrow {
+  color: var(--accent);
+  font-size: .68rem;
+  font-weight: 750;
+  letter-spacing: .09em;
+}
+
+.first-run-demo__heading h3 { margin: 6px 0 0; font-size: 1.1rem; }
+.first-run-demo__heading p { margin: 0; color: var(--muted); font-size: .9rem; }
+
+.first-run-demo__workspace {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr);
+  border-block: 1px solid var(--line-soft);
+}
+
+.first-run-demo__editor,
+.first-run-demo__output {
+  min-width: 0;
+  padding: 20px 24px 22px;
+}
+
+.first-run-demo__editor { background: var(--code-bg); }
+.first-run-demo__output { background: var(--surface-2); }
+
+.first-run-demo__pane-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: .8rem;
+  font-weight: 700;
+}
+
+.first-run-demo__pane-title svg { color: var(--accent); }
+.first-run-demo__code {
+  display: flex;
+  align-items: baseline;
+  gap: 15px;
+  min-width: 0;
+  margin: 20px 0 23px;
+  color: var(--code-text);
+  font: 500 .95rem/1.6 ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+.first-run-demo__line { flex: none; color: var(--faint); user-select: none; }
+.rich-lesson .first-run-demo__code code {
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+.first-run-demo__function { color: var(--syntax-function); }
+.first-run-demo__string { color: var(--syntax-string); }
+
+.first-run-demo__label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--muted);
+  font-size: .8rem;
+}
+.first-run-demo__controls { display: flex; flex-wrap: wrap; align-items: stretch; gap: 10px; }
+.first-run-demo__controls input {
+  box-sizing: border-box;
+  flex: 1 1 160px;
+  min-width: 0;
+  padding: 9px 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+}
+.first-run-demo__controls input:focus-visible,
+.first-run-demo__controls button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.first-run-demo__controls button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 9px 15px;
+  border: 1px solid var(--border-tint-accent);
+  border-radius: 8px;
+  background: var(--brand);
+  color: var(--brand-contrast);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.first-run-demo__controls button:hover { filter: brightness(1.08); }
+
+.first-run-demo__result {
+  min-height: 3.2em;
+  margin-top: 22px;
+  color: var(--text);
+  font: 500 .95rem/1.6 ui-monospace, SFMono-Regular, Consolas, monospace;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+.first-run-demo__result.is-empty { color: var(--muted); font-family: inherit; font-weight: 400; }
+.first-run-demo__status { margin: 12px 0 0; color: var(--muted); font-size: .8rem; line-height: 1.45; }
+.first-run-demo__connector {
+  position: absolute;
+  top: 23px;
+  left: 57.5%;
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--accent);
+  transform: translateX(-50%);
+}
+.first-run-demo__note { margin: 0; padding: 12px 24px; color: var(--muted); font-size: .8rem; }
+
+@container (max-width: 620px) {
+  .first-run-demo__heading { padding: 18px 18px 16px; }
+  .first-run-demo__workspace { grid-template-columns: minmax(0, 1fr); }
+  .first-run-demo__editor, .first-run-demo__output { padding: 18px; }
+  .first-run-demo__output { border-top: 1px solid var(--line-soft); }
+  .first-run-demo__result { min-height: 1.6em; margin-top: 12px; }
+  .first-run-demo__connector { display: none; }
+  .first-run-demo__note { padding-inline: 18px; }
+}

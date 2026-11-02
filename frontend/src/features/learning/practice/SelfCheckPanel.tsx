@@ -237,6 +237,7 @@ export function SelfCheckPanel({
             return (
               <article className="manual-practice-card" data-exercise-id={exerciseId} key={`${lesson.id}-${exercise.title}`}>
               <header className="manual-practice-card__head">
+                <span>Практика · Самопроверка</span>
                 <h2>{renderPracticeText(exercise.title)}</h2>
               </header>
               <section className="manual-practice-card__context" aria-label="Контекст занятия">
@@ -248,12 +249,29 @@ export function SelfCheckPanel({
                   {(() => {
                     const taskId = [lesson.id, exerciseIndex, activeTaskIndex].join(":");
                     const isDone = checkedSteps.has(taskId) || lesson.completed === true;
+                    const taskStatuses = Array.from({ length: taskCount }, (_, index) => ({
+                      isCurrent: index === activeTaskIndex,
+                      isDone: lesson.completed === true || checkedSteps.has([lesson.id, exerciseIndex, index].join(":")),
+                    }));
                     const activePanel = openTaskPanels[taskId];
 
                     return (
                       <article className={["manual-practice-task", isDone ? "is-done" : ""].filter(Boolean).join(" ")} key={taskId}>
                         <div className="manual-practice-task__toolbar">
-                          <span>Задача {activeTaskIndex + 1} из {taskCount}</span>
+                          <div className="manual-practice-task__position">
+                            <span>Задача {activeTaskIndex + 1} из {taskCount}</span>
+                            {taskCount > 1 && (
+                              <div
+                                className="manual-practice-task__position-track"
+                                role="img"
+                                aria-label={taskStatuses.map((status, index) => `Задача ${index + 1}: ${status.isDone ? "выполнена" : "не выполнена"}${status.isCurrent ? ", текущая" : ""}`).join("; ")}
+                              >
+                                {taskStatuses.map((status, index) => (
+                                  <i key={index} className={[status.isDone && "is-done", status.isCurrent && "is-current"].filter(Boolean).join(" ")} />
+                                ))}
+                              </div>
+                            )}
+                          </div>
                           <div className="practice-task-navigation" aria-label="Переключение задач">
                             <button
                               className="practice-task-navigation__button"
@@ -291,7 +309,7 @@ export function SelfCheckPanel({
 
                           <section className="manual-practice-task__requirements" aria-label={"Техническое задание: " + practiceTask.title}>
                             <h4>Техническое задание</h4>
-                            <ol>
+                            <ol role="list">
                               {practiceTask.requirements.map((requirement) => (
                                 <li key={requirement}>{renderPracticeText(requirement)}</li>
                               ))}
