@@ -94,7 +94,7 @@ jobs:
           PYMENTOR_LOCAL_NOTIFICATIONS: 'false'
         run: |
           set -euo pipefail
-          python -m pip install -r backend/requirements.txt pytest==9.1.1
+          python -m pip install -r backend/requirements.txt pytest==9.1.1 httpx==0.28.1 asyncpg==0.32.0
           python -m compileall -q backend
           python -m pytest -q backend/tests
 
