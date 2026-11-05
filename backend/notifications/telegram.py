@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import asyncio
+import http.client
 import json
 import logging
 import math
 import os
 import re
+import socket
 from datetime import date, datetime, time, timedelta, timezone
 from urllib import error, request
 from urllib.parse import urlencode
@@ -18,6 +20,67 @@ MOSCOW_TZ = timezone(timedelta(hours=3))
 _MARKDOWN_V2_SPECIAL_CHARS = re.compile(r"([_\*\[\]\(\)~`>#+\-=|{}.!\\])")
 _PLATFORM_BOT_TOKEN_ENV = "PYMENTOR_PLATFORM_TELEGRAM_BOT_TOKEN"
 _PLATFORM_CHAT_ID_ENV = "PYMENTOR_PLATFORM_TELEGRAM_CHAT_ID"
+_PREFER_IPV6_ENV = "PYMENTOR_TELEGRAM_PREFER_IPV6"
+
+
+class _IPv6ConnectionError(OSError):
+    """IPv6 failed before an HTTP request was sent."""
+
+
+class _IPv6HTTPSConnection(http.client.HTTPSConnection):
+    def connect(self) -> None:
+        if self._tunnel_host:
+            super().connect()
+            return
+
+        try:
+            addresses = socket.getaddrinfo(
+                self.host, self.port, socket.AF_INET6, socket.SOCK_STREAM
+            )
+        except OSError as exc:
+            raise _IPv6ConnectionError("IPv6 address lookup failed") from exc
+
+        last_error: OSError | None = None
+        for family, socktype, proto, _, sockaddr in addresses:
+            connection = None
+            try:
+                connection = socket.socket(family, socktype, proto)
+                if self.timeout is not socket._GLOBAL_DEFAULT_TIMEOUT:
+                    connection.settimeout(self.timeout)
+                if self.source_address:
+                    connection.bind(self.source_address)
+                connection.connect(sockaddr)
+                self.sock = self._context.wrap_socket(connection, server_hostname=self.host)
+                return
+            except OSError as exc:
+                last_error = exc
+                if connection is not None:
+                    connection.close()
+
+        message = "IPv6 connection failed" if last_error else "no IPv6 address available"
+        raise _IPv6ConnectionError(message) from last_error
+
+
+class _IPv6HTTPSHandler(request.HTTPSHandler):
+    def https_open(self, req):
+        return self.do_open(_IPv6HTTPSConnection, req, context=self._context)
+
+
+def _open_telegram_request(telegram_request: request.Request, *, timeout: int):
+    if os.getenv(_PREFER_IPV6_ENV) != "1":
+        return request.urlopen(telegram_request, timeout=timeout)
+
+    # An HTTPS proxy resolves the destination itself; preserve urllib's proxy route.
+    if request.getproxies().get("https") and not request.proxy_bypass("api.telegram.org"):
+        return request.urlopen(telegram_request, timeout=timeout)
+
+    opener = request.build_opener(_IPv6HTTPSHandler)
+    try:
+        return opener.open(telegram_request, timeout=timeout)
+    except error.URLError as exc:
+        if isinstance(exc.reason, _IPv6ConnectionError):
+            return request.urlopen(telegram_request, timeout=timeout)
+        raise
 
 
 class TelegramDeliveryError(RuntimeError):
@@ -164,7 +227,7 @@ def _send_telegram_message(
         method="POST",
     )
     try:
-        with request.urlopen(telegram_request, timeout=10) as response:
+        with _open_telegram_request(telegram_request, timeout=10) as response:
             response_data = json.loads(response.read(65_536).decode("utf-8"))
     except error.HTTPError as exc:
         try:
@@ -211,7 +274,7 @@ def _telegram_api_get(*, token: str, method: str, params: dict[str, str] | None 
         method="GET",
     )
     try:
-        with request.urlopen(telegram_request, timeout=10) as response:
+        with _open_telegram_request(telegram_request, timeout=10) as response:
             response_data = json.loads(response.read(16_384).decode("utf-8"))
     except error.HTTPError as exc:
         try:
