@@ -1,7 +1,11 @@
 from datetime import date, datetime, timezone
 from uuid import uuid4
 
-import bcrypt
+from identity.passwords import (
+    hash_password as _hash_password,
+    is_bcrypt_hash as _is_bcrypt_hash,
+    verify_password as _verify_password,
+)
 from sqlalchemy import Boolean, Date, DateTime, ForeignKey, Index, Integer, String, Text, UniqueConstraint, func
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -10,14 +14,6 @@ from .engine import Base
 
 def _utcnow() -> datetime:
     return datetime.now(timezone.utc)
-
-def _hash_password(plain: str) -> str:
-    salt = bcrypt.gensalt()
-    return bcrypt.hashpw(plain.encode(), salt).decode()
-
-def _is_bcrypt_hash(value: str) -> bool:
-    return isinstance(value, str) and value.startswith("$2")
-
 
 
 class User(Base):
@@ -46,7 +42,7 @@ class User(Base):
             self._password_hash = _hash_password(plain_password)
 
     def verify_password(self, plain_password: str) -> bool:
-        return bcrypt.checkpw(plain_password.encode(), self._password_hash.encode())
+        return _verify_password(plain_password, self._password_hash)
 
 
 class Admin(Base):
@@ -72,7 +68,7 @@ class Admin(Base):
             self._password_hash = _hash_password(plain_password)
 
     def verify_password(self, plain_password: str) -> bool:
-        return bcrypt.checkpw(plain_password.encode(), self._password_hash.encode())
+        return _verify_password(plain_password, self._password_hash)
     
 
 class Session(Base):

@@ -181,7 +181,10 @@ def api_harness(monkeypatch):
     def get_db():
         yield None
 
-    fake_dependencies = _stub("core.dependencies", get_db=get_db)
+    fake_dependencies = _stub(
+        "core.dependencies", get_db=get_db,
+        get_request_context=lambda: SimpleNamespace(uow=None),
+    )
     for parent, name, module in (
         (content, "catalog", catalog),
         (content.practice.runner, "python", fake_runner_python),

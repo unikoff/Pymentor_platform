@@ -22,8 +22,28 @@ class UserPublic(BaseModel):
     subscription_until: datetime | None = None
     subscription_plan: str | None = None
     has_active_subscription: bool = False
+    is_admin: bool = False
 
-    model_config = {"from_attributes": True}
+    model_config = {"from_attributes": True, "extra": "forbid"}
+
+
+class AuthResponse(BaseModel):
+    model_config = {"extra": "forbid"}
+
+    message: str
+    user: UserPublic
+
+
+class CurrentUserResponse(BaseModel):
+    model_config = {"extra": "forbid"}
+
+    user: UserPublic
+
+
+class LogoutResponse(BaseModel):
+    model_config = {"extra": "forbid"}
+
+    message: str
 
 
 UserBase = UserCreate
@@ -31,3 +51,48 @@ UserBase = UserCreate
 
 class ActivityVisit(BaseModel):
     activity_date: date | None = None
+
+
+class ActivityVisitResponse(BaseModel):
+    model_config = {"extra": "forbid"}
+
+    activity_date: str
+    visited_at: str | None
+
+
+class ActivityCalendarVisitResponse(BaseModel):
+    model_config = {"extra": "forbid"}
+
+    activity_date: str
+    visited_at: str | None
+
+
+class ActivityCalendarResponse(BaseModel):
+    model_config = {"extra": "forbid"}
+
+    days: list[str]
+    visits: list[ActivityCalendarVisitResponse]
+
+
+class ActivitySummaryDayResponse(BaseModel):
+    model_config = {"extra": "forbid"}
+
+    activity_date: str
+    active: bool
+
+
+class ActivityLessonsDayResponse(BaseModel):
+    model_config = {"extra": "forbid"}
+
+    activity_date: str
+    lessons_completed: int
+
+
+class ActivitySummaryResponse(BaseModel):
+    model_config = {"extra": "forbid"}
+
+    current_streak: int
+    visited_today: bool
+    total_active_days: int
+    weekly_activity: list[ActivitySummaryDayResponse]
+    weekly_lessons_completed: list[ActivityLessonsDayResponse]

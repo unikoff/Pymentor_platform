@@ -1,44 +1,77 @@
 from fastapi import APIRouter, Depends, Query, Request, Response
 from sqlalchemy.orm import Session
-from core.dependencies import get_db
-from datetime import datetime, timezone
+from core.dependencies import get_db, get_request_context
+from core.composition import RequestContext
+from core.api_contracts import api_contract_responses
 from . import service, activity
-from .schemas import ActivityVisit, UserCreate, UserLogin
+from .schemas import (
+    ActivityCalendarResponse,
+    ActivitySummaryResponse,
+    ActivityVisit,
+    ActivityVisitResponse,
+    AuthResponse,
+    CurrentUserResponse,
+    LogoutResponse,
+    UserCreate,
+    UserLogin,
+)
 
 user_router = APIRouter()
 
 
-@user_router.post("/register")
+@user_router.post("/register", responses=api_contract_responses(AuthResponse, 400))
 def register_user(user: UserCreate, db: Session = Depends(get_db)):
     user_db = service.register_user(user=user, db=db)
     return {"message": "Registration successful", "user": service._serialize_user(user_db)}
 
 
-@user_router.post("/login")
-def login_user(user: UserLogin, response: Response, db: Session = Depends(get_db)):
-    user_db = service.login_user(response=response, user=user, db=db)
+@user_router.post("/login", responses=api_contract_responses(AuthResponse, 401))
+def login_user(user: UserLogin, response: Response, request: Request, db: Session = Depends(get_db)):
+    user_db = service.login_user(response=response, user=user, db=db, request=request)
     return {"message": "Login successful", "user": service._serialize_user(user_db)}
 
 
-@user_router.get("/me")
-def me(request: Request, db: Session = Depends(get_db)):
-    user_db = service.get_current_user(request=request, db=db)
+@user_router.get("/me", responses=api_contract_responses(CurrentUserResponse, 401))
+def me(
+    request: Request,
+    db: Session = Depends(get_db),
+    context: RequestContext = Depends(get_request_context),
+):
+    user_db = service.get_current_user(request=request, db=db, uow=context.uow)
     return {"user": service._serialize_user(user_db)}
 
 
-@user_router.post("/activity/visit")
-def record_activity_visit(payload: ActivityVisit, request: Request, db: Session = Depends(get_db)):
+@user_router.post(
+    "/activity/visit",
+    responses=api_contract_responses(ActivityVisitResponse, 401),
+)
+def record_activity_visit(
+    payload: ActivityVisit,
+    request: Request,
+    db: Session = Depends(get_db),
+    context: RequestContext = Depends(get_request_context),
+):
     user_db = service.get_current_user(request=request, db=db)
-    visited_at = datetime.now(timezone.utc)
+    visited_at = context.clock.now()
     activity_date = payload.activity_date or visited_at.astimezone(activity.MOSCOW_TZ).date()
-    activity_day = activity.record_activity_day(user_id=user_db.id, activity_date=activity_date, db=db, visited_at=visited_at)
+    activity_day = activity.record_activity_day(
+        user_id=user_db.id,
+        activity_date=activity_date,
+        db=db,
+        visited_at=visited_at,
+        uow=context.uow,
+        clock=context.clock,
+    )
     return {
         "activity_date": activity_day.activity_date.isoformat(),
         "visited_at": activity.serialize_activity_timestamp(activity_day.visited_at),
     }
 
 
-@user_router.get("/activity")
+@user_router.get(
+    "/activity",
+    responses=api_contract_responses(ActivityCalendarResponse, 401),
+)
 def get_activity_calendar(
     request: Request,
     year: int = Query(..., ge=2000, le=2100),
@@ -59,13 +92,20 @@ def get_activity_calendar(
     }
 
 
-@user_router.get("/activity/summary")
-def get_activity_summary(request: Request, db: Session = Depends(get_db)):
+@user_router.get(
+    "/activity/summary",
+    responses=api_contract_responses(ActivitySummaryResponse, 401),
+)
+def get_activity_summary(
+    request: Request,
+    db: Session = Depends(get_db),
+    context: RequestContext = Depends(get_request_context),
+):
     user_db = service.get_current_user(request=request, db=db)
-    return activity.get_activity_summary(user_id=user_db.id, db=db)
+    return activity.get_activity_summary(user_id=user_db.id, db=db, clock=context.clock)
 
 
-@user_router.post("/logout")
+@user_router.post("/logout", responses=api_contract_responses(LogoutResponse, 401))
 def logout_user(request: Request, response: Response, db: Session = Depends(get_db)):
     service.logout_user(request=request, response=response, db=db)
     return {"message": "Logout successful"}

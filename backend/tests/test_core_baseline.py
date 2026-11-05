@@ -193,7 +193,27 @@ class CoreBaselineTests(unittest.IsolatedAsyncioTestCase):
             / "core-baseline-openapi.json"
         )
         expected_openapi = json.loads(fixture_path.read_text(encoding="utf-8"))
-        self.assertEqual(_relevant_openapi(schema), expected_openapi)
+        # C2 documents formerly untyped successful responses. Preserve the old
+        # operations, request contract, existing schemas and all typed responses;
+        # only an empty success schema may be replaced by a documented one.
+        self.assertEqual(schema["openapi"], expected_openapi["openapi"])
+        self.assertEqual(schema["info"], expected_openapi["info"])
+        for name, old_schema in expected_openapi["components"]["schemas"].items():
+            self.assertEqual(schema["components"]["schemas"][name], old_schema)
+        for path, old_methods in expected_openapi["paths"].items():
+            for method, old_operation in old_methods.items():
+                new_operation = schema["paths"][path][method]
+                self.assertEqual(
+                    {key: value for key, value in new_operation.items() if key != "responses"},
+                    {key: value for key, value in old_operation.items() if key != "responses"},
+                )
+                for status, old_response in old_operation["responses"].items():
+                    new_response = new_operation["responses"][status]
+                    old_content = old_response.get("content", {}).get("application/json", {}).get("schema")
+                    if status.startswith("2") and old_content == {}:
+                        self.assertTrue(new_response["content"]["application/json"]["schema"])
+                    else:
+                        self.assertEqual(new_response, old_response)
         self.assertFalse(any("attempt" in table.lower() for table in Base.metadata.tables))
         self.assertIn("/user/login", paths)
         self.assertIn("/user/logout", paths)

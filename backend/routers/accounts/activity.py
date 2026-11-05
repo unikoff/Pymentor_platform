@@ -4,6 +4,7 @@ from datetime import date, datetime, timedelta, timezone
 from calendar import monthrange
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
+from core.ports import Clock, UnitOfWork
 from db import models
 
 MOSCOW_TZ = timezone(timedelta(hours=3))
@@ -11,9 +12,42 @@ MOSCOW_TZ = timezone(timedelta(hours=3))
 def record_activity_day(
     user_id: int,
     activity_date: date,
-    db: Session,
+    db: Session | None,
     visited_at: datetime | None = None,
+    *,
+    uow: UnitOfWork | None = None,
+    clock: Clock | None = None,
 ) -> models.UserActivityDay:
+    if uow is not None:
+        repository = uow.repository(models.UserActivityDay)
+        timestamp = visited_at or (clock.now() if clock is not None else datetime.now(timezone.utc))
+        existing_day = repository.find_one(user_id=user_id, activity_date=activity_date)
+        if existing_day is not None:
+            if existing_day.visited_at is None:
+                existing_day.visited_at = timestamp
+                uow.commit()
+                uow.refresh(existing_day)
+            return existing_day
+
+        activity_day = models.UserActivityDay(
+            user_id=user_id,
+            activity_date=activity_date,
+            visited_at=timestamp,
+        )
+        repository.add(activity_day)
+        try:
+            uow.commit()
+        except IntegrityError:
+            uow.rollback()
+            existing_day = repository.find_one(user_id=user_id, activity_date=activity_date)
+            if existing_day is not None:
+                return existing_day
+            raise
+        uow.refresh(activity_day)
+        return activity_day
+
+    if db is None:
+        raise ValueError("db is required when no unit of work is supplied")
     existing_day = (
         db.query(models.UserActivityDay)
         .filter(models.UserActivityDay.user_id == user_id, models.UserActivityDay.activity_date == activity_date)
@@ -74,8 +108,14 @@ def get_activity_records(user_id: int, year: int, month: int, db: Session) -> li
     return rows
 
 
-def get_activity_summary(user_id: int, db: Session) -> dict[str, int | bool | list[dict[str, str | bool | int]]]:
-    today = datetime.now(MOSCOW_TZ).date()
+def get_activity_summary(
+    user_id: int,
+    db: Session,
+    *,
+    clock: Clock | None = None,
+) -> dict[str, int | bool | list[dict[str, str | bool | int]]]:
+    current_time = clock.now() if clock is not None else datetime.now(MOSCOW_TZ)
+    today = current_time.astimezone(MOSCOW_TZ).date()
     activity_dates = {
         row.activity_date
         for row in (

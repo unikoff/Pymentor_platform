@@ -14,10 +14,11 @@ from pathlib import Path
 from typing import Callable
 from urllib.error import URLError
 from uuid import uuid4
-from sqlalchemy import and_, func, or_, select, text
+from sqlalchemy import and_, func, inspect, or_, select, text
 from sqlalchemy.orm import Session, aliased, sessionmaker
 from db.engine import SessionLocal, engine
 from core.config import BACKEND_ROOT
+from core.schema_policy import should_run_legacy_bootstrap
 from db import models
 from notifications.telegram import (
     TelegramDeliveryError,
@@ -78,6 +79,19 @@ class ClaimedLandingNotification:
 
 
 def _ensure_outbox_table() -> None:
+    if not should_run_legacy_bootstrap(engine.dialect.name, os.getenv("PYMENTOR_SCHEMA_MODE")):
+        required = {
+            models.BookingNotificationOutbox.__tablename__,
+            models.BookingNotificationDeliveryState.__tablename__,
+            models.Landing.__tablename__,
+            models.LandingTelegramConfig.__tablename__,
+            models.LandingNotificationOutbox.__tablename__,
+            models.LandingNotificationDeliveryState.__tablename__,
+        }
+        missing = required.difference(inspect(engine).get_table_names())
+        if missing:
+            raise RuntimeError("Database migration required before starting notification worker")
+        return
     models.BookingNotificationOutbox.__table__.create(bind=engine, checkfirst=True)
     models.BookingNotificationDeliveryState.__table__.create(bind=engine, checkfirst=True)
     models.Landing.__table__.create(bind=engine, checkfirst=True)

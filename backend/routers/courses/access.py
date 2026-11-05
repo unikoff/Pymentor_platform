@@ -2,20 +2,20 @@
 
 from fastapi import HTTPException, Request, status
 from sqlalchemy.orm import Session
-from db import models
+from identity.principal import Principal
 from routers.accounts import service as accounts
 
 
-def get_optional_user(request: Request, db: Session) -> models.User | None:
+def get_optional_user(request: Request, db: Session) -> Principal | None:
     try:
-        return accounts.get_current_user(request=request, db=db)
+        return accounts.get_current_principal(request=request, db=db)
     except HTTPException as exc:
         if exc.status_code == status.HTTP_401_UNAUTHORIZED:
             return None
         raise
 
 
-def get_lesson_access(lesson: dict, user: models.User | None) -> tuple[bool, str | None]:
+def get_lesson_access(lesson: dict, user: Principal | None) -> tuple[bool, str | None]:
     access = lesson.get("access", "registered")
     if access == "free":
         return True, None

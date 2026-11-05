@@ -7,6 +7,7 @@ from calendar import monthrange
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from db import models
+from core.ports import Clock, UnitOfWork
 
 MOSCOW_TZ = timezone(timedelta(hours=3))
 CANCELLATION_DEADLINE = timedelta(hours=36)
@@ -16,8 +17,8 @@ def _month_bounds(year: int, month: int) -> tuple[date, date]:
     return date(year, month, 1), date(year, month, last_day)
 
 
-def _now_moscow(now: datetime | None = None) -> datetime:
-    current = now or datetime.now(MOSCOW_TZ)
+def _now_moscow(now: datetime | None = None, *, clock: Clock | None = None) -> datetime:
+    current = now if now is not None else clock.now() if clock is not None else datetime.now(MOSCOW_TZ)
     if current.tzinfo is None:
         return current.replace(tzinfo=MOSCOW_TZ)
     return current.astimezone(MOSCOW_TZ)
@@ -68,7 +69,43 @@ def _start_write_transaction(db: Session) -> None:
         db.execute(text("BEGIN IMMEDIATE"))
 
 
-def get_quota(user_id: int, year: int, month: int, db: Session) -> int:
+def _require_postgres_read_committed(db: Session) -> None:
+    if db.execute(text("SHOW transaction_isolation")).scalar_one().lower() != "read committed":
+        raise RuntimeError("PostgreSQL booking writes require READ COMMITTED isolation")
+
+
+def _lock_postgres_user(db: Session, user_id: int) -> None:
+    """Serialize quota changes, booking and cancellation for one user on PostgreSQL."""
+    if db.bind is not None and db.bind.dialect.name == "postgresql":
+        _require_postgres_read_committed(db)
+        user = db.query(models.User.id).filter(models.User.id == user_id).with_for_update().first()
+        if user is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+
+def _lock_postgres_slot_date(db: Session, slot_date: date) -> None:
+    """Serialize interval checks even when no row exists yet for this date."""
+    if db.bind is not None and db.bind.dialect.name == "postgresql":
+        _require_postgres_read_committed(db)
+        db.execute(text("SELECT pg_advisory_xact_lock(CAST(:namespace AS INTEGER), CAST(:day AS INTEGER))"),
+                   {"namespace": 5265741, "day": slot_date.toordinal()})
+
+
+def get_quota(
+    user_id: int,
+    year: int,
+    month: int,
+    db: Session | None,
+    *,
+    uow: UnitOfWork | None = None,
+) -> int:
+    if uow is not None:
+        row = uow.repository(models.BookingQuota).find_one(
+            user_id=user_id, year=year, month=month
+        )
+        return row.granted_slots if row else 0
+    if db is None:
+        raise ValueError("db is required when no unit of work is supplied")
     row = (
         db.query(models.BookingQuota)
         .filter(
@@ -82,6 +119,7 @@ def get_quota(user_id: int, year: int, month: int, db: Session) -> int:
 
 
 def add_quota(user_id: int, year: int, month: int, amount: int, db: Session) -> int:
+    _lock_postgres_user(db, user_id)
     row = (
         db.query(models.BookingQuota)
         .filter(
@@ -113,8 +151,19 @@ def count_bookings_in_month(user_id: int, year: int, month: int, db: Session) ->
     )
 
 
-def get_quota_status(user_id: int, year: int, month: int, db: Session) -> dict:
-    granted = get_quota(user_id, year, month, db)
+def get_quota_status(
+    user_id: int,
+    year: int,
+    month: int,
+    db: Session,
+    *,
+    uow: UnitOfWork | None = None,
+) -> dict:
+    granted = (
+        get_quota(user_id, year, month, db, uow=uow)
+        if uow is not None
+        else get_quota(user_id, year, month, db)
+    )
     used = count_bookings_in_month(user_id, year, month, db)
     return {"granted": granted, "used": used, "remaining": max(0, granted - used)}
 
@@ -156,6 +205,7 @@ def create_slot(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Нельзя создать слот в уже прошедшее время")
 
     _start_write_transaction(db)
+    _lock_postgres_slot_date(db, slot_date)
     # Проверяем, что новый слот не пересекается по времени с существующими в этот день.
     same_day = (
         db.query(models.BookingSlot)
@@ -211,9 +261,17 @@ def list_slots_for_month_admin(year: int, month: int, db: Session, *, now: datet
     return [serialize_slot_admin(slot, students.get(slot.student_id), now=current_time) for slot in visible_slots]
 
 
-def list_bookable_slots(year: int, month: int, user_id: int, db: Session, *, now: datetime | None = None) -> list[dict]:
+def list_bookable_slots(
+    year: int,
+    month: int,
+    user_id: int,
+    db: Session,
+    *,
+    now: datetime | None = None,
+    clock: Clock | None = None,
+) -> list[dict]:
     """Будущие свободные слоты и будущие собственные брони студента за месяц."""
-    current_time = _now_moscow(now)
+    current_time = _now_moscow(now, clock=clock)
     start_date, end_date = _month_bounds(year, month)
     slots = (
         db.query(models.BookingSlot)
@@ -238,6 +296,7 @@ def book_slot(
     notification_email: str,
 ) -> models.BookingSlot:
     _start_write_transaction(db)
+    _lock_postgres_user(db, user_id)
     slot = db.query(models.BookingSlot).filter(models.BookingSlot.id == slot_id).with_for_update().first()
     if slot is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Слот не найден")
@@ -287,6 +346,7 @@ def cancel_booking(
     notification_email: str,
 ) -> models.BookingSlot:
     _start_write_transaction(db)
+    _lock_postgres_user(db, user_id)
     slot = db.query(models.BookingSlot).filter(models.BookingSlot.id == slot_id).with_for_update().first()
     if slot is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Слот не найден")

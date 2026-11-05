@@ -1,16 +1,12 @@
 """Account authentication, SQL sessions and subscription information."""
 
-import os
-import uuid
-from fastapi import HTTPException, status, Response, Request
-from .schemas import UserCreate, UserLogin
+from fastapi import HTTPException, status
+from .schemas import UserCreate
 from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 from db import models
-
-
-def _secure_cookie_enabled() -> bool:
-    return os.getenv("PYMENTOR_COOKIE_SECURE", "").strip().lower() in {"1", "true", "yes", "on"}
+from identity.sessions import _secure_cookie_enabled, get_current_user, login_user, logout_user
+from identity.principal import Principal
 
 
 def _normalize_datetime(value: datetime | None) -> datetime | None:
@@ -52,69 +48,7 @@ def register_user(user: UserCreate, db: Session):
     return new_user
 
 
-def login_user(response: Response, user: UserLogin, db: Session):
-    user_db = db.query(models.User).filter(models.User.email == user.email).first()
-
-    if user_db is None or user_db.verify_password(user.password) is False:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
-    
-    # Держим не больше 3 активных сессий: при входе с 4-го устройства
-    # вытесняем самую старую вместо вечного 403 (раньше логин блокировался
-    # навсегда, потому что сессии никогда не удалялись).
-    MAX_SESSIONS = 3
-    sessions = (
-        db.query(models.Session)
-        .filter(models.Session.user_id == user_db.id)
-        .order_by(models.Session.created_at.asc())
-        .all()
-    )
-    for stale_session in sessions[: max(0, len(sessions) - (MAX_SESSIONS - 1))]:
-        db.delete(stale_session)
-
-    session_token = str(uuid.uuid4())
-    new_session = models.Session(user_id=user_db.id, session_token=session_token)
-    db.add(new_session)
-    db.commit()
-
-    response.set_cookie(
-        key="session",
-        value=session_token,
-        httponly=True,
-        samesite="lax",
-        secure=_secure_cookie_enabled(),
-        max_age=30 * 24 * 3600,
-    )
-    return user_db
-
-
-def get_current_user(request: Request, db: Session):
-    session_token = request.cookies.get("session")
-    if not session_token:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="No session token found")
-
-    user_session = db.query(models.Session).filter(models.Session.session_token == session_token).first()
-    if user_session is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid session")
-
-    user_db = db.query(models.User).filter(models.User.id == user_session.user_id).first()
-    if user_db is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
-
-    return user_db
-
-
-def logout_user(request: Request, response: Response, db: Session):
-    session_token = request.cookies.get("session")
-    if not session_token:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="No session token found")
-
-    db.query(models.Session).filter(models.Session.session_token == session_token).delete()
-    db.commit()
-    response.delete_cookie(
-        key="session",
-        httponly=True,
-        samesite="lax",
-        secure=_secure_cookie_enabled(),
-    )
-
-    return {"message": "Logout successful"}
+def get_current_principal(request, db, *, uow=None) -> Principal:
+    """Expose verified identity to other modules without the ORM credential record."""
+    kwargs = {"uow": uow} if uow is not None else {}
+    return Principal.from_user(get_current_user(request=request, db=db, **kwargs))

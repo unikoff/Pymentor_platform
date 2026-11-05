@@ -7,6 +7,8 @@ from fastapi import HTTPException, Request, status
 from sqlalchemy import and_, case, func, or_
 from sqlalchemy.orm import Session
 
+from core.ports import UnitOfWork
+from identity.principal import Principal, require_admin as authorize_admin
 from db import models
 from content.catalog import find_track, get_tracks_summary
 from routers.accounts import service as accounts, activity
@@ -16,12 +18,18 @@ from routers.bookings.schemas import SlotCreate
 from .schemas import QuotaChange, SubscriptionChange
 
 
-def require_admin(request: Request, db: Session) -> models.User:
+def require_admin(
+    request: Request,
+    db: Session | None,
+    *,
+    uow: UnitOfWork | None = None,
+) -> Principal:
     """Доступ только для залогиненного пользователя с флагом is_admin."""
-    user = accounts.get_current_user(request=request, db=db)
-    if not user.is_admin:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Требуются права администратора")
-    return user
+    if uow is None:
+        user = accounts.get_current_principal(request=request, db=db)
+    else:
+        user = accounts.get_current_principal(request=request, db=db, uow=uow)
+    return authorize_admin(user)
 
 
 def _serialize_account(user: models.User, completed_lessons: int) -> dict:
@@ -496,7 +504,11 @@ def delete_user(user_id: int, request: Request, db: Session):
             detail="Нельзя удалить собственный аккаунт",
         )
 
-    user_db = db.query(models.User).filter(models.User.id == user_id).first()
+    target_user_query = db.query(models.User).filter(models.User.id == user_id)
+    if db.bind is not None and db.bind.dialect.name == "postgresql":
+        bookings._require_postgres_read_committed(db)
+        target_user_query = target_user_query.with_for_update()
+    user_db = target_user_query.first()
     if user_db is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
@@ -522,10 +534,21 @@ def delete_user(user_id: int, request: Request, db: Session):
     return {"deleted": user_id}
 
 
-def change_subscription(user_id: int, payload: SubscriptionChange, request: Request, db: Session):
-    require_admin(request, db)
+def change_subscription(
+    user_id: int,
+    payload: SubscriptionChange,
+    request: Request,
+    db: Session | None,
+    *,
+    uow: UnitOfWork | None = None,
+):
+    if uow is None:
+        require_admin(request, db)
+        user_db = db.query(models.User).filter(models.User.id == user_id).first()
+    else:
+        require_admin(request, db, uow=uow)
+        user_db = uow.repository(models.User).find_one(id=user_id)
 
-    user_db = db.query(models.User).filter(models.User.id == user_id).first()
     if user_db is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
@@ -539,8 +562,12 @@ def change_subscription(user_id: int, payload: SubscriptionChange, request: Requ
         user_db.subscription_until = base + timedelta(days=payload.days)
         user_db.subscription_plan = user_db.subscription_plan or "pro"
 
-    db.commit()
-    db.refresh(user_db)
+    if uow is None:
+        db.commit()
+        db.refresh(user_db)
+    else:
+        uow.commit()
+        uow.refresh(user_db)
 
     return {"user": _serialize_account(user_db, completed_lessons=0)}
 

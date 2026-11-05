@@ -10,6 +10,13 @@ from fastapi import HTTPException, Request, status
 from sqlalchemy.orm import Session
 from starlette.concurrency import run_in_threadpool
 
+from core.ports import UnitOfWork
+from identity.principal import Principal
+from practice.application.save_progress import save_progress
+from learning.application.complete_lesson import (
+    CompletionError, CompletionPolicy, CompletionWrites,
+    complete_lesson as complete_lesson_use_case,
+)
 from content.practice.runner.python import run_python_code, run_python_preview, run_python_task
 from content.practice.runner.executor import RunnerBusy, RunnerUnavailable, get_runner_executor
 from db import models
@@ -125,7 +132,7 @@ def _lesson_completion_status(lesson: dict, completed_ids: set[str], task_revisi
     return all_tasks_complete
 
 
-def build_lessons_payload(track_id: str, user: models.User | None, db: Session, lesson_id: str | None = None) -> list[dict]:
+def build_lessons_payload(track_id: str, user: Principal | None, db: Session, lesson_id: str | None = None) -> list[dict]:
     lessons = get_public_lessons(track_id)
     if lesson_id is not None:
         lessons = [lesson for lesson in lessons if lesson["id"] == lesson_id]
@@ -304,42 +311,44 @@ def manual_practice_answer(
     return {"answer": deepcopy(tasks[task_index]["answer"])}
 
 
-def complete_lesson(lesson_id: str, request: Request, db: Session):
+def complete_lesson(
+    lesson_id: str,
+    request: Request,
+    db: Session,
+    *,
+    uow: UnitOfWork | None = None,
+):
     """Ручная отметка «Выполнено» — только для уроков с self_check."""
-    user = accounts.get_current_user(request=request, db=db)
-
+    port_kwargs = {"uow": uow} if uow is not None else {}
+    principal = accounts.get_current_principal(request=request, db=db, **port_kwargs)
     lesson = find_lesson(lesson_id)
-    if lesson is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Lesson not found")
 
-    is_available, locked_reason = get_lesson_access(lesson, user)
-    if not is_available:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=locked_reason)
-
-    if not lesson.get("self_check"):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Этот урок засчитывается автоматически после решения практики.",
-        )
-
-    if _uses_persisted_task_progress(lesson) and not _lesson_tasks_are_complete(lesson, user.id, db):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Сначала завершите все редакторские задания.",
-        )
-
-    # Старые вкладки с позиционным ID по-прежнему принимаются find_lesson(),
-    # но прогресс всегда сохраняется под постоянным идентификатором урока.
-    if _chapter_one_needs_self_check_progress(lesson):
-        progress.mark_task_completed(
-            user_id=user.id,
-            task_id=progress.chapter_one_completion_task_id(lesson["id"]),
-            task_revision=progress.chapter_one_completion_revision(lesson),
+    policy = CompletionPolicy(
+        access=get_lesson_access,
+        uses_persisted_tasks=_uses_persisted_task_progress,
+        tasks_complete=lambda item, user_id: _lesson_tasks_are_complete(item, user_id, db),
+        needs_chapter_one_marker=_chapter_one_needs_self_check_progress,
+        is_chapter_one=_is_chapter_one_lesson,
+    )
+    writes = CompletionWrites(
+        mark_chapter_one_self_check=lambda user_id, item: progress.mark_task_completed(
+            user_id=user_id,
+            task_id=progress.chapter_one_completion_task_id(item["id"]),
+            task_revision=progress.chapter_one_completion_revision(item),
             db=db,
-        )
-    elif not _is_chapter_one_lesson(lesson):
-        progress.mark_lesson_completed(user_id=user.id, lesson_id=lesson["id"], db=db)
-    return {"lesson_id": lesson["id"], "completed": True}
+            **port_kwargs,
+        ),
+        mark_lesson=lambda user_id, stable_id: progress.mark_lesson_completed(
+            user_id=user_id,
+            lesson_id=stable_id,
+            db=db,
+            **port_kwargs,
+        ),
+    )
+    try:
+        return complete_lesson_use_case(principal=principal, lesson=lesson, policy=policy, writes=writes)
+    except CompletionError as exc:
+        raise HTTPException(status_code=exc.status_code, detail=exc.detail) from exc
 
 
 def lesson_theory(lesson_id: str, request: Request, db: Session):
@@ -402,7 +411,7 @@ def _prepare_task(task_id: str, revision: str | None, request: Request) -> dict:
         }
 
 
-def _save_task_progress(context: dict) -> None:
+def _save_task_progress(context: dict, composition_root: Any | None = None) -> None:
     user_id = context["user_id"]
     task = context["task"]
     lesson = context["lesson"]
@@ -413,16 +422,24 @@ def _save_task_progress(context: dict) -> None:
     # Для практики блока 3 сохраняем результат каждой карточки отдельно.
     try:
         with SessionLocal() as db:
-            has_mixed_practice = bool(lesson.get("tasks") and lesson.get("manual_practice"))
-            if _uses_persisted_task_progress(lesson):
-                progress.mark_task_completed(
-                    user_id=user_id, task_id=task["id"], task_revision=task["revision"], db=db,
-                )
-                if not has_mixed_practice and _lesson_tasks_are_complete(lesson, user_id, db) \
-                        and not _is_chapter_one_lesson(lesson):
-                    progress.mark_lesson_completed(user_id=user_id, lesson_id=lesson["id"], db=db)
-            elif not has_mixed_practice:
-                progress.mark_lesson_completed(user_id=user_id, lesson_id=lesson["id"], db=db)
+            port_kwargs = (
+                {"uow": composition_root.for_request(db).uow}
+                if composition_root is not None else {}
+            )
+            save_progress(
+                user_id=user_id,
+                lesson=lesson,
+                task=task,
+                uses_persisted_tasks=_uses_persisted_task_progress,
+                tasks_complete=lambda item, uid: _lesson_tasks_are_complete(item, uid, db),
+                is_chapter_one=_is_chapter_one_lesson,
+                mark_task=lambda uid, task_id, revision: progress.mark_task_completed(
+                    user_id=uid, task_id=task_id, task_revision=revision, db=db, **port_kwargs,
+                ),
+                mark_lesson=lambda uid, lesson_id: progress.mark_lesson_completed(
+                    user_id=uid, lesson_id=lesson_id, db=db, **port_kwargs,
+                ),
+            )
     finally:
         logger.info("runner_progress_save_finished duration_ms=%.1f", (perf_counter() - start) * 1000)
 
@@ -512,7 +529,12 @@ async def submit_task(task_id: str, payload: CodeSubmitRequest, request: Request
 
     result = await _execute_task(run_python_task, payload.code, context["task"])
     if result.get("ok"):
-        await run_in_threadpool(_save_task_progress, context)
+        app = request.scope.get("app")
+        composition_root = getattr(getattr(app, "state", None), "composition_root", None)
+        if composition_root is None:
+            await run_in_threadpool(_save_task_progress, context)
+        else:
+            await run_in_threadpool(_save_task_progress, context, composition_root)
 
     if _is_chapter_one_lesson(context.get("lesson")):
         return _project_chapter_one_submit_result(result)
