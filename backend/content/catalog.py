@@ -311,6 +311,10 @@ def _load_tracks() -> list[dict[str, Any]]:
             if track["id"] == PLANNER_API_TRACK_NAME:
                 source = path.relative_to(COURSE_ROOT).as_posix()
                 current_legacy_index = PLANNER_API_LEGACY_INDICES.get(source)
+            if track["id"] == LEGACY_COURSE_LAYOUTS["chapter_05"]["track_id"]:
+                # The new chapter has different lessons; positional aliases would
+                # associate them with unrelated lessons from the retired chapter.
+                current_legacy_index = None
             lessons.append(
                 _build_lesson(
                     path,

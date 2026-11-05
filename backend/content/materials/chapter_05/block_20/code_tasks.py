@@ -1,5 +1,3 @@
-from typing import Any
+"""Задания блока будут добавлены при разработке занятий."""
 
-CODE_TASKS: dict[int, list[dict[str, Any]]] = {
-
-}
+CODE_TASKS = {}

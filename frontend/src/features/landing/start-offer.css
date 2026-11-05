@@ -1,0 +1,86 @@
+.backend-landing .landing-section.landing-offer {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(360px, .8fr);
+  align-items: center;
+  gap: clamp(56px, 10vw, 160px);
+  padding-block: clamp(90px, 10vw, 150px);
+  border: 0;
+  background: transparent;
+}
+
+.backend-landing .landing-offer__heading,
+.backend-landing .landing-offer__card { position: relative; min-width: 0; }
+
+.backend-landing .landing-offer__heading h2 { max-width: 680px; font-size: clamp(48px, 5.6vw, 84px); letter-spacing: normal; line-height: 1.05; }
+.backend-landing .landing-offer__heading h2 span { color: var(--accent); }
+.backend-landing .landing-offer__heading > p:not(.landing-offer__badge) { max-width: 440px; margin-top: 28px; color: var(--text); font-size: 16px; }
+.backend-landing .landing-offer__benefits { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; max-width: 640px; margin: 38px 0 0; padding: 0; list-style: none; }
+.backend-landing .landing-offer__benefits li { display: grid; align-content: start; gap: 8px; padding-left: 14px; border-left: 1px solid color-mix(in srgb, var(--accent) 60%, transparent); }
+.backend-landing .landing-offer__benefits strong { color: var(--text); font-size: 15px; line-height: 1.4; }
+.backend-landing .landing-offer__benefits span { color: color-mix(in srgb, var(--text) 70%, var(--muted)); font-size: 13px; line-height: 1.5; }
+
+.backend-landing .landing-offer__card {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.backend-landing .landing-offer__constellation { position: absolute; top: -88px; right: 0; width: clamp(120px, 13vw, 180px); height: auto; overflow: visible; pointer-events: none; }
+.backend-landing .landing-offer__constellation-path { stroke: color-mix(in srgb, var(--accent) 48%, transparent); stroke-width: .8; stroke-linecap: round; stroke-linejoin: round; }
+.backend-landing .landing-offer__constellation-star { fill: var(--accent); opacity: .8; transform-box: fill-box; transform-origin: center; }
+.backend-landing .landing-offer__price { display: grid; justify-items: start; gap: 10px; margin: 0 0 25px; }
+.backend-landing .landing-offer__price strong { color: var(--accent); font-size: clamp(64px, 7vw, 104px); font-weight: 850; line-height: .95; white-space: nowrap; }
+.backend-landing .landing-offer__price strong span { font-size: .48em; }
+.backend-landing .landing-offer__features { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+.backend-landing .landing-offer__features > div, .backend-landing .landing-offer__value { box-sizing: border-box; display: grid; grid-template-columns: minmax(112px, .7fr) minmax(0, 1.3fr); align-items: center; gap: 16px; min-width: 0; min-height: 72px; padding: 14px 0; border: 0; border-radius: 0; background: transparent; }
+.backend-landing .landing-offer__features > div + div { border-left: 0; }
+.backend-landing .landing-offer__features > div { border-bottom: 1px solid color-mix(in srgb, var(--white) 10%, transparent); }
+.backend-landing .landing-offer__features strong { display: flex; align-items: baseline; gap: 6px; color: var(--text); font-size: 28px; line-height: 1; white-space: nowrap; }
+.backend-landing .landing-offer__features strong small { color: var(--muted); font-size: 13px; font-weight: 650; }
+.backend-landing .landing-offer__features > div > span { display: grid; gap: 5px; min-width: 0; line-height: 1.4; }
+.backend-landing .landing-offer__features b { color: var(--text); font-size: 14px; }
+.backend-landing .landing-offer__features span small { color: var(--muted); font-size: 12px; }
+.backend-landing .landing-offer__value { margin-top: 0; }
+.backend-landing .landing-offer__value > strong { color: var(--text); font-size: 28px; line-height: 1; white-space: nowrap; }
+.backend-landing .landing-offer__value > strong small { font-size: .58em; }
+.backend-landing .landing-offer__value b { color: var(--text); font-size: 13px; line-height: 1.4; }
+.backend-landing .landing-offer__action { max-width: 280px; min-height: 56px; margin-top: 28px; }
+.backend-landing .landing-offer__action:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .backend-landing .landing-offer__constellation-path { stroke-dasharray: 270; animation: landing-offer-trace 9s ease-in-out infinite; }
+  .backend-landing .landing-offer__constellation-star { animation: landing-offer-twinkle 4.5s ease-in-out infinite; }
+  .backend-landing .landing-offer__constellation-star--two { animation-delay: -1.5s; }
+  .backend-landing .landing-offer__constellation-star--three { animation-delay: -3s; }
+}
+@keyframes landing-offer-trace {
+  0%, 100% { stroke-dashoffset: 270; opacity: .25; }
+  38%, 70% { stroke-dashoffset: 0; opacity: .85; }
+}
+@keyframes landing-offer-twinkle {
+  0%, 100% { opacity: .35; transform: scale(.75); }
+  50% { opacity: 1; transform: scale(1.18); }
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .backend-landing .landing-offer__action span { transition: transform 220ms ease; }
+  .backend-landing .landing-offer__action:hover span { transform: translate(3px, -3px); }
+}
+@media (max-width: 800px) {
+  .backend-landing .landing-section.landing-offer { grid-template-columns: 1fr; gap: 64px; padding-block: 76px; }
+  .backend-landing .landing-offer__heading h2 { font-size: clamp(42px, 8vw, 62px); }
+  .backend-landing .landing-offer__card { max-width: 520px; }
+}
+@media (max-width: 480px) {
+  .backend-landing .landing-section.landing-offer { gap: 54px; padding-block: 68px; }
+  .backend-landing .landing-offer__heading h2 { font-size: clamp(39px, 10vw, 48px); }
+  .backend-landing .landing-offer__heading > p:not(.landing-offer__badge) { font-size: 14px; }
+  .backend-landing .landing-offer__constellation { top: -65px; width: 125px; }
+  .backend-landing .landing-offer__benefits { grid-template-columns: 1fr; gap: 17px; margin-top: 30px; }
+  .backend-landing .landing-offer__benefits li { gap: 3px; }
+  .backend-landing .landing-offer__price strong { font-size: clamp(62px, 17vw, 78px); }
+  .backend-landing .landing-offer__features > div, .backend-landing .landing-offer__value { grid-template-columns: minmax(112px, .65fr) minmax(0, 1.35fr); gap: 12px; padding: 14px 0; }
+  .backend-landing .landing-offer__features strong { font-size: 26px; }
+  .backend-landing .landing-offer__action { max-width: none; }
+}

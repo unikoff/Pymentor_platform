@@ -291,7 +291,7 @@ LEGACY_COURSE_LAYOUTS = {
     },
     "chapter_05": {
         "track_id": "Аутентификация, сессии, токены и завершение FastAPI - Personal StudyHub API",
-        "source_dirs": {"block_00": "00 Обзор", "block_17": "Блок 17 - Пользователь и основы безопасности (6 занятий)", "block_18": "Блок 18 - Cookie и server-side sessions (6 занятий)", "block_19": "Блок 19 - Bearer, JWT, refresh и права (6 занятий)", "block_20": "Блок 20 - Остальные возможности и Personal StudyHub (6 занятий)"},
+        "source_dirs": {"block_00": "00 Обзор", "block_17": "Блок 17 - Миграции базы", "block_18": "Блок 18 - Учётные записи", "block_19": "Блок 19 - Серверные сессии", "block_20": "Блок 20 - Владение задачами"},
     },
     "chapter_06": {
         "track_id": "SQL, PostgreSQL и выбор хранилища - PostgreSQL StudyHub",

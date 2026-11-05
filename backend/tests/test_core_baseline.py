@@ -329,4 +329,11 @@ class CoreBaselineTests(unittest.IsolatedAsyncioTestCase):
             )
         else:
             expected_responses = json.loads(response_fixture_path.read_text(encoding="utf-8"))
+            # The revision changes whenever course content changes; verify its
+            # runtime value instead of freezing it to the historical snapshot.
+            from content.catalog import get_content_revision
+            for name in ("catalog_before", "catalog_after"):
+                current = response_fixtures[name]["body"].pop("content_revision")
+                self.assertEqual(current, get_content_revision())
+                expected_responses[name]["body"].pop("content_revision")
             self.assertEqual(response_fixtures, expected_responses)

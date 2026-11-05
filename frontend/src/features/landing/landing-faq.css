@@ -1,0 +1,38 @@
+.backend-landing .landing-section.faq-redesign { display: grid; grid-template-columns: minmax(250px, .76fr) minmax(0, 1.24fr); align-items: start; gap: clamp(35px, 6vw, 96px); padding-block: clamp(68px, 7vw, 100px); scroll-snap-align: start; scroll-margin-top: 90px; overflow-anchor: none; }
+.backend-landing .faq-redesign__intro { min-width: 0; }
+.backend-landing .landing-section.faq-redesign h2 { max-width: 540px; margin-top: 0; font-size: clamp(36px, 4.2vw, 52px); }
+.backend-landing .faq-redesign__intro > p { max-width: 350px; margin: 20px 0 0; color: var(--muted); font-size: 15px; line-height: 1.7; }
+.backend-landing .faq-redesign__contact { display: flex; align-items: flex-start; gap: 14px; max-width: 370px; margin-top: 40px; padding: 20px; border: 1px solid color-mix(in srgb, var(--white) 12%, transparent); border-radius: 15px; background: linear-gradient(140deg, color-mix(in srgb, var(--accent) 7%, transparent), transparent 75%), color-mix(in srgb, var(--surface-2) 35%, transparent); box-shadow: inset 0 1px 0 color-mix(in srgb, var(--white) 7%, transparent); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+.backend-landing .faq-redesign__contact > svg { flex: 0 0 auto; color: var(--accent); }
+.backend-landing .faq-redesign__contact > div { display: grid; gap: 7px; }
+.backend-landing .faq-redesign__contact strong { color: var(--text); font-size: 14px; }
+.backend-landing .faq-redesign__contact span { color: var(--muted); font-size: 13px; line-height: 1.5; }
+.backend-landing .faq-redesign__contact a { display: inline-flex; align-items: center; gap: 6px; justify-self: start; margin-top: 5px; color: var(--accent); font-size: 13px; font-weight: 750; text-decoration: none; }
+.backend-landing .faq-redesign__contact a svg { transition: transform 200ms ease; }
+.backend-landing .faq-redesign__list-frame { display: grid; grid-template-columns: minmax(0, 1fr); min-width: 0; }
+.backend-landing .faq-redesign__list { display: grid; grid-area: 1 / 1; align-content: start; gap: 9px; min-width: 0; }
+.backend-landing .faq-redesign__reserve { visibility: hidden; pointer-events: none; }
+.backend-landing .faq-redesign__answer-sizes { display: grid; grid-template-columns: minmax(0, 1fr); }
+.backend-landing .faq-redesign__answer-sizes p { grid-area: 1 / 1; align-self: start; }
+.backend-landing .faq-redesign__item { overflow: hidden; border: 1px solid color-mix(in srgb, var(--white) 10%, transparent); border-radius: 14px; background: color-mix(in srgb, var(--surface-2) 38%, transparent); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); transition: border-color 250ms ease, background-color 250ms ease; }
+.backend-landing .faq-redesign__item--open { border-color: color-mix(in srgb, var(--accent) 33%, transparent); background: color-mix(in srgb, var(--accent) 5%, color-mix(in srgb, var(--surface-2) 55%, transparent)); }
+.backend-landing .faq-redesign__item h3 { margin: 0; font: inherit; }
+.backend-landing .faq-redesign__item button, .backend-landing .faq-redesign__sizer-question { box-sizing: border-box; display: flex; width: 100%; min-height: 64px; align-items: center; justify-content: space-between; gap: 20px; padding: 19px 20px; border: 0; background: transparent; color: var(--text); font: inherit; font-size: 15px; font-weight: 750; line-height: 1.4; text-align: left; }
+.backend-landing .faq-redesign__item button { cursor: pointer; }
+.backend-landing .faq-redesign__item button:focus-visible, .backend-landing .faq-redesign__contact a:focus-visible { outline: 2px solid var(--accent); outline-offset: -3px; border-radius: 12px; }
+.backend-landing .faq-redesign__item button i, .backend-landing .faq-redesign__sizer-question i { position: relative; display: block; flex: 0 0 26px; width: 26px; height: 26px; border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent); border-radius: 50%; transition: transform 250ms ease, background-color 250ms ease; }
+.backend-landing .faq-redesign__item button i::before, .backend-landing .faq-redesign__item button i::after { position: absolute; top: 50%; left: 50%; width: 10px; height: 1.5px; border-radius: 2px; background: var(--accent); content: ''; transform: translate(-50%, -50%); }
+.backend-landing .faq-redesign__item button i::after { transform: translate(-50%, -50%) rotate(90deg); }
+.backend-landing .faq-redesign__item--open button i { transform: rotate(45deg); background: color-mix(in srgb, var(--accent) 10%, transparent); }
+.backend-landing .faq-redesign__answer { display: grid; grid-template-rows: 0fr; visibility: hidden; transition: grid-template-rows 300ms ease, visibility 0s linear 300ms; }
+.backend-landing .faq-redesign__item--open .faq-redesign__answer { grid-template-rows: 1fr; visibility: visible; transition: grid-template-rows 300ms ease, visibility 0s; }
+.backend-landing .faq-redesign__answer-inner { min-height: 0; overflow: hidden; }
+.backend-landing .faq-redesign__answer p, .backend-landing .faq-redesign__answer-sizes p { max-width: 660px; margin: 0; padding: 0 58px 21px 20px; color: color-mix(in srgb, var(--text) 72%, var(--muted)); font-size: 14px; line-height: 1.7; }
+.backend-landing .faq-redesign__answer-sizes p span { font-weight: 700; }
+.backend-landing .faq-redesign__answer p a { display: inline-flex; align-items: center; gap: 3px; color: var(--accent); font-weight: 700; text-decoration: none; }
+.backend-landing .faq-redesign__answer p a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+@media (min-width: 1101px) { .backend-landing .landing-section.faq-redesign h2 { font-size: clamp(48px, 4vw, 68px); } }
+@media (hover: hover) { .backend-landing .faq-redesign__item:hover { border-color: color-mix(in srgb, var(--accent) 32%, transparent); } .backend-landing .faq-redesign__contact a:hover svg { transform: translate(3px, -3px); } }
+@media (max-width: 800px) { .backend-landing .landing-section.faq-redesign { grid-template-columns: minmax(0, 1fr); gap: 28px; } .backend-landing .faq-redesign__contact { margin-top: 24px; } }
+@media (max-width: 480px) { .backend-landing .faq-redesign__item button, .backend-landing .faq-redesign__sizer-question { min-height: 62px; padding: 17px 16px; font-size: 14px; } .backend-landing .faq-redesign__answer p, .backend-landing .faq-redesign__answer-sizes p { padding: 0 45px 19px 16px; font-size: 13px; } }
+@media (prefers-reduced-motion: reduce) { .backend-landing .faq-redesign__item, .backend-landing .faq-redesign__item button i, .backend-landing .faq-redesign__answer, .backend-landing .faq-redesign__item--open .faq-redesign__answer, .backend-landing .faq-redesign__contact a svg { transition: none; } }

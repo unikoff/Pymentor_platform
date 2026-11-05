@@ -1,3 +1,3 @@
-from typing import Any
+"""Обзорная практика главы пока не подготовлена."""
 
-OVERVIEW_PRACTICE: dict[str, list[dict[str, Any]]] = {}
+OVERVIEW_PRACTICE = {}

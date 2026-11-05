@@ -71,6 +71,7 @@ class LandingConsultationRequest(BaseModel):
     contact: str = Field(min_length=3, max_length=120)
     goal: str = Field(default="", max_length=500)
     consent: Literal[True]
+    consent_version: Literal["consultation-v1", "consultation-v2", "consultation-v3"] = "consultation-v1"
 
     @field_validator("name", "contact")
     @classmethod

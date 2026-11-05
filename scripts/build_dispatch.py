@@ -1,7 +1,12 @@
 """Build native spawn_agent arguments for a registered stage 2/3 worker.
 
-Usage:
-    python scripts/build_dispatch.py --stage 2 --lesson-id LESSON_ID --assignment contract.json --model gpt-6.1-terra --effort low --output dispatch.json
+Legacy helper; not the default Stage 2/3 route. For lesson authors, select a strong
+available model with high reasoning under the current project standard and effective
+policy. This helper rejects low reasoning and validates pool membership, but cannot
+establish model quality or the model that actually executes.
+
+Usage (if this model is available in the effective policy):
+    python scripts/build_dispatch.py --stage 2 --lesson-id LESSON_ID --assignment contract.json --model gpt-6-luna --effort xhigh --output dispatch.json
 
 Assignment is UTF-8 JSON with one `lesson_id` and non-empty `change`, `scope`,
 and `acceptance` strings. The scope must describe exactly ONE lesson from the
@@ -92,6 +97,8 @@ def build_payload(
     profile_path = ROOT / ".codex" / "agents" / profile_name
     with profile_path.open("rb") as stream:
         profile = tomllib.load(stream)
+    if effort not in {"high", "xhigh"}:
+        raise ValueError("Lesson authoring requires high or xhigh reasoning effort")
     if effort not in ALLOWED_PROFILES.get(model, set()):
         raise ValueError(f"Unsupported model/effort: {model} / {effort}")
     if profile.get("model") or profile.get("model_reasoning_effort"):
@@ -119,8 +126,9 @@ def build_payload(
         "Соблюдай модельные ограничения всех действий; если выбранная модель или среда не позволяют выполнить их в одном чате, сообщи точный блокер, не подменяй модель. "
         "Заверши только назначенное занятие и остановись. Не бери другое занятие, не создавай чаты или "
         "дочерних агентов. Используй имеющуюся подтверждённую опись и точные "
-        "source revisions. Сначала устрани конкретный дефект или внеси указанную "
-        "содержательную правку. Повторно читать полный source или повторять полный "
+        "source revisions. Создай новое занятие или продолжи его незавершённую версию; "
+        "не перерабатывай готовый старый урок без отдельного поручения пользователя. "
+        "Повторно читать полный source или повторять полный "
         "набор тестов можно только при новых свидетельствах, требующих этого. "
         "При восстановлении не повторяй ACCEPTED, продолжай "
         "лишь подтверждённый незавершённый остаток. В RUN сохраняй lesson, "

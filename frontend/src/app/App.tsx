@@ -25,7 +25,7 @@ function isAppEntry(pathname: string) {
 export function App() {
   const pathname = window.location.pathname;
 
-  if (normalizePath(pathname) === landingPath) {
+  if (normalizePath(pathname) === landingPath || ["reviews", "platform", "pricing", "personal-data", "privacy-policy"].some((page) => normalizePath(pathname) === `${landingPath}/${page}`)) {
     return <AsyncBoundary fallback={<StartupScreen />}><BackendLandingRoute /></AsyncBoundary>;
   }
 

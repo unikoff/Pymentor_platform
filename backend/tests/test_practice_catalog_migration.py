@@ -45,7 +45,7 @@ class PracticeCatalogMigrationTests(unittest.TestCase):
             ("chapter_02", "DEEPER", deeper, ((21, 25, "block_05"), (26, 30, "block_06"), (31, 35, "block_07"), (36, 40, "block_08"))),
             ("chapter_03", "PLANNER_API", planner_api, ((41, 50, "block_09"), (46, 56, "block_10"), (51, 62, "block_11"), (63, 68, "block_12"))),
             ("chapter_04", "DATABASE_API", database_api, ((61, 65, "block_13"), (66, 70, "block_14"), (71, 75, "block_15"), (76, 80, "block_16"))),
-            ("chapter_05", "PERSONAL_API", personal_api, ((93, 98, "block_17"), (99, 104, "block_18"), (105, 110, "block_19"), (111, 116, "block_20"))),
+            ("chapter_05", "PERSONAL_API", personal_api, ((81, 85, "block_17"), (86, 90, "block_18"), (91, 95, "block_19"), (96, 100, "block_20"))),
             ("chapter_06", "POSTGRESQL", postgresql, ((117, 122, "block_21"), (123, 128, "block_22"), (129, 134, "block_23"), (135, 140, "block_24"))),
             ("chapter_07", "ASYNC", async_api, ((141, 146, "block_25"), (147, 152, "block_26"), (153, 158, "block_27"), (159, 164, "block_28"))),
             ("chapter_08", "DEPLOY", deployment, ((165, 170, "block_29"), (171, 176, "block_30"), (177, 182, "block_31"), (183, 188, "block_32"))),
@@ -66,7 +66,10 @@ class PracticeCatalogMigrationTests(unittest.TestCase):
                 self.assertEqual("content.materials." + slug, package.__name__)
                 for first, last, block_name in ranges:
                     block = getattr(package, block_name)
-                    if slug != "chapter_03":
+                    if slug == "chapter_05":
+                        self.assertEqual({}, block.MANUAL_PRACTICE)
+                        self.assertEqual({}, block.CODE_TASKS)
+                    elif slug != "chapter_03":
                         validate_block(first, last, block.MANUAL_PRACTICE, block.CODE_TASKS)
                     for kind, local, merged, getter in (
                         ("manual", block.MANUAL_PRACTICE, package.MANUAL_PRACTICE, rich_practice.get_manual_practice),

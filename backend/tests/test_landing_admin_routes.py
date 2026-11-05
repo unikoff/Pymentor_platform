@@ -16,6 +16,7 @@ from core.dependencies import get_db
 from core.web import configure_web
 from db import models
 from db.engine import Base
+from notifications.delivery import drain_notifications
 from routers.admin.router import admin_router
 from routers.landings import service as landing_service
 from routers.landings.public import router as public_landing_router
@@ -334,9 +335,52 @@ class LandingAdminRouteTests(TestCase):
                     extra_headers=headers,
                 )
             )
+            new_status, _ = asyncio.run(
+                _request(
+                    self.app,
+                    "POST",
+                    "/api/landings/backend/consultations",
+                    payload={**payload, "consent_version": "consultation-v2"},
+                    extra_headers={"Idempotency-Key": "123e4567-e89b-12d3-a456-426614174001"},
+                )
+            )
 
         self.assertEqual(first_status, 202)
         self.assertEqual(repeated_status, 200)
         self.assertTrue(first["accepted"])
         self.assertTrue(repeated["duplicate"])
         self.assertNotIn("@anna", json.dumps(first))
+        self.assertEqual(new_status, 202)
+        with self.sessions() as db:
+            events = db.query(models.LandingNotificationOutbox).all()
+            versions = {json.loads(event.payload_json)["consent_version"] for event in events}
+        self.assertEqual(versions, {"consultation-v1", "consultation-v2"})
+
+    def test_contact_options_reach_telegram_through_outbox(self) -> None:
+        with self.sessions() as db:
+            landing = landing_service.create_landing(db, slug="backend", title="Pymentor", description="")
+            landing_service.configure_landing_telegram(
+                db, landing.id, secret_ref="backend-bot-v1", chat_id="12345", bot_username="pymentor_bot"
+            )
+
+        contacts = ["+7 999 123-45-67", "user@example.com", "@example_user"]
+        credentials = {"PYMENTOR_LANDING_BOT_CREDENTIALS": json.dumps({"backend-bot-v1": "external-token"})}
+        with patch.dict(os.environ, credentials), patch("notifications.telegram._send_telegram_message") as send:
+            for index, contact in enumerate(contacts):
+                status_code, result = asyncio.run(_request(
+                    self.app, "POST", "/api/landings/backend/consultations",
+                    payload={"name": "Анна", "contact": contact, "consent": True, "consent_version": "consultation-v3"},
+                    extra_headers={"Idempotency-Key": f"123e4567-e89b-12d3-a456-42661417400{index}"},
+                ))
+                self.assertEqual(status_code, 202)
+                self.assertTrue(result["accepted"])
+            counts = drain_notifications(session_factory=self.sessions, budget_seconds=5)
+
+        self.assertEqual(counts["sent"], 3)
+        messages = [entry.kwargs["text"] for entry in send.call_args_list]
+        self.assertTrue(any("@example\\_user" in message for message in messages))
+        self.assertTrue(any("user@example\\.com" in message for message in messages))
+        self.assertTrue(any("123\\-45\\-67" in message for message in messages))
+        self.assertTrue(all(entry.kwargs["chat_id"] == "12345" for entry in send.call_args_list))
+        with self.sessions() as db:
+            self.assertEqual(db.query(models.LandingNotificationOutbox).filter_by(status="sent").count(), 3)

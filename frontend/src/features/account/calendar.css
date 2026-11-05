@@ -211,7 +211,7 @@ button.account-calendar__day { cursor: pointer; }
 .account-calendar__day.is-today { border-color: color-mix(in srgb, var(--border-tint-accent) 55%, var(--line)); color: var(--accent); }
 .account-calendar__day.has-activity {
   border-color: color-mix(in srgb, var(--border-tint-attendance) 34%, var(--line));
-  background: color-mix(in srgb, var(--attendance) 16%, var(--surface-2));
+  background: color-mix(in srgb, var(--attendance) 7%, var(--surface-2));
 }
 .account-calendar__day.has-activity .account-calendar__day-number { color: var(--attendance); }
 .account-calendar__day.has-free { border-color: color-mix(in srgb, var(--border-tint-accent) 36%, var(--line)); }
@@ -357,7 +357,7 @@ button.account-calendar__day:hover { transform: translateY(-2px); border-color: 
   background: var(--card);
 }
 .account-calendar--booking .account-calendar__day.is-today .account-calendar__day-number { color: var(--accent); text-decoration: underline; text-underline-offset: 4px; }
-.account-calendar--booking .account-calendar__day.has-activity { border-color: color-mix(in srgb, var(--border-tint-attendance) 42%, var(--line)); background: color-mix(in srgb, var(--attendance) 17%, var(--card)); }
+.account-calendar--booking .account-calendar__day.has-activity { border-color: color-mix(in srgb, var(--border-tint-attendance) 42%, var(--line)); background: color-mix(in srgb, var(--attendance) 7%, var(--card)); }
 .account-calendar--booking .account-calendar__day.has-activity .account-calendar__day-number { color: var(--attendance); }
 .account-calendar--booking .account-calendar__day.has-completed:not(.is-selected) { border-color: color-mix(in srgb, var(--border-tint-accent-secondary) 48%, var(--line)); background: linear-gradient(145deg, color-mix(in srgb, var(--accent-secondary) 16%, var(--card)), var(--card) 82%); box-shadow: inset 3px 0 0 color-mix(in srgb, var(--accent-secondary) 76%, transparent); }
 .account-calendar--booking .account-calendar__day.has-completed.is-selected { box-shadow: inset 3px 0 0 var(--border-tint-accent-secondary), inset 0 0 0 1px var(--border-tint-accent); }

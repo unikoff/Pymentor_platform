@@ -35,9 +35,9 @@ def submit_consultation_request(
     if landing.telegram_enabled and config is not None and config.status == "verified":
         service.resolve_landing_bot_token(config.secret_ref)
 
-    event_payload = payload.model_dump(exclude={"consent"})
+    event_payload = payload.model_dump(exclude={"consent", "consent_version"})
     event_payload["consented_at"] = datetime.now(timezone.utc).isoformat()
-    event_payload["consent_version"] = "consultation-v1"
+    event_payload["consent_version"] = payload.consent_version
     event, duplicate = service.enqueue_landing_event(
         db,
         landing_id=landing.id,

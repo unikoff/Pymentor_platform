@@ -1,0 +1,12 @@
+.backend-landing.personal-data-page { scroll-snap-type: none; }
+.backend-landing .personal-data { width: min(820px, 100%); margin: 0 auto; padding: clamp(50px, 8vw, 96px) 0 80px; }
+.backend-landing .personal-data__back { display: inline-block; margin-bottom: 38px; color: var(--muted); font-size: 13px; text-decoration: none; }
+.backend-landing .personal-data__back:hover { color: var(--accent); }
+.backend-landing .personal-data h1 { max-width: 760px; margin: 12px 0 0; font-size: clamp(32px, 5vw, 60px); line-height: 1.12; letter-spacing: normal; }
+.backend-landing .personal-data__intro { max-width: 600px; margin: 20px 0 36px; color: var(--muted); line-height: 1.7; }
+.backend-landing .personal-data__document { padding: clamp(24px, 4vw, 46px); border: 1px solid var(--line); border-radius: 24px; background: color-mix(in srgb, var(--surface) 78%, transparent); backdrop-filter: blur(14px); }
+.backend-landing .personal-data__document section + section { margin-top: 30px; padding-top: 30px; border-top: 1px solid var(--line); }
+.backend-landing .personal-data__document h2 { margin: 0 0 12px; font-size: 19px; line-height: 1.35; }
+.backend-landing .personal-data__document p { margin: 0; color: var(--muted); font-size: 15px; line-height: 1.75; }
+.backend-landing .personal-data__document a, .backend-landing .landing-footer > a:not(.landing-brand) { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+.backend-landing .personal-data__document a:focus-visible, .backend-landing .personal-data__back:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
