@@ -126,6 +126,7 @@ def test_dual_local_probe_rejects_database_identity_not_matching_validated_url(m
             pass
 
     monkeypatch.setenv("PYMENTOR_DUAL_LOCAL_TEST", "1")
+    monkeypatch.setenv("PYMENTOR_TEST_LOGIN_RECOVERY_KEY", "42" * 32)
     monkeypatch.setenv(
         "PYMENTOR_TEST_PG_URL",
         "postgresql+asyncpg://pymentor_app@127.0.0.1:57152/pymentor_test",

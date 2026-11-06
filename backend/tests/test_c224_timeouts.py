@@ -66,7 +66,14 @@ def test_invalid_server_timeout_rejected_before_engine_creation(monkeypatch, nam
 
 
 def test_dual_entrypoint_passes_timeouts_to_probe_and_async_pool(monkeypatch):
+    # create_app changes these process-wide values; record them so the fixture
+    # restores the caller's environment after this test.
+    monkeypatch.setenv("DATABASE_URL", "sqlite:///:memory:")
+    monkeypatch.setenv("PYMENTOR_SCHEMA_MODE", "legacy")
+    monkeypatch.setenv("PYTHON_DOTENV_DISABLED", "1")
+    monkeypatch.setenv("PYMENTOR_LOCAL_NOTIFICATIONS", "0")
     monkeypatch.setenv("PYMENTOR_DUAL_LOCAL_TEST", "1")
+    monkeypatch.setenv("PYMENTOR_TEST_LOGIN_RECOVERY_KEY", "42" * 32)
     monkeypatch.setenv("PYMENTOR_TEST_PG_URL", ASYNC_URL)
     monkeypatch.setenv("PYMENTOR_TEST_REDIS_URL", "unused")
     monkeypatch.setenv("PYMENTOR_TEST_REDIS_PREFIX", "unused")
@@ -102,6 +109,7 @@ def test_dual_entrypoint_passes_timeouts_to_probe_and_async_pool(monkeypatch):
     async def close():
         pass
     store.close = close
+    redis_sessions.SessionDigest = str
     monkeypatch.setattr(redis_sessions, "RedisSessionStore", MagicMock(return_value=store), raising=False)
     monkeypatch.setattr(async_sessions, "AsyncIdentitySessions", MagicMock(), raising=False)
     dual_local.create_app()

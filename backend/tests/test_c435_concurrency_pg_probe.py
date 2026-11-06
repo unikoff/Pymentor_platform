@@ -13,6 +13,12 @@ probe = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(probe)
 
 
+@pytest.fixture(autouse=True)
+def private_state_home(monkeypatch):
+    monkeypatch.delenv('LOCALAPPDATA', raising=False)
+    monkeypatch.setenv('XDG_STATE_HOME', str(Path(__file__).resolve().parent / 'synthetic-state-home'))
+
+
 class Conn:
     def __init__(self, identity=None, close_error=False):
         self.identity = identity or (probe.target.lab.DATABASE, probe.target.lab.ADMIN_ROLE, 5432)

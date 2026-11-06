@@ -337,7 +337,7 @@ class NotificationWorkerProcessTests(TestCase):
                 [sys.executable, "-m", "notifications.worker", "--backup-db", str(backup)],
                 cwd=backend, env=env, capture_output=True, text=True, timeout=15,
             )
-            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(result.returncode, 0, result.stderr + result.stdout)
             connection = sqlite3.connect(backup)
             try:
                 self.assertEqual(connection.execute("SELECT value FROM existing_data").fetchone()[0], "preserved")
@@ -349,7 +349,7 @@ class NotificationWorkerProcessTests(TestCase):
                     [sys.executable, "-m", "notifications.worker", "--stats"],
                     cwd=backend, env=env, capture_output=True, text=True, timeout=15,
                 )
-                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertEqual(result.returncode, 0, result.stderr + result.stdout)
                 self.assertEqual(json.loads(result.stdout)["counts"], {})
             with sqlite3.connect(db_path) as connection:
                 self.assertEqual(connection.execute("SELECT value FROM existing_data").fetchone()[0], "preserved")
