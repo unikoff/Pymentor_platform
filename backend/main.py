@@ -8,7 +8,7 @@ from composition import build_default_composition
 from core.web import lifespan, configure_web, mount_frontend
 from core.schema_policy import DUAL_LOCAL_SCHEMA_REVISION, should_run_legacy_bootstrap
 from db.bootstrap import ensure_schema
-from db.engine import engine
+from db.engine import engine, matches_database_identity
 from routers.admin.router import admin_router
 from routers.accounts.router import user_router
 from routers.bookings.router import booking_router
@@ -21,6 +21,8 @@ DUAL_LOCAL_REQUIRED_TABLES = (
     "booking_slots", "booking_quotas", "booking_reminders", "booking_notification_outbox",
     "booking_notification_delivery_state", "landings", "landing_telegram_configs",
     "landing_notification_outbox", "landing_notification_delivery_state", "session_import_markers",
+    "login_operations", "account_lifecycles", "booking_notification_subjects",
+    "account_deletion_events", "account_deletion_redis_keys",
 )
 app.state.composition_root = build_default_composition()
 if should_run_legacy_bootstrap(engine.dialect.name, os.getenv("PYMENTOR_SCHEMA_MODE")):
@@ -55,7 +57,7 @@ def readiness_health(request: Request):
                 identity = tuple(connection.execute(text("SELECT current_database(), current_user")).one())
                 revision = connection.execute(text("SELECT version_num FROM alembic_version")).scalar_one()
                 available = set(inspect(connection).get_table_names())
-                if (identity != ("pymentor_test", "pymentor_test") or revision != DUAL_LOCAL_SCHEMA_REVISION
+                if (not matches_database_identity(identity, engine.url) or revision != DUAL_LOCAL_SCHEMA_REVISION
                         or not set(DUAL_LOCAL_REQUIRED_TABLES).issubset(available)):
                     raise HTTPException(status_code=503, detail="test database schema unavailable")
                 from anyio import from_thread

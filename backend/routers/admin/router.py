@@ -1,5 +1,5 @@
 from typing import Literal
-from fastapi import APIRouter, Depends, Query, Request
+from fastapi import APIRouter, Depends, Header, Query, Request
 from sqlalchemy.orm import Session
 from core.composition import RequestContext
 from core.dependencies import get_db, get_request_context
@@ -44,10 +44,12 @@ def list_users(
 
 @admin_router.delete(
     "/users/{user_id}",
-    responses=api_contract_responses(DeletedIdResponse, 400, 401, 403, 404),
+    responses=api_contract_responses(DeletedIdResponse, 400, 401, 403, 404, 409),
 )
-def delete_user(user_id: int, request: Request, db: Session = Depends(get_db)):
-    return service.delete_user(user_id=user_id, request=request, db=db)
+def delete_user(user_id: int, request: Request,
+                expected_account_ref: str | None = Header(default=None, alias="X-Account-Ref"),
+                db: Session = Depends(get_db)):
+    return service.delete_user(user_id=user_id, request=request, db=db, expected_account_ref=expected_account_ref)
 
 
 @admin_router.patch(

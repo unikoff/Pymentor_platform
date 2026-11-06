@@ -1,6 +1,6 @@
 """Choose legacy SQLite bootstrap or externally managed migrations explicitly."""
 
-DUAL_LOCAL_SCHEMA_REVISION = "c216_import_marker"
+DUAL_LOCAL_SCHEMA_REVISION = "c426_deletion_outbox"
 
 
 def should_run_legacy_bootstrap(database_backend: str, mode: str | None) -> bool:

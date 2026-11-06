@@ -2,6 +2,7 @@ import { useEffect, useId, useState, type PointerEvent } from 'react';
 import { ArrowDownRight } from 'lucide-react';
 import { ProgrammingBackground } from './ProgrammingBackground';
 import { LearningSystem } from './LearningSystem';
+import { CareerLaunch } from './CareerLaunch';
 import { LandingFaq } from './LandingFaq';
 import { AboutSection } from './AboutSection';
 import { LandingNav, PricingSection, ReviewsSection, landingUrl } from './LandingPages';
@@ -258,6 +259,8 @@ export function BackendLandingPage() {
         <ReviewsSection />
 
         <LearningSystem />
+
+        <CareerLaunch />
 
         <AboutSection />
 

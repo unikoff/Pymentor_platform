@@ -39,3 +39,6 @@ docs/stage-system-setup/**/RUN.json
 docs/stage-system-setup/**/dispatch-check-*/
 docs/stage-system-setup/**/core-check-*/
 .serena/
+
+# Documentation is maintained locally.
+/docs/

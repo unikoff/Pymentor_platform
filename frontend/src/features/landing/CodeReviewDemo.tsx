@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useState } from 'react';
-import { ArrowLeft, ArrowRight, ChevronRight } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, ChevronRight, MessageSquare } from 'lucide-react';
+import { highlightPython } from '../../shared/lib/python-highlight';
 import './code-review-demo.css';
 
 type ReviewExample = {
@@ -112,15 +113,16 @@ export function CodeReviewDemo() {
 
       <div className="code-review-demo__code-heading">
         <div className="code-review-demo__file"><span className="code-review-demo__filename"><span aria-hidden="true">●</span> {example.fileName}</span></div>
+        <span className="code-review-demo__status" data-fixed={showFixed}>{showFixed ? <Check size={13} aria-hidden="true" /> : <MessageSquare size={13} aria-hidden="true" />}<span>{showFixed ? 'Исправлено' : 'Разбираем код'}</span></span>
       </div>
-      <div className="code-review-demo__editor" ref={editorRef} role="group" aria-label={`Демонстрационный код: ${showFixed ? 'после' : 'до'} разбора`}>
+      <div className="code-review-demo__editor" ref={editorRef} role="group" tabIndex={0} aria-label={`Демонстрационный код: ${showFixed ? 'после' : 'до'} разбора`}>
         <div className="code-review-demo__code" key={selectedIndex}>{lines.map((line, index) => (
           <div className="code-review-demo__line-group" key={`code-line-${index}`}>
             <div className={`code-review-demo__line${showFixed && example.fixedLines.includes(index) ? ' code-review-demo__line--fixed' : !showFixed && index === commentLine ? ' code-review-demo__line--issue' : ''}`}>
               <span className={`code-review-demo__line-number${index === commentLine ? ' code-review-demo__line-number--commented' : ''}`}>
                 {index === commentLine && <button className="code-review-demo__comment-toggle" type="button" aria-label={`${commentOpen ? 'Скрыть' : 'Показать'} комментарий к строке ${index + 1}`} title={commentOpen ? 'Скрыть комментарий' : 'Показать комментарий'} aria-expanded={commentOpen} aria-controls={commentId} onClick={() => setCommentOpen(current => !current)}><ChevronRight size={16} aria-hidden="true" /></button>}
                 {index + 1}
-              </span><code className="code-review-demo__line-text" key={showFixed ? 'after' : 'before'}>{line || ' '}</code>
+              </span><code className="code-review-demo__line-text" key={showFixed ? 'after' : 'before'} dangerouslySetInnerHTML={{ __html: highlightPython(line || ' ') }} />
             </div>
             {index === commentLine && <div id={commentId} className={`code-review-demo__thread-wrap${commentOpen ? ' code-review-demo__thread-wrap--open' : ''}`} aria-hidden={!commentOpen}>
               <div className="code-review-demo__thread-clip"><div className="code-review-demo__thread">

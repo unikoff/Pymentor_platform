@@ -68,7 +68,8 @@ class AsyncDatabase:
 
     def __init__(self, url: str, *, pool_size: int = 5, max_overflow: int = 5,
                  pool_timeout: float = 10.0, connect_timeout: float = 10.0,
-                 command_timeout: float = 30.0) -> None:
+                 command_timeout: float = 30.0, statement_timeout_ms: int | None = None,
+                 lock_timeout_ms: int | None = None) -> None:
         parsed = make_url(url)
         if (parsed.drivername != "postgresql+asyncpg"
                 or parsed.host not in {"localhost", "127.0.0.1", "::1"}
@@ -81,6 +82,16 @@ class AsyncDatabase:
         for value in (pool_timeout, connect_timeout, command_timeout):
             if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value) or value <= 0:
                 raise ValueError("timeouts must be finite positive numbers")
+        server_settings = {}
+        for name, value in (("statement_timeout", statement_timeout_ms),
+                            ("lock_timeout", lock_timeout_ms)):
+            if value is not None:
+                if type(value) is not int or not 1 <= value <= 2147483647:
+                    raise ValueError(f"{name} must be a positive integer in milliseconds")
+                server_settings[name] = str(value)
+        connect_args = {"timeout": connect_timeout, "command_timeout": command_timeout}
+        if server_settings:
+            connect_args["server_settings"] = server_settings
         self.engine = create_async_engine(
             url,
             pool_size=pool_size,
@@ -89,7 +100,7 @@ class AsyncDatabase:
             pool_pre_ping=True,
             hide_parameters=True,
             isolation_level="READ COMMITTED",
-            connect_args={"timeout": connect_timeout, "command_timeout": command_timeout},
+            connect_args=connect_args,
         )
         self._factory = async_sessionmaker(self.engine, expire_on_commit=False, autoflush=False)
         self._disposed = False

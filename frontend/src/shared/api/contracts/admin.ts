@@ -114,6 +114,7 @@ export const ADMIN_LEVEL_LABELS = {
 export const ADMIN_LEVELS = ["easy", "medium", "hard"] as const;
 
 export type StudentProfile = AdminAccount & {
+  account_ref?: string;
   quota: QuotaStatus;
   activity_days_count: number;
   activity_days: string[];

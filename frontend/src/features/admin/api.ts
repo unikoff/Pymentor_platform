@@ -24,8 +24,12 @@ export function addStudentQuota(studentId: number, month: CalendarMonth, amount:
   return apiRequest(`/admin/users/${studentId}/quota`, { year: month.year, month: month.month, add: amount });
 }
 
-export function deleteStudent(studentId: number) {
-  return apiRequest(`/admin/users/${studentId}`, undefined, "DELETE");
+export function deleteStudent(studentId: number, accountRef?: string) {
+  const url = `/admin/users/${studentId}`;
+  if (accountRef === undefined) {
+    return apiRequest(url, undefined, "DELETE");
+  }
+  return apiRequest(url, undefined, "DELETE", { "X-Account-Ref": accountRef });
 }
 
 export function getAdminSlots(month: CalendarMonth, includePast = false) {

@@ -6,15 +6,50 @@ function formatTime(value: number) {
   return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
 }
 
-export function PlatformVideo({ src, temporary }: { src: string; temporary: boolean }) {
+export function PlatformVideo({ src, temporary, active = true }: { src: string; temporary: boolean; active?: boolean }) {
   const video = useRef<HTMLVideoElement>(null);
   const frame = useRef<HTMLDivElement>(null);
+  const playbackIntent = useRef<boolean | null>(null);
   const [playing, setPlaying] = useState(false);
   const [muted, setMuted] = useState(true);
   const [volume, setVolume] = useState(1);
   const [time, setTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [fullscreen, setFullscreen] = useState(false);
+
+  useEffect(() => { playbackIntent.current = null; }, [src]);
+
+  useEffect(() => {
+    const element = video.current;
+    if (!element) return;
+    if (!active) { element.pause(); return; }
+    const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let inView = false;
+    let disposed = false;
+    const syncPlayback = () => {
+      if (!inView || document.hidden || !(playbackIntent.current ?? !motion.matches)) {
+        element.pause();
+        return;
+      }
+      void element.play().then(() => {
+        if (disposed || !inView || document.hidden) element.pause();
+      }).catch(() => {});
+    };
+    const observer = new IntersectionObserver(([entry]) => {
+      inView = entry.isIntersecting;
+      syncPlayback();
+    }, { threshold: .15 });
+    observer.observe(element);
+    document.addEventListener('visibilitychange', syncPlayback);
+    motion.addEventListener('change', syncPlayback);
+    return () => {
+      disposed = true;
+      observer.disconnect();
+      document.removeEventListener('visibilitychange', syncPlayback);
+      motion.removeEventListener('change', syncPlayback);
+      element.pause();
+    };
+  }, [src, active]);
 
   useEffect(() => {
     const sync = () => setFullscreen(document.fullscreenElement === frame.current);
@@ -25,6 +60,7 @@ export function PlatformVideo({ src, temporary }: { src: string; temporary: bool
   const togglePlayback = () => {
     const element = video.current;
     if (!element) return;
+    playbackIntent.current = element.paused;
     if (element.paused) void element.play().catch(() => setPlaying(false));
     else element.pause();
   };
@@ -41,7 +77,7 @@ export function PlatformVideo({ src, temporary }: { src: string; temporary: bool
   };
 
   return <div className="learning-system__platform-preview" ref={frame}>
-    <video ref={video} src={src} aria-label={temporary ? 'Временное видео фонтана' : 'Обзор платформы Pymentor'} autoPlay muted loop playsInline preload="metadata"
+    <video ref={video} src={src} aria-label={temporary ? 'Временное видео фонтана' : 'Обзор платформы Pymentor'} muted loop playsInline preload="metadata"
       onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onVolumeChange={event => { setMuted(event.currentTarget.muted); setVolume(event.currentTarget.volume); }}
       onTimeUpdate={event => setTime(event.currentTarget.currentTime)} onDurationChange={event => setDuration(Number.isFinite(event.currentTarget.duration) ? event.currentTarget.duration : 0)}>
       Ваш браузер не поддерживает воспроизведение видео.

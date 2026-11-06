@@ -41,6 +41,22 @@ def run_scenario(scenario):
                            connect_timeout=3, command_timeout=3)
         prefix = f"pymentor-c216-test:{uuid4()}:"
         store = RedisSessionStore(redis_url, prefix=prefix, max_connections=8, socket_timeout=2)
+        prepared_keys = set()
+        projection_keys = set()
+        prepare_session = store.prepare_session
+        add_user_sessions = store.add_user_sessions
+
+        async def track_prepared(uid, digest, ttl):
+            prepared_keys.add(f"{prefix}token:prepared:{digest}")
+            return await prepare_session(uid, digest, ttl)
+
+        store.prepare_session = track_prepared
+
+        async def track_projection(uid, sessions):
+            projection_keys.update(f"{prefix}token:{store._digest(token)}" for token, _ in sessions)
+            return await add_user_sessions(uid, sessions)
+
+        store.add_user_sessions = track_projection
         email = f"{uuid4()}@example.test"
         password = "Synthetic-test-password-123"
         user_id = None
@@ -65,8 +81,12 @@ def run_scenario(scenario):
                                                       {"id": user_id, "email": email})
                             await uow.commit()
             finally:
-                await store.close()
-                await db.dispose()
+                try:
+                    if prepared_keys or projection_keys:
+                        await store._client.delete(*(prepared_keys | projection_keys))
+                finally:
+                    await store.close()
+                    await db.dispose()
 
     asyncio.run(run())
 
@@ -126,7 +146,9 @@ def test_sql_removal_prevents_revival_even_with_stale_redis():
             with pytest.raises(InvalidSession):
                 await mode.authenticate(token)
         await redis_mode.reconcile_user(user_id)
-        assert await store.get_user(token) is None
+        # The prepared key is intentionally left to expire; SQL still denies it.
+        with pytest.raises(InvalidSession):
+            await redis_mode.authenticate(token)
     run_scenario(scenario)
 
 
@@ -137,7 +159,7 @@ def test_redis_unavailable_fails_closed_without_destroying_existing_sql_sessions
         class Unavailable:
             async def get_user(self, token):
                 raise RedisConnectionError("synthetic outage")
-            async def replace_user_sessions(self, user_id, sessions):
+            async def prepare_session(self, user_id, digest, ttl):
                 raise RedisConnectionError("synthetic outage")
         broken = AsyncIdentitySessions(db, Unavailable(), mode="redis")
         with pytest.raises(IdentityUnavailable):
@@ -289,8 +311,8 @@ def test_redis_timeout_after_write_never_authorizes_uncommitted_session():
         original = (await service.login(email, password)).token
 
         class LostReply:
-            async def replace_user_sessions(self, uid, rows):
-                await store.replace_user_sessions(uid, rows)
+            async def prepare_session(self, uid, digest, ttl):
+                await store.prepare_session(uid, digest, ttl)
                 raise RedisConnectionError("synthetic lost response after write")
             async def get_user(self, token):
                 return await store.get_user(token)
@@ -311,7 +333,7 @@ def test_redis_projection_uses_hashes_and_absolute_ttl():
         service = AsyncIdentitySessions(db, store)
         token = (await service.login(email, password)).token
         digest = store._digest(token)
-        key = f"{store._prefix}token:{digest}"
+        key = f"{store._prefix}token:prepared:{digest}"
         assert token not in key
         assert await store._client.get(key) == str(user_id)
         ttl_before = await store._client.ttl(key)
@@ -322,6 +344,8 @@ def test_redis_projection_uses_hashes_and_absolute_ttl():
             await store.replace_user_sessions(user_id, [(token, 31 * 24 * 60 * 60)])
         await service.logout(token)
         assert await store._client.get(key) is None
+        with pytest.raises(InvalidSession):
+            await service.authenticate(token)
     run_scenario(scenario)
 
 
@@ -351,7 +375,7 @@ def test_digest_session_can_be_reconciled_after_redis_loss():
         token = (await service.login(email, password)).token
         async with db.unit_of_work() as uow:
             assert await uow.session.scalar(text("SHOW transaction_isolation")) == "read committed"
-        await store.replace_user_sessions(user_id, [])
+        await store._client.delete(f"{store._prefix}token:prepared:{store._digest(token)}")
         with pytest.raises(InvalidSession):
             await service.authenticate(token)
         await service.reconcile_user(user_id)
@@ -383,6 +407,7 @@ def test_login_and_logout_across_two_local_server_processes():
         ports = [free_port(), free_port()]
         assert ports[0] != ports[1]
         processes = []
+        process_keys = set()
         try:
             for port in ports:
                 processes.append(subprocess.Popen(
@@ -406,6 +431,7 @@ def test_login_and_logout_across_two_local_server_processes():
                 first, second = (f"http://127.0.0.1:{port}" for port in ports)
                 login = await client.post(f"{first}/api/user/login", json={"email": email, "password": password})
                 assert login.status_code == 200 and login.json()["user"]["id"] == user_id
+                process_keys.add(f"{store._prefix}token:prepared:{store._digest(client.cookies['session'])}")
                 assert (await client.get(f"{second}/api/user/me")).json()["user"]["id"] == user_id
                 assert (await client.post(f"{second}/api/user/logout")).status_code == 200
                 assert (await client.get(f"{first}/api/user/me")).status_code == 401
@@ -417,6 +443,8 @@ def test_login_and_logout_across_two_local_server_processes():
                         for index in range(4)
                     ))
                     assert all(response.status_code == 200 for response in grants)
+                    process_keys.update(f"{store._prefix}token:prepared:{store._digest(item.cookies['session'])}"
+                                        for item in clients)
                     checks = await asyncio.gather(*(
                         clients[index].get(f"{(second, first)[index % 2]}/api/user/me")
                         for index in range(4)
@@ -432,6 +460,8 @@ def test_login_and_logout_across_two_local_server_processes():
                 except subprocess.TimeoutExpired:
                     process.kill()
                     process.wait(timeout=5)
+            if process_keys:
+                await store._client.delete(*process_keys)
     run_scenario(scenario)
 
 
@@ -502,28 +532,32 @@ def test_login_does_not_need_second_profile_lookup_after_commit():
     run_scenario(scenario)
 
 
-def test_process_crash_between_redis_and_sql_commit_requires_reconciliation():
+def test_process_crash_after_prepare_preserves_previous_sessions():
     async def scenario(db, store, user_id, email, password):
         import subprocess
         import sys
         from pathlib import Path
         service = AsyncIdentitySessions(db, store)
         tokens = [(await service.login(email, password)).token for _ in range(3)]
+        crash_token = str(uuid4())
+        crash_key = f"{store._prefix}token:prepared:{store._digest(crash_token)}"
         env = os.environ.copy()
         env.update(PYMENTOR_C216_PREFIX=store._prefix, PYMENTOR_C216_EMAIL=email,
-                   PYMENTOR_C216_PASSWORD=password)
+                   PYMENTOR_C216_PASSWORD=password, PYMENTOR_C224_TOKEN=crash_token)
         env["PYTHONPATH"] = os.pathsep.join([str(Path(__file__).resolve().parent), env["PYTHONPATH"]])
-        result = await asyncio.to_thread(subprocess.run, [sys.executable, "-m", "c216_crash_fixture"],
-                                         env=env, capture_output=True, timeout=15)
-        assert result.returncode == 71, "synthetic crash was not reached"
-        with pytest.raises(InvalidSession):
-            await service.authenticate(tokens[0])
-        async with db.unit_of_work() as uow:
-            assert await uow.session.scalar(text("SELECT count(*) FROM sessions WHERE user_id=:id"),
-                                            {"id": user_id}) == 3
-        await service.reconcile_user(user_id)
-        for token in tokens:
-            assert (await service.authenticate(token)).user_id == user_id
+        try:
+            result = await asyncio.to_thread(subprocess.run, [sys.executable, "-m", "test_c224_crash_fixture"],
+                                             env=env, capture_output=True, timeout=15)
+            assert result.returncode == 71, "synthetic crash was not reached"
+            async with db.unit_of_work() as uow:
+                assert await uow.session.scalar(text("SELECT count(*) FROM sessions WHERE user_id=:id"),
+                                                {"id": user_id}) == 3
+            for token in tokens:
+                assert (await service.authenticate(token)).user_id == user_id
+            with pytest.raises(InvalidSession):
+                await service.authenticate(crash_token)
+        finally:
+            await store._client.delete(crash_key)
     run_scenario(scenario)
 
 
@@ -645,12 +679,12 @@ def test_legacy_import_lost_redis_reply_never_activates_uncommitted_token():
         from identity.legacy_session_import import LegacySession, import_legacy_sessions
         service = AsyncIdentitySessions(db, store)
         token = str(uuid4())
-        replace = store.replace_user_sessions
+        add = store.add_user_sessions
         async def lost_reply(uid, rows):
-            await replace(uid, rows)
+            await add(uid, rows)
             raise RedisConnectionError("synthetic lost response")
         source = [LegacySession(token, datetime.now(timezone.utc))]
-        with patch.object(store, "replace_user_sessions", side_effect=lost_reply):
+        with patch.object(store, "add_user_sessions", side_effect=lost_reply):
             with pytest.raises(IdentityUnavailable):
                 await import_legacy_sessions(service, user_id, source)
         with pytest.raises(InvalidSession):
@@ -659,7 +693,9 @@ def test_legacy_import_lost_redis_reply_never_activates_uncommitted_token():
             assert await uow.session.scalar(text("SELECT count(*) FROM sessions WHERE user_id=:id"),
                                             {"id": user_id}) == 0
         await service.reconcile_user(user_id)
-        assert await store.get_user(token) is None
+        # Orphaned gates may remain, but do not authenticate without SQL.
+        with pytest.raises(InvalidSession):
+            await service.authenticate(token)
         assert await import_legacy_sessions(service, user_id, source) == 1
     run_scenario(scenario)
 
@@ -753,7 +789,8 @@ def test_migration_downgrade_refuses_to_delete_live_import_marker():
         assert result.returncode != 0
         assert "session import markers are not empty" in result.stderr
         async with db.unit_of_work() as uow:
-            assert await uow.session.scalar(text("SELECT version_num FROM alembic_version")) == "c216_import_marker"
+            from core.schema_policy import DUAL_LOCAL_SCHEMA_REVISION
+            assert await uow.session.scalar(text("SELECT version_num FROM alembic_version")) == DUAL_LOCAL_SCHEMA_REVISION
         assert (await service.authenticate(token)).user_id == user_id
     run_scenario(scenario)
 

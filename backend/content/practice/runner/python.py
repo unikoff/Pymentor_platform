@@ -230,7 +230,7 @@ def run_python_task(code: str, task: dict[str, Any]) -> dict[str, Any]:
 
     requirements_error = _requirements_error(code, task.get("requirements"))
     if requirements_error:
-        return {"ok": False, "score": 0, "error": requirements_error, "tests": [], "stdout": ""}
+        return {"ok": False, "score": 0, "error": requirements_error, "error_kind": "requirements", "tests": [], "stdout": ""}
 
     process = _run_runner_source(_build_runner_source(code, task.get("tests", []), task.get("mode", "solve")))
     if isinstance(process, dict):

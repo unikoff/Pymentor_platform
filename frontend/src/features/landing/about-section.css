@@ -15,12 +15,15 @@
 .backend-landing .mentor-about__identity {
   position: absolute;
   z-index: 1;
-  right: 20px;
   bottom: 20px;
-  left: 20px;
+  left: 50%;
+  width: max-content;
+  max-width: calc(100% - 40px);
+  transform: translateX(-50%);
   display: grid;
   gap: 6px;
   padding: 17px 19px;
+  text-align: center;
   border: 1px solid color-mix(in srgb, var(--white) 17%, transparent);
   border-radius: 14px;
   background: color-mix(in srgb, var(--surface) 55%, transparent);
@@ -57,7 +60,7 @@
 }
 @media (max-width: 480px) {
   .backend-landing .mentor-about { gap: 28px; padding: 48px 18px; }
-  .backend-landing .mentor-about__identity { right: 14px; bottom: 14px; left: 14px; padding: 13px 15px; }
+  .backend-landing .mentor-about__identity { bottom: 14px; max-width: calc(100% - 28px); padding: 13px 15px; }
   .backend-landing .mentor-about h2 { font-size: clamp(32px, 9vw, 42px); }
   .backend-landing .mentor-about__experience { grid-template-columns: 1fr; gap: 18px; margin-top: 24px; }
   .backend-landing .mentor-about__stats { grid-template-columns: 1fr 1fr; margin-top: 24px; }

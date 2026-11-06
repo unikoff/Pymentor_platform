@@ -64,11 +64,16 @@ class AdminDashboardTests(TestCase):
         for index in range(101):
             self.db.add(models.User(username=f"Без квоты {index}", email=f"empty-{index}@example.com", _password_hash="test-hash"))
         self.db.commit()
-        target = self.add_user("Последний", None)
+        target = self.add_user("Последний", datetime(2099, 1, 1, tzinfo=timezone.utc))
         self.db.add(models.BookingQuota(user_id=target.id, year=2026, month=10, granted_slots=10))
         self.db.commit()
         self.assertIn(target.id, [u["id"] for u in self.accounts(lessons="many")])
-        self.assertEqual(100, len(self.accounts()))
+        visible = self.accounts()
+        self.assertEqual(100, len(visible))
+        self.assertEqual(sorted(u["id"] for u in visible), [u["id"] for u in visible])
+        self.assertNotIn(target.id, [u["id"] for u in visible])
+        self.assertEqual([target.id], [u["id"] for u in self.accounts(search="ПОСЛЕДНИЙ")])
+        self.assertIn(target.id, [u["id"] for u in self.accounts(subscription="active")])
 
     def test_admin_calendar_can_include_past_bookings_with_student_names(self):
         future = crud.list_slots_for_month_admin(2026, 10, self.db, now=self.now)

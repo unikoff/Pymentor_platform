@@ -6,9 +6,9 @@ import temporaryPlatformPreview from './assets/platform-preview-placeholder.webm
 import './learning-system.css';
 
 const learningTabs = [
-  { label: 'Платформа', icon: BookOpen },
-  { label: 'Код-ревью', icon: Code2 },
-  { label: 'Личные занятия', icon: MessagesSquare },
+  { label: 'Платформа', summary: 'Теория и практика', anchor: 'platform', icon: BookOpen },
+  { label: 'Код-ревью', summary: 'Обратная связь по коду', anchor: 'demo', icon: Code2 },
+  { label: 'Личные занятия', summary: 'Один на один с наставником', anchor: 'lessons', icon: MessagesSquare },
 ] as const;
 
 const platformFeatures = [
@@ -22,26 +22,29 @@ const platformFeatures = [
 
 // Temporary video: Jet d'Eau Short Video, Michael, Wikimedia Commons, CC0.
 const platformVideoUrl = import.meta.env.VITE_LANDING_PLATFORM_VIDEO_URL?.trim();
-const tabForHash = (hash: string) => hash === '#platform' ? 0 : hash === '#demo' ? 1 : null;
+const tabForHash = (hash: string) => {
+  const index = learningTabs.findIndex(tab => hash === `#${tab.anchor}`);
+  return index < 0 ? null : index;
+};
 
 const lessonTopics = [
   {
-    icon: BookOpen, title: 'Теория', summary: 'Пройденное и следующий шаг',
+    icon: BookOpen, title: 'Теория', summary: 'Понимаем сложные темы', heading: 'Разложим тему по шагам',
     detail: 'На встрече сверяем, какие темы вы уже прошли и что осталось непонятным.',
     points: ['Разбираем сложную часть теории на примерах.', 'Связываем её с тем, что вы изучили раньше.', 'Обсуждаем, какую тему пройдём дальше и зачем.'],
   },
   {
-    icon: Code2, title: 'Задания и проект', summary: 'Практика с наставником',
+    icon: Code2, title: 'Задания и проект', summary: 'Двигаемся в разработке', heading: 'Продвинем ваш проект',
     detail: 'На созвоне подводим итог работы над заданиями и проектом: что получилось, а где возникли трудности.',
     points: ['Смотрим выполненные задачи и текущий этап проекта.', 'Обсуждаем ошибки и замечания после code review.', 'Разбираем сложные места и определяем следующий шаг.'],
   },
   {
-    icon: Search, title: 'Ваши вопросы', summary: 'Помощь, когда застряли',
+    icon: Search, title: 'Ваши вопросы', summary: 'Находим точку затруднения', heading: 'Разберёмся там, где застряли',
     detail: 'На встречу можно принести вопросы по теории, коду или самому процессу обучения.',
     points: ['Выясняем, что именно вызывает затруднение.', 'Разбираем причину на вашем примере.', 'Обсуждаем, как продолжить работу самостоятельно.'],
   },
   {
-    icon: MessagesSquare, title: 'Собеседования', summary: 'Подготовка к работе',
+    icon: MessagesSquare, title: 'Собеседования', summary: 'Готовимся к работе', heading: 'Подготовимся к техническому разговору',
     detail: 'Если готовитесь к работе, на встрече разбираем вопросы и задачи для собеседований.',
     points: ['Возвращаемся к темам, в которых не хватает уверенности.', 'При необходимости решаем задачи, в том числе на LeetCode.', 'Обсуждаем, как объяснить ход мыслей и решение.'],
   },
@@ -52,6 +55,11 @@ export function LearningSystem() {
   const [lessonTopic, setLessonTopic] = useState(0);
   const id = useId();
   const tabs = useRef<Array<HTMLButtonElement | null>>([]);
+
+  const selectTab = (index: number) => {
+    setActive(index);
+    window.history.replaceState(window.history.state, '', `${window.location.pathname}${window.location.search}#${learningTabs[index].anchor}`);
+  };
 
   useEffect(() => {
     const syncHash = () => {
@@ -80,19 +88,20 @@ export function LearningSystem() {
     else if (event.key === 'End') next = learningTabs.length - 1;
     else return;
     event.preventDefault();
-    setActive(next);
-    tabs.current[next]?.focus();
+    selectTab(next);
+    tabs.current[next]?.focus({ preventScroll: true });
   };
 
   return <section className="landing-section learning-system" id="learning-system" aria-label="Обучение">
     <span className="learning-system__anchor" id="platform" aria-hidden="true" />
     <span className="learning-system__anchor" id="demo" aria-hidden="true" />
+    <span className="learning-system__anchor" id="lessons" aria-hidden="true" />
     <div className="learning-system__layout">
     <div className="learning-system__tabs" role="tablist" aria-label="Обучение" aria-orientation="horizontal">
       {learningTabs.map((tab, index) => {
         const Icon = tab.icon;
-        return <button key={tab.label} ref={element => { tabs.current[index] = element; }} className="learning-system__tab" id={`${id}-tab-${index}`} type="button" role="tab" aria-selected={active === index} aria-controls={`${id}-panel-${index}`} tabIndex={active === index ? 0 : -1} onClick={() => setActive(index)} onKeyDown={event => moveFocus(event, index)}>
-          <Icon size={19} strokeWidth={1.7} aria-hidden="true" /><span>{tab.label}</span>
+        return <button key={tab.label} ref={element => { tabs.current[index] = element; }} className="learning-system__tab" id={`${id}-tab-${index}`} type="button" role="tab" aria-label={tab.label} aria-selected={active === index} aria-controls={`${id}-panel-${index}`} tabIndex={active === index ? 0 : -1} onClick={() => selectTab(index)} onKeyDown={event => moveFocus(event, index)}>
+          <span className="learning-system__tab-icon"><Icon size={21} strokeWidth={1.7} aria-hidden="true" /></span><span className="learning-system__tab-label"><strong>{tab.label}</strong><small>{tab.summary}</small></span>
         </button>;
       })}
     </div>
@@ -100,7 +109,7 @@ export function LearningSystem() {
       <div className="learning-system__panel-inner">
         {index === 0 && <>
           <div className="learning-system__copy learning-system__copy--platform">
-            <h3>Изучите платформу бесплатно</h3>
+            <h3>Изучите платформу <span>бесплатно</span></h3>
             <p>Занятия и практика в одном пространстве. Посмотрите, как устроено обучение на платформе.</p>
             <ul className="learning-system__features">
               {platformFeatures.map(({ icon: Icon, title, detail }) => <li key={title}><Icon size={17} strokeWidth={1.7} aria-hidden="true" /><div><strong>{title}</strong><span>{detail}</span></div></li>)}
@@ -108,17 +117,17 @@ export function LearningSystem() {
             <a className="primary-action landing-action learning-system__platform-cta" href={import.meta.env.BASE_URL}>Попробовать бесплатно <ArrowUpRight size={17} aria-hidden="true" /></a>
           </div>
           <div className="learning-system__media learning-system__media--platform">
-            <PlatformVideo src={platformVideoUrl || temporaryPlatformPreview} temporary={!platformVideoUrl} />
+            <PlatformVideo src={platformVideoUrl || temporaryPlatformPreview} temporary={!platformVideoUrl} active={active === 0} />
           </div>
         </>}
         {index === 1 && <>
           <div className="learning-system__copy learning-system__copy--review">
-            <h3>Учимся на вашем коде</h3>
+            <h3>Учимся <span>на вашем коде</span></h3>
             <p>Я не даю ответ сразу. Мы вместе разбираем решение и шаг за шагом приходим к исправлению.</p>
             <ol className="learning-system__review-steps">
-              <li><Search size={22} strokeWidth={1.7} aria-hidden="true" /><div><strong>Находим ошибку</strong><span>Смотрим, где код работает не так</span></div></li>
-              <li><Lightbulb size={22} strokeWidth={1.7} aria-hidden="true" /><div><strong>Разбираем причину</strong><span>Объясняю, почему она возникла</span></div></li>
-              <li><Wrench size={22} strokeWidth={1.7} aria-hidden="true" /><div><strong>Ищем решение</strong><span>Вместе исправляем и проверяем код</span></div></li>
+              <li><span className="learning-system__step-icon"><Search size={20} strokeWidth={1.7} aria-hidden="true" /></span><div><strong>Находим ошибку</strong><span>Смотрим, где код работает не так</span></div></li>
+              <li><span className="learning-system__step-icon"><Lightbulb size={20} strokeWidth={1.7} aria-hidden="true" /></span><div><strong>Разбираем причину</strong><span>Объясняю, почему она возникла</span></div></li>
+              <li><span className="learning-system__step-icon"><Wrench size={20} strokeWidth={1.7} aria-hidden="true" /></span><div><strong>Ищем решение</strong><span>Вместе исправляем и проверяем код</span></div></li>
             </ol>
             <a className="primary-action landing-action learning-system__review-cta" href="#path">Обсудить свой код с наставником <ArrowUpRight size={17} aria-hidden="true" /></a>
           </div>
@@ -126,8 +135,8 @@ export function LearningSystem() {
         </>}
         {index === 2 && <>
           <div className="learning-system__copy learning-system__copy--lessons">
-            <h3>Личные занятия с наставником</h3>
-            <p>На созвоне разбираем то, что вызвало трудности: от теории и заданий до вопросов по проекту. Вместе подводим итоги и определяем следующий шаг, чтобы вы понимали, как двигаться дальше.</p>
+            <h3>Личные занятия <span>с наставником</span></h3>
+            <p>На встречах разбираем сложные темы, ваш код и вопросы по проекту. В конце намечаем следующий шаг, чтобы между занятиями вы знали, над чем работать.</p>
             <a className="primary-action landing-action learning-system__lessons-cta" href="#path">Обсудить занятия <ArrowUpRight size={17} aria-hidden="true" /></a>
           </div>
           <div className="learning-system__media learning-system__lessons">
@@ -137,7 +146,7 @@ export function LearningSystem() {
               </button>)}
             </div>
             <div className="learning-system__detail-stack" aria-live="polite" aria-atomic="true">{lessonTopics.map((topic, index) => <section className="learning-system__lesson-detail" key={topic.title} hidden={lessonTopic !== index} aria-label={topic.title}>
-              <strong>{topic.title}</strong><p>{topic.detail}</p><ul>{topic.points.map(point => <li key={point}>{point}</li>)}</ul>
+              <strong>{topic.heading}</strong><p>{topic.detail}</p><ul>{topic.points.map((point, pointIndex) => <li key={point}><span aria-hidden="true">0{pointIndex + 1}</span>{point}</li>)}</ul>
             </section>)}</div>
           </div>
         </>}

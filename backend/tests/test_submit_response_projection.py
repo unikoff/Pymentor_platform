@@ -387,6 +387,21 @@ def test_asgi_chapter_one_unknown_error_without_tests_is_also_generic(api_harnes
     _assert_no_secrets(response)
 
 
+def test_asgi_chapter_one_requirements_error_has_safe_actionable_message(api_harness):
+    harness = api_harness
+    harness.state.result = {
+        "ok": False, "score": 0, "tests": [],
+        "error_kind": "requirements", "error": "SYNTHETIC_TOP_ERROR_SECRET",
+        "stdout": "SYNTHETIC_PARTIAL_STDOUT",
+    }
+    response = _submit(harness)
+    body = response.json()
+    assert body["error"] == "Решение не соответствует требованиям кода. Сверьте конструкции с условием задачи."
+    assert "error_kind" not in body
+    assert body["stdout"] == "" and body["stderr"] is None
+    _assert_no_secrets(response)
+
+
 @pytest.mark.parametrize(
     ("source_file", "omit_source_file"),
     [

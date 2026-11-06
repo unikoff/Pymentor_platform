@@ -105,7 +105,7 @@ export function ProgrammingBackground() {
       frame = 0;
       if (document.hidden || !visible || motion.matches) return;
       if (!lastFrame) lastFrame = now;
-      const frameInterval = finePointer.matches && !modestDevice ? 16 : 33;
+      const frameInterval = finePointer.matches && !modestDevice ? 0 : 33;
       if (now - lastFrame >= frameInterval) {
         const delta = Math.min(now - lastFrame, 50);
         step = Math.min(delta / 16.67, 1.5);
@@ -117,7 +117,7 @@ export function ProgrammingBackground() {
           if (!pointer) pointer = { ...pointerTarget };
           pendingPointer = null;
         }
-        const easing = 1 - Math.exp(-delta / 110);
+        const easing = 1 - Math.exp(-delta / 80);
         if (pointer && pointerTarget && pointerInside) {
           pointer.x += (pointerTarget.x - pointer.x) * easing;
           pointer.y += (pointerTarget.y - pointer.y) * easing;

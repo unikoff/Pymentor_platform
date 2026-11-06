@@ -42,6 +42,8 @@ class NotificationOutboxTests(TestCase):
     def setUp(self) -> None:
         self.engine = create_engine("sqlite://")
         Base.metadata.create_all(self.engine)
+        from db.sqlite_account_lifecycles import ensure_sqlite_account_lifecycles
+        ensure_sqlite_account_lifecycles(self.engine)
         self.sessions = sessionmaker(bind=self.engine)
         self.db = self.sessions()
         self.user = models.User(

@@ -462,6 +462,7 @@ async def _execute_task(function, code: str, task: dict) -> dict:
 
 
 _SAFE_SUBMIT_CHECK_ERROR = "Не удалось проверить решение. Проверьте код и попробуйте ещё раз."
+_SAFE_SUBMIT_REQUIREMENTS_ERROR = "Решение не соответствует требованиям кода. Сверьте конструкции с условием задачи."
 _CHAPTER_ONE_TEST_FAILURE = "Одна из проверок не пройдена. Сверьте решение с условием задачи."
 
 
@@ -496,6 +497,9 @@ def _project_chapter_one_submit_result(result: Any) -> dict[str, Any]:
     has_failed_test = any(not test["passed"] for test in tests)
     has_runner_error = bool(result.get("error"))
     show_general_error = has_runner_error or (not ok and (not tests or not has_failed_test))
+    public_error = _SAFE_SUBMIT_CHECK_ERROR if show_general_error else None
+    if not ok and result.get("error_kind") == "requirements":
+        public_error = _SAFE_SUBMIT_REQUIREMENTS_ERROR
 
     return {
         "ok": ok,
@@ -503,7 +507,7 @@ def _project_chapter_one_submit_result(result: Any) -> dict[str, Any]:
         "tests": tests,
         "stdout": "",
         "stderr": None,
-        "error": _SAFE_SUBMIT_CHECK_ERROR if show_general_error else None,
+        "error": public_error,
         "traceback": None,
     }
 

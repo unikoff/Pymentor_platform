@@ -2468,7 +2468,7 @@ CODE_TASKS[8] = [{'title': 'Спроектируем запись материа
                'check': 'Включает отсутствие annotation и сохранённый ноль: результат pop равен 0 '
                         'в обоих случаях, а проверка наличия до pop различает их. Оба удалённых '
                         'ключа отсутствуют.'},
-  'requirements': {'names': ['material', 'was_present', 'removed'],
+  'requirements': {'names': ['material'],
                    'nodes': ['Subscript'],
                    'calls': ['print'],
                    'attributes': ['pop'],
