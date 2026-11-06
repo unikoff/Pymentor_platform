@@ -16,7 +16,8 @@ spec.loader.exec_module(probe)
 
 class GuardTests(unittest.TestCase):
     def test_acl_failure_stops_before_journal_and_resources(self):
-        with patch.object(probe.recovery, '_check_private_acl', return_value=False), \
+        with patch.object(probe.target.lab, '_root', return_value=Path('synthetic-root')), \
+             patch.object(probe.recovery, '_check_private_acl', return_value=False), \
              patch.object(probe.target.lab, '_load') as load, \
              patch.object(probe.target.lab, '_assert_container') as container:
             with self.assertRaises(probe.ProbeError):
