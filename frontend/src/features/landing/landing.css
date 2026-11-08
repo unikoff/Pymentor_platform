@@ -446,6 +446,10 @@
   .backend-landing .landing-header__nav a:hover { color: var(--accent); transform: translateY(-1px); }
   .backend-landing .landing-header__nav a:hover::after { transform: scaleX(1); }
 }
+@media (min-width: 681px) {
+  .backend-landing .backend-landing__inner > #reviews,
+  .backend-landing .backend-landing__inner > #pricing { scroll-margin-top: 90px; }
+}
 @media (max-width: 680px) {
   .backend-landing { scroll-padding-top: 112px; }
   .backend-landing .landing-opening { padding-top: 78px; }

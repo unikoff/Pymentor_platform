@@ -13,7 +13,7 @@
 .backend-landing .consultation-dialog__close:hover { color: var(--text); border-color: var(--accent); transform: rotate(90deg); }
 .backend-landing .consultation-dialog__eyebrow { display: flex; align-items: center; gap: 8px; margin: 0 45px 15px 0; color: var(--accent); font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
 .backend-landing .consultation-dialog__eyebrow > span { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 12px var(--accent); }
-.backend-landing .consultation-dialog h2 { margin: 0; font-size: clamp(28px, 4vw, 36px); line-height: 1.1; }
+.backend-landing .consultation-dialog h2 { margin: 0; padding-right: 40px; font-size: clamp(28px, 4vw, 36px); line-height: 1.1; }
 .backend-landing .consultation-dialog h2 span { color: var(--accent); }
 .backend-landing .consultation-dialog__lead, .backend-landing .consultation-success > p:not(.consultation-dialog__eyebrow) { margin: 12px 0 0; color: var(--muted); font-size: 14px; line-height: 1.6; }
 .backend-landing .consultation-form { display: grid; gap: 15px; margin-top: 22px; }

@@ -76,7 +76,7 @@ export function PlatformVideo({ src, temporary, active = true }: { src: string; 
     else nativeFallback();
   };
 
-  return <div className="learning-system__platform-preview" ref={frame}>
+  return <div className={`learning-system__platform-preview${temporary ? ' learning-system__platform-preview--temporary' : ''}`} ref={frame}>
     <video ref={video} src={src} aria-label={temporary ? 'Временное видео фонтана' : 'Обзор платформы Pymentor'} muted loop playsInline preload="metadata"
       onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onVolumeChange={event => { setMuted(event.currentTarget.muted); setVolume(event.currentTarget.volume); }}
       onTimeUpdate={event => setTime(event.currentTarget.currentTime)} onDurationChange={event => setDuration(Number.isFinite(event.currentTarget.duration) ? event.currentTarget.duration : 0)}>

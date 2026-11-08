@@ -1,23 +1,24 @@
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react';
-import { ArrowDown, ArrowUpRight, BarChart3, BookOpen, Code2, Lightbulb, ListChecks, Map, MessagesSquare, Search, Terminal, UserRound, Wrench } from 'lucide-react';
+import { ArrowDown, ArrowUpRight, BarChart3, BookOpen, Code2, ListChecks, Map, MessagesSquare, Search, UserRound } from 'lucide-react';
 import { CodeReviewDemo } from './CodeReviewDemo';
 import { PlatformVideo } from './PlatformVideo';
 import temporaryPlatformPreview from './assets/platform-preview-placeholder.webm';
 import './learning-system.css';
+import './platform-overview.css';
+import './review-overview.css';
 
 const learningTabs = [
-  { label: 'Платформа', summary: 'Теория и практика', anchor: 'platform', icon: BookOpen },
-  { label: 'Код-ревью', summary: 'Обратная связь по коду', anchor: 'demo', icon: Code2 },
-  { label: 'Личные занятия', summary: 'Один на один с наставником', anchor: 'lessons', icon: MessagesSquare },
+  { label: 'Платформа', anchor: 'platform' },
+  { label: 'Код-ревью', anchor: 'demo' },
+  { label: 'Личные занятия', anchor: 'lessons' },
 ] as const;
 
 const platformFeatures = [
-  { icon: Map, title: 'План занятий', detail: 'Маршрут по темам' },
-  { icon: BookOpen, title: 'Теория', detail: 'Материалы к занятиям' },
-  { icon: ListChecks, title: 'Практика', detail: 'Задачи по темам' },
-  { icon: Terminal, title: 'Интерпретатор Python', detail: 'Запуск кода' },
-  { icon: UserRound, title: 'Личный кабинет', detail: 'Прогресс обучения' },
-  { icon: BarChart3, title: 'Аналитика', detail: 'Активность · время обучения' },
+  { icon: Map, title: 'Выберите следующую тему', detail: 'Двигайтесь по программе: от основ к новым задачам.' },
+  { icon: BookOpen, title: 'Разберитесь на примерах', detail: 'Читайте объяснение и смотрите, как идея работает в коде.' },
+  { icon: ListChecks, title: 'Закрепите своим решением', detail: 'Решайте задачи и запускайте Python прямо в браузере.' },
+  { icon: UserRound, title: 'Ваш прогресс', detail: 'В личном кабинете' },
+  { icon: BarChart3, title: 'Ваш ритм', detail: 'Активность и время занятий' },
 ] as const;
 
 // Temporary video: Jet d'Eau Short Video, Michael, Wikimedia Commons, CC0.
@@ -99,37 +100,55 @@ export function LearningSystem() {
     <div className="learning-system__layout">
     <div className="learning-system__tabs" role="tablist" aria-label="Обучение" aria-orientation="horizontal">
       {learningTabs.map((tab, index) => {
-        const Icon = tab.icon;
         return <button key={tab.label} ref={element => { tabs.current[index] = element; }} className="learning-system__tab" id={`${id}-tab-${index}`} type="button" role="tab" aria-label={tab.label} aria-selected={active === index} aria-controls={`${id}-panel-${index}`} tabIndex={active === index ? 0 : -1} onClick={() => selectTab(index)} onKeyDown={event => moveFocus(event, index)}>
-          <span className="learning-system__tab-icon"><Icon size={21} strokeWidth={1.7} aria-hidden="true" /></span><span className="learning-system__tab-label"><strong>{tab.label}</strong><small>{tab.summary}</small></span>
+          <span className="learning-system__tab-label"><strong>{tab.label}</strong></span>
         </button>;
       })}
     </div>
     <div className="learning-system__panels">{learningTabs.map((tab, index) => <div key={tab.label} className="learning-system__panel" id={`${id}-panel-${index}`} role="tabpanel" aria-labelledby={`${id}-tab-${index}`} hidden={active !== index}>
       <div className="learning-system__panel-inner">
         {index === 0 && <>
-          <div className="learning-system__copy learning-system__copy--platform">
-            <h3>Изучите платформу <span>бесплатно</span></h3>
-            <p>Занятия и практика в одном пространстве. Посмотрите, как устроено обучение на платформе.</p>
-            <ul className="learning-system__features">
-              {platformFeatures.map(({ icon: Icon, title, detail }) => <li key={title}><Icon size={17} strokeWidth={1.7} aria-hidden="true" /><div><strong>{title}</strong><span>{detail}</span></div></li>)}
-            </ul>
-            <a className="primary-action landing-action learning-system__platform-cta" href={import.meta.env.BASE_URL}>Попробовать бесплатно <ArrowUpRight size={17} aria-hidden="true" /></a>
+          <div className="learning-system__copy learning-system__copy--platform platform-overview">
+            <div className="platform-overview__header">
+              <h3>Изучайте Python.<br /><span>Сразу применяйте.</span></h3>
+              <p>Теория и практика собраны в один маршрут. Разбирайтесь на примерах, закрепляйте каждую тему задачами и пишите код прямо в браузере.</p>
+            </div>
+            <div className="platform-overview__content">
+              <ol className="platform-overview__route" aria-label="Как проходит занятие">
+                {platformFeatures.slice(0, 3).map(({ title, detail }, index) => <li key={title}>
+                  <span className="platform-overview__step-number" aria-hidden="true">0{index + 1}</span>
+                  <div><strong>{title}</strong><span>{detail}</span></div>
+                </li>)}
+              </ol>
+              <ul className="platform-overview__tools" aria-label="Прогресс и активность">
+                {platformFeatures.slice(3).map(({ icon: Icon, title, detail }) => <li key={title}>
+                  <Icon size={19} strokeWidth={1.6} aria-hidden="true" />
+                  <div><strong>{title}</strong><span>{detail}</span></div>
+                </li>)}
+              </ul>
+            </div>
+            <div className="platform-overview__start"><a className="primary-action landing-action learning-system__platform-cta" href={import.meta.env.BASE_URL}>Попробовать платформу бесплатно <ArrowUpRight size={17} aria-hidden="true" /></a></div>
           </div>
           <div className="learning-system__media learning-system__media--platform">
             <PlatformVideo src={platformVideoUrl || temporaryPlatformPreview} temporary={!platformVideoUrl} active={active === 0} />
           </div>
         </>}
         {index === 1 && <>
-          <div className="learning-system__copy learning-system__copy--review">
-            <h3>Учимся <span>на вашем коде</span></h3>
-            <p>Я не даю ответ сразу. Мы вместе разбираем решение и шаг за шагом приходим к исправлению.</p>
-            <ol className="learning-system__review-steps">
-              <li><span className="learning-system__step-icon"><Search size={20} strokeWidth={1.7} aria-hidden="true" /></span><div><strong>Находим ошибку</strong><span>Смотрим, где код работает не так</span></div></li>
-              <li><span className="learning-system__step-icon"><Lightbulb size={20} strokeWidth={1.7} aria-hidden="true" /></span><div><strong>Разбираем причину</strong><span>Объясняю, почему она возникла</span></div></li>
-              <li><span className="learning-system__step-icon"><Wrench size={20} strokeWidth={1.7} aria-hidden="true" /></span><div><strong>Ищем решение</strong><span>Вместе исправляем и проверяем код</span></div></li>
-            </ol>
-            <a className="primary-action landing-action learning-system__review-cta" href="#path">Обсудить свой код с наставником <ArrowUpRight size={17} aria-hidden="true" /></a>
+          <div className="learning-system__copy learning-system__copy--review review-overview">
+            <div className="review-overview__header">
+              <span className="review-overview__eyebrow">КОД-РЕВЬЮ С НАСТАВНИКОМ</span>
+              <h3>Понимайте свой код.<br /><span>Улучшайте решения.</span></h3>
+              <p>Разбираю ваш код из задач и проекта: отмечаю проблемные места, объясняю причины и помогаю найти исправление.</p>
+            </div>
+            <div className="review-overview__content">
+              <ol className="review-overview__steps" aria-label="Что даёт код-ревью">
+                <li><span aria-hidden="true">01</span><div><strong>Видите, где ошибка</strong><p>Замечание привязано к конкретной строке вашего кода.</p></div></li>
+                <li><span aria-hidden="true">02</span><div><strong>Разбираетесь в причине</strong><p>Обсуждаем логику решения и проверяем предположения.</p></div></li>
+                <li><span aria-hidden="true">03</span><div><strong>Дорабатываете осознанно</strong><p>Вносите правку и проверяете, что изменилось в работе кода.</p></div></li>
+              </ol>
+              <div className="review-overview__takeaway"><Code2 size={22} strokeWidth={1.6} aria-hidden="true" /><div><span>НАВЫК, КОТОРЫЙ РАЗВИВАЕМ</span><p>Объяснять свои решения и замечать похожие ошибки в следующих задачах.</p></div></div>
+            </div>
+            <div className="review-overview__start"><a className="primary-action landing-action learning-system__review-cta" href="#path">Обсудить обучение с ревью <ArrowUpRight size={17} aria-hidden="true" /></a><span>На первой встрече обсудим ваш уровень и задачи</span></div>
           </div>
           <div className="learning-system__media learning-system__media--review"><CodeReviewDemo /></div>
         </>}

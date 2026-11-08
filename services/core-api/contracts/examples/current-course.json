@@ -1,0 +1,838 @@
+{
+  "schema_version": 1,
+  "course_id": "Основы Python и мышление программиста 01.2",
+  "storage_key": "course-592800f1e3a7db7f",
+  "slug": "course-592800f1e3a7db7f",
+  "content_version": "inventory-snapshot-7d028d7183ad",
+  "data_digest": "sha256:7d028d7183adf22974d20c291a993603436cecdc3cc7edccca29f6d01f3dbc99",
+  "runtime_image_digest": null,
+  "lessons": [
+    {
+      "lesson_id": "lesson-fff797e32c153a1694f78f8d",
+      "source_file": "chapter_01/block_00/План обучения.md",
+      "task_refs": []
+    },
+    {
+      "lesson_id": "lesson-fa2f4f9cd78e77a18fb1778e",
+      "source_file": "chapter_01/block_01/01 - Как запускается программа.md",
+      "task_refs": [
+        {
+          "task_id": "lesson-fa2f4f9cd78e77a18fb1778e-task-01",
+          "revision": "83367f30ffd739c8da1991864ad0f814ec313d76dcd14c35d0232b295c5b0910"
+        },
+        {
+          "task_id": "lesson-fa2f4f9cd78e77a18fb1778e-task-02",
+          "revision": "1d8666d23d7d3619196ad18921b457773ccd5ce51fe6239dca786a84a1c5ec54"
+        },
+        {
+          "task_id": "lesson-fa2f4f9cd78e77a18fb1778e-task-03",
+          "revision": "508cbf6bbdde255ccca0d8b1b8a8044b81bd024fae66b73e1ba2ef2e346cfdb0"
+        },
+        {
+          "task_id": "lesson-fa2f4f9cd78e77a18fb1778e-task-04",
+          "revision": "06eb3d0103b3a06556f3a830d9497c68b86f1cae73e5d0b5630bfde33a1a9909"
+        },
+        {
+          "task_id": "lesson-fa2f4f9cd78e77a18fb1778e-task-05",
+          "revision": "f0d37322c613a3912b22f4611e3b05b535df1272187854a0bb1ce127709d8c4b"
+        }
+      ]
+    },
+    {
+      "lesson_id": "lesson-b504d05e6763add4db882bfe",
+      "source_file": "chapter_01/block_01/01.1 - Переменные и значения.md",
+      "task_refs": [
+        {
+          "task_id": "lesson-b504d05e6763add4db882bfe-task-01",
+          "revision": "767778c966c296cb98cb9f10a4ace83bd1451499d36dc802587574ab8d4e9e74"
+        },
+        {
+          "task_id": "lesson-b504d05e6763add4db882bfe-task-02",
+          "revision": "3204984e5bd401b36b1be18345ee8020d4d32398cb5f4848f732e893d004afe5"
+        },
+        {
+          "task_id": "lesson-b504d05e6763add4db882bfe-task-03",
+          "revision": "28c560491f68cc8e99983fd820f819166d2ca2acfbc6c15a9f2946bda4c85abe"
+        },
+        {
+          "task_id": "lesson-b504d05e6763add4db882bfe-task-04",
+          "revision": "bb5dd602d6f4ee1dab354ddac4c26c869ed20f6330a349263a222e14ec25b8b5"
+        },
+        {
+          "task_id": "lesson-b504d05e6763add4db882bfe-task-05",
+          "revision": "a1ad290c98522f483a1d8c436ceefb32fba9eff93ab70e3d5eed11ca89acf09f"
+        }
+      ]
+    },
+    {
+      "lesson_id": "lesson-f44a8c32e54924d14c0bd4f9",
+      "source_file": "chapter_01/block_01/02 - Строки- длина и части.md",
+      "task_refs": [
+        {
+          "task_id": "lesson-f44a8c32e54924d14c0bd4f9-task-01",
+          "revision": "02bf7b1a4a3e17cf494b88e066f6e5378572caec262339f3263348bceabbbb38"
+        },
+        {
+          "task_id": "lesson-f44a8c32e54924d14c0bd4f9-task-02",
+          "revision": "d9b6b08c9336b36edfb0c73df540241232832617b6194b459837852da67e9533"
+        },
+        {
+          "task_id": "lesson-f44a8c32e54924d14c0bd4f9-task-03",
+          "revision": "70ae787919615712b6a6dbf13c923c424643fe00f3f15fc17d7bfecbdf98ff3e"
+        },
+        {
+          "task_id": "lesson-f44a8c32e54924d14c0bd4f9-task-04",
+          "revision": "5ca037e808414f7ce3dd8fad2e19656d7f9cb74c165e06e31ebdc26548dbe075"
+        },
+        {
+          "task_id": "lesson-f44a8c32e54924d14c0bd4f9-task-05",
+          "revision": "f0e1f9f416cd691ca206548b84599e67f83f31d95810320fd8e7f2cf2d9a7fd1"
+        },
+        {
+          "task_id": "lesson-f44a8c32e54924d14c0bd4f9-task-06",
+          "revision": "5faeb43380afffed5be997a728e53209db2f65046de0f73d7993ebd31e85a53a"
+        },
+        {
+          "task_id": "lesson-f44a8c32e54924d14c0bd4f9-task-07",
+          "revision": "c903337e77b59f33d4e57198850ba2898713b98d4f41bff884da4c614a3e83c6"
+        }
+      ]
+    },
+    {
+      "lesson_id": "lesson-06acee306de62d66856c8991",
+      "source_file": "chapter_01/block_01/02.1 - Методы строк на практике.md",
+      "task_refs": [
+        {
+          "task_id": "lesson-06acee306de62d66856c8991-task-01",
+          "revision": "4278abe9e5587de79d681f3c322d25f4abf524a4203fe73a9b62748770a52818"
+        },
+        {
+          "task_id": "lesson-06acee306de62d66856c8991-task-02",
+          "revision": "e63c2fdd0ccc7d50870f774053bb7c99db78a9a39fdf5b5db1656063e9ff717f"
+        },
+        {
+          "task_id": "lesson-06acee306de62d66856c8991-task-03",
+          "revision": "c558d26a856dc6292b2ccf28217fc38f1050abeea76df7381ce85a746af49a21"
+        },
+        {
+          "task_id": "lesson-06acee306de62d66856c8991-task-04",
+          "revision": "9505b00238142f037a95b868c76c946e4c0e6a930b95b21d49a0039abedddb27"
+        }
+      ]
+    },
+    {
+      "lesson_id": "lesson-16199da9710a40939c4780d5",
+      "source_file": "chapter_01/block_01/03 - Целые числа и деление.md",
+      "task_refs": [
+        {
+          "task_id": "lesson-16199da9710a40939c4780d5-task-01",
+          "revision": "242ea58bcff44f5ebec9afdb41d4316d38faccdb5f1b50168e914931c2652fc9"
+        },
+        {
+          "task_id": "lesson-16199da9710a40939c4780d5-task-02",
+          "revision": "4dfa4238c93cc60d102af63467215550c0c398f85e300cb5905282f6ecfb9bc1"
+        },
+        {
+          "task_id": "lesson-16199da9710a40939c4780d5-task-03",
+          "revision": "8d765e6a3e1a75a5b53a3d56e56ccbd4d5292655d89c79492dd4358c9af0c573"
+        },
+        {
+          "task_id": "lesson-16199da9710a40939c4780d5-task-04",
+          "revision": "7ade1cfff222ed352252a19a498e3963b68ff903d08cfd809d0407618bf1bc2a"
+        },
+        {
+          "task_id": "lesson-16199da9710a40939c4780d5-task-05",
+          "revision": "6e4f40a1529aad4196ad457e6a1b7859bdfaa91105dfae71b6287448be1f5b4e"
+        },
+        {
+          "task_id": "lesson-16199da9710a40939c4780d5-task-06",
+          "revision": "275acf129316cba49ace74167cfbe1bcb8eebd08468f6b244dc9e9b4d0ddbbef"
+        },
+        {
+          "task_id": "lesson-16199da9710a40939c4780d5-task-07",
+          "revision": "8da317a86f4384eca6f14d070dd630f9316ec90d42e463fca59654a8aeb8ba82"
+        }
+      ]
+    },
+    {
+      "lesson_id": "lesson-97e2d917247b4a8e322df568",
+      "source_file": "chapter_01/block_01/03.1 - Дробные числа и округление.md",
+      "task_refs": [
+        {
+          "task_id": "lesson-97e2d917247b4a8e322df568-task-01",
+          "revision": "de0b5f9d42f870937c0e2f786a9637b878c127deedfb7172dc6d4782e0dfe6e0"
+        },
+        {
+          "task_id": "lesson-97e2d917247b4a8e322df568-task-02",
+          "revision": "9a51ea8ec3e357960c2e5742653081d9f728e84d2c949e328c43645c86045e00"
+        },
+        {
+          "task_id": "lesson-97e2d917247b4a8e322df568-task-03",
+          "revision": "48686ece3734ec2196067ab4824f472d39774fb49a0f630e905beef08697e766"
+        },
+        {
+          "task_id": "lesson-97e2d917247b4a8e322df568-task-04",
+          "revision": "95ebf873236caf15d045aea01f2a21a217cafe1e8621b535e1dfb0810e28b4ff"
+        },
+        {
+          "task_id": "lesson-97e2d917247b4a8e322df568-task-05",
+          "revision": "463e55bb4941793ab881fb00dec6bde5b2454b9ac3f7363fd13b65918b779e64"
+        }
+      ]
+    },
+    {
+      "lesson_id": "lesson-831ead0b3cfea6507d1adcde",
+      "source_file": "chapter_01/block_01/04 - Сообщение из данных.md",
+      "task_refs": [
+        {
+          "task_id": "lesson-831ead0b3cfea6507d1adcde-task-01",
+          "revision": "709016360ae18656af39caeec0195fad188a682742085bf06e1c9a2cd603197c"
+        },
+        {
+          "task_id": "lesson-831ead0b3cfea6507d1adcde-task-02",
+          "revision": "9815fca22222db4270d5386ce1cf3a756f772f63f69cb4b9d052babe9e5416a7"
+        },
+        {
+          "task_id": "lesson-831ead0b3cfea6507d1adcde-task-03",
+          "revision": "c411c44b635f8ec82c625d72a6c7ee16a69e6fb9c5eaa2773ae0bfeec610af16"
+        },
+        {
+          "task_id": "lesson-831ead0b3cfea6507d1adcde-task-04",
+          "revision": "89d07094cc25fd42ae9d38064e1b35f93c99660438c43b23a7075b84be9f5b6b"
+        }
+      ]
+    },
+    {
+      "lesson_id": "lesson-d22f2824828911daba7935bc",
+      "source_file": "chapter_01/block_01/04.1 - Сравнения и логика.md",
+      "task_refs": [
+        {
+          "task_id": "lesson-d22f2824828911daba7935bc-task-01",
+          "revision": "f17d931fa3fcdd64e4c039af54185fe1a131fe8d235823ad99f4d989d26ec6cf"
+        },
+        {
+          "task_id": "lesson-d22f2824828911daba7935bc-task-02",
+          "revision": "d044c9dbb115f78240484127bee6bed71f2e30b470334529e3280eef0b0246c5"
+        },
+        {
+          "task_id": "lesson-d22f2824828911daba7935bc-task-03",
+          "revision": "9b6cd2f7f300e00efc22a96e4546010d53d0807754bad508bb15f6e864161b93"
+        },
+        {
+          "task_id": "lesson-d22f2824828911daba7935bc-task-04",
+          "revision": "2f97db2a9015f72bddf4ffc39b030e40093992e74a5e3e4f4164302c7f89d75a"
+        },
+        {
+          "task_id": "lesson-d22f2824828911daba7935bc-task-05",
+          "revision": "e4448ac2ec084a6418d90c05569e1dd47b012b4a371a6aa1a6b1cee9719d6427"
+        },
+        {
+          "task_id": "lesson-d22f2824828911daba7935bc-task-06",
+          "revision": "723306cb726c058a24dee4b2eec4fdca1283c5a42465146d8cc5f3ba4bfce7eb"
+        },
+        {
+          "task_id": "lesson-d22f2824828911daba7935bc-task-07",
+          "revision": "d79b2ec92903109c639b870ac1d7def349fd99ba65df86e75973da13c5ab2014"
+        }
+      ]
+    },
+    {
+      "lesson_id": "lesson-a56c247b8d58b2b55aa42450",
+      "source_file": "chapter_01/block_01/05 - Значение None в программе.md",
+      "task_refs": [
+        {
+          "task_id": "lesson-a56c247b8d58b2b55aa42450-task-01",
+          "revision": "4b87d5983b614dca1fe4bf1fca6da2f50a6e302316d98609767e448685bc8269"
+        },
+        {
+          "task_id": "lesson-a56c247b8d58b2b55aa42450-task-02",
+          "revision": "722036caa5ab9389a1707fecb129822e0cfac4e7a218d19f46a87bc4079d9ea6"
+        },
+        {
+          "task_id": "lesson-a56c247b8d58b2b55aa42450-task-03",
+          "revision": "359ea3ca5ce92caac00514cea1c96b353879d9826b8f1e74abbf42d7371dd14f"
+        },
+        {
+          "task_id": "lesson-a56c247b8d58b2b55aa42450-task-04",
+          "revision": "b46c154484c58e1d909d7deb31b1afa8c31cb674cda2289f6fede3904d832d34"
+        },
+        {
+          "task_id": "lesson-a56c247b8d58b2b55aa42450-task-05",
+          "revision": "ac314bb4bdbe9af95b8f4b2dad09502d732fa698c4457d8f15e4b9548c2f16fc"
+        },
+        {
+          "task_id": "lesson-a56c247b8d58b2b55aa42450-task-06",
+          "revision": "a81ba9c176baf2b40c4f9ff284a38f8ddb9eeaa75774051c3ca9ba220a8369bf"
+        },
+        {
+          "task_id": "lesson-a56c247b8d58b2b55aa42450-task-07",
+          "revision": "4d4be8c8ae39682f5d17cb1a7579dc9a90eee6251dbba7214a155afb2010d0f8"
+        },
+        {
+          "task_id": "lesson-a56c247b8d58b2b55aa42450-task-08",
+          "revision": "e834a0ea34c011961655e83aea5d0e6aa2a33e2cc21c753c6816e26094613ec5"
+        },
+        {
+          "task_id": "lesson-a56c247b8d58b2b55aa42450-task-09",
+          "revision": "b75385b8487cdeb753a676364352805285e444c810ac12a2fdae81573c2ee7f7"
+        }
+      ]
+    },
+    {
+      "lesson_id": "lesson-7c2b1008872e9dad54de68ff",
+      "source_file": "chapter_01/block_01/05.1 - Пишем короткую программу.md",
+      "task_refs": [
+        {
+          "task_id": "lesson-7c2b1008872e9dad54de68ff-task-01",
+          "revision": "5b088e3472593dca94acca4532055fe52ef0a318d6a8e39eea3cf001a044a57c"
+        },
+        {
+          "task_id": "lesson-7c2b1008872e9dad54de68ff-task-02",
+          "revision": "44f383d764eddee3c9295a632936c49080bdef650eaf54f4ea2682497e75f5e2"
+        },
+        {
+          "task_id": "lesson-7c2b1008872e9dad54de68ff-task-03",
+          "revision": "3cc35b06ed8afe15d354a881318d3c69673f7a4a49fca885e7cb43cf224c8216"
+        },
+        {
+          "task_id": "lesson-7c2b1008872e9dad54de68ff-task-04",
+          "revision": "d4e6121905170e7f6a955deeab92f1cf121215bdbf4c9856ab8950adafbd6214"
+        },
+        {
+          "task_id": "lesson-7c2b1008872e9dad54de68ff-task-05",
+          "revision": "2f30bc7bbc295ad831770fcf6093b799611c8c37ab10eeb4e835e4b6a00a1d70"
+        },
+        {
+          "task_id": "lesson-7c2b1008872e9dad54de68ff-task-06",
+          "revision": "6cc4ff8d9e9893ac85bfe441d258f77df40266b2f15d16cb585f58cb4765083c"
+        },
+        {
+          "task_id": "lesson-7c2b1008872e9dad54de68ff-task-07",
+          "revision": "082ee19729967d61f352056a4f794915e1fbfff208286c40c1b1010ce4d6cf87"
+        },
+        {
+          "task_id": "lesson-7c2b1008872e9dad54de68ff-task-08",
+          "revision": "bc01bdb1ef41a644687dd4c8d86f107947ce183b5a98cedd8d23d1deff93fdeb"
+        },
+        {
+          "task_id": "lesson-7c2b1008872e9dad54de68ff-task-09",
+          "revision": "e1dec0752eb47616fbdc5b775513521492fb3db75390a011010a06960c4441fe"
+        },
+        {
+          "task_id": "lesson-7c2b1008872e9dad54de68ff-task-10",
+          "revision": "ad4556eaaf78652100b112356a3c3b730c474a9c5eeb04c97b75c7d08b42f5fb"
+        }
+      ]
+    },
+    {
+      "lesson_id": "lesson-0cfd01bac3d263f49e50ab6c",
+      "source_file": "chapter_01/block_02/06 - Как работает ветвление.md",
+      "task_refs": [
+        {
+          "task_id": "lesson-0cfd01bac3d263f49e50ab6c-task-01",
+          "revision": "33f5980779d4a53ee267a078d6403f815708d83550bcc6c63f1aa887e0465465"
+        },
+        {
+          "task_id": "lesson-0cfd01bac3d263f49e50ab6c-task-02",
+          "revision": "867d633f3ad54c174467c0c8925045afee18b07ca2d25244288d30bbb3be38f1"
+        },
+        {
+          "task_id": "lesson-0cfd01bac3d263f49e50ab6c-task-03",
+          "revision": "eab74acd4f53ec3f21ff4af97ccff1adc6e7547578c7dd451fe6a0546e4f8f7d"
+        },
+        {
+          "task_id": "lesson-0cfd01bac3d263f49e50ab6c-task-04",
+          "revision": "e3f201607013718738ea0eb0847a23dcaba937f7fa81ff4a4d94e4cadf81281f"
+        },
+        {
+          "task_id": "lesson-0cfd01bac3d263f49e50ab6c-task-05",
+          "revision": "62ee4449c1543f43592c0caf1b6ad763f80c08269dc16eb95f8164dfa5e47f2e"
+        },
+        {
+          "task_id": "lesson-0cfd01bac3d263f49e50ab6c-task-06",
+          "revision": "29080b55cd255ad8ffc0c04888f5735a2107de6f8ea019c38b5ba9e3a4d69e58"
+        }
+      ]
+    },
+    {
+      "lesson_id": "lesson-6e787407b0c8a72875b71fe3",
+      "source_file": "chapter_01/block_02/06.1 - Списки- чтение и изменение.md",
+      "task_refs": [
+        {
+          "task_id": "lesson-6e787407b0c8a72875b71fe3-task-01",
+          "revision": "3874416cb98f72533ac6f8f9eea5252960db7e94b1ed48bdde8a9282b5456795"
+        },
+        {
+          "task_id": "lesson-6e787407b0c8a72875b71fe3-task-02",
+          "revision": "ddf0d8d81acde5ab42a327dc4d0b6f35f676b528271d7f2b9eb130f1dfb8b796"
+        },
+        {
+          "task_id": "lesson-6e787407b0c8a72875b71fe3-task-03",
+          "revision": "70904c8fcee8604a72650473891ebb22c1249976437067c4c84385223fb27a36"
+        },
+        {
+          "task_id": "lesson-6e787407b0c8a72875b71fe3-task-04",
+          "revision": "f28bab1239cf5d1bb3fd221e91f2644c96a88751285e51ff687aa24967e7b63d"
+        },
+        {
+          "task_id": "lesson-6e787407b0c8a72875b71fe3-task-05",
+          "revision": "31b764e35f2577e9471cf06597d8ef9b29eb2253e4d150c9c27537cdb74b43c0"
+        },
+        {
+          "task_id": "lesson-6e787407b0c8a72875b71fe3-task-06",
+          "revision": "b9ecc014942352219de4b59a33733e5ff7188037690a0319773d0e7bbf4bbf6c"
+        },
+        {
+          "task_id": "lesson-6e787407b0c8a72875b71fe3-task-07",
+          "revision": "c37e68eaa0b8253d0275dad5a671a3cb2b3a3ff34e5023582da3ecc2b0805b2d"
+        }
+      ]
+    },
+    {
+      "lesson_id": "lesson-90605df94a6a07e712481108",
+      "source_file": "chapter_01/block_02/07 - Общие ссылки и копии.md",
+      "task_refs": [
+        {
+          "task_id": "lesson-90605df94a6a07e712481108-task-01",
+          "revision": "5c25c84e80e1ee6b49a31e5be9bddb0b7b0eec0f0a8dd3c6018af1350a908af8"
+        },
+        {
+          "task_id": "lesson-90605df94a6a07e712481108-task-02",
+          "revision": "868bbc1e8f4c532c1609ce17aab8e071416ec0d65cdd964942e925e61626b9e5"
+        },
+        {
+          "task_id": "lesson-90605df94a6a07e712481108-task-03",
+          "revision": "c6e2f7209f1913a40888c7ebf52bc6886d033e8755331673cc359fa29854441c"
+        }
+      ]
+    },
+    {
+      "lesson_id": "lesson-b6b4a34abf9045e1edfe31ba",
+      "source_file": "chapter_01/block_02/07.1 - Разделяем и соединяем текст.md",
+      "task_refs": [
+        {
+          "task_id": "lesson-b6b4a34abf9045e1edfe31ba-task-01",
+          "revision": "6b5fa6c3d5e8a317fb5bfd23b47bab10b43ae8283cc7464653a415d7c0f92932"
+        },
+        {
+          "task_id": "lesson-b6b4a34abf9045e1edfe31ba-task-02",
+          "revision": "4a33ab8a22ba469ab93f75bb60ae1cc2b299b369c667863d9e13ea0fa1c0808a"
+        },
+        {
+          "task_id": "lesson-b6b4a34abf9045e1edfe31ba-task-03",
+          "revision": "b1bd6963d46418641df0e31d711988f3c3e86f63857d7caf2dcbf14c57e07bf1"
+        }
+      ]
+    },
+    {
+      "lesson_id": "lesson-2ac9a83f0a58cd1096841e27",
+      "source_file": "chapter_01/block_02/07.2 - Кортежи и множества.md",
+      "task_refs": [
+        {
+          "task_id": "lesson-2ac9a83f0a58cd1096841e27-task-01",
+          "revision": "7e43594e228124e9e35f4f52116545dd9326e3d84373dbe6c68ed80e6472973e"
+        },
+        {
+          "task_id": "lesson-2ac9a83f0a58cd1096841e27-task-02",
+          "revision": "ac1cefa6d2671a0c4267f24f617ac2fef5a1d9859a9b7b5068f59be08be66ce3"
+        },
+        {
+          "task_id": "lesson-2ac9a83f0a58cd1096841e27-task-03",
+          "revision": "ef72a861bc09a178286cca972ae9a7625889a3f7327d7d152907106a28cd4ba7"
+        },
+        {
+          "task_id": "lesson-2ac9a83f0a58cd1096841e27-task-04",
+          "revision": "dc21e364c0d2a733604b9edc919e384e28f323e7e76d62e167eccd5f95f024e5"
+        },
+        {
+          "task_id": "lesson-2ac9a83f0a58cd1096841e27-task-05",
+          "revision": "36477fc044ded7f070b15c99e6b1065636074328ada0f014d6f1acbe3460274b"
+        }
+      ]
+    },
+    {
+      "lesson_id": "lesson-6d35b140bcace1c0e400832d",
+      "source_file": "chapter_01/block_02/08 - Словари- поля и значения.md",
+      "task_refs": [
+        {
+          "task_id": "lesson-6d35b140bcace1c0e400832d-task-01",
+          "revision": "6d39a81504e17aad4d1fe725ce5f477618e6371c257a0093f1243d079b429b10"
+        },
+        {
+          "task_id": "lesson-6d35b140bcace1c0e400832d-task-02",
+          "revision": "6e2d62a45b032287da77b255c91608af09a00c6b0660aaf438029f59601baf8f"
+        },
+        {
+          "task_id": "lesson-6d35b140bcace1c0e400832d-task-03",
+          "revision": "d61f4354cc6b1a2e0585324469ba55af84a85e49d368276815e4a08a19d17773"
+        },
+        {
+          "task_id": "lesson-6d35b140bcace1c0e400832d-task-04",
+          "revision": "2f32527705d0ef64d33ee14922df2974a05252725b8c2609c9d7c22b170e276f"
+        },
+        {
+          "task_id": "lesson-6d35b140bcace1c0e400832d-task-05",
+          "revision": "ce3676451b4c6a95b4084fffbef4f00b246340c17d05cd88c6d87f281535c9cd"
+        },
+        {
+          "task_id": "lesson-6d35b140bcace1c0e400832d-task-06",
+          "revision": "2c0cbaf4ab73ef07677007f30801557fb1f941f51dd90e7c11b4ea3c488454ca"
+        },
+        {
+          "task_id": "lesson-6d35b140bcace1c0e400832d-task-07",
+          "revision": "6593ee7b5a9f7caaae1f02f28487f9798ed27b638bd8b8735470e96adcf2fc9a"
+        }
+      ]
+    },
+    {
+      "lesson_id": "lesson-a9a87f62cfb484f3d5c86178",
+      "source_file": "chapter_01/block_02/08.1 - Список записей и копии.md",
+      "task_refs": [
+        {
+          "task_id": "lesson-a9a87f62cfb484f3d5c86178-task-01",
+          "revision": "fe9a0f32df59a3e2250f61607e8ce2d02146aea5a5d371c3c25ed67ccebbebb3"
+        },
+        {
+          "task_id": "lesson-a9a87f62cfb484f3d5c86178-task-02",
+          "revision": "2eb81fbb6e5914475eca63999f8b16f22a3d2990f1f0543553cb085d099ef8cf"
+        },
+        {
+          "task_id": "lesson-a9a87f62cfb484f3d5c86178-task-03",
+          "revision": "a344870bbf79cdfc7bc262bf5c0adabe16867ed18a05e9480d6beecff7010fdb"
+        },
+        {
+          "task_id": "lesson-a9a87f62cfb484f3d5c86178-task-04",
+          "revision": "5a1f3fda6df3650650817ccad55dd787b07904fc4128419e41bb9220e3192d37"
+        }
+      ]
+    },
+    {
+      "lesson_id": "lesson-f9681b980889ff3d7005d9b5",
+      "source_file": "chapter_01/block_02/09 - Цикл for и элементы данных.md",
+      "task_refs": [
+        {
+          "task_id": "lesson-f9681b980889ff3d7005d9b5-task-01",
+          "revision": "30b606dc277ae94ff102e7d64a453cd9127264df40372362f891fd1bea8a40ec"
+        },
+        {
+          "task_id": "lesson-f9681b980889ff3d7005d9b5-task-02",
+          "revision": "331f3c70bce6b1fc83c89c37cf85e88a787689a22a25befe28b3745f817a0b89"
+        },
+        {
+          "task_id": "lesson-f9681b980889ff3d7005d9b5-task-03",
+          "revision": "2872dc461ead316ff95f9314da3e99642c00cafb50adddeb528fefb3f637c85c"
+        },
+        {
+          "task_id": "lesson-f9681b980889ff3d7005d9b5-task-04",
+          "revision": "7c51abf3ef8cd7f6088db107559e085c1e1b360cc46bdc3458237b972760310d"
+        },
+        {
+          "task_id": "lesson-f9681b980889ff3d7005d9b5-task-05",
+          "revision": "dd5b617340d1f59f9bc41ad85b232cae59cf36ee3a7559f76056e2bf80bb47ad"
+        },
+        {
+          "task_id": "lesson-f9681b980889ff3d7005d9b5-task-06",
+          "revision": "938b9ac826491dcefcce9570f80810a236bde916f3179c8f870f3b9ca357d0aa"
+        },
+        {
+          "task_id": "lesson-f9681b980889ff3d7005d9b5-task-07",
+          "revision": "327041520e61ebd283d7ebc750bd5d1451a4940d06cbc6e871b05389dbdaa3ab"
+        },
+        {
+          "task_id": "lesson-f9681b980889ff3d7005d9b5-task-08",
+          "revision": "7b131a88257f3b5f67254a2ba3d6b2dcafd6dc26eaa979354f56d154b44e8926"
+        },
+        {
+          "task_id": "lesson-f9681b980889ff3d7005d9b5-task-09",
+          "revision": "9dcf3822796a70b373d2992ec4ae7b601993fee018875b8663fa834cdee4f59f"
+        }
+      ]
+    },
+    {
+      "lesson_id": "lesson-6694e9d918a7e8ab69dc0a7b",
+      "source_file": "chapter_01/block_02/09.1 - Суммы, счётчики и максимум.md",
+      "task_refs": [
+        {
+          "task_id": "lesson-6694e9d918a7e8ab69dc0a7b-task-01",
+          "revision": "02c6c20673b64eb7f6a4fad9c2a0e9a730b0885430bfe70aee4b109771978e42"
+        },
+        {
+          "task_id": "lesson-6694e9d918a7e8ab69dc0a7b-task-02",
+          "revision": "d4a486ac7405fe49011a03d8a19cd9acc997fbe420d553420309cf6d2a2df181"
+        },
+        {
+          "task_id": "lesson-6694e9d918a7e8ab69dc0a7b-task-03",
+          "revision": "9bb4a813d5698bae66d4ab9433eb7cfdc80f8fbe0d5eaab87adce2914dcfef1d"
+        },
+        {
+          "task_id": "lesson-6694e9d918a7e8ab69dc0a7b-task-04",
+          "revision": "1a09f8db26a2af1a309431fd96e40b80de992b2db35861e2c03f25fa64570a47"
+        },
+        {
+          "task_id": "lesson-6694e9d918a7e8ab69dc0a7b-task-05",
+          "revision": "051e1351b6f45ebd5bfe84b2ba8b011f3730c40b5818519e6451e5dcf68accd1"
+        },
+        {
+          "task_id": "lesson-6694e9d918a7e8ab69dc0a7b-task-06",
+          "revision": "25078ace74ada061ad770d739de8acdc9ca794defae77f9861ed6d0e80084281"
+        },
+        {
+          "task_id": "lesson-6694e9d918a7e8ab69dc0a7b-task-07",
+          "revision": "9301f4c76bf5e36e079ad9003986cfe41581d31ae4ecd9c2ec5b45e721d61ebb"
+        }
+      ]
+    },
+    {
+      "lesson_id": "lesson-5116c9a859670bea96d6465d",
+      "source_file": "chapter_01/block_02/10 - Управление циклом и поиск.md",
+      "task_refs": [
+        {
+          "task_id": "lesson-5116c9a859670bea96d6465d-task-01",
+          "revision": "72f4c1159244992095870fdb2bdafd27d96c7269930e1918468ea013168fecc9"
+        },
+        {
+          "task_id": "lesson-5116c9a859670bea96d6465d-task-02",
+          "revision": "0d74b8ca069dc17760af1078d68316967406b1bc344298dffccf4468e06a33ac"
+        },
+        {
+          "task_id": "lesson-5116c9a859670bea96d6465d-task-03",
+          "revision": "5244b57270f852e12ba07de653e9a4d8568c31b371e849de27026b2956aad415"
+        },
+        {
+          "task_id": "lesson-5116c9a859670bea96d6465d-task-04",
+          "revision": "fbeeff0975fbad37806735e49145dabdf722fd85336546bee1827c3ceed259d7"
+        }
+      ]
+    },
+    {
+      "lesson_id": "lesson-b7dd5216e9340875edbd5a95",
+      "source_file": "chapter_01/block_02/10.1 - Цикл while и выход.md",
+      "task_refs": [
+        {
+          "task_id": "lesson-b7dd5216e9340875edbd5a95-task-01",
+          "revision": "276d5b5257128fc17dbf7f0f403b9587c5642144cb2e58a2f7c196e5a5bc85f7"
+        },
+        {
+          "task_id": "lesson-b7dd5216e9340875edbd5a95-task-02",
+          "revision": "1ddd846a60ebb4ffcbc2ec38e366d9fb8f8e6ad21f869d96d8ebcb6b41cb74c8"
+        },
+        {
+          "task_id": "lesson-b7dd5216e9340875edbd5a95-task-03",
+          "revision": "870f5a1d2ba48e484bac6a3c41d588fff50c0f71bdfb1ccf999971081007c5d5"
+        },
+        {
+          "task_id": "lesson-b7dd5216e9340875edbd5a95-task-04",
+          "revision": "64d80fa985721673568bc0e5b960decc4b890c05a43cd4e5c58a3e9755e078af"
+        }
+      ]
+    },
+    {
+      "lesson_id": "lesson-b8d1835f6d6db7210692b9e9",
+      "source_file": "chapter_01/block_02/10.2 - Пишем программу с циклами.md",
+      "task_refs": [
+        {
+          "task_id": "lesson-b8d1835f6d6db7210692b9e9-task-01",
+          "revision": "0455d3dce21bb515d045f5115c335fd8c94b08d8ebb6f666947297cc6d7900de"
+        },
+        {
+          "task_id": "lesson-b8d1835f6d6db7210692b9e9-task-02",
+          "revision": "c6b8d4ddb0ea1f831b7f04b1dca555b27b1aafe8fd0955a70134f7c650c474e9"
+        },
+        {
+          "task_id": "lesson-b8d1835f6d6db7210692b9e9-task-03",
+          "revision": "436eca8c9d88c81b89ea87d1f21b4124976ed0f936bb990746bf71efc1fe0351"
+        },
+        {
+          "task_id": "lesson-b8d1835f6d6db7210692b9e9-task-04",
+          "revision": "1d8a588113efa24cdf2c79d08b88a57251f3174d1942145a427591ac9c83ea86"
+        }
+      ]
+    },
+    {
+      "lesson_id": "lesson-6491b7db4538162f105d4f9e",
+      "source_file": "chapter_01/block_03/11 - Функции- вход и результат.md",
+      "task_refs": [
+        {
+          "task_id": "lesson-6491b7db4538162f105d4f9e-task-01",
+          "revision": "7aa2b884a769dc4ba29390f717fa6ed8f961f73c849ba2df2f02fa8b194346d2"
+        },
+        {
+          "task_id": "lesson-6491b7db4538162f105d4f9e-task-02",
+          "revision": "919d2c83639c2c0dc3d5af2f8d5d73ac45fb0fa48e78414246a5d5c9a11a030f"
+        },
+        {
+          "task_id": "lesson-6491b7db4538162f105d4f9e-task-03",
+          "revision": "957060609f70ab717bc92dbcad0ee74d14c3de8003fb0eb225cbaa97efc6b25a"
+        },
+        {
+          "task_id": "lesson-6491b7db4538162f105d4f9e-task-04",
+          "revision": "257bbb1707e2ba5836b79a297ccba47e5d8c2b6e1898abab7cb9055c24fcecd7"
+        },
+        {
+          "task_id": "lesson-6491b7db4538162f105d4f9e-task-05",
+          "revision": "9ffa66719e26501005292639f6b22e48667a757eeb161ef3fa5173d30c44f50f"
+        }
+      ]
+    },
+    {
+      "lesson_id": "lesson-ff2f14a8b483c597fd3da2ed",
+      "source_file": "chapter_01/block_03/11.1 - Область видимости и данные.md",
+      "task_refs": [
+        {
+          "task_id": "lesson-ff2f14a8b483c597fd3da2ed-task-01",
+          "revision": "e397eaf0e727a0a51bdd516023c9ed4035d339800d5d4fa5e5ee63d315c646c0"
+        },
+        {
+          "task_id": "lesson-ff2f14a8b483c597fd3da2ed-task-02",
+          "revision": "86a172a91cb1420dc3d7d3c096d0fe7092b6d41d842a3cddae4a7806b67165a8"
+        },
+        {
+          "task_id": "lesson-ff2f14a8b483c597fd3da2ed-task-03",
+          "revision": "77d9715fc14504199467020086337c1d7c65c302125eaca02cef55fa37fb50a8"
+        },
+        {
+          "task_id": "lesson-ff2f14a8b483c597fd3da2ed-task-04",
+          "revision": "a9ec5a570807960baf1c5c6ee3d47427aae8c25642e8029d1103c471c0031deb"
+        },
+        {
+          "task_id": "lesson-ff2f14a8b483c597fd3da2ed-task-05",
+          "revision": "a8868b6814b4c01077ab444316da35471e4cfe26b4a5e566cb30982292ac525f"
+        },
+        {
+          "task_id": "lesson-ff2f14a8b483c597fd3da2ed-task-06",
+          "revision": "83d8b88989085941aed9ad9d2ea7debb562865d4ce07e5bc9945b32f2c55fe05"
+        }
+      ]
+    },
+    {
+      "lesson_id": "lesson-eef6a7c5f6592ff8f168e818",
+      "source_file": "chapter_01/block_03/11.2 - Ошибки- ищем причину.md",
+      "task_refs": [
+        {
+          "task_id": "lesson-eef6a7c5f6592ff8f168e818-task-01",
+          "revision": "b5e7df857bc427227d3e44ff7970447b12b65afe511ec7ec5bf784fad4a68971"
+        },
+        {
+          "task_id": "lesson-eef6a7c5f6592ff8f168e818-task-02",
+          "revision": "7e56f1fa32ce6393945fc4b3f0869f4f4bcc1ce3f622732e640f589a1d1f596a"
+        },
+        {
+          "task_id": "lesson-eef6a7c5f6592ff8f168e818-task-03",
+          "revision": "9d8279dc57d4abaf705db070afda623fb7f15ab582fe3d38366e3773adec13b5"
+        },
+        {
+          "task_id": "lesson-eef6a7c5f6592ff8f168e818-task-04",
+          "revision": "3087af1c1cd3a87ce741ac8c9ba178d1b437004550805c6c0383316128b19f72"
+        }
+      ]
+    },
+    {
+      "lesson_id": "lesson-0b0f0682f76a868fb8f44982",
+      "source_file": "chapter_01/block_03/12 - Настраиваем Python и VS Code.md",
+      "task_refs": []
+    },
+    {
+      "lesson_id": "lesson-1191533ab9e1e58c46b10de3",
+      "source_file": "chapter_01/block_03/12.1 - Создаём проект и репозиторий.md",
+      "task_refs": []
+    },
+    {
+      "lesson_id": "lesson-05813a83bf9931401bfa52bb",
+      "source_file": "chapter_01/block_03/13 - Первый коммит в Git.md",
+      "task_refs": []
+    },
+    {
+      "lesson_id": "lesson-c3170a5423df70b79431ba73",
+      "source_file": "chapter_01/block_03/13.1 - Отправляем код на GitHub.md",
+      "task_refs": []
+    },
+    {
+      "lesson_id": "lesson-af4e1ea169504f1b62cc2f39",
+      "source_file": "chapter_01/block_03/13.2 - Название задачи и Git.md",
+      "task_refs": []
+    },
+    {
+      "lesson_id": "lesson-eccdfa299a8d3e7ccc23803a",
+      "source_file": "chapter_01/block_03/14 - Создаём задачу и карточку.md",
+      "task_refs": []
+    },
+    {
+      "lesson_id": "lesson-14d9e74e51917b91c1fe913e",
+      "source_file": "chapter_01/block_03/14.1 - Соединяем готовые функции.md",
+      "task_refs": []
+    },
+    {
+      "lesson_id": "lesson-924a4dec25ae296dfa47a452",
+      "source_file": "chapter_01/block_03/14.2 - Отладка своего проекта.md",
+      "task_refs": []
+    },
+    {
+      "lesson_id": "lesson-244d10be460d6548476bdc04",
+      "source_file": "chapter_01/block_03/15 - Ввод и обработка ошибок.md",
+      "task_refs": []
+    },
+    {
+      "lesson_id": "lesson-b1eeab0e62fd973fdc9e59f1",
+      "source_file": "chapter_01/block_03/15.1 - Передаём проект дальше.md",
+      "task_refs": []
+    },
+    {
+      "lesson_id": "lesson-fdc8eaf9e0abbfb6ba938480",
+      "source_file": "chapter_01/block_04/16 - Запускаем каркас Planner.md",
+      "task_refs": []
+    },
+    {
+      "lesson_id": "lesson-f20a878edc22b8a33ff3820a",
+      "source_file": "chapter_01/block_04/16.1 - Проверяем ввод задачи.md",
+      "task_refs": []
+    },
+    {
+      "lesson_id": "lesson-3b1285436934242016a4565f",
+      "source_file": "chapter_01/block_04/17 - Добавляем первую задачу.md",
+      "task_refs": []
+    },
+    {
+      "lesson_id": "lesson-7afab2884ee102e1a2c2637f",
+      "source_file": "chapter_01/block_04/17.1 - Показываем список задач.md",
+      "task_refs": []
+    },
+    {
+      "lesson_id": "lesson-c5b9892f5728fc38b755c77a",
+      "source_file": "chapter_01/block_04/18 - Находим задачу по номеру.md",
+      "task_refs": []
+    },
+    {
+      "lesson_id": "lesson-bb1de9d64b1f747a01b0f28f",
+      "source_file": "chapter_01/block_04/18.1 - Отмечаем задачу выполненной.md",
+      "task_refs": []
+    },
+    {
+      "lesson_id": "lesson-b44f927903cacc84ef3b027f",
+      "source_file": "chapter_01/block_04/19 - Ищем задачи по названию.md",
+      "task_refs": []
+    },
+    {
+      "lesson_id": "lesson-2a75ccfc0709aca403a7983c",
+      "source_file": "chapter_01/block_04/19.1 - Считаем статистику задач.md",
+      "task_refs": [
+        {
+          "task_id": "lesson-2a75ccfc0709aca403a7983c-task-01",
+          "revision": "5a7a9a9274d9d567c7e26c2ea9a0af70692df536e74be62d930b99b33ff3167c"
+        }
+      ]
+    },
+    {
+      "lesson_id": "lesson-49bf96e93b38a6995e6dcb52",
+      "source_file": "chapter_01/block_04/20 - Проверяем работу Planner.md",
+      "task_refs": []
+    },
+    {
+      "lesson_id": "lesson-fa661256326bd13784d1c88d",
+      "source_file": "chapter_01/block_04/20.1 - Проверяем чистую копию.md",
+      "task_refs": []
+    }
+  ],
+  "visibility": "draft",
+  "legacy_aliases": [],
+  "digest_scheme": "metadata-preview-v1"
+}
