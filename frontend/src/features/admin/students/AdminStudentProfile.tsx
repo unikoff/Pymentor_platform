@@ -31,6 +31,7 @@ export function AdminStudentProfile({
   const [isBusy, setIsBusy] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState<{ id: number; email: string; accountRef?: string } | null>(null);
 
   useEffect(() => setSelectedDay(null), [month.year, month.month]);
 
@@ -67,11 +68,11 @@ export function AdminStudentProfile({
     mutate(addStudentQuota(studentId, month, amount));
   }
 
-  async function deleteUser() {
+  async function deleteUser(target: { id: number; accountRef?: string }) {
     setIsBusy(true);
     setError("");
     try {
-      await deleteStudent(studentId);
+      await deleteStudent(target.id, target.accountRef);
       onDeleted();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Не удалось удалить аккаунт");
@@ -281,7 +282,7 @@ export function AdminStudentProfile({
         {isDeleteOpen ? (
           <>
             <p className="admin-note">
-              Аккаунт <strong>{profile.email}</strong> и весь его прогресс будут удалены безвозвратно.
+              Аккаунт <strong>{deleteTarget?.email}</strong> и весь его прогресс будут удалены безвозвратно.
               Забронированные им занятия освободятся. Введите <strong>{DELETE_KEYWORD}</strong>, чтобы подтвердить.
             </p>
             <input
@@ -295,8 +296,8 @@ export function AdminStudentProfile({
               <button
                 type="button"
                 className="is-danger"
-                disabled={isBusy || deleteConfirm.trim() !== DELETE_KEYWORD}
-                onClick={deleteUser}
+                disabled={isBusy || !deleteTarget || deleteConfirm.trim() !== DELETE_KEYWORD}
+                onClick={() => { if (deleteTarget) void deleteUser(deleteTarget); }}
               >
                 <Trash2 size={14} /> Удалить навсегда
               </button>
@@ -306,6 +307,7 @@ export function AdminStudentProfile({
                 onClick={() => {
                   setIsDeleteOpen(false);
                   setDeleteConfirm("");
+                  setDeleteTarget(null);
                 }}
               >
                 Отмена
@@ -314,7 +316,10 @@ export function AdminStudentProfile({
           </>
         ) : (
           <div className="profile-actions">
-            <button type="button" className="is-danger" disabled={isBusy} onClick={() => setIsDeleteOpen(true)}>
+            <button type="button" className="is-danger" disabled={isBusy} onClick={() => {
+              setDeleteTarget({ id: studentId, email: profile.email, accountRef: profile.account_ref });
+              setIsDeleteOpen(true);
+            }}>
               <Trash2 size={14} /> Удалить пользователя
             </button>
           </div>

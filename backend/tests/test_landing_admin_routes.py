@@ -8,7 +8,7 @@ from unittest import TestCase
 from unittest.mock import patch
 
 from fastapi import FastAPI
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, event
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
@@ -17,6 +17,7 @@ from core.web import configure_web
 from db import models
 from db.engine import Base
 from notifications.delivery import drain_notifications
+from notifications.telegram import TelegramDeliveryError
 from routers.admin.router import admin_router
 from routers.landings import service as landing_service
 from routers.landings.public import router as public_landing_router
@@ -137,6 +138,74 @@ class LandingAdminRouteTests(TestCase):
         self.assertEqual(configured_status, 200)
         self.assertEqual(configured["bot_username"], "pymentor_bot")
         self.assertNotIn("never-return-this-token", json.dumps(configured))
+
+    def test_bot_verification_does_not_hold_database_connection(self) -> None:
+        created_status, created = asyncio.run(
+            _request(self.app, "POST", "/api/admin/landings",
+                     payload={"slug": "verify-release", "title": "Test", "description": ""},
+                     cookie="session=admin-session")
+        )
+        self.assertEqual(created_status, 201)
+        checked_out = 0
+        calls = 0
+
+        def checkout(*_args):
+            nonlocal checked_out
+            checked_out += 1
+
+        def checkin(*_args):
+            nonlocal checked_out
+            checked_out -= 1
+
+        def verify(_token, _chat_id):
+            nonlocal calls
+            calls += 1
+            self.assertEqual(checked_out, 0, "Telegram check must not hold a DB connection")
+            return "synthetic_bot"
+
+        event.listen(self.engine, "checkout", checkout)
+        event.listen(self.engine, "checkin", checkin)
+        try:
+            with patch.dict(os.environ, {"PYMENTOR_LANDING_BOT_CREDENTIALS": json.dumps({"test-ref": "test-token"})}), \
+                    patch("routers.landings.admin.verify_telegram_destination", side_effect=verify):
+                status_code, config = asyncio.run(
+                    _request(self.app, "PUT", f"/api/admin/landings/{created['id']}/telegram",
+                             payload={"secret_ref": "test-ref", "chat_id": "12345"},
+                             cookie="session=admin-session")
+                )
+            self.assertEqual(status_code, 200)
+            self.assertEqual(config["bot_username"], "synthetic_bot")
+            self.assertEqual(calls, 1)
+            self.assertEqual(checked_out, 0)
+        finally:
+            event.remove(self.engine, "checkout", checkout)
+            event.remove(self.engine, "checkin", checkin)
+
+    def test_failed_bot_verification_preserves_previous_configuration(self) -> None:
+        _, created = asyncio.run(
+            _request(self.app, "POST", "/api/admin/landings",
+                     payload={"slug": "verify-failure", "title": "Test", "description": ""},
+                     cookie="session=admin-session")
+        )
+        url = f"/api/admin/landings/{created['id']}/telegram"
+        credentials = {"PYMENTOR_LANDING_BOT_CREDENTIALS": json.dumps({"test-ref": "test-token"})}
+        with patch.dict(os.environ, credentials):
+            with patch("routers.landings.admin.verify_telegram_destination", return_value="old_bot"):
+                status_code, original = asyncio.run(
+                    _request(self.app, "PUT", url, payload={"secret_ref": "test-ref", "chat_id": "123"},
+                             cookie="session=admin-session")
+                )
+            self.assertEqual(status_code, 200)
+            with patch("routers.landings.admin.verify_telegram_destination",
+                       side_effect=TelegramDeliveryError("test failure", retryable=True)):
+                status_code, _ = asyncio.run(
+                    _request(self.app, "PUT", url, payload={"secret_ref": "test-ref", "chat_id": "456"},
+                             cookie="session=admin-session")
+                )
+            self.assertEqual(status_code, 503)
+            status_code, after = asyncio.run(_request(self.app, "GET", url, cookie="session=admin-session"))
+        self.assertEqual(status_code, 200)
+        self.assertEqual(after, original)
 
     def test_connection_test_event_is_allowlisted_idempotent_and_payload_redacted(self) -> None:
         _, landing = asyncio.run(

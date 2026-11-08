@@ -1,0 +1,28 @@
+[
+  {
+    "event_id": "d69257f2-867f-4a40-88dc-c20421f9af70",
+    "subject_ref": "3e77f7a7-2a40-450b-9838-2c34b194c02f",
+    "occurred_at": "2026-10-01T09:00:00Z",
+    "schema_version": 1,
+    "type": "learning.lesson_opened",
+    "source": "core",
+    "correlation_id": "87b71ea4-32df-4d0a-9702-11ad70fc91be",
+    "course_id": "HTTP, API и FastAPI - Planner API",
+    "lesson_id": "lesson-f4682177e2b1b9c127a188e6",
+    "task_id": null,
+    "payload": {"synthetic": true}
+  },
+  {
+    "event_id": "39c53b9f-7a70-48d6-bd80-95675bcbbe13",
+    "subject_ref": "3e77f7a7-2a40-450b-9838-2c34b194c02f",
+    "occurred_at": "2026-10-01T09:02:00Z",
+    "schema_version": 1,
+    "type": "learning.lesson_completed",
+    "source": "core",
+    "correlation_id": "87b71ea4-32df-4d0a-9702-11ad70fc91be",
+    "course_id": "HTTP, API и FastAPI - Planner API",
+    "lesson_id": "lesson-f4682177e2b1b9c127a188e6",
+    "task_id": null,
+    "payload": {"synthetic": true}
+  }
+]

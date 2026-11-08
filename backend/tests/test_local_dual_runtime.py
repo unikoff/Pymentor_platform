@@ -12,7 +12,7 @@ from datetime import date, timedelta
 import pytest
 
 from c222_pg_guard import validate_test_url
-from dual_local import _validated_url, create_app
+from dual_local import _validated_url, _validated_recovery_key, create_app
 
 
 @pytest.mark.parametrize("url", [
@@ -34,6 +34,16 @@ def test_local_postgres_mode_never_activates_without_explicit_opt_in(monkeypatch
     with pytest.raises(RuntimeError, match="opt-in"):
         create_app()
     assert os.environ["DATABASE_URL"] == "sentinel://must-not-change"
+
+
+@pytest.mark.parametrize("value", [None, "", "ab" * 31, "not-hex", "zz" * 32])
+def test_local_postgres_mode_rejects_missing_or_invalid_recovery_key(value):
+    with pytest.raises(ValueError, match="recovery key"):
+        _validated_recovery_key(value)
+
+
+def test_local_postgres_mode_accepts_explicit_256_bit_recovery_key():
+    assert _validated_recovery_key("42" * 32) == bytes.fromhex("42" * 32)
 
 
 def test_existing_core_routes_work_against_two_isolated_databases(tmp_path):
@@ -68,6 +78,7 @@ def test_existing_core_routes_work_against_two_isolated_databases(tmp_path):
             env["PYMENTOR_DUAL_LOCAL_TEST"] = "1"
             env["PYMENTOR_TEST_REDIS_URL"] = redis_url
             env["PYMENTOR_TEST_REDIS_PREFIX"] = f"pymentor-c216-test:{uuid4()}:"
+            env.setdefault("PYMENTOR_TEST_LOGIN_RECOVERY_KEY", "42" * 32)
         result = subprocess.run([sys.executable, str(child), mode], cwd=candidate,
                                 env=env, capture_output=True, text=True, timeout=60)
         assert result.returncode == 0, f"{mode} synthetic child failed:\n{result.stderr[-4000:]}"

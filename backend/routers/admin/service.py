@@ -4,7 +4,7 @@ from datetime import date, datetime, timedelta, timezone
 from typing import Literal
 
 from fastapi import HTTPException, Request, status
-from sqlalchemy import and_, case, func, or_
+from sqlalchemy import and_, case, column, func, or_, table, text
 from sqlalchemy.orm import Session
 
 from core.ports import UnitOfWork
@@ -420,10 +420,14 @@ def admin_overview(request: Request, db: Session):
 def list_users(request: Request, search: str, subscription: Literal['all', 'active', 'inactive'], lessons: Literal['all', 'none', 'low', 'many'], year: int | None, month: int | None, db: Session):
     require_admin(request, db)
 
-    # Фильтруем в Python: LOWER() в SQLite не понижает кириллицу, поэтому
-    # ilike по русским именам не находит ничего. На наших объёмах это дёшево.
-    users = db.query(models.User).order_by(models.User.id.asc()).all()
     term = search.strip().lower()
+    # Фильтры применяются до лимита: SQLite LOWER() не обрабатывает кириллицу,
+    # а фильтр lessons зависит от рассчитанного остатка квоты. Без фильтров
+    # первые 100 пользователей можно безопасно выбрать сразу в SQL.
+    query = db.query(models.User).order_by(models.User.id.asc())
+    if not term and subscription == "all" and lessons == "all":
+        query = query.limit(100)
+    users = query.all()
     if term:
         users = [u for u in users if term in u.username.lower() or term in u.email.lower()]
     now = bookings._now_moscow()
@@ -495,7 +499,7 @@ def list_users(request: Request, search: str, subscription: Literal['all', 'acti
     }
 
 
-def delete_user(user_id: int, request: Request, db: Session):
+def delete_user(user_id: int, request: Request, db: Session, *, expected_account_ref: str | None = None):
     admin = require_admin(request, db)
 
     if admin.id == user_id:
@@ -504,13 +508,62 @@ def delete_user(user_id: int, request: Request, db: Session):
             detail="Нельзя удалить собственный аккаунт",
         )
 
-    target_user_query = db.query(models.User).filter(models.User.id == user_id)
     if db.bind is not None and db.bind.dialect.name == "postgresql":
         bookings._require_postgres_read_committed(db)
+    if expected_account_ref is not None:
+        from uuid import UUID
+        try:
+            if str(UUID(expected_account_ref)) != expected_account_ref:
+                raise ValueError("noncanonical account reference")
+        except (ValueError, TypeError, AttributeError):
+            raise HTTPException(status_code=400, detail="Invalid account reference") from None
+        # This write acquires the user row / SQLite writer lock in the same
+        # transaction before any related data is changed. A stale reference can
+        # never remove a newer account reusing the same numeric id.
+        locked = db.execute(text("""
+            UPDATE users SET id = id WHERE id = :uid AND EXISTS (
+                SELECT 1 FROM account_lifecycles
+                WHERE user_id = :uid AND lifecycle_id = :reference
+            )
+        """), {"uid": user_id, "reference": expected_account_ref})
+        if locked.rowcount != 1:
+            raise HTTPException(status_code=409, detail="Account changed; reload its profile")
+    else:
+        # Even legacy callers must serialize deletion with SQLite workers.
+        locked = db.execute(text("UPDATE users SET id = id WHERE id = :uid"), {"uid": user_id})
+        if locked.rowcount != 1:
+            raise HTTPException(status_code=404, detail="User not found")
+    target_user_query = db.query(models.User).filter(models.User.id == user_id)
+    if db.bind is not None and db.bind.dialect.name == "postgresql":
         target_user_query = target_user_query.with_for_update()
     user_db = target_user_query.first()
     if user_db is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    account_ref = db.scalar(text("SELECT lifecycle_id FROM account_lifecycles WHERE user_id=:uid"),
+                            {"uid": user_id})
+    if account_ref is not None:
+        subjects = table("booking_notification_subjects", column("outbox_id"), column("lifecycle_id"))
+        notifications = (db.query(models.BookingNotificationOutbox)
+                         .join(subjects, subjects.c.outbox_id == models.BookingNotificationOutbox.id)
+                         .filter(subjects.c.lifecycle_id == account_ref)
+                         .order_by(models.BookingNotificationOutbox.id))
+        if db.bind is not None and db.bind.dialect.name == "postgresql":
+            notifications = notifications.with_for_update(of=models.BookingNotificationOutbox)
+        notifications = notifications.all()
+        if any(event.status == "processing" for event in notifications):
+            raise HTTPException(status_code=409, detail="Notification delivery is still being resolved")
+        event_ids = [event.id for event in notifications]
+        if event_ids:
+            db.execute(text("DELETE FROM booking_notification_subjects WHERE lifecycle_id=:ref"),
+                       {"ref": account_ref})
+            db.query(models.BookingNotificationOutbox).filter(
+                models.BookingNotificationOutbox.id.in_(event_ids)).delete(synchronize_session=False)
+
+    # Capture the session digests before the explicit session deletion below.
+    # The event and account deletion either commit together or roll back.
+    if db.bind is not None and db.bind.dialect.name == "postgresql":
+        db.execute(text("SELECT pymentor_capture_account_deletion(:uid)"), {"uid": user_id})
 
     # Слоты создавал админ, поэтому их не удаляем, а освобождаем — после
     # удаления студента занятие снова доступно для записи.
@@ -594,7 +647,8 @@ def admin_delete_slot(slot_id: int, request: Request, db: Session):
     return {"deleted": slot_id}
 
 
-def _build_student_profile(user: models.User, year: int, month: int, db: Session) -> dict:
+def _build_student_profile(user: models.User, year: int, month: int, db: Session,
+                           *, account_ref: str | None = None) -> dict:
     start_date, end_date = bookings._month_bounds(year, month)
     booking_rows = (
         db.query(models.BookingSlot)
@@ -633,6 +687,8 @@ def _build_student_profile(user: models.User, year: int, month: int, db: Session
     learning_progress, completed_lessons = _build_learning_progress(user.id, db)
 
     data = _serialize_account(user, completed_lessons=completed_lessons)
+    if account_ref is not None:
+        data["account_ref"] = account_ref
     data["quota"] = bookings.get_quota_status(user_id=user.id, year=year, month=month, db=db)
     data["activity_days_count"] = len(activity_records)
     data["activity_days"] = [record.activity_date.isoformat() for record in activity_records]
@@ -654,12 +710,38 @@ def _build_student_profile(user: models.User, year: int, month: int, db: Session
     return data
 
 
+def _guarded_profile_user(db: Session, user_id: int):
+    """Read the displayed account and its generation in one SQL statement."""
+    refs = table("account_lifecycles", column("user_id"), column("lifecycle_id"))
+
+    def find():
+        return (db.query(models.User, refs.c.lifecycle_id)
+                .join(refs, refs.c.user_id == models.User.id)
+                .filter(models.User.id == user_id).populate_existing().first())
+
+    result = find()
+    if result is None and db.bind is not None and db.bind.dialect.name == "postgresql":
+        from uuid import uuid4
+        # Imported accounts may not have logged in yet. A concurrent creator
+        # uses the unique user_id; the following joined read is authoritative.
+        db.execute(text("""
+            INSERT INTO account_lifecycles(user_id, lifecycle_id)
+            SELECT id, :reference FROM users WHERE id = :uid
+            ON CONFLICT (user_id) DO NOTHING
+        """), {"uid": user_id, "reference": str(uuid4())})
+        db.commit()
+        result = find()
+    if result is None:
+        if db.query(models.User.id).filter_by(id=user_id).first() is not None:
+            raise HTTPException(status_code=503, detail="Account identity unavailable")
+        raise HTTPException(status_code=404, detail="User not found")
+    return result
+
+
 def student_profile(user_id: int, request: Request, year: int, month: int, db: Session):
     require_admin(request, db)
-    user_db = db.query(models.User).filter(models.User.id == user_id).first()
-    if user_db is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    return {"profile": _build_student_profile(user_db, year, month, db)}
+    user_db, account_ref = _guarded_profile_user(db, user_id)
+    return {"profile": _build_student_profile(user_db, year, month, db, account_ref=account_ref)}
 
 
 def change_quota(user_id: int, payload: QuotaChange, request: Request, db: Session):

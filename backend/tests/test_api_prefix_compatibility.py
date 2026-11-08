@@ -25,7 +25,7 @@ EMAIL = "api-compatibility@example.test"
 
 async def _request(app, method, path, *, payload=None, cookie=None, request_headers=None):
     body = json.dumps(payload).encode("utf-8") if payload is not None else b""
-    headers = [(b"content-length", str(len(body)))]
+    headers = [(b"content-length", str(len(body)).encode("ascii"))]
     if payload is not None:
         headers.append((b"content-type", b"application/json"))
     if cookie:
@@ -58,7 +58,9 @@ async def _request(app, method, path, *, payload=None, cookie=None, request_head
         item.get("body", b"") for item in messages if item["type"] == "http.response.body"
     )
     response_headers = {
-        key.decode().lower(): value.decode("latin-1") for key, value in start["headers"]
+        (key.decode("latin-1") if isinstance(key, bytes) else key).lower():
+        value.decode("latin-1") if isinstance(value, bytes) else value
+        for key, value in start["headers"]
     }
     return start["status"], response_headers, json.loads(response_body) if response_body else None
 

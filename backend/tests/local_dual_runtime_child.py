@@ -5,7 +5,7 @@ import os
 import sys
 from hashlib import sha256
 from datetime import date, datetime, timezone
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 from fastapi.testclient import TestClient
 from sqlalchemy import text
@@ -43,6 +43,7 @@ def run(mode):
             assert connection.get_isolation_level() == "READ COMMITTED"
     user_id = admin_id = slot_id = None
     admin_email = f"admin-{email}"
+    issued_tokens = set()
     try:
         with TestClient(app) as client:
             def expect(response, status=200):
@@ -50,6 +51,16 @@ def run(mode):
                     raise AssertionError(f"{response.request.method} {response.request.url.path}: "
                                          f"expected {status}, got {response.status_code}: {response.text[:300]}")
                 return response.json()
+
+            def login(login_email, *, operation_id=None):
+                headers = {}
+                if mode == "postgres" and os.getenv("PYMENTOR_TEST_LOGIN_RECOVERY_KEY"):
+                    headers["Idempotency-Key"] = operation_id or str(uuid4())
+                response = client.post("/api/user/login", json={"email": login_email, "password": password},
+                                       headers=headers)
+                if response.status_code == 200 and client.cookies.get("session"):
+                    issued_tokens.add(client.cookies.get("session"))
+                return response
 
             ready = expect(client.get("/health/ready"))
             if mode == "postgres":
@@ -86,19 +97,35 @@ def run(mode):
                 with SessionLocal() as db:
                     db.query(models.Session).filter_by(user_id=user_id, session_token=sql_only_token).delete()
                     db.commit()
-            logged_in = expect(client.post("/api/user/login", json={"email": email, "password": password}))
+            logged_in = expect(login(email))
             if mode == "postgres":
                 import redis
                 from redis.exceptions import ConnectionError as RedisConnectionError
                 from unittest.mock import patch
                 token = client.cookies.get("session")
                 digest = sha256(token.encode()).hexdigest()
-                key = f"{os.environ['PYMENTOR_TEST_REDIS_PREFIX']}token:{digest}"
+                is_retry_mode = bool(os.getenv("PYMENTOR_TEST_LOGIN_RECOVERY_KEY"))
+                key = f"{os.environ['PYMENTOR_TEST_REDIS_PREFIX']}token:{digest}" if is_retry_mode else f"{os.environ['PYMENTOR_TEST_REDIS_PREFIX']}token:prepared:{digest}"
                 redis_client = redis.Redis.from_url(os.environ["PYMENTOR_TEST_REDIS_URL"], socket_timeout=2)
                 try:
                     assert redis_client.get(key) == str(user_id).encode()
                 finally:
                     redis_client.close()
+                if is_retry_mode:
+                    assert expect(client.get("/api/user/login-capabilities"))["idempotent_login"] is True
+                    first = token
+                    expect(login(email))
+                    second = client.cookies.get("session")
+                    expect(login(email))
+                    third = client.cookies.get("session")
+                    operation = str(uuid4())
+                    expect(login(email, operation_id=operation))
+                    confirmed = client.cookies.get("session")
+                    expect(login(email, operation_id=operation))
+                    assert client.cookies.get("session") == confirmed
+                    assert client.get("/api/user/me", headers={"Cookie": f"session={first}"}).status_code == 401
+                    for previous in (second, third):
+                        assert client.get("/api/user/me", headers={"Cookie": f"session={previous}"}).status_code == 200
                 with patch.object(app.state.local_async_identity.redis, "get_user",
                                   side_effect=RedisConnectionError("synthetic outage")):
                     assert client.get("/api/user/me").status_code == 503
@@ -131,14 +158,21 @@ def run(mode):
                 saved_task = db.query(models.UserTaskProgress).filter_by(user_id=user_id, task_id=free_task_id).one()
                 assert saved_task.task_revision == free_task["revision"]
 
-            admin_login = expect(client.post("/api/user/login", json={"email": admin_email, "password": password}))
+            admin_login = expect(login(admin_email))
             assert admin_login["user"]["is_admin"] is True
             admin_token = client.cookies.get("session")
             admin_headers = {"Cookie": f"session={admin_token}"}
-            expect(client.post("/api/user/login", json={"email": email, "password": password}))
+            expect(login(email))
             expect(client.get("/api/admin/overview", headers=admin_headers))
             users = expect(client.get("/api/admin/users", params={"search": email}, headers=admin_headers))
             assert any(item["id"] == user_id for item in users["users"])
+            profile = expect(client.get(f"/api/admin/users/{user_id}/profile",
+                                        params={"year": 2026, "month": 2}, headers=admin_headers))
+            account_ref = profile["profile"]["account_ref"]
+            assert str(UUID(account_ref)) == account_ref and UUID(account_ref).version == 4
+            stale_headers = {**admin_headers, "X-Account-Ref": str(uuid4())}
+            assert client.delete(f"/api/admin/users/{user_id}", headers=stale_headers).status_code == 409
+            assert expect(client.get("/api/user/me"))["user"]["id"] == user_id
             slot_day = date.fromisoformat(os.environ["PYMENTOR_DUAL_SLOT_DATE"])
             quota = expect(client.post(f"/api/admin/users/{user_id}/quota", headers=admin_headers,
                                        json={"year": slot_day.year, "month": slot_day.month, "add": 1}))
@@ -165,7 +199,7 @@ def run(mode):
             assert interpreter["ok"] is True and interpreter["stdout"].strip() == "5"
             logout = expect(client.post("/api/user/logout"))
             denied = expect(client.get("/api/user/me"), 401)
-            expect(client.post("/api/user/login", json={"email": email, "password": password}))
+            expect(login(email))
             reopened = expect(client.get("/api/learning/catalog"))
             reopened_progress = [lesson for course in reopened["courses"].values() for lesson in course
                                  if lesson["id"] == lesson_id]
@@ -194,6 +228,12 @@ def run(mode):
                     assert re.fullmatch(r"pymentor-c216-test:[0-9a-f-]{32,36}:", prefix)
                     redis_client = redis.Redis.from_url(os.environ["PYMENTOR_TEST_REDIS_URL"], socket_timeout=2)
                     try:
+                        with engine.connect() as conn:
+                            stored_tokens = conn.execute(text(
+                                "SELECT session_token FROM sessions WHERE user_id IN (:user_id, :admin_id)"
+                            ), {"user_id": user_id, "admin_id": admin_id or user_id}).scalars().all()
+                        session_digests = [token if re.fullmatch(r"[0-9a-f]{64}", token)
+                                           else sha256(token.encode()).hexdigest() for token in stored_tokens]
                         for cleanup_user in (user_id, admin_id):
                             if cleanup_user is None:
                                 continue
@@ -202,6 +242,12 @@ def run(mode):
                             digests = [item.decode("ascii") for item in members]
                             assert all(re.fullmatch(r"[0-9a-f]{64}", digest) for digest in digests)
                             redis_client.delete(user_key, *(f"{prefix}token:{digest}" for digest in digests))
+                        if session_digests:
+                            redis_client.delete(*(f"{prefix}token:prepared:{digest}" for digest in session_digests))
+                        issued_digests = {sha256(token.encode()).hexdigest() for token in issued_tokens}
+                        if issued_digests:
+                            redis_client.delete(*(f"{prefix}token:{digest}" for digest in issued_digests),
+                                                *(f"{prefix}token:prepared:{digest}" for digest in issued_digests))
                     finally:
                         redis_client.close()
             finally:

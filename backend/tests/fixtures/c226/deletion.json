@@ -1,0 +1,15 @@
+[
+  {
+    "event_id": "a6eeef7d-eeb8-4c18-89d6-3d32d760b26c",
+    "subject_ref": "3e77f7a7-2a40-450b-9838-2c34b194c02f",
+    "occurred_at": "2026-10-01T09:03:00Z",
+    "schema_version": 1,
+    "type": "privacy.subject_deleted",
+    "source": "core",
+    "correlation_id": "87b71ea4-32df-4d0a-9702-11ad70fc91be",
+    "course_id": null,
+    "lesson_id": null,
+    "task_id": null,
+    "payload": {"scope": "subject"}
+  }
+]

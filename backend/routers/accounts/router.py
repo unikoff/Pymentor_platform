@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Query, Request, Response
+from fastapi import APIRouter, Depends, Header, Query, Request, Response
 from sqlalchemy.orm import Session
 from core.dependencies import get_db, get_request_context
 from core.composition import RequestContext
@@ -25,8 +25,18 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
     return {"message": "Registration successful", "user": service._serialize_user(user_db)}
 
 
-@user_router.post("/login", responses=api_contract_responses(AuthResponse, 401))
-def login_user(user: UserLogin, response: Response, request: Request, db: Session = Depends(get_db)):
+@user_router.get("/login-capabilities")
+def login_capabilities(request: Request):
+    # The experimental async service exists only in the isolated local mode.
+    from identity.sessions import _local_async_identity
+    identity = _local_async_identity(request)
+    return {"idempotent_login": bool(identity and getattr(identity, "supports_login_retry", False))}
+
+
+@user_router.post("/login", responses=api_contract_responses(AuthResponse, 400, 401, 409, 503))
+def login_user(user: UserLogin, response: Response, request: Request,
+               operation_id: str | None = Header(default=None, alias="Idempotency-Key"),
+               db: Session = Depends(get_db)):
     user_db = service.login_user(response=response, user=user, db=db, request=request)
     return {"message": "Login successful", "user": service._serialize_user(user_db)}
 

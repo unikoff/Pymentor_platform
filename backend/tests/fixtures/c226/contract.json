@@ -1,0 +1,31 @@
+{
+  "contract": "core.analytics.event",
+  "schema_version": 1,
+  "producer": "Core",
+  "consumer": "future Analytics (not implemented)",
+  "max_event_bytes": 4096,
+  "max_event_bytes_status": "project proposal only; not an agreed transport limit",
+  "envelope_fields": ["event_id", "subject_ref", "occurred_at", "schema_version", "type", "source", "correlation_id", "course_id", "lesson_id", "task_id", "payload"],
+  "event_types": {
+    "learning.lesson_opened": ["synthetic"],
+    "learning.lesson_completed": ["synthetic"],
+    "privacy.subject_deleted": ["scope"]
+  },
+  "reference_model": {
+    "kind": "test-only in-memory oracle; not an implemented restore or delivery mechanism",
+    "deduplicate_by": "event_id; conflicting reuse is rejected for learning events and deletion markers",
+    "equal_occurred_at_tie_break": "lexicographically greatest event_id within the same subject/course/lesson/type projection",
+    "restore_requires": ["complete=true", "integer high_watermark", "scanned_through equal to high_watermark", "tombstones list"],
+    "restore_order": "apply durable tombstones before replaying snapshot events; fail closed if completeness is unknown or incomplete",
+    "deleted_subject": "suppress its personal and shared contributions, including late events; new registration requires a new subject_ref and new event_id",
+    "synthetic_aggregate": "recalculate test event counts from surviving contributions; not an implemented Analytics aggregate"
+  },
+  "notes": [
+    "subject_ref is an opaque random UUID, not an account or session identifier",
+    "course_id and lesson_id are exact stable IDs from the current local catalog; task_id is null for lesson-level examples",
+    "Only allowlisted fields and catalog-bound identities are accepted",
+    "synthetic is a test-fixture-only payload marker, not a proposed or approved production payload field; lesson events are synthetic examples and do not claim existing Core event sources",
+    "This fixture defines no delivery mechanism or implemented restoration process",
+    "Deletion marker is durable input to this reference model and tombstones all personal and shared contributions for its subject"
+  ]
+}

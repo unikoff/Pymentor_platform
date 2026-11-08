@@ -175,6 +175,7 @@ class AdminUserEnvelope(BaseModel):
 class StudentProfilePayload(AdminAccountResponse):
     model_config = {"extra": "forbid"}
 
+    account_ref: str | None = None
     quota: QuotaStatusResponse
     activity_days_count: int
     activity_days: list[str]

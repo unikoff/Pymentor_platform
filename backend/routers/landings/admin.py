@@ -150,6 +150,9 @@ def replace_telegram_config(
     if landing is None:
         raise HTTPException(status_code=404, detail="Лендинг не найден")
     token = service.resolve_landing_bot_token(payload.secret_ref)
+    # Authentication and the existence check only read. Release their connection
+    # before the external request; configure_landing_telegram reloads under lock.
+    db.rollback()
     try:
         bot_username = verify_telegram_destination(token, payload.chat_id)
     except TelegramDeliveryError as exc:

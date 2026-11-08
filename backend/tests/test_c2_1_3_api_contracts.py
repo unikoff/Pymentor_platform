@@ -105,6 +105,8 @@ def clients(monkeypatch):
         poolclass=StaticPool,
     )
     Base.metadata.create_all(engine)
+    from db.sqlite_account_lifecycles import ensure_sqlite_account_lifecycles
+    ensure_sqlite_account_lifecycles(engine)
     sessions = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
     def override_get_db():
@@ -377,7 +379,18 @@ def test_frontend_route_inventory_and_openapi_compatibility():
                 continue
             new_operation = new_path_item[method]
             assert new_operation["operationId"] == old_operation["operationId"]
-            assert new_operation.get("parameters", []) == old_operation.get("parameters", [])
+            parameters = new_operation.get("parameters", [])
+            if method == "post" and path in {"/user/login", "/api/user/login"}:
+                retry_headers = [p for p in parameters if p.get("name") == "Idempotency-Key"]
+                assert len(retry_headers) == 1
+                assert retry_headers[0]["in"] == "header" and retry_headers[0]["required"] is False
+                parameters = [p for p in parameters if p.get("name") != "Idempotency-Key"]
+            if method == "delete" and path in {"/admin/users/{user_id}", "/api/admin/users/{user_id}"}:
+                generation_headers = [p for p in parameters if p.get("name") == "X-Account-Ref"]
+                assert len(generation_headers) == 1
+                assert generation_headers[0]["in"] == "header" and generation_headers[0]["required"] is False
+                parameters = [p for p in parameters if p.get("name") != "X-Account-Ref"]
+            assert parameters == old_operation.get("parameters", [])
             assert new_operation.get("requestBody") == old_operation.get("requestBody")
             for status_code, old_response in old_operation.get("responses", {}).items():
                 if not status_code.startswith("2"):

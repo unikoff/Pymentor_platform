@@ -2,6 +2,8 @@ from sqlalchemy import inspect, text
 from sqlalchemy.exc import IntegrityError
 from db.engine import Base, SessionLocal, engine
 from db import models
+from db.progress_integrity import ensure_sqlite_progress_integrity
+from db.sqlite_account_lifecycles import ensure_sqlite_account_lifecycles
 from content.catalog import get_legacy_lesson_id_map
 
 
@@ -36,6 +38,8 @@ def ensure_default_landing(session_factory=SessionLocal) -> models.Landing:
 
 def ensure_schema() -> None:
     Base.metadata.create_all(bind=engine)
+    ensure_sqlite_progress_integrity(engine)
+    ensure_sqlite_account_lifecycles(engine)
 
     inspector = inspect(engine)
     landing_columns = {column["name"] for column in inspector.get_columns("landings")}

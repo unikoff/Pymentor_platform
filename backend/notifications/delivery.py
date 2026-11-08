@@ -27,6 +27,7 @@ from notifications.telegram import (
     send_booking_cancelled_notification,
     send_booking_created_notification,
 )
+from notifications.migration_guard import require_review_complete
 logger = logging.getLogger("booking_notification_worker")
 MAX_ATTEMPTS = 8
 MAX_BATCH_SIZE = 20
@@ -535,6 +536,7 @@ def drain_notifications(
         raise ValueError(f"limit must be between 1 and {MAX_BATCH_SIZE}")
     cleanup = session_factory()
     try:
+        require_review_complete(cleanup)
         expired_ids = (
             cleanup.query(models.BookingNotificationOutbox.id)
             .filter(
@@ -705,6 +707,7 @@ def queue_stats(session_factory: sessionmaker = SessionLocal) -> dict[str, objec
 def retry_failed(session_factory: sessionmaker = SessionLocal) -> int:
     session = session_factory()
     try:
+        require_review_complete(session, for_retry=True)
         now = _utcnow()
         newer = aliased(models.BookingNotificationOutbox)
         newer_delivered = session.query(newer.id).filter(

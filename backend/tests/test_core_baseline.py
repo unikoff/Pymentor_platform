@@ -203,8 +203,24 @@ class CoreBaselineTests(unittest.IsolatedAsyncioTestCase):
         for path, old_methods in expected_openapi["paths"].items():
             for method, old_operation in old_methods.items():
                 new_operation = schema["paths"][path][method]
+                new_contract = {key: value for key, value in new_operation.items() if key != "responses"}
+                optional_header = None
+                if method == "post" and path in {"/user/login", "/api/user/login"}:
+                    optional_header = "Idempotency-Key"
+                elif method == "delete" and path in {"/admin/users/{user_id}", "/api/admin/users/{user_id}"}:
+                    optional_header = "X-Account-Ref"
+                if optional_header:
+                    parameters = new_contract.get("parameters", [])
+                    matching = [p for p in parameters if p.get("name") == optional_header]
+                    self.assertEqual(len(matching), 1)
+                    self.assertEqual((matching[0].get("in"), matching[0].get("required")), ("header", False))
+                    remaining = [p for p in parameters if p.get("name") != optional_header]
+                    if remaining or "parameters" in old_operation:
+                        new_contract["parameters"] = remaining
+                    else:
+                        new_contract.pop("parameters", None)
                 self.assertEqual(
-                    {key: value for key, value in new_operation.items() if key != "responses"},
+                    new_contract,
                     {key: value for key, value in old_operation.items() if key != "responses"},
                 )
                 for status, old_response in old_operation["responses"].items():

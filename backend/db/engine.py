@@ -22,14 +22,20 @@ engine_options = {}
 if os.getenv("PYMENTOR_DUAL_LOCAL_TEST") == "1":
     url = make_url(DATABASE_URL)
     if (url.drivername != "postgresql+psycopg" or url.host != "127.0.0.1" or url.port != 57152
-            or url.database != "pymentor_test" or url.username != "pymentor_test" or bool(url.query)):
+            or url.database != "pymentor_test" or url.username not in {"pymentor_test", "pymentor_app"}
+            or bool(url.query)):
         raise RuntimeError("Dual local test mode requires the disposable PostgreSQL instance")
-    connect_args = {"connect_timeout": 3}
+    connect_args = {"connect_timeout": 3,
+                    "options": "-c statement_timeout=3000 -c lock_timeout=1000"}
     engine_options = {"pool_size": 3, "max_overflow": 0, "pool_timeout": 3,
                       "pool_pre_ping": True, "hide_parameters": True,
                       "isolation_level": "READ COMMITTED"}
 
 engine = create_engine(url=DATABASE_URL, connect_args=connect_args, echo=False, **engine_options)
+
+
+def matches_database_identity(identity, validated_url):
+    return tuple(identity) == (validated_url.database, validated_url.username)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 

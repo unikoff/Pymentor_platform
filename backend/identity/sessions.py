@@ -28,11 +28,19 @@ def login_user(response: Response, user, db: Session, *, request: Request | None
     identity = _local_async_identity(request)
     if identity is not None:
         from anyio import from_thread
-        from identity.async_sessions import IdentityUnavailable, InvalidCredentials
+        from identity.async_sessions import IdentityUnavailable, InvalidCredentials, InvalidSession
         try:
-            grant = from_thread.run(identity.login, user.email, user.password)
+            if getattr(identity, "supports_login_retry", False):
+                operation_id = request.headers.get("Idempotency-Key")
+                if not operation_id:
+                    raise HTTPException(status_code=400, detail="Login operation identifier required")
+                grant = from_thread.run(lambda: identity.login(user.email, user.password, operation_id=operation_id))
+            else:
+                grant = from_thread.run(identity.login, user.email, user.password)
         except InvalidCredentials as exc:
             raise HTTPException(status_code=401, detail="Invalid email or password") from exc
+        except InvalidSession as exc:
+            raise HTTPException(status_code=409, detail="Login operation unavailable") from exc
         except IdentityUnavailable as exc:
             raise HTTPException(status_code=503, detail="Session storage unavailable") from exc
         response.set_cookie(key="session", value=grant.token, httponly=True, samesite="lax",

@@ -4,6 +4,7 @@ from fastapi import HTTPException, status
 from sqlalchemy import or_, text
 from datetime import date, datetime, time, timedelta, timezone
 from calendar import monthrange
+from uuid import uuid4
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from db import models
@@ -81,6 +82,29 @@ def _lock_postgres_user(db: Session, user_id: int) -> None:
         user = db.query(models.User.id).filter(models.User.id == user_id).with_for_update().first()
         if user is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+
+def _add_linked_notification(db: Session, user_id: int, event: models.BookingNotificationOutbox) -> None:
+    """Record the verified owner in the same transaction as the notification."""
+    try:
+        if db.bind is not None and db.bind.dialect.name == "postgresql":
+            db.execute(text("""
+                INSERT INTO account_lifecycles(user_id, lifecycle_id)
+                SELECT id, :ref FROM users WHERE id = :uid
+                ON CONFLICT (user_id) DO NOTHING
+            """), {"uid": user_id, "ref": str(uuid4())})
+        ref = db.scalar(text("SELECT lifecycle_id FROM account_lifecycles WHERE user_id=:uid"),
+                        {"uid": user_id})
+        if ref is None:
+            raise HTTPException(status_code=503, detail="Account identity unavailable")
+        db.add(event)
+        db.flush()
+        db.execute(text("""
+            INSERT INTO booking_notification_subjects(outbox_id, lifecycle_id) VALUES (:id, :ref)
+        """), {"id": event.id, "ref": ref})
+    except Exception:
+        db.rollback()
+        raise
 
 
 def _lock_postgres_slot_date(db: Session, slot_date: date) -> None:
@@ -322,7 +346,7 @@ def book_slot(
     if not updated:
         db.rollback()
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Это окно уже занято")
-    db.add(
+    _add_linked_notification(db, user_id,
         models.BookingNotificationOutbox(
             event_type="booking_created",
             slot_id=slot.id,
@@ -359,7 +383,7 @@ def cancel_booking(
             detail="Занятие нельзя отменить менее чем за 36 часов до начала.",
         )
     slot.student_id = None
-    db.add(
+    _add_linked_notification(db, user_id,
         models.BookingNotificationOutbox(
             event_type="booking_cancelled",
             slot_id=slot.id,
