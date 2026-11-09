@@ -9,5 +9,21 @@
     "routes.json",
     "runner.json"
   ],
-  "images": []
+  "images": [
+    {
+      "name": "pymentor/core-api",
+      "newName": "ghcr.io/unikoff/pymentor-platform-core",
+      "digest": "sha256:2d46c1b10e449dd12aa0fc8643317b3fabdc19a2d1b20b36d309515dc6846aee"
+    },
+    {
+      "name": "pymentor/frontend",
+      "newName": "ghcr.io/unikoff/pymentor-platform-frontend",
+      "digest": "sha256:2f8ef2fedac40b5e7802194491aa53cb4b43d8df95cabcf0fd0b52fc39385ccf"
+    },
+    {
+      "name": "pymentor/preview-pool",
+      "newName": "ghcr.io/unikoff/pymentor-platform-runner-pool",
+      "digest": "sha256:91359d0cd69d815d96ac541f85fe483938549916e4dd361e934409ae32e1f573"
+    }
+  ]
 }
