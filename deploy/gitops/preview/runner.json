@@ -1,139 +1,247 @@
 {
-  "apiVersion": "apps/v1",
-  "kind": "Deployment",
-  "metadata": {
-    "name": "preview-pool-broker",
-    "namespace": "pymentor",
-    "annotations": {
-      "argocd.argoproj.io/sync-wave": "-1"
-    }
-  },
-  "spec": {
-    "progressDeadlineSeconds": 600,
-    "replicas": 1,
-    "revisionHistoryLimit": 10,
-    "selector": {
-      "matchLabels": {
-        "app": "preview-pool-broker"
-      }
-    },
-    "strategy": {
-      "type": "Recreate"
-    },
-    "template": {
+  "apiVersion": "v1",
+  "kind": "List",
+  "items": [
+    {
+      "apiVersion": "networking.k8s.io/v1",
+      "kind": "NetworkPolicy",
       "metadata": {
+        "name": "preview-pool-broker",
+        "namespace": "pymentor",
         "annotations": {
-          "kubectl.kubernetes.io/restartedAt": "2026-11-08T22:50:33Z",
-          "pymentor.io/source-revision": "52a52a8812598a43c255eb30dfedd25fc6ac683d"
-        },
-        "labels": {
-          "app": "preview-pool-broker"
+          "argocd.argoproj.io/sync-wave": "-2"
         }
       },
       "spec": {
-        "automountServiceAccountToken": true,
-        "containers": [
+        "egress": [
           {
-            "env": [
-              {
-                "name": "POOL_NAMESPACE",
-                "value": "runner-pool-lab-20261109"
-              },
-              {
-                "name": "POD_UID",
-                "valueFrom": {
-                  "fieldRef": {
-                    "apiVersion": "v1",
-                    "fieldPath": "metadata.uid"
-                  }
-                }
-              },
-              {
-                "name": "PYMENTOR_RELEASE_REVISION",
-                "value": "52a52a8812598a43c255eb30dfedd25fc6ac683d"
-              }
-            ],
-            "image": "pymentor/preview-pool:20261109-10",
-            "imagePullPolicy": "IfNotPresent",
-            "livenessProbe": {
-              "failureThreshold": 3,
-              "httpGet": {
-                "path": "/health/live",
-                "port": 8088,
-                "scheme": "HTTP"
-              },
-              "initialDelaySeconds": 10,
-              "periodSeconds": 10,
-              "successThreshold": 1,
-              "timeoutSeconds": 2
-            },
-            "name": "broker",
             "ports": [
               {
-                "containerPort": 8088,
+                "port": 443,
                 "protocol": "TCP"
               }
             ],
-            "readinessProbe": {
-              "failureThreshold": 3,
-              "httpGet": {
-                "path": "/health/ready",
-                "port": 8088,
-                "scheme": "HTTP"
-              },
-              "periodSeconds": 5,
-              "successThreshold": 1,
-              "timeoutSeconds": 2
-            },
-            "resources": {
-              "limits": {
-                "cpu": "1500m",
-                "memory": "384Mi"
-              },
-              "requests": {
-                "cpu": "50m",
-                "memory": "96Mi"
+            "to": [
+              {
+                "ipBlock": {
+                  "cidr": "10.43.0.1/32"
+                }
               }
-            },
-            "securityContext": {
-              "allowPrivilegeEscalation": false,
-              "capabilities": {
-                "drop": [
-                  "ALL"
-                ]
-              },
-              "readOnlyRootFilesystem": true
-            },
-            "startupProbe": {
-              "failureThreshold": 30,
-              "httpGet": {
-                "path": "/health/live",
-                "port": 8088,
-                "scheme": "HTTP"
-              },
-              "periodSeconds": 5,
-              "successThreshold": 1,
-              "timeoutSeconds": 2
-            },
-            "terminationMessagePath": "/dev/termination-log",
-            "terminationMessagePolicy": "File"
+            ]
+          },
+          {
+            "ports": [
+              {
+                "port": 6443,
+                "protocol": "TCP"
+              }
+            ],
+            "to": [
+              {
+                "ipBlock": {
+                  "cidr": "13.140.29.11/32"
+                }
+              }
+            ]
           }
         ],
-        "dnsPolicy": "ClusterFirst",
-        "restartPolicy": "Always",
-        "schedulerName": "default-scheduler",
-        "securityContext": {
-          "runAsGroup": 10001,
-          "runAsNonRoot": true,
-          "runAsUser": 10001,
-          "seccompProfile": {
-            "type": "RuntimeDefault"
+        "ingress": [
+          {
+            "from": [
+              {
+                "namespaceSelector": {
+                  "matchLabels": {
+                    "kubernetes.io/metadata.name": "kube-system"
+                  }
+                },
+                "podSelector": {
+                  "matchLabels": {
+                    "app.kubernetes.io/name": "traefik"
+                  }
+                }
+              }
+            ],
+            "ports": [
+              {
+                "port": 8088,
+                "protocol": "TCP"
+              }
+            ]
+          },
+          {
+            "from": [
+              {
+                "podSelector": {
+                  "matchExpressions": [
+                    {
+                      "key": "app",
+                      "operator": "In",
+                      "values": [
+                        "core-api",
+                        "core-api-progressive"
+                      ]
+                    }
+                  ]
+                }
+              }
+            ],
+            "ports": [
+              {
+                "port": 8088,
+                "protocol": "TCP"
+              }
+            ]
+          }
+        ],
+        "podSelector": {
+          "matchLabels": {
+            "app": "preview-pool-broker"
           }
         },
-        "serviceAccount": "preview-pool-coordinator",
-        "serviceAccountName": "preview-pool-coordinator",
-        "terminationGracePeriodSeconds": 90
+        "policyTypes": [
+          "Ingress",
+          "Egress"
+        ]
+      }
+    },
+    {
+      "apiVersion": "apps/v1",
+      "kind": "Deployment",
+      "metadata": {
+        "name": "preview-pool-broker",
+        "namespace": "pymentor",
+        "annotations": {
+          "argocd.argoproj.io/sync-wave": "-1"
+        }
+      },
+      "spec": {
+        "progressDeadlineSeconds": 600,
+        "replicas": 1,
+        "revisionHistoryLimit": 10,
+        "selector": {
+          "matchLabels": {
+            "app": "preview-pool-broker"
+          }
+        },
+        "strategy": {
+          "type": "Recreate"
+        },
+        "template": {
+          "metadata": {
+            "annotations": {
+              "kubectl.kubernetes.io/restartedAt": "2026-11-08T22:50:33Z",
+              "pymentor.io/source-revision": "52a52a8812598a43c255eb30dfedd25fc6ac683d"
+            },
+            "labels": {
+              "app": "preview-pool-broker"
+            }
+          },
+          "spec": {
+            "automountServiceAccountToken": true,
+            "containers": [
+              {
+                "env": [
+                  {
+                    "name": "POOL_NAMESPACE",
+                    "value": "runner-pool-lab-20261109"
+                  },
+                  {
+                    "name": "POD_UID",
+                    "valueFrom": {
+                      "fieldRef": {
+                        "apiVersion": "v1",
+                        "fieldPath": "metadata.uid"
+                      }
+                    }
+                  },
+                  {
+                    "name": "PYMENTOR_RELEASE_REVISION",
+                    "value": "52a52a8812598a43c255eb30dfedd25fc6ac683d"
+                  }
+                ],
+                "image": "pymentor/preview-pool:20261109-10",
+                "imagePullPolicy": "IfNotPresent",
+                "livenessProbe": {
+                  "failureThreshold": 3,
+                  "httpGet": {
+                    "path": "/health/live",
+                    "port": 8088,
+                    "scheme": "HTTP"
+                  },
+                  "initialDelaySeconds": 10,
+                  "periodSeconds": 10,
+                  "successThreshold": 1,
+                  "timeoutSeconds": 2
+                },
+                "name": "broker",
+                "ports": [
+                  {
+                    "containerPort": 8088,
+                    "protocol": "TCP"
+                  }
+                ],
+                "readinessProbe": {
+                  "failureThreshold": 3,
+                  "httpGet": {
+                    "path": "/health/ready",
+                    "port": 8088,
+                    "scheme": "HTTP"
+                  },
+                  "periodSeconds": 5,
+                  "successThreshold": 1,
+                  "timeoutSeconds": 2
+                },
+                "resources": {
+                  "limits": {
+                    "cpu": "1500m",
+                    "memory": "384Mi"
+                  },
+                  "requests": {
+                    "cpu": "50m",
+                    "memory": "96Mi"
+                  }
+                },
+                "securityContext": {
+                  "allowPrivilegeEscalation": false,
+                  "capabilities": {
+                    "drop": [
+                      "ALL"
+                    ]
+                  },
+                  "readOnlyRootFilesystem": true
+                },
+                "startupProbe": {
+                  "failureThreshold": 30,
+                  "httpGet": {
+                    "path": "/health/live",
+                    "port": 8088,
+                    "scheme": "HTTP"
+                  },
+                  "periodSeconds": 5,
+                  "successThreshold": 1,
+                  "timeoutSeconds": 2
+                },
+                "terminationMessagePath": "/dev/termination-log",
+                "terminationMessagePolicy": "File"
+              }
+            ],
+            "dnsPolicy": "ClusterFirst",
+            "restartPolicy": "Always",
+            "schedulerName": "default-scheduler",
+            "securityContext": {
+              "runAsGroup": 10001,
+              "runAsNonRoot": true,
+              "runAsUser": 10001,
+              "seccompProfile": {
+                "type": "RuntimeDefault"
+              }
+            },
+            "serviceAccount": "preview-pool-coordinator",
+            "serviceAccountName": "preview-pool-coordinator",
+            "terminationGracePeriodSeconds": 90
+          }
+        }
       }
     }
-  }
+  ]
 }
