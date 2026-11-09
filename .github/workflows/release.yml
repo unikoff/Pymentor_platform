@@ -1,11 +1,11 @@
-name: Preview GitOps CI
+name: Release CI/CD
 
 on:
   push:
-    branches: [codex/cicd-argo-preview]
+    branches: [Release]
   pull_request:
     paths:
-      - '.github/workflows/preview-gitops.yml'
+      - '.github/workflows/release.yml'
       - 'scripts/ci/**'
       - 'services/core-api/**'
       - 'services/runner-pool/**'
@@ -15,7 +15,7 @@ on:
       - 'deploy/gitops/preview/**'
 
 concurrency:
-  group: preview-ci-${{ github.ref }}
+  group: release-ci-${{ github.ref }}
   cancel-in-progress: false
 
 permissions: {}
@@ -56,7 +56,7 @@ jobs:
         run: python scripts/ci/preview_checks.py
 
   images:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/codex/cicd-argo-preview' && github.repository == 'unikoff/Pymentor_platform'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/Release' && github.repository == 'unikoff/Pymentor_platform'
     needs: checks
     runs-on: ubuntu-latest
     timeout-minutes: 45
@@ -121,7 +121,7 @@ jobs:
 
   publish:
     timeout-minutes: 5
-    if: github.event_name == 'push' && github.ref == 'refs/heads/codex/cicd-argo-preview' && github.repository == 'unikoff/Pymentor_platform'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/Release' && github.repository == 'unikoff/Pymentor_platform'
     needs: images
     runs-on: ubuntu-latest
     permissions:
@@ -147,6 +147,6 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git commit -m "chore(preview): update image digests [skip ci]"
-          remote_head=$(git ls-remote origin refs/heads/codex/cicd-argo-preview | cut -f1)
+          remote_head=$(git ls-remote origin refs/heads/Release | cut -f1)
           test "$remote_head" = "$GITHUB_SHA" || { echo 'Preview branch advanced; refusing stale publication' >&2; exit 1; }
-          git push origin HEAD:refs/heads/codex/cicd-argo-preview
+          git push origin HEAD:refs/heads/Release

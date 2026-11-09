@@ -1,3 +1,5 @@
+> Historical shared-hosting instructions. Automatic deployment is retired; the old workflow is disabled and archived under .github/legacy-workflows. The active path is branch Release -> .github/workflows/release.yml -> test VPS. Do not re-enable or alter the old host as part of this setup.
+
 # Автоматический production-деплой
 
 Shared-hosting не исполняет внешние команды (`git`, `tar`, `curl`) через

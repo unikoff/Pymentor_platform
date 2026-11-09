@@ -7,7 +7,7 @@ spec:
   project: preview
   source:
     repoURL: https://github.com/unikoff/Pymentor_platform.git
-    targetRevision: codex/cicd-argo-preview
+    targetRevision: Release
     path: deploy/gitops/preview
   destination:
     server: https://kubernetes.default.svc

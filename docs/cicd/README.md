@@ -5,7 +5,7 @@ Implemented and exercised on 2026-11-09. Scope: only test VPS **knowi01 / 13.140
 ## Release path
 
 ```text
-push codex/cicd-argo-preview
+push Release
   → GitHub Actions: disposable SQLite + PostgreSQL/Redis checks
   → build Core / frontend / runner-pool, SBOM + provenance, critical scan
   → GHCR: immutable SHA256 digests
@@ -16,9 +16,9 @@ push codex/cicd-argo-preview
   → stable revision; old ReplicaSet scales down
 ```
 
-The active release branch is **codex/cicd-argo-preview**. `main`/`production` were not switched or merged by this work. Normal commits to the preview branch run CI automatically. PR CI is read-only; only trusted branch pushes may publish. GitHub Actions has no SSH key or kubeconfig. Argo CD uses its restricted in-cluster identity; no public admin UI is exposed.
+The active release branch is **Release**. All former branch heads are consolidated into Release; main is retained. The retired production branch is no longer an automatic publishing target. Normal commits to Release run CI automatically. PR CI is read-only; only trusted branch pushes may publish. GitHub Actions has no SSH key or kubeconfig. Argo CD uses its restricted in-cluster identity; no public admin UI is exposed.
 
-`deploy/gitops/preview/release.json` records source SHA and three image digests; the image SHA differs from the later bot/configuration commit. Core emits `X-Pymentor-Revision` for the image source SHA. The publisher refuses stale branch heads instead of overwriting intervening edits. If it refuses, inspect current HEAD and rerun checks on the current branch; never force-push a stale release.
+`deploy/gitops/preview/release.json` records source SHA and three image digests; the image SHA differs from the later bot/configuration commit. Core emits `X-Pymentor-Revision` for the image source SHA. The publisher refuses stale branch heads instead of overwriting intervening edits. If it refuses, inspect current HEAD and rerun checks on the current Release branch; never force-push a stale release.
 
 Config-only fault/recovery commits in the acceptance drill used `[skip ci]` and kept already-scanned image digests. Do not use this to bypass image checks for application source changes. Normal releases should follow the complete pipeline.
 
@@ -62,7 +62,7 @@ k3s kubectl --context default -n pymentor get pods
 k3s kubectl --context default -n pymentor get cronjobs
 ```
 
-If a release fails, keep the candidate aborted and inspect AnalysisRun/Job logs (the checks log no passwords/cookies). Record failed source and manifests. Revert the **bad GitOps manifest commit** to proven digests, inspect/render the diff, and push the revert to the preview branch. Do not blindly revert only the source and assume images change immediately. Do not change the database as part of image recovery.
+If a release fails, keep the candidate aborted and inspect AnalysisRun/Job logs (the checks log no passwords/cookies). Record failed source and manifests. Revert the **bad GitOps manifest commit** to proven digests, inspect/render the diff, and push the revert to Release. Do not blindly revert only the source and assume images change immediately. Do not change the database as part of image recovery.
 
 If Argo CD still has a Running sync for the failed revision, verify its revision before terminating it. This stops only that operation, not the serving stable application:
 
@@ -75,4 +75,10 @@ k3s kubectl --context default -n argocd-preview annotate application pymentor-pr
 
 Then wait for **Synced AND Healthy at the intended Git SHA**, both Rollouts Healthy, stable100/canary0 and actual public requests. A green sync alone does not prove application health. If Git/controller access fails, use the recorded operator baseline and stop auto-sync before emergency traffic changes, otherwise self-heal can overwrite them. Retained bootstrap Deployments are a recovery aid, not a substitute for this tested Git revert; some older fallback runners logged user output and must not be promoted silently.
 
-Remaining scope outside this task: main/production adoption, real-user data migration, DNS cutover, notification enablement, multi-node HA/full host restore, production SLO telemetry and sustained load acceptance. The old platform continues independently.
+Remaining scope outside this task: real-user data migration, DNS cutover, notification enablement, multi-node HA/full host restore, production SLO telemetry and sustained load acceptance. The old platform continues independently.
+
+## Branch consolidation, 2026-11-09
+
+Release is the deployment branch (case-sensitive). Main is retained; the other branch heads are merged into Release before deletion. Legacy Core conflicts retain the newer modular service; 13 unique historical documents are archived under docs/archive/core-legacy-20261105 and all original code remains reachable in Git history. Former production changes are build artifacts only; they do not deploy the old hosting. A verified local Git bundle and worktree status/diff hashes were saved before consolidation. Dirty worktrees keep their files and HEADs; obsolete checked-out branch names may be detached before their references are removed.
+
+Only release.yml remains under .github/workflows; former pipelines are archived under .github/legacy-workflows. The GitHub Actions icon beside a commit is its author, not a branch connection. The old production workflow remains disabled. Argo CD reads Release at deploy/gitops/preview; the environment is still the test VPS, with no data/DNS cutover.
