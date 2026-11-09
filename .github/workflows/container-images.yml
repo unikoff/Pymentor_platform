@@ -2,6 +2,7 @@ name: Container images CI
 
 on:
   push:
+    branches-ignore: [codex/cicd-argo-preview]
   pull_request:
   workflow_dispatch:
 
