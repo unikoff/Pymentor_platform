@@ -179,7 +179,7 @@
                   },
                   {
                     "name": "PYMENTOR_REDIS_PREFIX",
-                    "value": "pymentor-vps-preview:"
+                    "value": "pymentor-preview-migrated:"
                   },
                   {
                     "name": "PYMENTOR_LOCAL_NOTIFICATIONS",
@@ -202,7 +202,7 @@
                     "valueFrom": {
                       "secretKeyRef": {
                         "key": "DATABASE_URL",
-                        "name": "preview-runtime"
+                        "name": "preview-migrated-runtime"
                       }
                     }
                   },
@@ -211,7 +211,7 @@
                     "valueFrom": {
                       "secretKeyRef": {
                         "key": "REDIS_URL",
-                        "name": "preview-runtime"
+                        "name": "preview-migrated-runtime"
                       }
                     }
                   },
@@ -220,7 +220,7 @@
                     "valueFrom": {
                       "secretKeyRef": {
                         "key": "PYMENTOR_LOGIN_RECOVERY_KEY",
-                        "name": "preview-runtime"
+                        "name": "preview-migrated-runtime"
                       }
                     }
                   },
