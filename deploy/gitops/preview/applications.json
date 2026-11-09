@@ -309,7 +309,7 @@
           "managed-by": "preview-gitops"
         },
         "annotations": {
-          "argocd.argoproj.io/sync-options": "ServerSideApply=true,DisableClientSideApplyMigration=true"
+          "argocd.argoproj.io/sync-options": "ServerSideApply=true"
         }
       },
       "spec": {
@@ -334,7 +334,7 @@
           "managed-by": "preview-gitops"
         },
         "annotations": {
-          "argocd.argoproj.io/sync-options": "ServerSideApply=true,DisableClientSideApplyMigration=true"
+          "argocd.argoproj.io/sync-options": "ServerSideApply=true"
         }
       },
       "spec": {
@@ -356,7 +356,7 @@
         "name": "core-api-weighted",
         "namespace": "pymentor",
         "annotations": {
-          "argocd.argoproj.io/sync-options": "ServerSideApply=true,DisableClientSideApplyMigration=true"
+          "argocd.argoproj.io/sync-options": "ServerSideApply=true"
         }
       },
       "spec": {
@@ -612,7 +612,7 @@
           "managed-by": "preview-gitops"
         },
         "annotations": {
-          "argocd.argoproj.io/sync-options": "ServerSideApply=true,DisableClientSideApplyMigration=true"
+          "argocd.argoproj.io/sync-options": "ServerSideApply=true"
         }
       },
       "spec": {
@@ -637,7 +637,7 @@
           "managed-by": "preview-gitops"
         },
         "annotations": {
-          "argocd.argoproj.io/sync-options": "ServerSideApply=true,DisableClientSideApplyMigration=true"
+          "argocd.argoproj.io/sync-options": "ServerSideApply=true"
         }
       },
       "spec": {
@@ -659,7 +659,7 @@
         "name": "frontend-weighted",
         "namespace": "pymentor",
         "annotations": {
-          "argocd.argoproj.io/sync-options": "ServerSideApply=true,DisableClientSideApplyMigration=true"
+          "argocd.argoproj.io/sync-options": "ServerSideApply=true"
         }
       },
       "spec": {
