@@ -49,8 +49,8 @@ class ChecksContract(unittest.TestCase):
                 headers = Message()
                 headers.add_header('Set-Cookie', 'session=secret-cookie; Secure; HttpOnly; Path=/')
                 return Response(headers=headers)
-            if path == '/api/learning/lessons':
-                return Response({'lessons': [{'is_available': True, 'tasks': [{'id': 'lesson-fa2f4f9cd78e77a18fb1778e-task-01', 'revision': 'a' * 64}]}]})
+            if path == '/api/learning/lessons/lesson-fa2f4f9cd78e77a18fb1778e':
+                return Response({'lesson': {'is_available': True, 'tasks': [{'id': 'lesson-fa2f4f9cd78e77a18fb1778e-task-01', 'revision': 'a' * 64}]}})
             if path.endswith('/run'):
                 marker = data['code'][7:-2]
                 return Response({'ok': not self.bad_result, 'stdout': marker + '\n'})
@@ -62,14 +62,14 @@ class ChecksContract(unittest.TestCase):
 
     def test_candidate_runs_with_secure_cookie_and_revision(self):
         self.module['candidate']('http://preview')
-        self.assertEqual([c[0] for c in self.calls], ['/api/user/register', '/api/user/login', '/api/learning/lessons', '/api/learning/tasks/lesson-fa2f4f9cd78e77a18fb1778e-task-01/run'])
+        self.assertEqual([c[0] for c in self.calls], ['/api/user/register', '/api/user/login', '/api/learning/lessons/lesson-fa2f4f9cd78e77a18fb1778e', '/api/learning/tasks/lesson-fa2f4f9cd78e77a18fb1778e-task-01/run'])
         self.assertEqual(self.calls[2][2], 'session=secret-cookie')
         self.assertEqual(self.calls[3][2], 'session=secret-cookie')
         self.assertEqual(self.calls[3][1]['task_revision'], 'a' * 64)
         self.assertEqual(self.calls[3][3], 20)
 
     def test_status_failures_are_safe_and_stop(self):
-        for path in ('/api/user/register', '/api/user/login', '/api/learning/lessons', '/api/learning/tasks/lesson-fa2f4f9cd78e77a18fb1778e-task-01/run'):
+        for path in ('/api/user/register', '/api/user/login', '/api/learning/lessons/lesson-fa2f4f9cd78e77a18fb1778e', '/api/learning/tasks/lesson-fa2f4f9cd78e77a18fb1778e-task-01/run'):
             with self.subTest(path=path):
                 self.calls.clear()
                 self.fail_path = path
