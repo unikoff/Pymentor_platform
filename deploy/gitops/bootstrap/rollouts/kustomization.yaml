@@ -1,0 +1,39 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: argo-rollouts-preview
+resources:
+- upstream.yaml
+images:
+- name: quay.io/argoproj/argo-rollouts
+  newTag: v1.10.2
+patches:
+- target:
+    group: rbac.authorization.k8s.io
+    version: v1
+    kind: ClusterRole
+  patch: |-
+    $patch: delete
+    apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRole
+    metadata:
+      name: unused
+- target:
+    group: apps
+    version: v1
+    kind: Deployment
+    name: argo-rollouts
+  patch: |-
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: argo-rollouts
+    spec:
+      template:
+        spec:
+          containers:
+          - name: argo-rollouts
+            args:
+            - --namespaced
+            - --namespace=pymentor
+            - --traefik-api-group=traefik.io
+            imagePullPolicy: IfNotPresent

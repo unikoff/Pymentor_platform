@@ -1,0 +1,14 @@
+{
+  "apiVersion": "v1",
+  "kind": "ConfigMap",
+  "metadata": {
+    "name": "preview-release-checks",
+    "namespace": "pymentor",
+    "annotations": {
+      "argocd.argoproj.io/sync-wave": "-2"
+    }
+  },
+  "data": {
+    "check.py": "import os,json,time,urllib.request,urllib.error\nkind=os.environ['CHECK_KIND']; target=os.environ['CHECK_TARGET']; mode=os.environ['CHECK_MODE']\nop=urllib.request.build_opener(urllib.request.ProxyHandler({}))\npaths=['/health/ready','/api/learning/catalog','/api/user/me'] if kind=='core-api' else ['/','/index.html']\nif mode=='live': paths=([ '/health/ready'] if kind=='core-api' else ['/'])*20\nfor path in paths:\n expected=401 if path=='/api/user/me' else 200\n req=urllib.request.Request(target+path,headers={'User-Agent':'Pymentor-release-check'})\n started=time.monotonic()\n try:\n  with op.open(req,timeout=5) as r: code=r.status; body=r.read(200000)\n except urllib.error.HTTPError as e: code=e.code;body=e.read(200000)\n if code!=expected:raise SystemExit('Release check HTTP status mismatch')\n if time.monotonic()-started>5:raise SystemExit('Release check latency limit')\n if mode=='live':time.sleep(.15)\nprint('release checks passed',len(paths),kind,mode)\n"
+  }
+}

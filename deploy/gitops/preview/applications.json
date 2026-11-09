@@ -1,0 +1,658 @@
+{
+  "apiVersion": "v1",
+  "kind": "List",
+  "items": [
+    {
+      "apiVersion": "argoproj.io/v1alpha1",
+      "kind": "Rollout",
+      "metadata": {
+        "name": "core-api-progressive",
+        "namespace": "pymentor",
+        "labels": {
+          "managed-by": "preview-gitops"
+        }
+      },
+      "spec": {
+        "replicas": 1,
+        "revisionHistoryLimit": 3,
+        "progressDeadlineSeconds": 180,
+        "progressDeadlineAbort": true,
+        "selector": {
+          "matchLabels": {
+            "app": "core-api-progressive"
+          }
+        },
+        "strategy": {
+          "canary": {
+            "stableService": "core-api",
+            "canaryService": "core-api-canary",
+            "maxSurge": 1,
+            "maxUnavailable": 0,
+            "scaleDownDelaySeconds": 30,
+            "abortScaleDownDelaySeconds": 30,
+            "trafficRouting": {
+              "traefik": {
+                "weightedTraefikServiceName": "core-api-weighted"
+              }
+            },
+            "steps": [
+              {
+                "setCanaryScale": {
+                  "replicas": 1
+                }
+              },
+              {
+                "setWeight": 0
+              },
+              {
+                "analysis": {
+                  "templates": [
+                    {
+                      "templateName": "preview-candidate-check"
+                    }
+                  ],
+                  "args": [
+                    {
+                      "name": "target",
+                      "value": "http://core-api-canary.pymentor.svc.cluster.local:8001"
+                    },
+                    {
+                      "name": "kind",
+                      "value": "core-api"
+                    }
+                  ]
+                }
+              },
+              {
+                "setWeight": 10
+              },
+              {
+                "pause": {
+                  "duration": "5s"
+                }
+              },
+              {
+                "analysis": {
+                  "templates": [
+                    {
+                      "templateName": "preview-live-check"
+                    }
+                  ],
+                  "args": [
+                    {
+                      "name": "kind",
+                      "value": "core-api"
+                    }
+                  ]
+                }
+              },
+              {
+                "setWeight": 25
+              },
+              {
+                "pause": {
+                  "duration": "5s"
+                }
+              },
+              {
+                "analysis": {
+                  "templates": [
+                    {
+                      "templateName": "preview-live-check"
+                    }
+                  ],
+                  "args": [
+                    {
+                      "name": "kind",
+                      "value": "core-api"
+                    }
+                  ]
+                }
+              },
+              {
+                "setWeight": 50
+              },
+              {
+                "pause": {
+                  "duration": "5s"
+                }
+              },
+              {
+                "analysis": {
+                  "templates": [
+                    {
+                      "templateName": "preview-live-check"
+                    }
+                  ],
+                  "args": [
+                    {
+                      "name": "kind",
+                      "value": "core-api"
+                    }
+                  ]
+                }
+              },
+              {
+                "setWeight": 100
+              },
+              {
+                "pause": {
+                  "duration": "5s"
+                }
+              },
+              {
+                "analysis": {
+                  "templates": [
+                    {
+                      "templateName": "preview-live-check"
+                    }
+                  ],
+                  "args": [
+                    {
+                      "name": "kind",
+                      "value": "core-api"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        "template": {
+          "metadata": {
+            "labels": {
+              "app": "core-api-progressive"
+            },
+            "annotations": {
+              "pymentor.io/source-revision": "bootstrap"
+            }
+          },
+          "spec": {
+            "automountServiceAccountToken": false,
+            "containers": [
+              {
+                "env": [
+                  {
+                    "name": "PYMENTOR_PROFILE",
+                    "value": "postgres_redis"
+                  },
+                  {
+                    "name": "PYMENTOR_REDIS_PREFIX",
+                    "value": "pymentor-vps-preview:"
+                  },
+                  {
+                    "name": "PYMENTOR_LOCAL_NOTIFICATIONS",
+                    "value": "0"
+                  },
+                  {
+                    "name": "PYMENTOR_PUBLIC_RUNNER_ENABLED",
+                    "value": "0"
+                  },
+                  {
+                    "name": "PYMENTOR_LOG_TO_STDOUT",
+                    "value": "1"
+                  },
+                  {
+                    "name": "PYMENTOR_COOKIE_SECURE",
+                    "value": "1"
+                  },
+                  {
+                    "name": "DATABASE_URL",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "key": "DATABASE_URL",
+                        "name": "preview-runtime"
+                      }
+                    }
+                  },
+                  {
+                    "name": "REDIS_URL",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "key": "REDIS_URL",
+                        "name": "preview-runtime"
+                      }
+                    }
+                  },
+                  {
+                    "name": "PYMENTOR_LOGIN_RECOVERY_KEY",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "key": "PYMENTOR_LOGIN_RECOVERY_KEY",
+                        "name": "preview-runtime"
+                      }
+                    }
+                  },
+                  {
+                    "name": "PYMENTOR_REMOTE_RUNNER_URL",
+                    "value": "http://preview-runner-broker.pymentor.svc.cluster.local:8088/api/learning/interpreter/run"
+                  },
+                  {
+                    "name": "PYMENTOR_RELEASE_REVISION",
+                    "value": "bootstrap"
+                  }
+                ],
+                "image": "pymentor/core-api:vps-20261108-secure2",
+                "imagePullPolicy": "IfNotPresent",
+                "name": "core-api",
+                "ports": [
+                  {
+                    "containerPort": 8001,
+                    "protocol": "TCP"
+                  }
+                ],
+                "readinessProbe": {
+                  "failureThreshold": 24,
+                  "httpGet": {
+                    "path": "/health/ready",
+                    "port": 8001,
+                    "scheme": "HTTP"
+                  },
+                  "periodSeconds": 5,
+                  "successThreshold": 1,
+                  "timeoutSeconds": 3
+                },
+                "resources": {
+                  "requests": {
+                    "cpu": "100m",
+                    "memory": "128Mi"
+                  },
+                  "limits": {
+                    "cpu": "1",
+                    "memory": "768Mi"
+                  }
+                },
+                "securityContext": {
+                  "allowPrivilegeEscalation": false,
+                  "capabilities": {
+                    "drop": [
+                      "ALL"
+                    ]
+                  }
+                },
+                "livenessProbe": {
+                  "httpGet": {
+                    "path": "/health/live",
+                    "port": 8001
+                  },
+                  "periodSeconds": 10,
+                  "timeoutSeconds": 3,
+                  "failureThreshold": 3
+                },
+                "startupProbe": {
+                  "httpGet": {
+                    "path": "/health/startup",
+                    "port": 8001
+                  },
+                  "periodSeconds": 3,
+                  "timeoutSeconds": 3,
+                  "failureThreshold": 40
+                }
+              }
+            ],
+            "dnsPolicy": "ClusterFirst",
+            "restartPolicy": "Always",
+            "schedulerName": "default-scheduler",
+            "securityContext": {},
+            "terminationGracePeriodSeconds": 30
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Service",
+      "metadata": {
+        "name": "core-api",
+        "namespace": "pymentor",
+        "labels": {
+          "managed-by": "preview-gitops"
+        }
+      },
+      "spec": {
+        "selector": {
+          "app": "core-api-progressive"
+        },
+        "ports": [
+          {
+            "port": 8001,
+            "targetPort": 8001
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Service",
+      "metadata": {
+        "name": "core-api-canary",
+        "namespace": "pymentor",
+        "labels": {
+          "managed-by": "preview-gitops"
+        }
+      },
+      "spec": {
+        "selector": {
+          "app": "core-api-progressive"
+        },
+        "ports": [
+          {
+            "port": 8001,
+            "targetPort": 8001
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "traefik.io/v1alpha1",
+      "kind": "TraefikService",
+      "metadata": {
+        "name": "core-api-weighted",
+        "namespace": "pymentor"
+      },
+      "spec": {
+        "weighted": {
+          "services": [
+            {
+              "name": "core-api",
+              "port": 8001
+            },
+            {
+              "name": "core-api-canary",
+              "port": 8001
+            }
+          ]
+        }
+      }
+    },
+    {
+      "apiVersion": "argoproj.io/v1alpha1",
+      "kind": "Rollout",
+      "metadata": {
+        "name": "frontend-progressive",
+        "namespace": "pymentor",
+        "labels": {
+          "managed-by": "preview-gitops"
+        }
+      },
+      "spec": {
+        "replicas": 1,
+        "revisionHistoryLimit": 3,
+        "progressDeadlineSeconds": 180,
+        "progressDeadlineAbort": true,
+        "selector": {
+          "matchLabels": {
+            "app": "frontend-progressive"
+          }
+        },
+        "strategy": {
+          "canary": {
+            "stableService": "frontend",
+            "canaryService": "frontend-canary",
+            "maxSurge": 1,
+            "maxUnavailable": 0,
+            "scaleDownDelaySeconds": 30,
+            "abortScaleDownDelaySeconds": 30,
+            "trafficRouting": {
+              "traefik": {
+                "weightedTraefikServiceName": "frontend-weighted"
+              }
+            },
+            "steps": [
+              {
+                "setCanaryScale": {
+                  "replicas": 1
+                }
+              },
+              {
+                "setWeight": 0
+              },
+              {
+                "analysis": {
+                  "templates": [
+                    {
+                      "templateName": "preview-candidate-check"
+                    }
+                  ],
+                  "args": [
+                    {
+                      "name": "target",
+                      "value": "http://frontend-canary.pymentor.svc.cluster.local:8080"
+                    },
+                    {
+                      "name": "kind",
+                      "value": "frontend"
+                    }
+                  ]
+                }
+              },
+              {
+                "setWeight": 10
+              },
+              {
+                "pause": {
+                  "duration": "5s"
+                }
+              },
+              {
+                "analysis": {
+                  "templates": [
+                    {
+                      "templateName": "preview-live-check"
+                    }
+                  ],
+                  "args": [
+                    {
+                      "name": "kind",
+                      "value": "frontend"
+                    }
+                  ]
+                }
+              },
+              {
+                "setWeight": 25
+              },
+              {
+                "pause": {
+                  "duration": "5s"
+                }
+              },
+              {
+                "analysis": {
+                  "templates": [
+                    {
+                      "templateName": "preview-live-check"
+                    }
+                  ],
+                  "args": [
+                    {
+                      "name": "kind",
+                      "value": "frontend"
+                    }
+                  ]
+                }
+              },
+              {
+                "setWeight": 50
+              },
+              {
+                "pause": {
+                  "duration": "5s"
+                }
+              },
+              {
+                "analysis": {
+                  "templates": [
+                    {
+                      "templateName": "preview-live-check"
+                    }
+                  ],
+                  "args": [
+                    {
+                      "name": "kind",
+                      "value": "frontend"
+                    }
+                  ]
+                }
+              },
+              {
+                "setWeight": 100
+              },
+              {
+                "pause": {
+                  "duration": "5s"
+                }
+              },
+              {
+                "analysis": {
+                  "templates": [
+                    {
+                      "templateName": "preview-live-check"
+                    }
+                  ],
+                  "args": [
+                    {
+                      "name": "kind",
+                      "value": "frontend"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        "template": {
+          "metadata": {
+            "labels": {
+              "app": "frontend-progressive"
+            },
+            "annotations": {
+              "pymentor.io/source-revision": "bootstrap"
+            }
+          },
+          "spec": {
+            "automountServiceAccountToken": false,
+            "containers": [
+              {
+                "image": "pymentor/frontend:vps-9c9bb20",
+                "imagePullPolicy": "IfNotPresent",
+                "name": "frontend",
+                "ports": [
+                  {
+                    "containerPort": 8080,
+                    "protocol": "TCP"
+                  }
+                ],
+                "readinessProbe": {
+                  "failureThreshold": 24,
+                  "httpGet": {
+                    "path": "/",
+                    "port": 8080,
+                    "scheme": "HTTP"
+                  },
+                  "periodSeconds": 5,
+                  "successThreshold": 1,
+                  "timeoutSeconds": 3
+                },
+                "resources": {
+                  "limits": {
+                    "memory": "768Mi"
+                  },
+                  "requests": {
+                    "cpu": "50m",
+                    "memory": "64Mi"
+                  }
+                },
+                "env": [
+                  {
+                    "name": "PYMENTOR_RELEASE_REVISION",
+                    "value": "bootstrap"
+                  }
+                ],
+                "securityContext": {
+                  "allowPrivilegeEscalation": false,
+                  "capabilities": {
+                    "drop": [
+                      "ALL"
+                    ]
+                  }
+                }
+              }
+            ],
+            "dnsPolicy": "ClusterFirst",
+            "restartPolicy": "Always",
+            "schedulerName": "default-scheduler",
+            "securityContext": {},
+            "terminationGracePeriodSeconds": 30
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Service",
+      "metadata": {
+        "name": "frontend",
+        "namespace": "pymentor",
+        "labels": {
+          "managed-by": "preview-gitops"
+        }
+      },
+      "spec": {
+        "selector": {
+          "app": "frontend-progressive"
+        },
+        "ports": [
+          {
+            "port": 8080,
+            "targetPort": 8080
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Service",
+      "metadata": {
+        "name": "frontend-canary",
+        "namespace": "pymentor",
+        "labels": {
+          "managed-by": "preview-gitops"
+        }
+      },
+      "spec": {
+        "selector": {
+          "app": "frontend-progressive"
+        },
+        "ports": [
+          {
+            "port": 8080,
+            "targetPort": 8080
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "traefik.io/v1alpha1",
+      "kind": "TraefikService",
+      "metadata": {
+        "name": "frontend-weighted",
+        "namespace": "pymentor"
+      },
+      "spec": {
+        "weighted": {
+          "services": [
+            {
+              "name": "frontend",
+              "port": 8080
+            },
+            {
+              "name": "frontend-canary",
+              "port": 8080
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

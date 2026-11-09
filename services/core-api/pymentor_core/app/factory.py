@@ -122,6 +122,8 @@ def create_app(profile=None, *, laboratory=False):
     app.state.settings = settings
     app.state.composition_root = build_default_composition()
     configure_web(app)
+    from pymentor_core.app.release import ReleaseRevisionMiddleware
+    app.add_middleware(ReleaseRevisionMiddleware)
 
     @app.get("/health")
     def health():

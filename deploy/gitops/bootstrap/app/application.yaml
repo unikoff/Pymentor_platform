@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: pymentor-preview
+  namespace: argocd-preview
+spec:
+  project: preview
+  source:
+    repoURL: https://github.com/unikoff/Pymentor_platform.git
+    targetRevision: codex/cicd-argo-preview
+    path: deploy/gitops/preview
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: pymentor
+  syncPolicy:
+    syncOptions:
+    - RespectIgnoreDifferences=true
+    - PruneLast=true
+  ignoreDifferences:
+  - group: ''
+    kind: Service
+    jqPathExpressions:
+    - .spec.selector
+  - group: traefik.io
+    kind: TraefikService
+    jqPathExpressions:
+    - .spec.weighted.services[].weight

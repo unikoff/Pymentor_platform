@@ -1,0 +1,233 @@
+{
+  "apiVersion": "v1",
+  "kind": "List",
+  "items": [
+    {
+      "apiVersion": "argoproj.io/v1alpha1",
+      "kind": "AnalysisTemplate",
+      "metadata": {
+        "name": "preview-candidate-check",
+        "namespace": "pymentor",
+        "annotations": {
+          "argocd.argoproj.io/sync-wave": "-2"
+        }
+      },
+      "spec": {
+        "args": [
+          {
+            "name": "kind"
+          },
+          {
+            "name": "target"
+          }
+        ],
+        "metrics": [
+          {
+            "name": "candidate-functional",
+            "count": 1,
+            "failureLimit": 0,
+            "provider": {
+              "job": {
+                "spec": {
+                  "backoffLimit": 0,
+                  "activeDeadlineSeconds": 60,
+                  "ttlSecondsAfterFinished": 300,
+                  "template": {
+                    "metadata": {
+                      "labels": {
+                        "purpose": "gitops-analysis"
+                      }
+                    },
+                    "spec": {
+                      "automountServiceAccountToken": false,
+                      "restartPolicy": "Never",
+                      "securityContext": {
+                        "runAsNonRoot": true,
+                        "runAsUser": 10001,
+                        "runAsGroup": 10001,
+                        "seccompProfile": {
+                          "type": "RuntimeDefault"
+                        }
+                      },
+                      "containers": [
+                        {
+                          "name": "check",
+                          "image": "python@sha256:8523d6abeb48ceae0b7240d30c5808fc26cb79c1a635bacdf19cf3baecfbec07",
+                          "command": [
+                            "python",
+                            "-B",
+                            "/checks/check.py"
+                          ],
+                          "env": [
+                            {
+                              "name": "CHECK_KIND",
+                              "value": "{{args.kind}}"
+                            },
+                            {
+                              "name": "CHECK_TARGET",
+                              "value": "{{args.target}}"
+                            },
+                            {
+                              "name": "CHECK_MODE",
+                              "value": "candidate"
+                            }
+                          ],
+                          "securityContext": {
+                            "readOnlyRootFilesystem": true,
+                            "allowPrivilegeEscalation": false,
+                            "capabilities": {
+                              "drop": [
+                                "ALL"
+                              ]
+                            }
+                          },
+                          "resources": {
+                            "requests": {
+                              "cpu": "25m",
+                              "memory": "32Mi"
+                            },
+                            "limits": {
+                              "cpu": "250m",
+                              "memory": "128Mi"
+                            }
+                          },
+                          "volumeMounts": [
+                            {
+                              "name": "checks",
+                              "mountPath": "/checks",
+                              "readOnly": true
+                            }
+                          ]
+                        }
+                      ],
+                      "volumes": [
+                        {
+                          "name": "checks",
+                          "configMap": {
+                            "name": "preview-release-checks"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "argoproj.io/v1alpha1",
+      "kind": "AnalysisTemplate",
+      "metadata": {
+        "name": "preview-live-check",
+        "namespace": "pymentor",
+        "annotations": {
+          "argocd.argoproj.io/sync-wave": "-2"
+        }
+      },
+      "spec": {
+        "args": [
+          {
+            "name": "kind"
+          }
+        ],
+        "metrics": [
+          {
+            "name": "live-functional",
+            "count": 1,
+            "failureLimit": 0,
+            "provider": {
+              "job": {
+                "spec": {
+                  "backoffLimit": 0,
+                  "activeDeadlineSeconds": 60,
+                  "ttlSecondsAfterFinished": 300,
+                  "template": {
+                    "metadata": {
+                      "labels": {
+                        "purpose": "gitops-analysis"
+                      }
+                    },
+                    "spec": {
+                      "automountServiceAccountToken": false,
+                      "restartPolicy": "Never",
+                      "securityContext": {
+                        "runAsNonRoot": true,
+                        "runAsUser": 10001,
+                        "runAsGroup": 10001,
+                        "seccompProfile": {
+                          "type": "RuntimeDefault"
+                        }
+                      },
+                      "containers": [
+                        {
+                          "name": "check",
+                          "image": "python@sha256:8523d6abeb48ceae0b7240d30c5808fc26cb79c1a635bacdf19cf3baecfbec07",
+                          "command": [
+                            "python",
+                            "-B",
+                            "/checks/check.py"
+                          ],
+                          "env": [
+                            {
+                              "name": "CHECK_KIND",
+                              "value": "{{args.kind}}"
+                            },
+                            {
+                              "name": "CHECK_TARGET",
+                              "value": "https://13-140-29-11.sslip.io"
+                            },
+                            {
+                              "name": "CHECK_MODE",
+                              "value": "live"
+                            }
+                          ],
+                          "securityContext": {
+                            "readOnlyRootFilesystem": true,
+                            "allowPrivilegeEscalation": false,
+                            "capabilities": {
+                              "drop": [
+                                "ALL"
+                              ]
+                            }
+                          },
+                          "resources": {
+                            "requests": {
+                              "cpu": "25m",
+                              "memory": "32Mi"
+                            },
+                            "limits": {
+                              "cpu": "250m",
+                              "memory": "128Mi"
+                            }
+                          },
+                          "volumeMounts": [
+                            {
+                              "name": "checks",
+                              "mountPath": "/checks",
+                              "readOnly": true
+                            }
+                          ]
+                        }
+                      ],
+                      "volumes": [
+                        {
+                          "name": "checks",
+                          "configMap": {
+                            "name": "preview-release-checks"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
