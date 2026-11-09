@@ -37,3 +37,4 @@ patches:
     spec:\n  template:\n    spec:\n      containers:\n      - name: argocd-application-controller\n\
     \        resources:\n          limits:\n            cpu: 500m\n            memory:\
     \ 512Mi\n          requests:\n            cpu: 25m\n            memory: 64Mi\n"
+- path: params-patch.yaml

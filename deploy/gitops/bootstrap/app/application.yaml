@@ -27,5 +27,6 @@ spec:
     - .spec.selector
   - group: traefik.io
     kind: TraefikService
-    jqPathExpressions:
-    - .spec.weighted.services[].weight
+    jsonPointers:
+    - /spec/weighted/services/0/weight
+    - /spec/weighted/services/1/weight

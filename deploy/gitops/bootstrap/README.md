@@ -1,40 +1,27 @@
-# PYM-496/497 preview bootstrap — PREPARED
+# Preview bootstrap — installed and exercised 2026-11-09
 
-Only preparation. No cluster connection, install, sync or VPS writes were performed. This is a single-node preview, not HA. The stated K3s 1.37.2, Traefik 3.7.15, memory and existing namespace are inputs, not live observations. Confirm actual compatibility of those Kubernetes, Argo CD and Rollouts versions with release documentation before installation.
+Scope: test VPS knowi01 / 13.140.29.11 only. Main runbook and acceptance: [docs/cicd](../../../docs/cicd/README.md). This stack does not provision a new VPS, PostgreSQL/Redis/PVCs, runtime/TLS secrets, gVisor, sandbox admission policies or the runner service account. Those already existed in the test cluster; a complete bare-host restore has not been rehearsed here.
 
-## Inputs and safety
+- Argo CD v3.6.1 namespace install, upstream SHA256 `310ff8e2cbef2c4b84dd8d353bddc4c9afcec551e62af30560b0aa80ff140382`.
+- Rollouts v1.10.2 namespace install, upstream SHA256 `e7836e21612034c1ae9ec175616c919b8295f29731f0767d5d608f2a0d727ef9`. Overlay pins controller version and removes aggregated ClusterRoles.
+- Runtime observed: K3s v1.37.2+k3s1, Traefik 3.7.15, single node. Controllers are private ClusterIP services; Argo CD admin disabled. Resources sized in overlays.
+- Argo CD is limited to `pymentor`; AppProject permits the declared namespaced kinds and no cluster resources. Direct Secret reads/PVC deletion are denied. Creating application workloads remains a trusted privilege and can indirectly access namespace secrets: protect Git writers and controller identities.
+- Rollouts owns Service selectors/Traefik weights. Application ignores just those paths with RespectIgnoreDifferences. Argo owns desired templates and routes. Prune is off; self-heal and auto-sync are on.
+- The controller sync timeout is 600 seconds, replacing the upstream unlimited default. A failed Rollout can leave a sync waiting for health; terminate that exact failed operation before an urgent Git revert is reconciled. This was exercised in the abort drill. The timeout value was verified in controller environment; waiting for the full timeout was not separately tested.
 
-* Official Argo CD v3.6.1 namespace install: `argocd/upstream.yaml`, SHA-256 `310ff8e2cbef2c4b84dd8d353bddc4c9afcec551e62af30560b0aa80ff140382`.
-* Official Rollouts v1.10.2 namespace install: `rollouts/upstream.yaml`, SHA-256 `e7836e21612034c1ae9ec175616c919b8295f29731f0767d5d608f2a0d727ef9`. It uses `latest`; the overlay pins `v1.10.2`. The three aggregated ClusterRoles are deleted by the overlay.
-* CRDs are cluster-wide and installed separately by an admin from version-tagged Kustomize sources. Review rendered content and existing CRDs/owners first; do not overwrite shared CRDs blindly. Tags are not content hashes. Both controllers may affect existing CRs and workloads; check for existing controllers, conflicts and overlapping ownership first.
-* Application-controller has explicitly limited pymentor Role. Its Argo CD control namespace upstream permissions are separate. The Rollouts pymentor Role is a copy of the official Role, which includes secret read and deployment update, pod eviction, and other permissions. Audit and trim against the actual preview before use; these are NOT Argo CD application-controller rights. Existing Role or RoleBinding name collisions must be resolved before apply.
-* No local credentials included. `argocd-server` upstream is ClusterIP; no Ingress is created. The upstream may create an initial admin credential in-cluster: secure or disable admin through a separately reviewed access plan; ClusterIP is not authorization. Private repositories require separately provisioned credentials, never committed here.
-* Application uses manual sync. The branch and path must be accessible to the repo-server; check the final rendered preview manifests and their ownership before any sync. AppProject permits only listed namespaced kinds and no cluster-scoped resources. Existing secrets/PVCs/deployments must not be in the application. ConfigMaps/Services/Jobs and Traefik objects can still affect real traffic and data indirectly.
-* Rollouts is in `argo-rollouts-preview` but uses `--namespaced --namespace=pymentor`; the target RoleBinding points to its service account. It may reconcile existing Rollouts in pymentor, not only this preview. Verify no overlapping controller. TraefikService support requires correct CRDs and rollout configuration; no traffic behavior is verified here.
-* Upstream resources are not sized for this host; no guessed requests/limits are assigned. Before install measure allocatable, current workload requests, actual usage, memory pressure and rollout surge. A <=6 GiB host and ~2.2 GiB reported usage do not prove headroom, nor does an absent metrics-server imply zero consumption.
+Reproduce only against a verified target/context with pre-existing resources checked. Render each directory and use server-side dry-run. CRDs are cluster scoped and admin-installed separately: never delete/recreate shared CRDs or force ownership conflicts as a shortcut.
 
-## Before any separately authorized apply
-
-Obtain explicit cluster context and validate API identity, namespace, owners, existing CRDs/controllers, version compatibility, backups/recovery, pod resource baseline, single-node capacity, traffic and downtime constraints. Use explicit `--context` and `--namespace`; do not switch current context. Confirm all preconditions and review `kubectl diff` and server-side dry-runs where feasible. Do not force CRD conflicts. Render and inspect using `kubectl kustomize` for each directory. CRD rendering requires network access to public GitHub and a compatible local git/kustomize.
-
-Example order, AFTER review and separate authorization, with `$ctx` set to the verified context and working directory at bootstrap:
-
-```powershell
-# Cluster-scoped changes; review CRD ownership, conversions and rollback beforehand.
-kubectl --context $ctx apply --server-side -k ./crds-argocd
-kubectl --context $ctx apply --server-side -k ./crds-rollouts
-# Create control namespaces only after checking they do not already exist.
-kubectl --context $ctx create namespace argocd-preview
-kubectl --context $ctx create namespace argo-rollouts-preview
-kubectl --context $ctx --namespace argocd-preview apply -k ./argocd
-kubectl --context $ctx --namespace pymentor apply -k ./rollouts-access
-kubectl --context $ctx --namespace argo-rollouts-preview apply -k ./rollouts
-# Inspect readiness and permissions first; then install project/app and Argo CD role.
-kubectl --context $ctx --namespace argocd-preview apply -k ./app
+```sh
+k3s kubectl --context default apply --server-side -k deploy/gitops/bootstrap/crds-argocd
+k3s kubectl --context default apply --server-side -k deploy/gitops/bootstrap/crds-rollouts
+# After creating/confirming the two control namespaces:
+k3s kubectl --context default -n argocd-preview apply -k deploy/gitops/bootstrap/argocd
+k3s kubectl --context default -n pymentor apply -k deploy/gitops/bootstrap/rollouts-access
+k3s kubectl --context default -n argo-rollouts-preview apply -k deploy/gitops/bootstrap/rollouts
+# This contains explicit mixed namespaces, so do not supply -n:
+k3s kubectl --context default apply -k deploy/gitops/bootstrap/app
 ```
 
-Stop on failed apply, health degradation or timeout; do not continue. Confirm CRD Established, controller readiness, in-cluster destination discovery, actual controller RBAC and denied permissions (including secrets, PVCs and deployments for the Argo CD controller) with `kubectl auth can-i --as=system:serviceaccount:argocd-preview:argocd-application-controller` in pymentor. Verify RoleBinding subjects, pod and service endpoints, rollout logs, and actual Application repo/destination status before any sync. Cluster-level discovery/cache restrictions with namespace-only RBAC are unproven and may require additional narrowly reviewed configuration; do not grant cluster-admin as a shortcut. Do not print Secrets or credential data.
+Check controller readiness, role subjects, denied permissions, repo access, Application Synced/Healthy and actual routes before claiming completion. Updating cmd-params requires restarting the application-controller StatefulSet to reload its environment. Stop on errors; do not continue blindly. Removing a controller does not roll back application data or traffic.
 
-Recovery must be selected before installation: stop further sync and reconcile using the existing workload owner, restore traffic from the recorded baseline, and remove/revert only newly installed resources after understanding ownership and in-flight rollouts. Do not delete shared CRDs, PVCs, databases, or existing workloads as a rollback. Controller removal pauses reconciliation and does not undo application/data changes. Measure health, endpoints, errors/latency and storage integrity before and after if available.
-
-Sources: https://github.com/argoproj/argo-cd/blob/v3.6.1/docs/operator-manual/installation.md ; https://github.com/argoproj/argo-rollouts/blob/v1.10.2/docs/installation.md ; https://github.com/argoproj/argo-rollouts/blob/v1.10.2/cmd/rollouts-controller/main.go
+Primary sources: [Argo CD installation](https://github.com/argoproj/argo-cd/blob/v3.6.1/docs/operator-manual/installation.md), [Rollouts installation](https://github.com/argoproj/argo-rollouts/blob/v1.10.2/docs/installation.md), [sync timeout](https://github.com/argoproj/argo-cd/blob/v3.6.1/docs/operator-manual/argocd-cmd-params-cm.yaml).
