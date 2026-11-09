@@ -24,7 +24,7 @@ Config-only fault/recovery commits in the acceptance drill used `[skip ci]` and 
 
 ## Ownership and isolation
 
-- Argo CD owns declared app configuration; Rollouts owns ReplicaSets, stable/canary Service selectors and Traefik weights. GitOps ignores only those selectors/weights (explicit JSON pointers for the two traffic weights).
+- Argo CD owns declared app configuration; Rollouts owns ReplicaSets, stable/canary Service selectors and Traefik weights. GitOps ignores only those selectors/weights for comparison (explicit JSON pointers for weights). Shared Service/TraefikService objects use ServerSideApply with client-side migration disabled; applying them does not claim Rollouts-owned fields. RespectIgnoreDifferences prepatching is disabled: combined with client-side apply it removed weights on full resync during acceptance.
 - Core and frontend each have a Rollout: one stable replica, one temporary candidate, maxUnavailable0/maxSurge1. A small node still needs room for both during rollout. This is not node HA or autoscaling.
 - Candidate checks cover readiness, catalog, anonymous auth rejection and synthetic login followed by an actual free lesson task run through Core→runner. Login uses a canonical UUID Idempotency-Key. Secure cookies are forwarded only to the internal candidate target and never logged.
 - Live checks make 20 bounded public HTTPS requests per stage. These are functional synthetic gates, not statistically sufficient error-budget/SLO measurements or a 15-user benchmark. The preview creates isolated synthetic accounts; production needs an agreed test-account lifecycle.
