@@ -72,6 +72,7 @@ def updater_tests():
 
 def main():
     updater_tests()
+    run([sys.executable, "-B", "-m", "unittest", "scripts.ci.test_preview_checks_contract", "-v"], os.environ.copy())
     env = os.environ.copy()
     env.update(PYTHONPATH=os.pathsep.join((str(ROOT / 'services/core-api'), str(ROOT / 'backend'))),
                PYTHON_DOTENV_DISABLED='1', PYTHONDONTWRITEBYTECODE='1',

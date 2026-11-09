@@ -42,6 +42,10 @@ class ChecksContract(unittest.TestCase):
             if path == self.fail_path:
                 raise HTTPError(req.full_url, 503, 'unavailable', Message(), io.BytesIO())
             if path == '/api/user/login':
+                import uuid
+                operation_id = req.get_header('Idempotency-key')
+                self.assertEqual(str(uuid.UUID(operation_id)), operation_id)
+                self.assertEqual(uuid.UUID(operation_id).version, 4)
                 headers = Message()
                 headers.add_header('Set-Cookie', 'session=secret-cookie; Secure; HttpOnly; Path=/')
                 return Response(headers=headers)
