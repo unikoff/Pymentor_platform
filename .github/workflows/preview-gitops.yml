@@ -86,7 +86,7 @@ jobs:
             local name="$1" context="$2" dockerfile="$3"
             shift 3
             local metadata="$RUNNER_TEMP/$name-metadata.json"
-            docker buildx build --push --provenance=mode=max --sbom=true --file "$dockerfile" --tag "ghcr.io/unikoff/pymentor-platform-$name:$GITHUB_SHA" --metadata-file "$metadata" "$@" "$context"
+            docker buildx build --push --provenance=mode=max --sbom=true --label org.opencontainers.image.source=https://github.com/unikoff/Pymentor_platform --label org.opencontainers.image.revision="$GITHUB_SHA" --cache-from "type=registry,ref=ghcr.io/unikoff/pymentor-platform-$name:buildcache" --cache-to "type=registry,ref=ghcr.io/unikoff/pymentor-platform-$name:buildcache,mode=max" --file "$dockerfile" --tag "ghcr.io/unikoff/pymentor-platform-$name:$GITHUB_SHA" --metadata-file "$metadata" "$@" "$context"
             local digest
             digest=$(python -c 'import json,sys; print(json.load(open(sys.argv[1]))["containerimage.digest"])' "$metadata")
             [[ "$digest" =~ ^sha256:[0-9a-f]{64}$ ]]
@@ -101,18 +101,21 @@ jobs:
         uses: anchore/scan-action@e1165082ffb1fe366ebaf02d8526e7c4989ea9d2
         with:
           image: ghcr.io/unikoff/pymentor-platform-core@${{ steps.build.outputs.core }}
+          output-format: table
           severity-cutoff: critical
           fail-build: true
       - name: Scan frontend image
         uses: anchore/scan-action@e1165082ffb1fe366ebaf02d8526e7c4989ea9d2
         with:
           image: ghcr.io/unikoff/pymentor-platform-frontend@${{ steps.build.outputs.frontend }}
+          output-format: table
           severity-cutoff: critical
           fail-build: true
       - name: Scan runner image
         uses: anchore/scan-action@e1165082ffb1fe366ebaf02d8526e7c4989ea9d2
         with:
           image: ghcr.io/unikoff/pymentor-platform-runner-pool@${{ steps.build.outputs.runner }}
+          output-format: table
           severity-cutoff: critical
           fail-build: true
 
