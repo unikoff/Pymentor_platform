@@ -22,8 +22,6 @@ spec:
   - group: ''
     kind: ConfigMap
   - group: traefik.io
-    kind: TraefikService
-  - group: traefik.io
     kind: IngressRoute
   - group: batch
     kind: Job

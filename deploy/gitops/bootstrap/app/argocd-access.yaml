@@ -34,7 +34,6 @@ rules:
 - apiGroups:
   - traefik.io
   resources:
-  - traefikservices
   - ingressroutes
   verbs:
   - get
@@ -90,6 +89,9 @@ rules:
   verbs:
   - update
   - patch
+- apiGroups: [traefik.io]
+  resources: [traefikservices]
+  verbs: [get, list, watch]
 - apiGroups: [networking.k8s.io]
   resources: [networkpolicies]
   verbs: [get, list, watch]
