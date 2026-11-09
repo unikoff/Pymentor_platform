@@ -164,7 +164,7 @@
               "app": "core-api-progressive"
             },
             "annotations": {
-              "pymentor.io/source-revision": "preview-fault-probe"
+              "pymentor.io/source-revision": "52a52a8812598a43c255eb30dfedd25fc6ac683d"
             }
           },
           "spec": {
@@ -229,7 +229,7 @@
                   },
                   {
                     "name": "PYMENTOR_RELEASE_REVISION",
-                    "value": "preview-fault-probe"
+                    "value": "52a52a8812598a43c255eb30dfedd25fc6ac683d"
                   }
                 ],
                 "image": "pymentor/core-api:vps-20261108-secure2",
@@ -287,12 +287,7 @@
                   "periodSeconds": 3,
                   "timeoutSeconds": 3,
                   "failureThreshold": 40
-                },
-                "command": [
-                  "python",
-                  "-c",
-                  "import uvicorn\nfrom fastapi.responses import JSONResponse\nfrom pymentor_core.app.factory import create_app\napp=create_app()\n@app.middleware('http')\nasync def release_fault(request, call_next):\n    if request.headers.get('host') == '13-140-29-11.sslip.io':\n        return JSONResponse({'detail':'controlled preview release failure'},status_code=503,headers={'X-Pymentor-Revision':'preview-fault-probe'})\n    return await call_next(request)\nuvicorn.run(app,host='0.0.0.0',port=8001)\n"
-                ]
+                }
               }
             ],
             "dnsPolicy": "ClusterFirst",
