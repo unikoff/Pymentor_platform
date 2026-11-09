@@ -164,7 +164,8 @@
               "app": "core-api-progressive"
             },
             "annotations": {
-              "pymentor.io/source-revision": "52a52a8812598a43c255eb30dfedd25fc6ac683d"
+              "pymentor.io/source-revision": "52a52a8812598a43c255eb30dfedd25fc6ac683d",
+              "pymentor.io/ownership-check": "20261109"
             }
           },
           "spec": {
@@ -511,7 +512,8 @@
               "app": "frontend-progressive"
             },
             "annotations": {
-              "pymentor.io/source-revision": "52a52a8812598a43c255eb30dfedd25fc6ac683d"
+              "pymentor.io/source-revision": "52a52a8812598a43c255eb30dfedd25fc6ac683d",
+              "pymentor.io/ownership-check": "20261109"
             }
           },
           "spec": {
