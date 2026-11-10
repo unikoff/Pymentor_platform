@@ -4,4 +4,5 @@ resources:
 - project.yaml
 - application.yaml
 - argocd-access.yaml
+- notification-access.yaml
 - cluster.yaml

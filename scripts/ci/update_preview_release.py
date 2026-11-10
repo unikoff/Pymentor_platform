@@ -10,7 +10,7 @@ IMAGES = {
     'pymentor/frontend': 'ghcr.io/unikoff/pymentor-platform-frontend',
     'pymentor/preview-pool': 'ghcr.io/unikoff/pymentor-platform-runner-pool',
 }
-RESOURCES = {'applications.json', 'checks.json', 'analysis.json', 'routes.json', 'runner.json'}
+RESOURCES = {'applications.json', 'checks.json', 'analysis.json', 'routes.json', 'runner.json', 'notifications.json'}
 
 
 def update(directory, source_sha, core_digest, frontend_digest, runner_digest):

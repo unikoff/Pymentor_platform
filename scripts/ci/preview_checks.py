@@ -35,7 +35,7 @@ def updater_tests():
             return {'kind': kind, 'spec': {'template': {'spec': {'containers': [
                 {'name': 'app', 'env': [{'name': 'PYMENTOR_RELEASE_REVISION', 'value': 'old'}]}
             ]}}}}
-        base = {'kind': 'Kustomization', 'resources': ['applications.json', 'runner.json'], 'images': []}
+        base = {'kind': 'Kustomization', 'resources': ['applications.json', 'runner.json', 'notifications.json'], 'images': []}
         write('kustomization.yaml', base)
         write('applications.json', {'kind': 'List', 'items': [workload('Rollout')]})
         write('runner.json', workload('Deployment'))
