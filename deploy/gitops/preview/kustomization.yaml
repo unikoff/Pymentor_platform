@@ -14,17 +14,17 @@
     {
       "name": "pymentor/core-api",
       "newName": "ghcr.io/unikoff/pymentor-platform-core",
-      "digest": "sha256:f29c87fa1f7204add5c7de9dd41159de6e3b8d291233e6fb457bdcc4e8986909"
+      "digest": "sha256:71fc4a84655c827096b1e60a95bef9215beedb18a2cc7845f2b08c8b18d7f877"
     },
     {
       "name": "pymentor/frontend",
       "newName": "ghcr.io/unikoff/pymentor-platform-frontend",
-      "digest": "sha256:d7bd3640c8b5dc9089d8da750aed3cc6a2969b65d04e8c16b03d238974ea3b7b"
+      "digest": "sha256:1b4efaedacd45dff3f6ac6ef3eaf4e4391bdb0784bc87d2aeb613ac4e3a9634a"
     },
     {
       "name": "pymentor/preview-pool",
       "newName": "ghcr.io/unikoff/pymentor-platform-runner-pool",
-      "digest": "sha256:38d8d4bdbad480524da7f2f80a4e2ba941157c89a5e0656f995253e594482b5a"
+      "digest": "sha256:532c7bf17c41b5eabcf35c756420b7426f5465e8831cf03717cfbe84a26b45ef"
     }
   ]
 }
