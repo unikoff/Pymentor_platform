@@ -6,8 +6,8 @@
     "namespace": "pymentor"
   },
   "spec": {
-    "schedule": "*/5 * * * *",
-    "suspend": true,
+    "schedule": "* * * * *",
+    "suspend": false,
     "concurrencyPolicy": "Forbid",
     "successfulJobsHistoryLimit": 1,
     "failedJobsHistoryLimit": 3,
