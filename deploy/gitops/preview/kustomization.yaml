@@ -7,7 +7,8 @@
     "checks.json",
     "analysis.json",
     "routes.json",
-    "runner.json"
+    "runner.json",
+    "notifications.json"
   ],
   "images": [
     {

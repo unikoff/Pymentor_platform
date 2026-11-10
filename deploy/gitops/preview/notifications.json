@@ -1,0 +1,125 @@
+{
+  "apiVersion": "batch/v1",
+  "kind": "CronJob",
+  "metadata": {
+    "name": "notifications",
+    "namespace": "pymentor"
+  },
+  "spec": {
+    "schedule": "*/5 * * * *",
+    "suspend": true,
+    "concurrencyPolicy": "Forbid",
+    "successfulJobsHistoryLimit": 1,
+    "failedJobsHistoryLimit": 3,
+    "jobTemplate": {
+      "spec": {
+        "backoffLimit": 0,
+        "activeDeadlineSeconds": 70,
+        "ttlSecondsAfterFinished": 600,
+        "template": {
+          "metadata": {
+            "labels": {
+              "app": "preview-notifications-worker"
+            }
+          },
+          "spec": {
+            "automountServiceAccountToken": false,
+            "restartPolicy": "Never",
+            "containers": [
+              {
+                "name": "worker",
+                "image": "pymentor/core-api:vps-20261108-secure2",
+                "command": [
+                  "python",
+                  "-m",
+                  "pymentor_core.app.worker"
+                ],
+                "env": [
+                  {
+                    "name": "PYMENTOR_PROFILE",
+                    "value": "postgres_redis"
+                  },
+                  {
+                    "name": "PYMENTOR_REDIS_PREFIX",
+                    "value": "pymentor-preview-migrated:"
+                  },
+                  {
+                    "name": "PYMENTOR_LOCAL_NOTIFICATIONS",
+                    "value": "0"
+                  },
+                  {
+                    "name": "PYMENTOR_LOG_TO_STDOUT",
+                    "value": "1"
+                  },
+                  {
+                    "name": "DATABASE_URL",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "preview-migrated-runtime",
+                        "key": "DATABASE_URL"
+                      }
+                    }
+                  },
+                  {
+                    "name": "REDIS_URL",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "preview-migrated-runtime",
+                        "key": "REDIS_URL"
+                      }
+                    }
+                  },
+                  {
+                    "name": "PYMENTOR_LOGIN_RECOVERY_KEY",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "preview-migrated-runtime",
+                        "key": "PYMENTOR_LOGIN_RECOVERY_KEY"
+                      }
+                    }
+                  },
+                  {
+                    "name": "PYMENTOR_PLATFORM_TELEGRAM_BOT_TOKEN",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "notification-destinations",
+                        "key": "platform-token"
+                      }
+                    }
+                  },
+                  {
+                    "name": "PYMENTOR_PLATFORM_TELEGRAM_CHAT_ID",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "notification-destinations",
+                        "key": "platform-chat-id"
+                      }
+                    }
+                  },
+                  {
+                    "name": "PYMENTOR_LANDING_BOT_CREDENTIALS",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "notification-destinations",
+                        "key": "landing-bots-json"
+                      }
+                    }
+                  }
+                ],
+                "resources": {
+                  "requests": {
+                    "cpu": "50m",
+                    "memory": "128Mi"
+                  },
+                  "limits": {
+                    "memory": "512Mi"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}
