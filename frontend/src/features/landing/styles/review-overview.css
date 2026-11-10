@@ -1,0 +1,157 @@
+.backend-landing .learning-system__copy.review-overview {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+}
+.backend-landing .review-overview .review-overview__header h3 {
+  max-width: 620px;
+  font-size: var(--landing-heading-size);
+  font-weight: var(--landing-heading-weight);
+  line-height: var(--landing-heading-leading);
+  letter-spacing: var(--landing-heading-tracking);
+  text-wrap: balance;
+}
+.backend-landing .review-overview__header p {
+  max-width: 520px;
+  margin: var(--landing-copy-gap) 0 0;
+  color: #b6bead;
+  font-size: var(--landing-copy-size);
+  line-height: var(--landing-copy-leading);
+}
+.backend-landing .review-overview__content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+.backend-landing .review-overview__steps {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.backend-landing .review-overview__steps li {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  align-items: baseline;
+  gap: 17px;
+  padding: clamp(18px, 2.3vh, 26px) 0;
+  border-bottom: 1px solid #ffffff12;
+}
+.backend-landing .review-overview__steps li:first-child {
+  padding-top: 0;
+}
+.backend-landing .review-overview__steps li > span {
+  color: #9ab982;
+  font: 12px/1.5 var(--font-code);
+}
+.backend-landing .review-overview__steps li > div {
+  display: grid;
+  min-width: 0;
+  gap: 7px;
+}
+.backend-landing .review-overview__steps strong {
+  color: var(--text);
+  font-size: clamp(15px, 1.05vw, 19px);
+  font-weight: 650;
+  line-height: 1.4;
+}
+.backend-landing .review-overview__steps p {
+  max-width: 440px;
+  margin: 0;
+  color: #a4af99;
+  font-size: clamp(12px, .85vw, 15px);
+  line-height: 1.6;
+}
+.backend-landing .review-overview__takeaway {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 21px 23px;
+  border-left: 2px solid #a3d36b;
+  border-radius: 0 11px 11px 0;
+  background: linear-gradient(105deg, #b0ff5810, #b0ff5803);
+}
+.backend-landing .review-overview__takeaway > svg {
+  flex: none;
+  margin-top: 2px;
+  color: #b2d791;
+}
+.backend-landing .review-overview__takeaway > div > span {
+  color: #9bb786;
+  font: 9px/1.5 var(--font-code);
+  letter-spacing: .07em;
+}
+.backend-landing .review-overview__takeaway p {
+  margin: 9px 0 0;
+  color: #c6d6b7;
+  font-size: clamp(12px, .9vw, 15px);
+  line-height: 1.7;
+}
+.backend-landing .review-overview__start {
+  display: grid;
+  flex: none;
+  gap: 13px;
+}
+.backend-landing .learning-system .review-overview .learning-system__review-cta {
+  min-height: 56px;
+  margin-top: 0;
+  border-radius: 11px;
+  font-size: 14px;
+}
+@media (min-width: 1051px) {
+  .backend-landing .learning-system__copy.review-overview,
+  .backend-landing .review-overview__content { min-height: 0; }
+  .backend-landing .review-overview__steps { flex: 1 0 auto; grid-template-rows: repeat(3, auto); }
+  .backend-landing .review-overview__steps li { align-content: center; }
+  .backend-landing .review-overview__steps li { padding-block: 8px; }
+  .backend-landing .review-overview__steps li:first-child { padding-top: 0; }
+}
+@media (min-width: 1051px) and (min-height: 801px) and (max-height: 950px) {
+  .backend-landing .learning-system__copy.review-overview { gap: 20px; }
+  .backend-landing .review-overview__header p { margin-top: 16px; }
+  .backend-landing .review-overview__content { gap: 20px; }
+  .backend-landing .review-overview__steps li { padding-block: 8px; }
+  .backend-landing .review-overview__steps li:first-child { padding-top: 0; }
+  .backend-landing .review-overview__takeaway { padding: 17px 20px; }
+}
+@media (min-width: 1051px) and (max-height: 800px),
+       (min-width: 1051px) and (max-width: 1250px) and (max-height: 950px) {
+  .backend-landing .learning-system__copy.review-overview { gap: 16px; }
+  .backend-landing .review-overview__header p { margin-top: 12px; font-size: 13px; line-height: 1.6; }
+  .backend-landing .review-overview__content { gap: 18px; }
+  .backend-landing .review-overview__steps li { grid-template-columns: 30px minmax(0, 1fr); gap: 12px; padding-block: 8px; }
+  .backend-landing .review-overview__steps li:first-child { padding-top: 0; }
+  .backend-landing .review-overview__steps li > span { font-size: 10px; }
+  .backend-landing .review-overview__steps li > div { gap: 4px; }
+  .backend-landing .review-overview__steps strong { font-size: 14px; }
+  .backend-landing .review-overview__steps p { font-size: 11px; }
+  .backend-landing .review-overview__takeaway { padding: 15px 17px; gap: 11px; }
+  .backend-landing .review-overview__takeaway p { margin-top: 6px; font-size: 11px; line-height: 1.6; }
+  .backend-landing .review-overview__takeaway > div > span { font-size: 8px; }
+  .backend-landing .review-overview__start { gap: 8px; }
+  .backend-landing .learning-system .review-overview .learning-system__review-cta { min-height: 48px; font-size: 12px; }
+}
+@media (max-width: 1050px) {
+  .backend-landing .review-overview__content { justify-content: flex-start; }
+  .backend-landing .review-overview__header p { max-width: 620px; }
+  .backend-landing .review-overview__steps p { max-width: none; }
+}
+@media (max-width: 680px) {
+  .backend-landing .learning-system__copy.review-overview { gap: 26px; }
+  .backend-landing .review-overview__header p { margin-top: 17px; font-size: 14px; line-height: 1.7; }
+  .backend-landing .review-overview__content { gap: 23px; }
+  .backend-landing .review-overview__steps li { grid-template-columns: 28px minmax(0, 1fr); gap: 12px; padding-block: 18px; }
+  .backend-landing .review-overview__steps li:first-child { padding-top: 0; }
+  .backend-landing .review-overview__steps li > span { font-size: 10px; }
+  .backend-landing .review-overview__steps li > div { gap: 5px; }
+  .backend-landing .review-overview__steps strong { font-size: 14px; }
+  .backend-landing .review-overview__steps p { font-size: 12px; }
+  .backend-landing .review-overview__takeaway { padding: 18px 16px; gap: 12px; }
+  .backend-landing .review-overview__takeaway > svg { width: 19px; height: 19px; }
+  .backend-landing .review-overview__takeaway p { font-size: 12px; }
+  .backend-landing .review-overview__takeaway > div > span { font-size: 8px; }
+  .backend-landing .learning-system .review-overview .learning-system__review-cta { min-height: 52px; padding-inline: 12px; font-size: 12px; }
+}

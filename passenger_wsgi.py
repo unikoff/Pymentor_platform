@@ -26,7 +26,8 @@ if os.path.exists(VENV_PYTHON) and os.path.realpath(sys.executable) != os.path.r
 sys.path.insert(0, BACKEND_DIR)
 
 # 3. Оборачиваем ASGI-приложение FastAPI в WSGI для Passenger.
-from a2wsgi import ASGIMiddleware  # noqa: E402
 from main import app as _asgi_app  # noqa: E402
 
-application = ASGIMiddleware(_asgi_app)
+from pymentor_core.app.passenger import create_wsgi_application
+
+application = create_wsgi_application(_asgi_app)

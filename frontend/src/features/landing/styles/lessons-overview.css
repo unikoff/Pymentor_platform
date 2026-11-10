@@ -1,0 +1,119 @@
+.backend-landing .learning-system__copy.lesson-overview { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+.backend-landing .lesson-overview__header h3 { max-width: 600px; font-size: var(--landing-heading-size); line-height: var(--landing-heading-leading); letter-spacing: var(--landing-heading-tracking); text-wrap: balance; }
+.backend-landing .lesson-overview__header p { max-width: 510px; margin: 21px 0 0; color: #b6bead; font-size: clamp(14px, 1vw, 17px); line-height: 1.75; }
+.backend-landing .lesson-overview__benefits { display: grid; gap: 0; }
+.backend-landing .lesson-overview__benefits > div { display: grid; grid-template-columns: 42px minmax(0, 1fr); align-content: center; gap: 16px; padding: 16px 0; border-bottom: 1px solid #ffffff12; }
+.backend-landing .lesson-overview__number { display: grid; width: 40px; height: 40px; place-items: center; border: 1px solid #a5c18426; border-radius: 12px; background: #b0ff580d; color: #b5d19e; font: 11px var(--font-code); }
+.backend-landing .lesson-overview__benefits p { display: grid; gap: 5px; margin: 0; }
+.backend-landing .lesson-overview__benefits strong { color: var(--text); font-size: clamp(15px, 1.05vw, 19px); line-height: 1.4; }
+.backend-landing .lesson-overview__benefits p > span { max-width: 420px; color: #a4af99; font-size: clamp(12px, .85vw, 15px); line-height: 1.55; }
+.backend-landing .learning-system .lesson-overview .learning-system__lessons-cta { flex: none; min-height: 56px; margin-top: 0; border-radius: 11px; font-size: 14px; }
+
+.backend-landing .learning-system__media.lesson-preview { display: flex; min-width: 0; flex-direction: column; gap: 18px; padding: clamp(22px, 2.2vw, 36px); border: 1px solid var(--learning-demo-border, #ffffff21); border-radius: 22px; background: var(--learning-demo-surface, #1c1d1c); box-shadow: inset 0 1px 0 #ffffff0d; }
+.backend-landing .lesson-preview__intro h4 { margin: 0; color: var(--text); font-size: clamp(20px, 1.6vw, 28px); line-height: 1.25; }
+.backend-landing .lesson-preview__choices { display: flex; flex-wrap: wrap; gap: 8px; }
+.backend-landing .lesson-preview__choices button { min-height: 38px; padding: 8px 13px; border: 1px solid #ffffff20; border-radius: 999px; background: #ffffff06; color: #c4cec0; font: 650 12px/1.25 var(--font-body); cursor: pointer; transition: color 180ms ease, border-color 180ms ease, background-color 180ms ease; }
+.backend-landing .lesson-preview__choices button[aria-pressed="true"] { border-color: #b0ff5860; background: var(--learning-demo-selected, color-mix(in srgb, var(--accent) 7%, transparent)); color: var(--accent); }
+.backend-landing .lesson-preview__choices button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.backend-landing .lesson-preview__example { display: flex; min-height: 0; flex-direction: column; gap: 16px; }
+.backend-landing .lesson-preview__question { padding: clamp(16px, 1.5vw, 24px); border: 1px solid #ffffff18; border-left: 2px solid #b0ff5880; border-radius: 16px; background: #ffffff08; }
+.backend-landing .lesson-preview__question > span { color: #9db68b; font: 10px/1.4 var(--font-code); letter-spacing: .06em; }
+.backend-landing .lesson-preview__question p { max-width: 620px; margin: 9px 0 0; color: #edf1e9; font-size: clamp(16px, 1.15vw, 21px); font-weight: 650; line-height: 1.45; }
+.backend-landing .lesson-preview__path { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 12px; }
+.backend-landing .lesson-preview__stage { display: flex; min-width: 0; flex-direction: column; align-items: stretch; gap: 14px; padding: clamp(16px, 1.5vw, 24px); border: 1px solid #ffffff14; border-radius: 16px; background: #ffffff08; }
+.backend-landing .lesson-preview__stage-title { display: flex; align-items: center; gap: 11px; }
+.backend-landing .lesson-preview__stage-icon { display: grid; width: 40px; height: 40px; flex: none; place-items: center; border-radius: 13px; background: #b0ff5814; color: #b4e58d; }
+.backend-landing .lesson-preview__stage ul { display: grid; gap: 10px; margin: 0; padding: 14px 0 0; border-top: 1px solid #ffffff14; list-style: none; }
+.backend-landing .lesson-preview__stage li { display: grid; grid-template-columns: 8px minmax(0, 1fr); gap: 9px; color: #c3c8c0; font-size: clamp(12px, .85vw, 15px); line-height: 1.5; }
+.backend-landing .lesson-preview__stage li::before { width: 5px; height: 5px; margin-top: .6em; border-radius: 50%; background: #a4d77c; content: ''; }
+.backend-landing .lesson-preview__flow { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; color: #b4d99e; font-size: 12px; font-weight: 650; animation: lesson-flow-enter 280ms ease both; }
+.backend-landing .lesson-preview__flow-item { display: flex; min-width: 0; align-items: center; gap: 10px; }
+.backend-landing .lesson-preview__flow-item > span { padding: 7px 10px; border-radius: 9px; background: #b0ff580c; line-height: 1.3; white-space: nowrap; }
+.backend-landing .lesson-preview__flow-item svg { flex: none; color: #93bb79; }
+.backend-landing .lesson-preview__bridge { display: flex; align-items: center; gap: 10px; color: #b4d99e; font-size: 12px; font-weight: 650; }
+.backend-landing .lesson-preview__bridge span { padding: 7px 10px; border-radius: 9px; background: #b0ff580c; }
+.backend-landing .lesson-preview__bridge svg { flex: none; color: #93bb79; }
+.backend-landing .lesson-preview__stage p { margin: 0; color: #c3c8c0; font-size: clamp(12px, .85vw, 15px); line-height: 1.55; }
+.backend-landing .lesson-preview__path strong { color: var(--text); font-size: 15px; line-height: 1.4; }
+.backend-landing .lesson-preview__stage-note, .backend-landing .lesson-preview__stage-check { display: grid; gap: 5px; padding-top: 12px; border-top: 1px solid #ffffff14; color: #b2bab0; font-size: clamp(12px, .8vw, 14px); line-height: 1.5; }
+.backend-landing .lesson-preview__stage-note strong, .backend-landing .lesson-preview__stage-check strong { font-size: 13px; }
+.backend-landing .lesson-preview__foot { display: flex; align-items: center; gap: 9px; padding-top: 13px; border-top: 1px solid #ffffff12; color: #929f87; font-size: 11px; line-height: 1.4; }
+.backend-landing .lesson-preview__dot { width: 6px; height: 6px; flex: none; border-radius: 50%; background: var(--accent); }
+@media (hover: hover) { .backend-landing .lesson-preview__choices button:hover { border-color: #b0ff5870; color: var(--text); } }
+@media (min-width: 1051px) {
+  .backend-landing .learning-system__copy.lesson-overview, .backend-landing .lesson-overview__benefits, .backend-landing .lesson-preview__example { min-height: 0; }
+  .backend-landing .lesson-overview__benefits { flex: 1; grid-template-rows: repeat(3, minmax(0, 1fr)); }
+  .backend-landing .lesson-preview__example { flex: 1; }
+  .backend-landing .lesson-preview__path { flex: 1; }
+  .backend-landing .lesson-preview__stage ul { flex: 1; align-content: center; }
+  .backend-landing .lesson-preview__stage--after { justify-content: space-between; }
+}
+@media (min-width: 1051px) and (max-height: 950px) {
+  .backend-landing .learning-system__copy.lesson-overview { gap: 12px; }
+  .backend-landing .lesson-overview__header p { margin-top: 12px; font-size: 13px; line-height: 1.6; }
+  .backend-landing .lesson-overview__benefits > div { grid-template-columns: 34px minmax(0, 1fr); gap: 12px; padding: 8px 0; }
+  .backend-landing .lesson-overview__number { width: 34px; height: 34px; font-size: 10px; }
+  .backend-landing .lesson-overview__benefits strong { font-size: 14px; }
+  .backend-landing .lesson-overview__benefits p > span { font-size: 12px; }
+  .backend-landing .learning-system .lesson-overview .learning-system__lessons-cta { min-height: 48px; font-size: 12px; }
+  .backend-landing .learning-system__media.lesson-preview { gap: 10px; padding: 18px 20px; }
+  .backend-landing .lesson-preview__intro h4 { font-size: 20px; }
+  .backend-landing .lesson-preview__choices button { min-height: 32px; padding: 6px 11px; font-size: 12px; }
+  .backend-landing .lesson-preview__example { gap: 8px; }
+  .backend-landing .lesson-preview__question { padding: 12px 15px; }
+  .backend-landing .lesson-preview__question p { margin-top: 5px; font-size: 16px; }
+  .backend-landing .lesson-preview__stage { gap: 8px; padding: 12px 14px; }
+  .backend-landing .lesson-preview__stage--after { gap: 5px; }
+  .backend-landing .lesson-preview__stage-icon { width: 32px; height: 32px; border-radius: 10px; }
+  .backend-landing .lesson-preview__path strong { font-size: 13px; }
+  .backend-landing .lesson-preview__stage li, .backend-landing .lesson-preview__stage p, .backend-landing .lesson-preview__stage-note, .backend-landing .lesson-preview__stage-check { font-size: 12px; }
+  .backend-landing .lesson-preview__stage ul { gap: 7px; padding-top: 8px; }
+  .backend-landing .lesson-preview__flow { gap: 6px; font-size: 11px; }
+  .backend-landing .lesson-preview__flow-item { gap: 6px; }
+  .backend-landing .lesson-preview__flow-item > span { padding: 5px 7px; }
+  .backend-landing .lesson-preview__bridge { gap: 6px; font-size: 11px; }
+  .backend-landing .lesson-preview__bridge span { padding: 5px 7px; }
+  .backend-landing .lesson-preview__stage-note, .backend-landing .lesson-preview__stage-check { padding-top: 8px; }
+  .backend-landing .lesson-preview__foot { padding-top: 8px; font-size: 11px; }
+}
+@media (min-width: 1051px) and (max-width: 1250px) {
+  .backend-landing .lesson-preview__flow, .backend-landing .lesson-preview__flow-item { gap: 4px; }
+  .backend-landing .lesson-preview__flow { font-size: 10px; }
+  .backend-landing .lesson-preview__flow-item > span { padding: 5px; }
+  .backend-landing .lesson-preview__flow-item svg { width: 12px; }
+}
+@media (max-width: 1050px) {
+  .backend-landing .lesson-overview__benefits > div { padding: 14px 0; }
+}
+@media (max-width: 680px) {
+  .backend-landing .learning-system__copy.lesson-overview { gap: 18px; }
+  .backend-landing .lesson-overview__header p { margin-top: 17px; font-size: 14px; line-height: 1.7; }
+  .backend-landing .lesson-overview__benefits > div { grid-template-columns: 34px minmax(0, 1fr); gap: 12px; padding: 13px 0; }
+  .backend-landing .lesson-overview__number { width: 34px; height: 34px; font-size: 10px; }
+  .backend-landing .lesson-overview__benefits strong { font-size: 14px; }
+  .backend-landing .lesson-overview__benefits p > span { font-size: 12px; }
+  .backend-landing .learning-system .lesson-overview .learning-system__lessons-cta { min-height: 52px; padding-inline: 12px; font-size: 12px; }
+  .backend-landing .learning-system__media.lesson-preview { gap: 16px; padding: 20px 16px; border-radius: 16px; }
+  .backend-landing .lesson-preview__intro h4 { font-size: 20px; }
+  .backend-landing .lesson-preview__choices button { font-size: 11px; }
+  .backend-landing .lesson-preview__question { padding: 16px; }
+  .backend-landing .lesson-preview__question p { font-size: 16px; }
+  .backend-landing .lesson-preview__path { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .backend-landing .lesson-preview__stage { gap: 12px; padding: 15px; }
+  .backend-landing .lesson-preview__stage-icon { width: 36px; height: 36px; border-radius: 11px; }
+  .backend-landing .lesson-preview__path strong { font-size: 14px; }
+  .backend-landing .lesson-preview__stage li, .backend-landing .lesson-preview__stage p { font-size: 12px; }
+  .backend-landing .lesson-preview__flow { gap: 4px; font-size: 11px; }
+  .backend-landing .lesson-preview__flow-item { gap: 4px; }
+  .backend-landing .lesson-preview__flow-item > span { padding: 5px; }
+  .backend-landing .lesson-preview__flow-item svg { width: 12px; }
+  .backend-landing .lesson-preview__bridge { min-height: 36px; }
+}
+@media (max-width: 360px) {
+  .backend-landing .lesson-preview__flow, .backend-landing .lesson-preview__flow-item { gap: 3px; }
+  .backend-landing .lesson-preview__flow { font-size: 10px; }
+  .backend-landing .lesson-preview__flow-item > span { padding: 5px 4px; }
+  .backend-landing .lesson-preview__flow-item svg { width: 10px; }
+}
+@keyframes lesson-flow-enter { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) { .backend-landing .lesson-preview__choices button { transition: none; } .backend-landing .lesson-preview__flow { animation: none; } }

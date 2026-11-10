@@ -1,16 +1,17 @@
 import { useEffect, useRef, useState, type PointerEvent } from 'react';
 import { ArrowUpRight, BookOpen, Compass, FolderCode, MessageCircle, Target } from 'lucide-react';
-import { ProgrammingBackground } from './ProgrammingBackground';
+import { ProgrammingBackground } from './components/ProgrammingBackground';
+import { ConsultationForm } from './components/ConsultationForm';
 import dmitriyPhoto from './assets/Dmitriy.jpg';
 import varvaraPhoto from './assets/Varvara.jpg';
 import zaharPhoto from './assets/Zahar.jpg';
-import './landing.css';
-import './programming-background.css';
-import './landing-pages.css';
-import './pricing.css';
+import './styles/landing.css';
+import './styles/programming-background.css';
+import './styles/landing-pages.css';
+import './styles/pricing.css';
 
-const base = import.meta.env.BASE_URL;
-export const landingUrl = `${base}backend`;
+import { landingUrl, platformUrl } from '../../shared/paths';
+export { landingUrl } from '../../shared/paths';
 
 const plans = [
   {
@@ -33,9 +34,12 @@ const plans = [
 ];
 
 export function LandingNav() {
-  return <nav className="landing-header__nav" aria-label="Навигация по лендингу">
-    <a href={`${landingUrl}#about`}>Обо мне</a><a href={`${landingUrl}#platform`}>Программа</a><a href={`${landingUrl}#reviews`}>Отзывы</a><a href={`${landingUrl}#pricing`}>Тарифы</a>
-  </nav>;
+  return <>
+    <nav className="landing-header__nav" aria-label="Навигация по лендингу">
+      <a href={`${landingUrl}#reviews`}>Отзывы</a><a href={`${landingUrl}#platform`}>Программа</a><a href={`${landingUrl}#about`}>Обо мне</a><a href={`${landingUrl}#pricing`}>Тарифы</a>
+    </nav>
+    <button className="landing-header__action" type="button" data-consultation-trigger>Оставить заявку</button>
+  </>;
 }
 
 function MetricTicks({ count }: { count: number }) {
@@ -60,7 +64,7 @@ export function PricingSection() {
       <div className="landing-plan__cost"><p className="landing-plan__price">{formatPrice(plan.price)} <span>₽</span></p><p className="landing-plan__term">в месяц</p></div>
       <div className="landing-plan__metrics" aria-label="В месяц входит"><div><div className="landing-plan__metric-heading"><span>Индивидуальные занятия</span><strong>{plan.hours} <small>ч / месяц</small></strong></div><MetricTicks count={plan.hours} /></div><div><div className="landing-plan__metric-heading"><span>Код-ревью</span><strong>{plan.reviewCount} <small>/ месяц</small></strong></div><MetricTicks count={plan.reviewCount} /></div></div>
       <ul className="landing-plan__benefits">{plan.items.map(item => <li key={item.title}><span className="landing-plan__benefit-icon" aria-hidden="true"><item.icon size={17} strokeWidth={1.7} /></span><div><strong>{item.title}</strong><span>{item.description}</span></div></li>)}</ul>
-      <a className="landing-plan__action" href={`${landingUrl}#path`}>{index === 0 ? 'Обсудить главный формат' : 'Обсудить стабильный ритм'} <span className="landing-plan__action-arrow" aria-hidden="true"><ArrowUpRight size={17} strokeWidth={2} /></span></a>
+      <button className="landing-plan__action" type="button" data-consultation-trigger>{index === 0 ? 'Обсудить главный формат' : 'Обсудить стабильный ритм'} <span className="landing-plan__action-arrow" aria-hidden="true"><ArrowUpRight size={17} strokeWidth={2} /></span></button>
     </article>)}</div>
     <button className="landing-pricing__compare-trigger" type="button" onClick={() => compareRef.current?.showModal()} aria-haspopup="dialog">Сравнить форматы <span aria-hidden="true">↗</span></button>
     <dialog className="pricing-dialog" ref={compareRef} aria-labelledby="pricing-dialog-title" onClick={(event) => { if (event.target === event.currentTarget) event.currentTarget.close(); }}>
@@ -68,11 +72,9 @@ export function PricingSection() {
       <div className="pricing-dialog__content">
         <h3 id="pricing-dialog-title" tabIndex={-1} autoFocus>Сравните форматы</h3>
         <div className="pricing-dialog__table-wrap"><table><thead><tr><th scope="col">Условия</th>{plans.map(plan => <th scope="col" key={plan.label}><span>{plan.label}</span><strong>{formatPrice(plan.price)} ₽ <small>/ месяц</small></strong></th>)}</tr></thead><tbody>
-          <tr className="pricing-dialog__section pricing-dialog__section--shared"><th scope="colgroup" colSpan={3}>В обоих форматах</th></tr>
-          <tr><th scope="row">Занятия</th><td>Индивидуально с наставником</td><td>Индивидуально с наставником</td></tr>
-          <tr><th scope="row">Платформа</th><td>Доступ на месяц</td><td>Доступ на месяц</td></tr>
-          <tr><th scope="row">Проект</th><td>Работа над проектом</td><td>Работа над проектом</td></tr>
-          <tr className="pricing-dialog__section pricing-dialog__section--difference"><th scope="colgroup" colSpan={3}>Чем отличаются</th></tr>
+          <tr className="pricing-dialog__shared"><th scope="row">Занятия</th><td>Индивидуально с наставником</td><td>Индивидуально с наставником</td></tr>
+          <tr className="pricing-dialog__shared"><th scope="row">Платформа</th><td>Доступ на месяц</td><td>Доступ на месяц</td></tr>
+          <tr className="pricing-dialog__shared"><th scope="row">Проект</th><td>Работа над проектом</td><td>Работа над проектом</td></tr>
           <tr><th scope="row">Индивидуальные занятия, часов в месяц</th><td><div className="pricing-dialog__quantity"><strong>{mainPlan.hours}</strong></div></td><td><div className="pricing-dialog__quantity"><strong>{steadyPlan.hours}</strong></div></td></tr>
           <tr><th scope="row">Код-ревью, проверок в месяц</th><td><div className="pricing-dialog__quantity"><strong>{mainPlan.reviewCount}</strong></div></td><td><div className="pricing-dialog__quantity"><strong>{steadyPlan.reviewCount}</strong></div></td></tr>
           <tr><th scope="row">Разбор кода</th><td>Каждое задание, до {mainPlan.reviewCount} проверок</td><td>Разбор важных решений</td></tr>
@@ -117,10 +119,10 @@ const titles: Record<Page, string> = { reviews: 'Истории учеников
 export function LandingDetailPage({ page }: { page: Page }) {
   useEffect(() => { const previous = document.title; document.title = `${titles[page]} | Pymentor`; return () => { document.title = previous; }; }, [page]);
   return <main className="backend-landing" aria-labelledby="detail-title"><div className="backend-landing__scene"><ProgrammingBackground /><div className="backend-landing__inner">
-    <div className="landing-header-layer"><header className="landing-header"><a className="landing-brand" href={landingUrl}>Никита Кирюхин</a><LandingNav /></header></div>
+    <div className="landing-header-layer"><header className="landing-header"><a className="landing-brand" href={landingUrl}>Никита Кирюхин</a><LandingNav /></header></div><ConsultationForm showActions={false} />
     <div className="landing-detail"><a className="landing-detail__back" href={landingUrl}>← На главную</a>
       {page === 'reviews' && <><div className="landing-detail__intro"><p className="landing-overline">Истории учеников</p><h1 id="detail-title">Разные точки старта — свои пути в backend</h1><p>Истории учеников о практике, обратной связи и движении к своим целям.</p></div><div className="landing-reviews">{reviews.map(review => <article className="landing-review" key={review.name}><img src={review.photo} alt="" loading="lazy" /><div><p className="landing-overline">{review.context}</p><h2>{review.role}</h2><div className="landing-review__context"><p className="case-path__eyebrow">Как проходило обучение</p><div className="case-path__story">{review.mentorStory.map(paragraph => <p key={paragraph}>{paragraph}</p>)}</div><div className="case-path__outcome"><p>{review.caseOutcome}</p></div></div><blockquote>{review.paragraphs.map(paragraph => <p key={paragraph}>{paragraph}</p>)}</blockquote><p>{review.result}</p><strong>{review.name}</strong> · <a href={`https://t.me/${review.handle}`} target="_blank" rel="noopener noreferrer">@{review.handle} ↗</a></div></article>)}</div></>}
-      {page === 'platform' && <><div className="landing-detail__intro"><p className="landing-overline">Учебная платформа</p><h1 id="detail-title">Pymentor: теория, практика и обратная связь в одном месте</h1><p>Здесь удобно учиться в своём темпе, возвращаться к материалам и видеть следующий шаг.</p></div><section className="landing-detail__block landing-platform-detail"><div><p className="landing-overline">Знакомство с платформой</p><h2>Посмотрите, как устроено обучение</h2><p>Здесь появится видео с обзором платформы и рабочего пространства ученика.</p><a className="primary-action landing-action" href={base}>Открыть платформу <span aria-hidden="true">↗</span></a></div><div className="landing-video-placeholder" aria-label="Место для видеообзора платформы"><div className="landing-video-placeholder__bar" aria-hidden="true"><span /><span /><span /><small>pymentor / видеообзор</small></div><div className="landing-video-placeholder__content"><span className="landing-video-placeholder__play" aria-hidden="true">▶</span><strong>Знакомство с Pymentor</strong><small>Здесь будет видео о платформе</small></div><div className="landing-video-placeholder__timeline" aria-hidden="true"><span /></div></div></section><section className="landing-detail__block"><h2>Что внутри</h2><div className="landing-detail__columns"><p><strong>Теория и практика.</strong> Материалы и задания собраны в одном учебном пространстве.</p><p><strong>Разбор решений.</strong> Код-ревью помогает увидеть ошибки и понять, как двигаться дальше.</p><p><strong>Прогресс.</strong> Можно вернуться к пройденным материалам и продолжить обучение.</p></div></section></>}
+      {page === 'platform' && <><div className="landing-detail__intro"><p className="landing-overline">Учебная платформа</p><h1 id="detail-title">Pymentor: теория, практика и обратная связь в одном месте</h1><p>Здесь удобно учиться в своём темпе, возвращаться к материалам и видеть следующий шаг.</p></div><section className="landing-detail__block landing-platform-detail"><div><p className="landing-overline">Знакомство с платформой</p><h2>Посмотрите, как устроено обучение</h2><p>Здесь появится видео с обзором платформы и рабочего пространства ученика.</p><a className="primary-action landing-action" href={platformUrl}>Открыть платформу <span aria-hidden="true">↗</span></a></div><div className="landing-video-placeholder" aria-label="Место для видеообзора платформы"><div className="landing-video-placeholder__bar" aria-hidden="true"><span /><span /><span /><small>pymentor / видеообзор</small></div><div className="landing-video-placeholder__content"><span className="landing-video-placeholder__play" aria-hidden="true">▶</span><strong>Знакомство с Pymentor</strong><small>Здесь будет видео о платформе</small></div><div className="landing-video-placeholder__timeline" aria-hidden="true"><span /></div></div></section><section className="landing-detail__block"><h2>Что внутри</h2><div className="landing-detail__columns"><p><strong>Теория и практика.</strong> Материалы и задания собраны в одном учебном пространстве.</p><p><strong>Разбор решений.</strong> Код-ревью помогает увидеть ошибки и понять, как двигаться дальше.</p><p><strong>Прогресс.</strong> Можно вернуться к пройденным материалам и продолжить обучение.</p></div></section></>}
       {page === 'pricing' && <><div className="landing-detail__intro"><p className="landing-overline">Тарифы</p><h1 id="detail-title">Формат под вашу цель</h1><p>Выберите подходящий ритм и обсудите детали на бесплатной консультации.</p></div><PricingSection /></>}
     </div><footer className="landing-footer"><a className="landing-brand" href={landingUrl}>Pymentor</a><a href={`${landingUrl}/privacy-policy`}>Политика обработки данных</a><a href={`${landingUrl}/personal-data`}>Согласие на обработку данных</a><span>ИП КИРЮХИН Н.А. ИНН 230109261735</span></footer>
   </div></div></main>;

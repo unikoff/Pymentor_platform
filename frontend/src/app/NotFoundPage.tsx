@@ -1,3 +1,5 @@
+import { platformUrl } from "../shared/paths";
+
 export function NotFoundPage() {
   return (
     <main className="status-page status-page--not-found">
@@ -23,7 +25,7 @@ export function NotFoundPage() {
         <p className="status-kicker">ПОХОЖЕ, МЫ ЗАБЛУДИЛИСЬ</p>
         <h1 id="not-found-title">Такой страницы<br /><em>пока нет</em></h1>
         <p className="not-found-copy">Ссылка могла измениться или в ней закралась опечатка. Вернёмся к занятиям и продолжим путь.</p>
-        <a className="status-home-link" href={import.meta.env.BASE_URL}>
+        <a className="status-home-link" href={platformUrl}>
           <span aria-hidden="true">←</span> Вернуться на платформу
         </a>
         <p className="not-found-hint">Всё нужное для обучения уже на главной</p>

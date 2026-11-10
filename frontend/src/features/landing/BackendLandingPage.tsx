@@ -1,18 +1,17 @@
 import { useEffect, useId, useState, type PointerEvent } from 'react';
 import { ArrowDownRight } from 'lucide-react';
-import { ProgrammingBackground } from './ProgrammingBackground';
-import { LearningSystem } from './LearningSystem';
-import { CareerLaunch } from './CareerLaunch';
-import { LandingFaq } from './LandingFaq';
-import { AboutSection } from './AboutSection';
+import { ProgrammingBackground } from './components/ProgrammingBackground';
+import { LearningSystem } from './sections/LearningSystem';
+import { CareerLaunch } from './sections/CareerLaunch';
+import { LandingFaq } from './sections/LandingFaq';
+import { AboutSection } from './sections/AboutSection';
 import { LandingNav, PricingSection, ReviewsSection, landingUrl } from './LandingPages';
-import { ConsultationForm } from './ConsultationForm';
+import { ConsultationForm } from './components/ConsultationForm';
+import { platformUrl } from '../../shared/paths';
 import mentorPhoto from './assets/mentor-portrait.png';
-import './landing.css';
-import './programming-background.css';
-import './start-offer.css';
-
-const platformUrl = import.meta.env.BASE_URL;
+import './styles/landing.css';
+import './styles/programming-background.css';
+import './styles/start-offer.css';
 
 function trackMetricLight(event: PointerEvent<HTMLLIElement>) {
   if (event.pointerType === 'touch' || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
@@ -132,7 +131,7 @@ export function BackendLandingPage() {
     const root = document.querySelector<HTMLElement>('.backend-landing');
     if (!root) return;
     const desktop = window.matchMedia('(min-width: 901px) and (min-height: 701px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)');
-    const sections = Array.from(root.querySelectorAll<HTMLElement>('.backend-landing__inner > .landing-opening, .backend-landing__inner > section'));
+    const sections = Array.from(root.querySelectorAll<HTMLElement>('.backend-landing__inner > .landing-opening, .backend-landing__inner > section, .backend-landing__inner > .landing-ending'));
     let lastWheel = 0;
     let lastDirection = 0;
     const onWheel = (event: WheelEvent) => {
@@ -148,14 +147,17 @@ export function BackendLandingPage() {
         element = element.parentElement;
       }
       const bounds = root.getBoundingClientRect();
-      const center = bounds.top + root.clientHeight / 2;
+      const header = root.querySelector<HTMLElement>('.landing-header')?.getBoundingClientRect();
+      const inset = Math.max(0, (header?.bottom ?? bounds.top) - bounds.top + 10);
+      const availableHeight = root.clientHeight - inset;
+      const center = bounds.top + inset + availableHeight / 2;
       const index = sections.findIndex((section) => {
         const rect = section.getBoundingClientRect();
         return rect.top <= center && rect.bottom >= center;
       });
       if (index < 0) return;
       const current = sections[index].getBoundingClientRect();
-      if (current.height > root.clientHeight && (direction > 0 ? current.bottom > bounds.bottom + 8 : current.top < bounds.top - 8)) return;
+      if (current.height > availableHeight && (direction > 0 ? current.bottom > bounds.bottom + 8 : current.top < bounds.top + inset - 8)) return;
       const target = sections[index + direction];
       if (!target) return;
       event.preventDefault();
@@ -165,9 +167,9 @@ export function BackendLandingPage() {
       lastDirection = direction;
       const rect = target.getBoundingClientRect();
       const top = root.scrollTop + rect.top - bounds.top;
-      const destination = rect.height > root.clientHeight
-        ? (direction > 0 ? top : top + rect.height - root.clientHeight)
-        : top + (rect.height - root.clientHeight) / 2;
+      const destination = rect.height > availableHeight
+        ? (direction > 0 ? top - inset : top + rect.height - root.clientHeight)
+        : top - inset + (rect.height - availableHeight) / 2;
       root.scrollTo({ top: Math.max(0, Math.min(root.scrollHeight - root.clientHeight, destination)), behavior: 'smooth' });
     };
     root.addEventListener('wheel', onWheel, { passive: false });
@@ -192,7 +194,7 @@ export function BackendLandingPage() {
             <div className="hero-features">
               <div className="hero-features__heading"><p className="hero-mentor__label">Почему выбирают меня</p></div>
               <ul aria-label="Преимущества обучения">
-                <li><a href="#start"><strong>1:1 <ArrowDownRight size={16} aria-hidden="true" /></strong><span>Занимаемся один на один: подстрою темп под вас и помогу разобраться в сложных темах.</span></a></li>
+                <li><a href="#lessons"><strong>1:1 <ArrowDownRight size={16} aria-hidden="true" /></strong><span>Занимаемся один на один: подстрою темп под вас и помогу разобраться в сложных темах.</span></a></li>
                 <li><a href="#platform"><strong>Pymentor <ArrowDownRight size={16} aria-hidden="true" /></strong><span>Теория и практика собраны в понятный маршрут. Загляните на платформу и посмотрите сами.</span></a></li>
                 <li><a href="#demo"><strong>Code review <ArrowDownRight size={16} aria-hidden="true" /></strong><span>Проверяю каждое изменение в вашем проекте: покажу ошибки и объясню, как их исправить.</span></a></li>
               </ul>
@@ -217,7 +219,7 @@ export function BackendLandingPage() {
         <section className="landing-section landing-path landing-reveal" id="path" aria-labelledby="path-title" data-reveal data-scene="path">
           <div className="landing-path__intro">
             <h2 id="path-title">Начать можно с простого <span>разговора</span></h2>
-            <p className="landing-path__lead">Оставьте заявку или напишите мне, чтобы договориться о времени консультации.</p>
+            <p className="landing-path__lead">Оставьте заявку — я свяжусь с вами, чтобы обсудить ваши цели и договориться о бесплатной консультации.</p>
             <ConsultationForm />
           </div>
           <div className="landing-path__invitation">
@@ -241,7 +243,9 @@ export function BackendLandingPage() {
             <div className="mentoring-choice__bridge"><div><span>Кому подходит</span></div></div>
             <MentoringAudiences />
           </div>
-          <div className="mentoring-choice__table-wrap"><table className="mentoring-choice__table">
+          <div className="mentoring-choice__comparison">
+          <p className="mentoring-choice__swipe-hint" id="comparison-swipe-hint">Листайте таблицу в стороны <span aria-hidden="true">↔</span></p>
+          <div className="mentoring-choice__table-wrap" role="region" aria-label="Сравнение форматов обучения" aria-describedby="comparison-swipe-hint" tabIndex={0}><table className="mentoring-choice__table">
             <thead><tr><th scope="col">Что получаете</th><th className="choice-featured" scope="col">С наставником</th><th scope="col">Курсы</th><th scope="col">Самостоятельно</th></tr></thead>
             <tbody>
               <tr>{comparisonHeading('План обучения')}<td className="choice-featured"><span>С наставником</span><div>Под вашу цель и опыт</div></td><td><span>Курсы</span><div>По программе курса</div></td><td><span>Самостоятельно</span><div>Составляете сами</div></td></tr>
@@ -254,6 +258,7 @@ export function BackendLandingPage() {
               <tr>{comparisonHeading('Оплата')}<td className="choice-featured"><span>С наставником</span><div>Ежемесячно, без рассрочек</div></td><td><span>Курсы</span><div>Полная оплата, либо рассрочка</div></td><td><span>Самостоятельно</span><div className="choice-cross" role="img" aria-label="Срок не указан">×</div></td></tr>
             </tbody>
           </table></div>
+          </div>
         </section>
 
         <ReviewsSection />
@@ -287,20 +292,16 @@ export function BackendLandingPage() {
               <div><strong>30<small>дней</small></strong><span><small>Подписки на платформу</small></span></div>
               <div><strong>60<small>%</small></strong><span><small>Выгоды относительно обычного месячного сопровождения</small></span></div>
             </div>
-            <a className="primary-action landing-action landing-offer__action" href="#path">Обсудить старт <span aria-hidden="true">↗</span></a>
+            <button className="primary-action landing-action landing-offer__action" type="button" data-consultation-trigger>Обсудить старт <span aria-hidden="true">↗</span></button>
           </article>
         </section>
 
         <PricingSection />
 
-        <LandingFaq />
-
-        <section className="landing-final landing-reveal" aria-labelledby="final-title" data-reveal data-scene="final">
-          <h2 id="final-title">Тут можно просто позалипать на фон</h2>
-          <a className="primary-action landing-action" href="#path">Оставить заявку</a>
-        </section>
-
+        <div className="landing-ending">
+          <LandingFaq />
           <footer className="landing-footer"><a className="landing-brand" href={platformUrl}>Pymentor</a><a href={`${landingUrl}/privacy-policy`}>Политика обработки данных</a><a href={`${landingUrl}/personal-data`}>Согласие на обработку данных</a><span>ИП КИРЮХИН Н.А. ИНН 230109261735</span></footer>
+        </div>
         </div>
       </div>
     </main>

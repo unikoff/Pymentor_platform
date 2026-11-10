@@ -2,6 +2,7 @@ import { lazy, useEffect, useState } from "react";
 import { AuthScreen, getCurrentUser } from "../features/auth";
 import type { UserProfile } from "../shared/api/contracts";
 import { AsyncBoundary } from "../shared/ui/async-boundary/AsyncBoundary";
+import { landingUrl, platformUrl } from "../shared/paths";
 import { NotFoundPage } from "./NotFoundPage";
 import { StartupScreen } from "./StartupScreen";
 import "./status-pages.css";
@@ -14,9 +15,8 @@ function normalizePath(pathname: string) {
   return normalized || "/";
 }
 
-const basePath = new URL(import.meta.env.BASE_URL, window.location.origin).pathname;
-const appPath = normalizePath(basePath);
-const landingPath = `${appPath === "/" ? "" : appPath}/backend`;
+const appPath = normalizePath(new URL(platformUrl, window.location.origin).pathname);
+const landingPath = normalizePath(new URL(landingUrl, window.location.origin).pathname);
 
 function isAppEntry(pathname: string) {
   return normalizePath(pathname) === appPath;
@@ -25,7 +25,7 @@ function isAppEntry(pathname: string) {
 export function App() {
   const pathname = window.location.pathname;
 
-  if (normalizePath(pathname) === landingPath || ["reviews", "platform", "pricing", "personal-data", "privacy-policy"].some((page) => normalizePath(pathname) === `${landingPath}/${page}`)) {
+  if (normalizePath(pathname) === landingPath || ["reviews", "platform", "pricing", "personal-data", "privacy-policy"].some((page) => [landingPath, appPath].some((path) => normalizePath(pathname) === `${path}/${page}`))) {
     return <AsyncBoundary fallback={<StartupScreen />}><BackendLandingRoute /></AsyncBoundary>;
   }
 

@@ -1,0 +1,143 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Course manifest v1",
+  "description": "Course metadata for an atomic Core-owned registry release. Paths are package-relative; never include private tests or answers in public payloads. A manifest is not itself authorization to publish content.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "course_id",
+    "storage_key",
+    "slug",
+    "content_version",
+    "data_digest",
+    "runtime_image_digest",
+    "lessons",
+    "visibility",
+    "legacy_aliases",
+    "digest_scheme"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "course_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "storage_key": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "slug": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "content_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "data_digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "description": "Digest according to digest_scheme. Metadata previews are draft-only and cannot be activated as packaged releases."
+    },
+    "runtime_image_digest": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Null is permitted for data-only legacy builds."
+    },
+    "lessons": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "lesson_id",
+          "source_file",
+          "task_refs"
+        ],
+        "properties": {
+          "lesson_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source_file": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^(?!/)(?![A-Za-z]:)(?!.*\\\\)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*(?:^|/)\\.(?:/|$)).+$"
+          },
+          "task_refs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "task_id",
+                "revision"
+              ],
+              "properties": {
+                "task_id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "revision": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "visibility": {
+      "enum": [
+        "public",
+        "private",
+        "draft"
+      ],
+      "description": "Draft in examples is a fixture state, not a statement of current production visibility."
+    },
+    "legacy_aliases": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": "Course-level aliases; empty in the current fixture because a complete authoritative registry was not established."
+    },
+    "digest_scheme": {
+      "enum": [
+        "metadata-preview-v1",
+        "package-tree-v1"
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "digest_scheme": {
+            "const": "metadata-preview-v1"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "visibility": {
+            "const": "draft"
+          }
+        }
+      }
+    }
+  ]
+}

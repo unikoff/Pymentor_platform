@@ -1,7 +1,8 @@
 import { useEffect } from 'react';
-import { ProgrammingBackground } from './ProgrammingBackground';
+import { ProgrammingBackground } from './components/ProgrammingBackground';
 import { LandingNav, landingUrl } from './LandingPages';
-import './personal-data.css';
+import { ConsultationForm } from './components/ConsultationForm';
+import './styles/personal-data.css';
 
 export function PersonalDataPage({ policy = false }: { policy?: boolean }) {
   useEffect(() => {
@@ -12,7 +13,7 @@ export function PersonalDataPage({ policy = false }: { policy?: boolean }) {
 
   return <main className="backend-landing personal-data-page" aria-labelledby="personal-data-title">
     <div className="backend-landing__scene"><ProgrammingBackground /><div className="backend-landing__inner">
-      <div className="landing-header-layer"><header className="landing-header"><a className="landing-brand" href={landingUrl}>Никита Кирюхин</a><LandingNav /></header></div>
+      <div className="landing-header-layer"><header className="landing-header"><a className="landing-brand" href={landingUrl}>Никита Кирюхин</a><LandingNav /></header></div><ConsultationForm showActions={false} />
       <article className="personal-data">
         <a className="personal-data__back" href={landingUrl}>← На главную</a>
         <p className="landing-overline">Документы</p>

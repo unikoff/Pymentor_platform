@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "course_id": "SYNTHETIC fixture course - not registered",
+  "storage_key": "synthetic-fixture-only",
+  "slug": "synthetic-fixture-only",
+  "content_version": "fixture-1",
+  "data_digest": "sha256:c2aae8050c8e0b3e1b3ca29ce727db03b1c2fcba25f7135cc3333097fde6b78a",
+  "runtime_image_digest": null,
+  "lessons": [
+    {
+      "lesson_id": "synthetic-lesson",
+      "source_file": "lessons/example.md",
+      "task_refs": [
+        {
+          "task_id": "synthetic-task",
+          "revision": "synthetic-revision"
+        }
+      ]
+    }
+  ],
+  "visibility": "draft",
+  "legacy_aliases": [],
+  "digest_scheme": "metadata-preview-v1"
+}

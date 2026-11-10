@@ -1,0 +1,1 @@
+import{t as e}from"./jsx-runtime-CY_jTiqj.js";var t=e();function n(){return(0,t.jsxs)(`article`,{children:[(0,t.jsx)(`h1`,{children:`Модель пользователя`}),(0,t.jsx)(`p`,{children:`Материал занятия готовится.`})]})}export{n as Lesson87};
