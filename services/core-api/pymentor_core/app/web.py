@@ -192,4 +192,4 @@ def mount_frontend(app):
 
         @app.get("/")
         async def root():
-            return "Pymentor API working"
+            return "knowi API working"

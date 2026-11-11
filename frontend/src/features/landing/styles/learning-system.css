@@ -40,7 +40,7 @@
 .backend-landing .learning-system :is(.learning-system__platform-cta, .learning-system__lessons-cta, .learning-system__review-cta)::before { position: absolute; inset: 0; background: linear-gradient(105deg, transparent 15%, color-mix(in srgb, var(--white) 35%, transparent) 50%, transparent 85%); opacity: 0; transform: translateX(-120%); pointer-events: none; content: ''; }
 .backend-landing .learning-system__media { display: grid; min-width: 0; align-self: stretch; }
 .backend-landing .learning-system__media--platform { align-self: center; }
-.backend-landing .learning-system__platform-preview { position: relative; overflow: hidden; width: 100%; aspect-ratio: 16 / 9; border: 1px solid color-mix(in srgb, var(--white) 17%, transparent); border-radius: 22px; background: var(--surface-2); box-shadow: 0 22px 55px color-mix(in srgb, var(--black) 20%, transparent), inset 0 1px 0 color-mix(in srgb, var(--white) 10%, transparent); }
+.backend-landing .learning-system__platform-preview { position: relative; overflow: hidden; width: min(100%, 480px); justify-self: center; aspect-ratio: 4 / 5; border: 1px solid color-mix(in srgb, var(--white) 17%, transparent); border-radius: 22px; background: var(--surface-2); box-shadow: 0 22px 55px color-mix(in srgb, var(--black) 20%, transparent), inset 0 1px 0 color-mix(in srgb, var(--white) 10%, transparent); }
 .backend-landing .learning-system__platform-preview video { display: block; width: 100%; height: 100%; object-fit: contain; }
 .backend-landing .platform-player__temporary { position: absolute; top: 14px; right: 14px; padding: 7px 10px; border: 1px solid rgba(255,255,255,.15); border-radius: 9px; background: rgba(16,18,18,.65); color: #fff; font-size: 11px; -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); pointer-events: none; }
 .backend-landing .platform-player, .backend-landing .platform-player .video-js { width: 100%; height: 100%; }
@@ -111,8 +111,8 @@
   .backend-landing .learning-system__copy--lessons .learning-system__lessons-cta { margin-top: auto; }
   .backend-landing .learning-system__copy--lessons > p { margin-bottom: 28px; }
   .backend-landing .learning-system__media { min-height: 0; grid-template-rows: minmax(0, 1fr); }
-  .backend-landing .learning-system__media--platform { align-self: stretch; }
-  .backend-landing .learning-system__platform-preview { height: 100%; min-height: 0; aspect-ratio: auto; }
+  .backend-landing .learning-system__media--platform { align-self: stretch; grid-template-rows: minmax(0, 1fr); }
+  .backend-landing .learning-system__platform-preview { width: auto; max-width: 100%; height: 100%; min-height: 0; aspect-ratio: 4 / 5; }
   .backend-landing .learning-system__platform-preview video { position: absolute; inset: 0; }
   .backend-landing .learning-system__platform-preview--temporary video { object-fit: cover; }
   .backend-landing .learning-system__platform-preview:fullscreen video { object-fit: contain; }

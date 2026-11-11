@@ -1290,7 +1290,7 @@ MANUAL_PRACTICE: dict[int | str, list[dict[str, Any]]] = {
                      'requirements': ['Используйте pathlib.Path и сохранённый модуль '
                                       'experiments/file_resource_29.py.',
                                       'Получите BASE_DIR через Path(__file__).resolve().parent.',
-                                      'Соберите NOTE_FILE как BASE_DIR / "pymentor_file_lab" / "note.txt".',
+                                      'Соберите NOTE_FILE как BASE_DIR / "knowi_file_lab" / "note.txt".',
                                       'Создайте каталог через NOTE_FILE.parent.mkdir(parents=True, '
                                       'exist_ok=True).',
                                       'На первом запуске в новом каталоге подтвердите: parent.is_dir() == '
@@ -1300,7 +1300,7 @@ MANUAL_PRACTICE: dict[int | str, list[dict[str, Any]]] = {
                      'hint': 'Path(__file__).resolve().parent: папка сохранённого скрипта. mkdir '
                              'вызывайте у parent: объект Path с именем note.txt сам по себе ещё не создаёт '
                              'файл.',
-                     'result': 'Папка experiments/pymentor_file_lab существует. Вы можете объяснить '
+                     'result': 'Папка experiments/knowi_file_lab существует. Вы можете объяснить '
                                'напечатанный абсолютный адрес note.txt, хотя сам файл на первом шаге ещё '
                                'не создан.',
                      'answer': {'explanation': 'Path собирает адрес без обращения к файлу. __file__ '
@@ -1314,7 +1314,7 @@ MANUAL_PRACTICE: dict[int | str, list[dict[str, Any]]] = {
                                 'code': 'from pathlib import Path\n'
                                         '\n'
                                         'BASE_DIR = Path(__file__).resolve().parent\n'
-                                        'NOTE_FILE = BASE_DIR / "pymentor_file_lab" / "note.txt"\n'
+                                        'NOTE_FILE = BASE_DIR / "knowi_file_lab" / "note.txt"\n'
                                         '\n'
                                         'print("cwd:", Path.cwd())\n'
                                         'print("Адрес файла:", NOTE_FILE.resolve())\n'
@@ -1324,7 +1324,7 @@ MANUAL_PRACTICE: dict[int | str, list[dict[str, Any]]] = {
                                         'print("Файл существует:", NOTE_FILE.exists())',
                                 'checks': ['В новом каталоге до записи файла первый вывод exists() равен '
                                            'False.',
-                                           'Адрес содержит experiments/pymentor_file_lab/note.txt.',
+                                           'Адрес содержит experiments/knowi_file_lab/note.txt.',
                                            'Каталог создаётся отдельно от файла.',
                                            'Повторное создание существующей папки через exist_ok=True '
                                            'допустимо.']}},
@@ -1436,7 +1436,7 @@ MANUAL_PRACTICE: dict[int | str, list[dict[str, Any]]] = {
                                       'w, a, mkdir или удаление.',
                                       'Объясните, почему смена cwd не перемещает уже созданный файл.'],
                      'hint': 'Скрипт лежит в одном месте при обоих запусках. Поэтому __file__ описывает '
-                             'тот же модуль. А Path("pymentor_file_lab") начинается от текущего cwd.',
+                             'тот же модуль. А Path("knowi_file_lab") начинается от текущего cwd.',
                      'result': 'Вы получили два различных cwd, два различных адреса относительного пути и '
                                'один одинаковый абсолютный адрес учебного NOTE_FILE. Содержимое note.txt '
                                'не изменилось.',
@@ -1451,8 +1451,8 @@ MANUAL_PRACTICE: dict[int | str, list[dict[str, Any]]] = {
                                 'code': 'from pathlib import Path\n'
                                         '\n'
                                         'BASE_DIR = Path(__file__).resolve().parent\n'
-                                        'NOTE_FILE = BASE_DIR / "pymentor_file_lab" / "note.txt"\n'
-                                        'RELATIVE_FILE = Path("pymentor_file_lab") / "note.txt"\n'
+                                        'NOTE_FILE = BASE_DIR / "knowi_file_lab" / "note.txt"\n'
+                                        'RELATIVE_FILE = Path("knowi_file_lab") / "note.txt"\n'
                                         '\n'
                                         'print("cwd:", Path.cwd())\n'
                                         'print("Относительный путь:", RELATIVE_FILE.resolve())\n'
@@ -1470,7 +1470,7 @@ MANUAL_PRACTICE: dict[int | str, list[dict[str, Any]]] = {
                              'и получите пустую строку. Затем попробуйте открыть несуществующий '
                              'missing.txt в режиме r. Объясните FileNotFoundError и сравните его с '
                              'возможным PermissionError, не меняя разрешения файлов.',
-                     'requirements': ['Создавайте empty.txt только внутри experiments/pymentor_file_lab.',
+                     'requirements': ['Создавайте empty.txt только внутри experiments/knowi_file_lab.',
                                       'Откройте empty.txt через w без записи содержимого, затем прочитайте '
                                       'через r.',
                                       'Подтвердите, что успешное чтение пустого файла возвращает строку '
@@ -1503,7 +1503,7 @@ MANUAL_PRACTICE: dict[int | str, list[dict[str, Any]]] = {
                                 'code': 'from pathlib import Path\n'
                                         '\n'
                                         'BASE_DIR = Path(__file__).resolve().parent\n'
-                                        'NOTE_FILE = BASE_DIR / "pymentor_file_lab" / "note.txt"\n'
+                                        'NOTE_FILE = BASE_DIR / "knowi_file_lab" / "note.txt"\n'
                                         'EMPTY_FILE = NOTE_FILE.parent / "empty.txt"\n'
                                         'MISSING_FILE = NOTE_FILE.parent / "missing.txt"\n'
                                         '\n'

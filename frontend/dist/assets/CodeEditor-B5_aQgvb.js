@@ -1,0 +1,11 @@
+import{i as e,n as t,t as n}from"./jsx-runtime-CY_jTiqj.js";import{t as r}from"./python-highlight-DxgNYXx8.js";var i=e(t(),1),a=n(),o=`    `;function s({value:e,onChange:t,ariaLabel:n,scrollable:s=!1}){let c=(0,i.useRef)(null),l=(0,i.useRef)(null),u=(0,i.useRef)(null),d=(0,i.useRef)(null),f=(0,i.useMemo)(()=>r(e)+`
+`,[e]),p=e.split(`
+`).length;(0,i.useLayoutEffect)(()=>{d.current!==null&&c.current&&(c.current.setSelectionRange(d.current,d.current),d.current=null)},[e]);function m(e,n){d.current=n,t(e)}function h(e){if(!s)return;let{scrollTop:t,scrollLeft:n}=e.currentTarget;u.current&&(u.current.scrollTop=t,u.current.scrollLeft=n),l.current&&(l.current.scrollTop=t)}function g(t){let{selectionStart:n,selectionEnd:r}=t.currentTarget;if(t.key===`Tab`){t.preventDefault();let i=e.lastIndexOf(`
+`,n-1)+1;if(t.shiftKey){let t=e.slice(i,i+4),r=t.startsWith(o)?4:t.match(/^ +/)?.[0].length??0;r>0&&m(e.slice(0,i)+e.slice(i+r),Math.max(i,n-r));return}if(n!==r&&e.slice(n,r).includes(`
+`)){let t=e.indexOf(`
+`,r),n=t===-1?e.length:t,a=e.slice(i,n),s=a.split(`
+`).map(e=>o+e).join(`
+`);m(e.slice(0,i)+s+e.slice(n),r+4*a.split(`
+`).length);return}m(e.slice(0,n)+o+e.slice(r),n+4);return}if(t.key===`Enter`){t.preventDefault();let i=e.lastIndexOf(`
+`,n-1)+1,a=e.slice(i,n),s=a.match(/^ */)?.[0]??``,c=a.trimEnd().endsWith(`:`)?o:``,l=`
+`+s+c;m(e.slice(0,n)+l+e.slice(r),n+l.length)}}return(0,a.jsxs)(`div`,{className:`code-editor-shell${s?` code-editor-shell--scrollable`:``}`,children:[(0,a.jsx)(`div`,{className:`code-gutter`,ref:l,"aria-hidden":`true`,children:Array.from({length:p},(e,t)=>(0,a.jsx)(`span`,{children:t+1},t))}),(0,a.jsxs)(`div`,{className:`code-area`,children:[(0,a.jsx)(`pre`,{className:`code-highlight`,ref:u,"aria-hidden":`true`,dangerouslySetInnerHTML:{__html:f}}),(0,a.jsx)(`textarea`,{ref:c,className:`code-input`,value:e,onChange:e=>t(e.target.value),onKeyDown:g,onScroll:h,spellCheck:!1,autoCapitalize:`off`,autoComplete:`off`,autoCorrect:`off`,wrap:`off`,"aria-label":n})]})]})}function c({code:e,caption:t}){let n=(0,i.useMemo)(()=>r(e.trimEnd()),[e]);return(0,a.jsxs)(`figure`,{className:`code-block`,children:[t&&(0,a.jsx)(`figcaption`,{children:t}),(0,a.jsx)(`pre`,{dangerouslySetInnerHTML:{__html:n}})]})}export{s as n,c as t};

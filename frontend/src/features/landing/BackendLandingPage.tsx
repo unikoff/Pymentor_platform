@@ -71,8 +71,8 @@ export function BackendLandingPage() {
   useEffect(() => {
     const previousTitle = document.title;
     const metadata = [
-      ['name', 'description', 'Backend с личным наставником: индивидуальные занятия, практика на Pymentor и персональный разбор кода.'],
-      ['property', 'og:title', 'Backend с личным наставником | Pymentor'],
+      ['name', 'description', 'Backend с личным наставником: индивидуальные занятия, практика на knowi и персональный разбор кода.'],
+      ['property', 'og:title', 'Backend с личным наставником | knowi'],
       ['property', 'og:description', 'Начните с нуля или развивайте навыки с личным наставником.'],
     ] as const;
     const originalMetadata = metadata.map(([attribute, name]) => {
@@ -81,7 +81,7 @@ export function BackendLandingPage() {
       return { selector, element, content: element?.content ?? null };
     });
 
-    document.title = 'Backend с личным наставником | Pymentor';
+    document.title = 'Backend с личным наставником | knowi';
     metadata.forEach(([attribute, name, content], index) => {
       const current = originalMetadata[index].element ?? document.createElement('meta');
       current.setAttribute(attribute, name);
@@ -195,7 +195,7 @@ export function BackendLandingPage() {
               <div className="hero-features__heading"><p className="hero-mentor__label">Почему выбирают меня</p></div>
               <ul aria-label="Преимущества обучения">
                 <li><a href="#lessons"><strong>1:1 <ArrowDownRight size={16} aria-hidden="true" /></strong><span>Занимаемся один на один: подстрою темп под вас и помогу разобраться в сложных темах.</span></a></li>
-                <li><a href="#platform"><strong>Pymentor <ArrowDownRight size={16} aria-hidden="true" /></strong><span>Теория и практика собраны в понятный маршрут. Загляните на платформу и посмотрите сами.</span></a></li>
+                <li><a href="#platform"><strong>knowi <ArrowDownRight size={16} aria-hidden="true" /></strong><span>Теория и практика собраны в понятный маршрут. Загляните на платформу и посмотрите сами.</span></a></li>
                 <li><a href="#demo"><strong>Code review <ArrowDownRight size={16} aria-hidden="true" /></strong><span>Проверяю каждое изменение в вашем проекте: покажу ошибки и объясню, как их исправить.</span></a></li>
               </ul>
             </div>
@@ -231,7 +231,7 @@ export function BackendLandingPage() {
             </div>
             <ol className="landing-path__journey">
               <li><span className="landing-path__marker landing-path__marker--connected"><span>01 · СОЗВОН</span><span className="landing-path__flow" aria-hidden="true" /></span><div><strong>Обсудим ваши цели</strong><p>Познакомимся, разберём ваш опыт и определим первый шаг.</p></div></li>
-              <li><span className="landing-path__marker">02 · ДОСТУП</span><div><strong>Посмотрите Pymentor</strong><p>Открою бесплатный доступ на несколько дней. Вы изучите платформу и решите, подходит ли формат.</p></div></li>
+              <li><span className="landing-path__marker">02 · ДОСТУП</span><div><strong>Посмотрите knowi</strong><p>Открою бесплатный доступ на несколько дней. Вы изучите платформу и решите, подходит ли формат.</p></div></li>
             </ol>
             <div className="landing-path__optional"><a className="landing-inline-link" href="#start">«Старт в Python» для новичков <span aria-hidden="true">↓</span></a></div>
           </div>
@@ -300,7 +300,7 @@ export function BackendLandingPage() {
 
         <div className="landing-ending">
           <LandingFaq />
-          <footer className="landing-footer"><a className="landing-brand" href={platformUrl}>Pymentor</a><a href={`${landingUrl}/privacy-policy`}>Политика обработки данных</a><a href={`${landingUrl}/personal-data`}>Согласие на обработку данных</a><span>ИП КИРЮХИН Н.А. ИНН 230109261735</span></footer>
+          <footer className="landing-footer"><a className="landing-brand" href={platformUrl}>knowi</a><a href={`${landingUrl}/privacy-policy`}>Политика обработки данных</a><a href={`${landingUrl}/personal-data`}>Согласие на обработку данных</a><span>ИП КИРЮХИН Н.А. ИНН 230109261735</span></footer>
         </div>
         </div>
       </div>

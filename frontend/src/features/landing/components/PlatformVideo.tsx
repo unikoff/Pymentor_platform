@@ -30,7 +30,7 @@ export function PlatformVideo({ src, temporary, active = true }: { src: string; 
       language: 'ru',
       languages: { ru: { Play: 'Воспроизвести', Pause: 'Пауза', 'Progress Bar': 'Перемотка видео', 'Fullscreen': 'На весь экран', 'Non-Fullscreen': 'Выйти из полноэкранного режима', 'Current Time': 'Текущее время', Duration: 'Длительность' } },
     });
-    player.el()?.setAttribute('aria-label', temporary ? 'Временное видео фонтана' : 'Обзор платформы Pymentor');
+    player.el()?.setAttribute('aria-label', temporary ? 'Временное видео фонтана' : 'Обзор платформы knowi');
     playerRef.current = player;
     const rememberIntent = (event: Event) => {
       const target = event.target;

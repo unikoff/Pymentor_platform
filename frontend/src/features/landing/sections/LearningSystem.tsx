@@ -3,7 +3,7 @@ import { ArrowRight, ArrowUpRight, BarChart3, BookOpen, Code2, ListChecks, Map, 
 import { CodeReviewDemo } from '../components/CodeReviewDemo';
 import { PlatformVideo } from '../components/PlatformVideo';
 import { platformUrl } from '../../../shared/paths';
-import temporaryPlatformPreview from '../assets/platform-preview-seekable.mp4';
+import platformPreview from '../assets/platform-overview-portrait.mp4';
 import '../styles/learning-system.css';
 import '../styles/platform-overview.css';
 import '../styles/review-overview.css';
@@ -23,7 +23,6 @@ const platformFeatures = [
   { icon: BarChart3, title: 'Ваш ритм', detail: 'Активность и время занятий' },
 ] as const;
 
-// Temporary video: Jet d'Eau Short Video, Michael, Wikimedia Commons, CC0.
 const platformVideoUrl = import.meta.env.VITE_LANDING_PLATFORM_VIDEO_URL?.trim();
 const tabForHash = (hash: string) => {
   const index = learningTabs.findIndex(tab => hash === `#${tab.anchor}`);
@@ -136,7 +135,7 @@ export function LearningSystem() {
             <div className="platform-overview__start"><a className="primary-action landing-action learning-system__platform-cta" href={platformUrl}>Попробовать платформу бесплатно <ArrowUpRight size={17} aria-hidden="true" /></a></div>
           </div>
           <div className="learning-system__media learning-system__media--platform">
-            <PlatformVideo src={platformVideoUrl || temporaryPlatformPreview} temporary={!platformVideoUrl} active={active === 0} />
+            <PlatformVideo src={platformVideoUrl || platformPreview} temporary={false} active={active === 0} />
           </div>
         </>}
         {index === 1 && <>

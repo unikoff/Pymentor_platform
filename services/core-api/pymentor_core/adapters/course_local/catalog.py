@@ -6,6 +6,7 @@ import json
 import re
 from pathlib import Path
 from typing import Any
+from pymentor_core.modules.learning.progress_policy import is_countable_lesson
 from pymentor_core.app.paths import MATERIALS_ROOT as COURSE_ROOT
 from content.materials.chapter_01.numbering import (
     LEGACY_NUMBERS as FOUNDATIONS_12_LEGACY_NUMBERS,
@@ -421,8 +422,8 @@ def get_content_revision() -> str:
 
 
 def _is_countable(lesson: dict[str, Any]) -> bool:
-    """Урок «зачётный», если у него есть практика или ручная отметка."""
-    return bool(lesson["tasks"]) or bool(lesson.get("self_check"))
+    """Учитываем обзор, практику и занятия с ручной отметкой."""
+    return is_countable_lesson(lesson)
 
 
 def get_tracks_summary() -> list[dict[str, Any]]:

@@ -171,6 +171,46 @@ class ChapterOneCompletionTests(unittest.IsolatedAsyncioTestCase):
             lesson_rows = db.query(models.UserLessonProgress).filter_by(user_id=self.user_id).all()
             return task_rows, lesson_rows
 
+    async def test_overview_is_complete_immediately_in_catalog_and_admin(self):
+        self.lesson.update(
+            module="00 Обзор", source_file="chapter_01/block_00/План обучения.md",
+            tasks=[], manual_practice=[], self_check=False,
+        )
+        for cookie in (False, True):
+            status, data, _ = await asgi_request(self.app, "/learning/catalog", cookie=cookie)
+            self.assertEqual(200, status)
+            self.assertTrue(data["courses"][self.track_id][0]["completed"])
+            track = data["tracks"][0]
+            self.assertEqual(1, track["lessons_completed"])
+            self.assertEqual((1, 1), (track["blocks"][0]["completed"], track["blocks"][0]["total"]))
+            status, data, _ = await asgi_request(self.app, "/learning/tracks", cookie=cookie)
+            self.assertEqual(200, status)
+            self.assertEqual(1, data["tracks"][0]["lessons_completed"])
+            with patch.object(service, "get_public_lessons", return_value=[deepcopy(self.lesson)]):
+                status, data, _ = await asgi_request(self.app, "/learning/lessons", cookie=cookie)
+            self.assertEqual(200, status)
+            self.assertTrue(data["lessons"][0]["completed"])
+        with patch.object(admin_service, "get_tracks_summary", return_value=[{"id": self.track_id, "title": "Test"}]), patch.object(admin_service, "find_track", return_value=self.track):
+            with self.sessions() as db:
+                tracks, count = admin_service._build_learning_progress(self.user_id, db)
+        module = tracks[0]["modules"][0]
+        self.assertEqual((1, 1, 1), (module["completed"], module["total"], count))
+        self.assertTrue(module["lessons"][0]["completed"])
+        self.assertTrue(module["lessons"][0]["countable"])
+        self.assertEqual(([], []), self.progress_rows())
+
+    def test_all_chapter_overviews_are_counted_without_counting_other_empty_lessons(self):
+        for summary in catalog_get_tracks_summary():
+            lessons = catalog_find_track(summary["id"])["lessons"]
+            overviews = [lesson for lesson in lessons if "/block_00/" in lesson["source_file"]]
+            self.assertTrue(overviews)
+            for lesson in overviews:
+                self.assertIn(lesson["id"], summary["countable_lesson_ids"])
+                self.assertTrue(service._lesson_completion_status(lesson, set(), {}))
+            for lesson in lessons:
+                if "/block_00/" not in lesson["source_file"] and not lesson["tasks"] and not lesson.get("self_check"):
+                    self.assertNotIn(lesson["id"], summary["countable_lesson_ids"])
+
     async def test_partial_repeat_all_current_revision_and_serialized_response(self):
         status, response, _ = await self.submit(TASK_A["id"], REVISION_A)
         self.assertEqual(200, status)
