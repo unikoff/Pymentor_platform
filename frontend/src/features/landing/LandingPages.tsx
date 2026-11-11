@@ -94,6 +94,11 @@ const reviews = [
   { name: 'Захар Казначеев', handle: 'kaz_zax', role: 'Со склада в удалённый backend', photo: zaharPhoto, context: 'Для тех, кто совмещает работу и учёбу', mentorStory: ['Захар пришёл ко мне, когда работал на складе. Ему было важно учиться, не увольняясь и не подстраивая всю жизнь под занятия.', 'Мы выстроили обучение вокруг его смен: небольшие задачи в рабочие дни, проект в выходные. Если он выпадал из ритма, возвращались к ближайшему понятному шагу.'], caseOutcome: 'Захар сменил работу после оффера и стал junior backend-разработчиком на удалёнке.', text: 'Поэтому график собирали вокруг моей реальной жизни, а не вокруг идеальной недели из расписания. В рабочие дни я делал небольшие задачи, в выходные садился за проект.', result: 'Нагрузка: 15 часов в неделю · Не увольнялся до оффера', paragraphs: ['Я работал на складе и получал около 150 000 ₽. Деньги были нормальные, поэтому вариант «увольняйся и полгода только учись» мне вообще не подходил. После смены сил часто оставалось максимум на короткое занятие, а иногда не оставалось совсем.', 'Поэтому график собирали вокруг моей реальной жизни, а не вокруг идеальной недели из расписания. В рабочие дни я делал небольшие задачи, в выходные садился за проект. Если выпадал, не пытался за один вечер наверстать всё сразу, возвращался к ближайшей понятной точке и продолжал.', 'Со склада я ушёл только после оффера. Устроился junior backend-разработчиком на удалёнку с зарплатой 160 000 ₽. По деньгам рост был не огромным, зато исчезли дорога и физические смены, а главное, появилась профессия, в которой я вижу, куда расти дальше.'] },
 ];
 
+function StoryPhoto({ src, alt = '', lazy = false }: { src: string; alt?: string; lazy?: boolean }) {
+  const [loaded, setLoaded] = useState(false);
+  return <img src={src} alt={alt} loading={lazy ? 'lazy' : 'eager'} className={`story-photo${loaded ? ' story-photo--loaded' : ''}`} onLoad={() => setLoaded(true)} onError={() => setLoaded(false)} />;
+}
+
 export function ReviewsSection() {
   const [active, setActive] = useState<number | null>(null);
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -104,7 +109,7 @@ export function ReviewsSection() {
   return <section className="landing-section landing-stories" id="reviews" aria-labelledby="stories-title">
     <div className="landing-stories__heading"><h2 id="stories-title">Три показательных кейса</h2></div>
     <div className="story-portraits">{reviews.map((item, index) => <button type="button" className="story-portrait" key={item.handle} onClick={() => setActive(index)} aria-label={`Прочитать историю: ${item.name}`}>
-      <img src={item.photo} alt="" loading="lazy" /><span className="story-portrait__shade" aria-hidden="true" />
+      <StoryPhoto src={item.photo} lazy /><span className="story-portrait__shade" aria-hidden="true" />
       <span className="story-portrait__info"><span className="story-portrait__context">{item.context}</span><strong>{item.name}</strong><span className="story-portrait__role">{item.role}</span><span className="story-portrait__teaser">«{item.text}»</span><span className="story-portrait__action">Открыть историю <span aria-hidden="true">↗</span></span></span>
     </button>)}</div>
     <dialog className="story-dialog" ref={dialogRef} onClose={() => setActive(null)} aria-labelledby="story-dialog-title" onClick={(event) => { if (event.target === event.currentTarget) event.currentTarget.close(); }}>

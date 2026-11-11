@@ -25,6 +25,10 @@ function isAppEntry(pathname: string) {
 export function App() {
   const pathname = window.location.pathname;
 
+  if (import.meta.env.DEV && normalizePath(pathname) === `${appPath}/preview-loading`) {
+    return <StartupScreen />;
+  }
+
   if (normalizePath(pathname) === landingPath || ["reviews", "platform", "pricing", "personal-data", "privacy-policy"].some((page) => [landingPath, appPath].some((path) => normalizePath(pathname) === `${path}/${page}`))) {
     return <AsyncBoundary fallback={<StartupScreen />}><BackendLandingRoute /></AsyncBoundary>;
   }
