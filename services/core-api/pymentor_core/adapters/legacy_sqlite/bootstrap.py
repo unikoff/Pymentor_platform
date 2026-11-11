@@ -25,7 +25,7 @@ def ensure_default_landing(session_factory=SessionLocal) -> models.Landing:
         landing = models.Landing(
             id="pymentor-backend",
             slug="backend",
-            title="Pymentor",
+            title="knowi",
             description="Основной лендинг платформы по адресу /backend",
             is_active=True,
         )

@@ -25,7 +25,7 @@ class Chapter05ScaffoldTests(unittest.TestCase):
                 self.assertNotIn(lesson["id"], other_ids)
                 self.assertEqual(lesson["id"], lesson["legacy_id"])
                 self.assertIs(catalog.find_lesson(lesson["id"]), lesson)
-                self.assertFalse(catalog._is_countable(lesson))
+                self.assertEqual(lesson["source_file"].startswith("chapter_05/block_00/"), catalog._is_countable(lesson))
                 self.assertEqual([], lesson["manual_practice"])
                 self.assertEqual([], lesson["tasks"])
                 source = lesson["source_file"].removeprefix("chapter_05/")

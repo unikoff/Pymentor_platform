@@ -109,8 +109,12 @@ class LandingConsultationTelegramTests(TestCase):
             )
 
         message = send.call_args.kwargs["text"]
-        self.assertIn("Анна\\_1", message)
-        self.assertIn("\\[API\\]", message)
-        self.assertIn("@anna\\.test", message)
+        self.assertEqual(
+            message,
+            "📨 *Заявка на консультацию*\n\n"
+            "Имя: Анна\\_1\n"
+            "Контакт: @anna\\.test\n"
+            "Сообщение: Хочу понять \\[API\\]",
+        )
         self.assertEqual(send.call_args.kwargs["token"], "external-token")
 

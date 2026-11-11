@@ -2,10 +2,27 @@
 
 import hashlib
 import json
+import re
 
 
 # Stable IDs of optional practice tasks; all other tasks are required by default.
 OPTIONAL_TASK_IDS = frozenset({"lesson-b504d05e6763add4db882bfe-task-05"})
+
+
+def is_overview_lesson(lesson: dict) -> bool:
+    """Chapter overview pages are complete from the start, without a saved marker."""
+    parts = str(lesson.get("source_file", "")).replace("\\", "/").split("/")
+    return (
+        len(parts) == 3
+        and bool(re.fullmatch(r"chapter_\d+", parts[0]))
+        and parts[1] == "block_00"
+    )
+
+
+def is_countable_lesson(lesson: dict) -> bool:
+    return is_overview_lesson(lesson) or bool(
+        lesson.get("tasks") or lesson.get("self_check")
+    )
 
 
 def is_task_required(task: dict) -> bool:

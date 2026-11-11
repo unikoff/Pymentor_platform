@@ -363,14 +363,12 @@ def send_landing_notification(
         lines = [
             "📨 *Заявка на консультацию*",
             "",
-            f"Лендинг: `{_escape_markdown_v2(landing_slug)}`",
             f"Имя: {_escape_markdown_v2(str(payload['name']))}",
             f"Контакт: {_escape_markdown_v2(str(payload['contact']))}",
         ]
         goal = str(payload["goal"]).strip()
         if goal:
-            lines.append(f"Цель: {_escape_markdown_v2(goal)}")
-        lines.append(f"Событие: `{_escape_markdown_v2(event_id)}`")
+            lines.append(f"Сообщение: {_escape_markdown_v2(goal)}")
         message = "\n".join(lines)
     else:
         raise TelegramDeliveryError(

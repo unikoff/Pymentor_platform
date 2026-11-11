@@ -1,0 +1,13 @@
+.backend-landing {
+  /* Shared landing scale: marketing headlines, copy and section rhythm. */
+  --landing-hero-size: clamp(38px, 4.8vw, 70px);
+  --landing-heading-size: clamp(32px, 4vw, 56px);
+  --landing-heading-weight: 820;
+  --landing-heading-leading: 1.1;
+  --landing-heading-tracking: 0;
+  --landing-section-padding: clamp(28px, 4.5vw, 56px);
+  --landing-section-padding-mobile: 26px 18px;
+  --landing-copy-size: 16px;
+  --landing-copy-leading: 1.65;
+  --landing-copy-gap: 24px;
+}

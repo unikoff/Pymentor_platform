@@ -53,7 +53,7 @@ export function AuthScreen({
       <section className="auth-panel" aria-labelledby="auth-title">
         <div className="auth-header">
           <div className="auth-brand">
-            <span className="auth-brand__wordmark">pymentor</span>
+            <span className="auth-brand__wordmark">knowi</span>
           </div>
           <div className="auth-actions">
             {onBack && (

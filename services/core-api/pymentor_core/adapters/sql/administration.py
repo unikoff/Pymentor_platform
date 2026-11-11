@@ -27,6 +27,8 @@ from pymentor_core.modules.identity import access as accounts
 from pymentor_core.modules.identity import activity
 from pymentor_core.modules.bookings import public as bookings
 from pymentor_core.modules.learning import progress
+from pymentor_core.modules.learning.progress_policy import is_countable_lesson
+from pymentor_core.modules.learning.progress_policy import is_overview_lesson
 from pymentor_core.modules.learning.catalog import find_track
 from pymentor_core.modules.learning.catalog import get_tracks_summary
 from pymentor_core.modules.bookings.api.schemas import SlotCreate
@@ -92,13 +94,13 @@ def _build_learning_progress(user_id: int, db: Session) -> tuple[list[dict], int
                     "lessons": [],
                 },
             )
-            lesson_completed = lesson["id"] in completed_ids
+            lesson_completed = is_overview_lesson(lesson) or lesson["id"] in completed_ids
             source_file = str(lesson.get("source_file", ""))
             is_chapter_one = source_file.startswith("chapter_01/")
             is_revision_tracked = is_chapter_one or source_file.startswith(
                 "foundations/block_03/"
             )
-            countable = bool(lesson.get("tasks") or lesson.get("self_check"))
+            countable = is_countable_lesson(lesson)
             tasks = []
             for task in lesson.get("tasks", []):
                 task_completed = (

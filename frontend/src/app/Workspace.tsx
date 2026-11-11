@@ -218,7 +218,7 @@ export function Workspace({ user, onLogout, onRequireAuth }: {
             <div className="breadcrumbs" title={workspaceHeading ? [workspaceHeading.chapter, workspaceHeading.number, workspaceHeading.title].filter(Boolean).join(" · ") : undefined}>
               {workspaceHeading?.chapter && <span className="workspace-chapter">{workspaceHeading.chapter}</span>}
               {workspaceHeading?.number && <span className="workspace-lesson-number">{workspaceHeading.number}</span>}
-              <strong className="workspace-title">{workspaceHeading?.title ?? (activePanel?.id === "account" ? "Личный кабинет" : activePanel?.id === "admin" ? "Админ-панель" : activePanel?.id === "interpreter" ? "Интерпретатор Python" : "Pymentor")}</strong>
+              <strong className="workspace-title">{workspaceHeading?.title ?? (activePanel?.id === "account" ? "Личный кабинет" : activePanel?.id === "admin" ? "Админ-панель" : activePanel?.id === "interpreter" ? "Интерпретатор Python" : "knowi")}</strong>
             </div>
             <div className="top-actions">
               <ThemeToggle />

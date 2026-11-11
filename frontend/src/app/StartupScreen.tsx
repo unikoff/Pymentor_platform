@@ -6,7 +6,7 @@ export function StartupScreen() {
       <section className="startup-card" role="status" aria-live="polite">
         <div className="status-brand">
           <span className="status-brand__mark" aria-hidden="true"><i /><i /><i /><i /></span>
-          <span>pymentor<span className="status-brand__dot">.</span></span>
+          <span>knowi<span className="status-brand__dot">.</span></span>
         </div>
 
         <div className="startup-art" aria-hidden="true">

@@ -11,7 +11,7 @@ from pathlib import Path
 
 def _parse_args(max_batch_size) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Send queued Pymentor notifications to Telegram"
+        description="Send queued knowi notifications to Telegram"
     )
     parser.add_argument(
         "--limit",

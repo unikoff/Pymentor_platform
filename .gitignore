@@ -42,3 +42,4 @@ docs/stage-system-setup/**/core-check-*/
 
 # Documentation is maintained locally.
 /docs/
+data/core-api/.runner.lock

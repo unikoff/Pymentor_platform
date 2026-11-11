@@ -43,6 +43,7 @@ from pymentor_core.modules.learning.catalog import get_public_lessons
 from pymentor_core.modules.learning.catalog import get_tracks_summary
 from pymentor_core.modules.identity import public as accounts
 from pymentor_core.modules.learning import progress
+from pymentor_core.modules.learning.progress_policy import is_overview_lesson
 from pymentor_core.modules.learning.api.access import get_optional_user
 from pymentor_core.modules.learning.api.access import get_lesson_access
 from pymentor_core.modules.learning.api.schemas import CodeSubmitRequest
@@ -111,6 +112,8 @@ def _lesson_tasks_are_complete(lesson: dict, user_id: int, db: Session) -> bool:
 def _lesson_completion_status(
     lesson: dict, completed_ids: set[str], task_revisions: dict[str, str]
 ) -> bool:
+    if is_overview_lesson(lesson):
+        return True
     if lesson["id"] not in completed_ids:
         stored_lesson_completion = False
     else:

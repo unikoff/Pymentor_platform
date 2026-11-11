@@ -148,11 +148,11 @@ export function Lesson29({ module }: { module?: string }) {
 
         <CodeBlock
           caption="создаём только каталог опыта"
-          code={'path = Path("pymentor_file_lab") / "note.txt"\n' + 'path.parent.mkdir(parents=True, exist_ok=True)'}
+          code={'path = Path("knowi_file_lab") / "note.txt"\n' + 'path.parent.mkdir(parents=True, exist_ok=True)'}
         />
 
         <p>
-          Объект <code>path.parent</code> здесь обозначает <code>pymentor_file_lab</code>, поэтому вызов создаёт только каталог. Файла <code>note.txt</code> пока нет: его появление нужно проверять отдельно. Если вместо папки находится файл или нет прав на создание каталога, вызов завершится ошибкой. <code>exist_ok=True</code> позволяет повторно использовать существующую папку, но не скрывает любую проблему.
+          Объект <code>path.parent</code> здесь обозначает <code>knowi_file_lab</code>, поэтому вызов создаёт только каталог. Файла <code>note.txt</code> пока нет: его появление нужно проверять отдельно. Если вместо папки находится файл или нет прав на создание каталога, вызов завершится ошибкой. <code>exist_ok=True</code> позволяет повторно использовать существующую папку, но не скрывает любую проблему.
         </p>
 
         <p>
@@ -213,10 +213,10 @@ export function Lesson29({ module }: { module?: string }) {
         </p>
 
         <StepThrough
-          code={'from pathlib import Path\n' + 'path = Path("pymentor_file_lab") / "note.txt"\n' + 'path.parent.mkdir(parents=True, exist_ok=True)\n' + 'with path.open("w", encoding="utf-8") as file:\n' + '    file.write("Привет, Python")\n' + '    was_open = not file.closed\n' + 'print(was_open, file.closed)'}
+          code={'from pathlib import Path\n' + 'path = Path("knowi_file_lab") / "note.txt"\n' + 'path.parent.mkdir(parents=True, exist_ok=True)\n' + 'with path.open("w", encoding="utf-8") as file:\n' + '    file.write("Привет, Python")\n' + '    was_open = not file.closed\n' + 'print(was_open, file.closed)'}
           steps={[
-            { line: 1, note: "Мы выбрали адрес файла внутри отдельной учебной папки.", vars: { path: "pymentor_file_lab/note.txt" } },
-            { line: 2, note: "Подготовлена родительская папка; файл ещё не открыт.", vars: { "каталог": "pymentor_file_lab" } },
+            { line: 1, note: "Мы выбрали адрес файла внутри отдельной учебной папки.", vars: { path: "knowi_file_lab/note.txt" } },
+            { line: 2, note: "Подготовлена родительская папка; файл ещё не открыт.", vars: { "каталог": "knowi_file_lab" } },
             { line: 3, note: "Успешный вход в with открывает ресурс и связывает его с именем file.", vars: { "file.closed": "False" } },
             { line: 4, note: "Мы передаём строку файловому объекту для записи.", vars: { "содержимое": "Привет, Python" } },
             { line: 5, note: "Пока мы внутри блока, файловый объект открыт.", vars: { was_open: "True" } },
@@ -297,7 +297,7 @@ export function Lesson29({ module }: { module?: string }) {
           caption="согласуем запись и чтение UTF-8"
           code={
             'from pathlib import Path\n\n' +
-            'path = Path("pymentor_file_lab") / "note.txt"\n' +
+            'path = Path("knowi_file_lab") / "note.txt"\n' +
             'path.parent.mkdir(parents=True, exist_ok=True)\n\n' +
             'with path.open("w", encoding="utf-8") as file:\n' +
             '    file.write("Привет, Python")\n\n' +
@@ -308,7 +308,7 @@ export function Lesson29({ module }: { module?: string }) {
         />
 
         <p>
-          Пример ограничен папкой <code>pymentor_file_lab</code>: повторный запуск заменит только учебный <code>note.txt</code>. Мы записываем кириллицу и читаем её с <code>encoding="utf-8"</code>; в <code>text</code> попадёт точно <code>Привет, Python</code>. <code>print(text)</code> показывает уже декодированную строку. <code>write()</code> не добавил перевод строки, потому что <code>"\n"</code> в исходной строке отсутствует.
+          Пример ограничен папкой <code>knowi_file_lab</code>: повторный запуск заменит только учебный <code>note.txt</code>. Мы записываем кириллицу и читаем её с <code>encoding="utf-8"</code>; в <code>text</code> попадёт точно <code>Привет, Python</code>. <code>print(text)</code> показывает уже декодированную строку. <code>write()</code> не добавил перевод строки, потому что <code>"\n"</code> в исходной строке отсутствует.
         </p>
 
         <p>
@@ -336,12 +336,12 @@ export function Lesson29({ module }: { module?: string }) {
         </Lead>
 
         <p>
-          Например, у нас есть <code>pymentor_file_lab/note.txt</code>, но файла <code>missing.txt</code> в этой папке никто не создавал. Попытка открыть <code>missing.txt</code> через <code>r</code> не создаст его. Код внутри <code>with</code> не выполнится, поскольку файловый объект не получен. Для проверки запрета доступа не нужно менять разрешения на своём компьютере: это отдельный гипотетический случай, зависящий от системы.
+          Например, у нас есть <code>knowi_file_lab/note.txt</code>, но файла <code>missing.txt</code> в этой папке никто не создавал. Попытка открыть <code>missing.txt</code> через <code>r</code> не создаст его. Код внутри <code>with</code> не выполнится, поскольку файловый объект не получен. Для проверки запрета доступа не нужно менять разрешения на своём компьютере: это отдельный гипотетический случай, зависящий от системы.
         </p>
 
         <CodeBlock
           caption="открытие отсутствующего файла завершается до чтения"
-          code={'from pathlib import Path\n\n' + 'missing = Path("pymentor_file_lab") / "missing.txt"\n' + 'with missing.open("r", encoding="utf-8") as file:\n' + '    text = file.read()  # эта строка не выполнится'}
+          code={'from pathlib import Path\n\n' + 'missing = Path("knowi_file_lab") / "missing.txt"\n' + 'with missing.open("r", encoding="utf-8") as file:\n' + '    text = file.read()  # эта строка не выполнится'}
         />
 
         <p>
