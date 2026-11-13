@@ -6,9 +6,12 @@ metadata:
 spec:
   sourceRepos:
   - https://github.com/unikoff/Pymentor_platform.git
+  - https://github.com/unikoff/knowi-platform.git
   destinations:
   - server: https://kubernetes.default.svc
     namespace: pymentor
+  - server: https://kubernetes.default.svc
+    namespace: knowi
   clusterResourceWhitelist: []
   namespaceResourceWhitelist:
   - group: argoproj.io
