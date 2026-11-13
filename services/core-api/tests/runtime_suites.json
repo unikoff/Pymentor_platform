@@ -16,7 +16,8 @@
     "regression/test_c2_1_5_practice_progress.py",
     "regression/test_account_email_transport.py",
     "regression/test_telegram_notifications.py",
-    "test_ci_runtime_gate.py"
+    "test_ci_runtime_gate.py",
+    "regression/test_health.py"
   ],
   "http": [
     "regression/test_c2_1_4_auth_legacy.py",

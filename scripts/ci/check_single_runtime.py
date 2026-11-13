@@ -7,11 +7,6 @@ from pathlib import Path
 import subprocess
 
 ROOT = Path(__file__).resolve().parents[2]
-# Source retention only. All these paths are excluded from the canonical image.
-RETAINED = {
-    "app/passenger.py": "historical hosting wrapper until PG13",
-    "app/wsgi.py": "historical hosting wrapper until PG13",
-}
 CONFIGS = (
     ".github/workflows/release.yml", "services/core-api/Dockerfile",
     "scripts/ci/preview_checks.py", "scripts/local-k3s/build-images.sh", "scripts/local-k3s/cluster.sh",
@@ -29,8 +24,6 @@ def scan_package(package):
         return ["missing-or-empty-runtime-package"]
     for path in files:
         relative = path.relative_to(package).as_posix()
-        if any(relative == item or relative.startswith(item + "/") for item in RETAINED):
-            continue
         if path.is_symlink():
             violations.append(f"{relative}:symlinked-runtime-source")
             continue

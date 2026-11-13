@@ -1,3 +1,0 @@
-# Local-only synchronous bridge for validating existing Core routes on test PostgreSQL.
--r requirements-async-local.txt
-psycopg[binary]==3.3.8

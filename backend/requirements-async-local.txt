@@ -1,4 +1,0 @@
-# Local experimental PostgreSQL/async profile; legacy requirements remain unchanged.
--r requirements.txt
-alembic==1.20.1
-asyncpg==0.32.0
