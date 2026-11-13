@@ -8,6 +8,7 @@ from pymentor_core.app.paths import LEGACY_ROOT
 from pymentor_core.app.settings import Settings
 
 from pymentor_core.app.schema_policy import DUAL_LOCAL_SCHEMA_REVISION
+from pymentor_core.app.schema_policy import compatible_schema_revision
 from pymentor_core.app.schema_policy import DUAL_LOCAL_REQUIRED_TABLES
 
 
@@ -157,7 +158,7 @@ def create_app(profile=None, *, laboratory=False):
                     available = set(inspect(connection).get_table_names())
                     if (
                         not matches_database_identity(identity, engine.url)
-                        or revision != _required_revision(app)
+                        or not compatible_schema_revision(revision, _required_revision(app))
                         or not set(_required_tables(app)).issubset(available)
                     ):
                         raise HTTPException(

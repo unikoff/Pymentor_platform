@@ -28,6 +28,11 @@ DUAL_LOCAL_REQUIRED_TABLES = (
 )
 
 
+def compatible_schema_revision(actual: str, expected: str) -> bool:
+    """Allow only the tested additive email schema during the release bridge."""
+    return actual == expected or (expected == "c426_deletion_outbox" and actual == "c503_dual_email_change")
+
+
 def should_run_legacy_bootstrap(database_backend: str, mode: str | None) -> bool:
     selected = (mode or "legacy").strip().lower()
     if selected not in {"legacy", "managed"}:

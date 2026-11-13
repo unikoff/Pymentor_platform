@@ -17,6 +17,7 @@ async def postgres_resources(app, settings):
     from pymentor_core.app.database import matches_database_identity
     from pymentor_core.app.schema_policy import DUAL_LOCAL_REQUIRED_TABLES
     from pymentor_core.app.schema_policy import DUAL_LOCAL_SCHEMA_REVISION
+    from pymentor_core.app.schema_policy import compatible_schema_revision
 
     # Check only. Alembic must have been run by a separate migration operation.
     with engine.connect() as connection:
@@ -28,7 +29,7 @@ async def postgres_resources(app, settings):
         ).scalar_one()
         if (
             not matches_database_identity(identity, engine.url)
-            or revision != DUAL_LOCAL_SCHEMA_REVISION
+            or not compatible_schema_revision(revision, DUAL_LOCAL_SCHEMA_REVISION)
             or not set(DUAL_LOCAL_REQUIRED_TABLES).issubset(
                 inspect(connection).get_table_names()
             )

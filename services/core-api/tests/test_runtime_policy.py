@@ -72,3 +72,13 @@ def test_runtime_retains_pool_and_identity_guards():
         RuntimeRedisSessionStore(REDIS, prefix="production:", max_connections=65)
     with pytest.raises(ValueError, match="Redis projection"):
         RuntimeIdentitySessions(database(PG), None, mode="redis")
+
+
+def test_additive_email_schema_bridge_is_narrow():
+    from pymentor_core.app.schema_policy import compatible_schema_revision
+
+    assert compatible_schema_revision("c426_deletion_outbox", "c426_deletion_outbox")
+    assert compatible_schema_revision("c503_dual_email_change", "c426_deletion_outbox")
+    assert not compatible_schema_revision("c501_verified", "c426_deletion_outbox")
+    assert not compatible_schema_revision("unknown", "c426_deletion_outbox")
+    assert not compatible_schema_revision("c426_deletion_outbox", "c503_dual_email_change")
