@@ -103,6 +103,9 @@ with TestClient(create_app()) as client:
          'services/core-api/tests/test_settings.py',
          'services/core-api/tests/test_runtime_policy.py',
          'services/core-api/tests/test_release.py'], test_env)
+    email_env = dict(env, PYMENTOR_TEST_PG_URL=PG, PYMENTOR_TEST_REDIS_URL=REDIS)
+    run([sys.executable, '-m', 'pytest', '-q', '-p', 'no:cacheprovider',
+         'services/core-api/tests/integration/test_email_postgres_redis.py'], email_env)
     run([sys.executable, '-B', '-m', 'unittest', 'discover', '-s', 'services/runner-pool/tests', '-v'], test_env)
 
 
