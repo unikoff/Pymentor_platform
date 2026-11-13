@@ -7,7 +7,7 @@
   },
   "spec": {
     "schedule": "* * * * *",
-    "suspend": true,
+    "suspend": false,
     "concurrencyPolicy": "Forbid",
     "successfulJobsHistoryLimit": 1,
     "failedJobsHistoryLimit": 3,
