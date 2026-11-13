@@ -164,7 +164,7 @@
               "app": "core-api-progressive"
             },
             "annotations": {
-              "pymentor.io/source-revision": "4107334d8328b8d8b791322d67951d7ffb87890e",
+              "pymentor.io/source-revision": "5cdb470c102030396e893d6acdb65b2c0d41d1bf",
               "pymentor.io/ownership-check": "20261109"
             }
           },
@@ -239,7 +239,7 @@
                   },
                   {
                     "name": "PYMENTOR_RELEASE_REVISION",
-                    "value": "4107334d8328b8d8b791322d67951d7ffb87890e"
+                    "value": "5cdb470c102030396e893d6acdb65b2c0d41d1bf"
                   },
                   {
                     "name": "PYMENTOR_SMTP_HOST",
@@ -563,7 +563,7 @@
               "app": "frontend-progressive"
             },
             "annotations": {
-              "pymentor.io/source-revision": "4107334d8328b8d8b791322d67951d7ffb87890e",
+              "pymentor.io/source-revision": "5cdb470c102030396e893d6acdb65b2c0d41d1bf",
               "pymentor.io/ownership-check": "20261109"
             }
           },
@@ -603,7 +603,7 @@
                 "env": [
                   {
                     "name": "PYMENTOR_RELEASE_REVISION",
-                    "value": "4107334d8328b8d8b791322d67951d7ffb87890e"
+                    "value": "5cdb470c102030396e893d6acdb65b2c0d41d1bf"
                   }
                 ],
                 "securityContext": {
