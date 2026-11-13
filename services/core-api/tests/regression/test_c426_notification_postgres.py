@@ -1,4 +1,4 @@
-"""Direct deletion and outbox locking on a disposable PostgreSQL lab."""
+"""Direct deletion and outbox locking on task-owned runtime PostgreSQL."""
 
 import asyncio
 from datetime import date
@@ -8,7 +8,7 @@ import pytest
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
-from test_c216_session_flow import run_scenario
+from runtime_scenarios import run_scenario
 
 
 def test_postgres_direct_delete_blocks_active_delivery_and_removes_linked_notification():

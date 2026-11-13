@@ -36,10 +36,6 @@
                 ],
                 "env": [
                   {
-                    "name": "PYMENTOR_PROFILE",
-                    "value": "postgres_redis"
-                  },
-                  {
                     "name": "PYMENTOR_REDIS_PREFIX",
                     "value": "pymentor-preview-migrated:"
                   },
@@ -104,6 +100,14 @@
                         "key": "landing-bots-json"
                       }
                     }
+                  },
+                  {
+                    "name": "PYMENTOR_SCHEMA_MODE",
+                    "value": "managed"
+                  },
+                  {
+                    "name": "PYTHON_DOTENV_DISABLED",
+                    "value": "1"
                   }
                 ],
                 "resources": {

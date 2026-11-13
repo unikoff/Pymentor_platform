@@ -11,8 +11,6 @@ ingressController:
   replicas: 2
 core:
   replicaCount: 1
-  persistence:
-    storageClassName: local-path
 frontend:
   replicaCount: 2
   topologySpread: true

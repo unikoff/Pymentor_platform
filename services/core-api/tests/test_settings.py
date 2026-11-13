@@ -28,7 +28,7 @@ def load(env, root, profile=None):
     return Settings.from_environment(profile, env, legacy_root=root)
 
 
-def test_legacy_fallback_is_anchored_and_old_url_normalized(tmp_path, monkeypatch):
+def test_legacy_profile_never_creates_or_falls_back_to_a_database(tmp_path, monkeypatch):
     root = tmp_path / "legacy"
     monkeypatch.chdir(tmp_path)
     expected = root.resolve() / "test.db"
@@ -36,15 +36,15 @@ def test_legacy_fallback_is_anchored_and_old_url_normalized(tmp_path, monkeypatc
         env = {"PYMENTOR_PROFILE": "legacy_sqlite"}
         if value is not None:
             env["DATABASE_URL"] = value
-        settings = load(env, root)
-        assert Path(make_url(settings.database_url).database) == expected
-        assert settings.synchronous_database_url == settings.async_database_url == settings.database_url
+        with pytest.raises(ValueError):
+            load(env, root)
     assert not expected.exists()
 
 
-def test_legacy_accepts_memory_and_absolute_file(tmp_path):
+def test_legacy_rejects_memory_and_absolute_file(tmp_path):
     for value in ("sqlite://", "sqlite:///:memory:", f"sqlite:///{(tmp_path / 'other.db').as_posix()}"):
-        assert make_url(load({"DATABASE_URL": value}, tmp_path, "legacy_sqlite").database_url).drivername == "sqlite"
+        with pytest.raises(ValueError):
+            load({"DATABASE_URL": value}, tmp_path, "legacy_sqlite")
 
 
 @pytest.mark.parametrize("value", ["sqlite:///relative.db", "sqlite:///./other.db", "postgresql+psycopg://u:p@host/db", "not a url"])
@@ -53,11 +53,12 @@ def test_legacy_rejects_other_urls(value, tmp_path):
         load({"DATABASE_URL": value}, tmp_path, "legacy_sqlite")
 
 
-def test_profile_required_and_explicit_profile_wins(tmp_path):
-    for value in (None, "", "unknown"):
+def test_profile_is_optional_and_never_overrides_invalid_environment(pg_env, tmp_path):
+    del pg_env["PYMENTOR_PROFILE"]
+    assert load(pg_env, tmp_path).profile == "postgres_redis"
+    for value in ("", "unknown", "legacy_sqlite"):
         with pytest.raises(ValueError):
-            load({} if value is None else {"PYMENTOR_PROFILE": value}, tmp_path)
-    assert load({"PYMENTOR_PROFILE": "unknown"}, tmp_path, "legacy_sqlite").profile == "legacy_sqlite"
+            load(dict(pg_env, PYMENTOR_PROFILE=value), tmp_path, "postgres_redis")
     with pytest.raises(ValueError):
         load({"PYMENTOR_PROFILE": "legacy_sqlite"}, tmp_path, "")
 
@@ -110,7 +111,7 @@ def test_optional_course_transport(pg_env, tmp_path):
 
 def test_explicit_database_requirement_never_falls_back_to_legacy_file(tmp_path):
     with pytest.raises(ValueError, match="DATABASE_URL"):
-        load({"PYMENTOR_REQUIRE_DATABASE_URL": "1"},tmp_path,"legacy_sqlite")
+        load({"PYMENTOR_REQUIRE_DATABASE_URL": "1"},tmp_path)
 
 
 @pytest.mark.parametrize("old_name,new_name", [

@@ -8,5 +8,7 @@ data:
   PYMENTOR_LOCAL_NOTIFICATIONS: {{ .Values.core.notificationWorkerEnabled | toString | quote }}
   PYMENTOR_PUBLIC_RUNNER_ENABLED: {{ .Values.runner.enabled | toString | quote }}
   PYMENTOR_LOG_TO_STDOUT: "1"
-  PYMENTOR_REQUIRE_DATABASE_URL: "1"
+  PYMENTOR_SCHEMA_MODE: managed
+  PYTHON_DOTENV_DISABLED: "1"
+  # Fixed marker retained while earlier PostgreSQL images coexist during release.
   PYMENTOR_COOKIE_SECURE: {{ .Values.global.cookieSecure | toString | quote }}

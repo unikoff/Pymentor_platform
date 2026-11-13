@@ -60,12 +60,12 @@ def _capture_upgrade(monkeypatch, *, dialect="postgresql"):
 
 def test_login_operations_schema_has_required_columns_constraints_and_index(monkeypatch):
     migration, tables, indexes = _capture_upgrade(monkeypatch)
-    from pymentor_core.app.schema_policy import DUAL_LOCAL_SCHEMA_REVISION
+    from pymentor_core.app.schema_policy import SCHEMA_REVISION
 
     assert migration.revision == "c435_login_operations"
     assert migration.down_revision == "c216_import_marker"
     # The account verification migration now follows the deletion outbox.
-    assert DUAL_LOCAL_SCHEMA_REVISION == "c503_dual_email_change"
+    assert SCHEMA_REVISION == "c503_dual_email_change"
     lifecycle = tables["account_lifecycles"]
     assert lifecycle.c.user_id.primary_key
     owner = next(iter(lifecycle.c.user_id.foreign_keys))

@@ -6,8 +6,8 @@ import pytest
 from sqlalchemy.engine import make_url
 from c222_pg_guard import validate_test_url
 from pymentor_core.app.database import matches_database_identity
-from tools.lab.dual_local import _validated_url
-from tools.lab.dual_local import create_app
+from tools.lab.postgres_runtime import _validated_url
+from tools.lab.postgres_runtime import create_app
 from pymentor_core.adapters.postgres.identity_sessions import AsyncIdentitySessions
 PYTHON = sys.executable
 
@@ -33,20 +33,7 @@ def test_dual_local_url_rejects_roles_and_endpoints_outside_allowlist(url):
     with pytest.raises(ValueError, match='disposable'):
         _validated_url(url)
 
-@pytest.mark.parametrize('role', ['pymentor_test', 'pymentor_app'])
-def test_runtime_engine_accepts_allowed_role_without_connecting(role):
-    env = os.environ.copy()
-    env.update(DATABASE_URL=f'postgresql+psycopg://{role}@127.0.0.1:57152/pymentor_test', PYMENTOR_DUAL_LOCAL_TEST='1', PYTHONPATH=os.pathsep.join(filter(None, ['backend', env.get('PYTHONPATH', '')])), PYTHON_DOTENV_DISABLED='1')
-    result = subprocess.run([PYTHON, '-c', 'from pymentor_core.app.database import engine; print(engine.url.username)'], env=env, capture_output=True, text=True, timeout=15)
-    assert result.returncode == 0, result.stderr
-    assert result.stdout.strip() == role
 
-def test_runtime_engine_rejects_other_roles_without_connecting():
-    env = os.environ.copy()
-    env.update(DATABASE_URL='postgresql+psycopg://pymentor_admin@127.0.0.1:57152/pymentor_test', PYMENTOR_DUAL_LOCAL_TEST='1', PYTHONPATH=os.pathsep.join(filter(None, ['backend', env.get('PYTHONPATH', '')])), PYTHON_DOTENV_DISABLED='1')
-    result = subprocess.run([PYTHON, '-c', 'from pymentor_core.app.database import engine'], env=env, capture_output=True, text=True, timeout=15)
-    assert result.returncode != 0
-    assert 'disposable PostgreSQL' in result.stderr
 
 def test_pg_migrator_guard_still_accepts_only_legacy_test_role():
     url = validate_test_url('postgresql+asyncpg://pymentor_test@127.0.0.1:57152/pymentor_test')
@@ -82,7 +69,7 @@ def test_dual_local_probe_rejects_database_identity_not_matching_validated_url(m
     monkeypatch.setenv('PYMENTOR_DUAL_LOCAL_TEST', '1')
     monkeypatch.setenv('PYMENTOR_TEST_LOGIN_RECOVERY_KEY', '42' * 32)
     monkeypatch.setenv('PYMENTOR_TEST_PG_URL', 'postgresql+asyncpg://pymentor_app@127.0.0.1:57152/pymentor_test')
-    monkeypatch.setattr('tools.lab.dual_local.create_engine', lambda *_args, **_kwargs: Probe())
+    monkeypatch.setattr('tools.lab.postgres_runtime.create_engine', lambda *_args, **_kwargs: Probe())
     monkeypatch.delitem(__import__('sys').modules, 'main', raising=False)
     monkeypatch.delitem(sys.modules, 'pymentor_core.app.database', raising=False)
     with pytest.raises(RuntimeError, match='identity'):
@@ -94,11 +81,3 @@ def test_readiness_identity_matches_only_the_role_in_validated_engine_url(role):
     assert matches_database_identity(('pymentor_test', role), validated_url)
     other_role = 'pymentor_app' if role == 'pymentor_test' else 'pymentor_test'
     assert not matches_database_identity(('pymentor_test', other_role), validated_url)
-
-@pytest.mark.parametrize('database_url', ['postgresql+psycopg://pymentor_app@localhost:57152/pymentor_test', 'postgresql+psycopg://pymentor_app@127.0.0.1:5432/pymentor_test', 'postgresql+psycopg://pymentor_app@127.0.0.1:57152/other', 'postgresql+psycopg://pymentor_app@127.0.0.1:57152/pymentor_test?sslmode=require', 'postgresql+asyncpg://pymentor_app@127.0.0.1:57152/pymentor_test'])
-def test_runtime_engine_rejects_other_endpoints_without_connecting(database_url):
-    env = os.environ.copy()
-    env.update(DATABASE_URL=database_url, PYMENTOR_DUAL_LOCAL_TEST='1', PYTHONPATH=os.pathsep.join(filter(None, ['backend', env.get('PYTHONPATH', '')])), PYTHON_DOTENV_DISABLED='1')
-    result = subprocess.run([PYTHON, '-c', 'from pymentor_core.app.database import engine'], env=env, capture_output=True, text=True, timeout=15)
-    assert result.returncode != 0
-    assert 'disposable PostgreSQL' in result.stderr

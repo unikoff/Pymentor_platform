@@ -101,7 +101,7 @@ def configure_environment(env) -> None:
 def measure() -> dict:
     from fastapi.testclient import TestClient
     from sqlalchemy import event
-    from tools.lab.dual_local import create_app
+    from tools.lab.postgres_runtime import create_app
 
     app = create_app()  # Checks database identity and schema before importing main.
     from pymentor_core.app.database import SessionLocal

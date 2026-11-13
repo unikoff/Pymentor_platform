@@ -24,17 +24,16 @@ import pytest
 from pydantic import BaseModel
 from pydantic import TypeAdapter
 from pydantic import ValidationError
-from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.pool import StaticPool
 
 from pymentor_core.adapters.course_local.catalog import find_track
 from pymentor_core.adapters.course_local.catalog import get_tracks_summary
 from pymentor_core.app.dependencies import get_db
 from pymentor_core.shared.api_contracts import LegacyErrorResponse
 from pymentor_core.adapters.sql import models
-from pymentor_core.app.database import Base
-from main import app
+from test_c2_1_4_auth_legacy import runtime_db
+import test_c2_1_4_auth_legacy as http
+app = None
 from pymentor_core.modules.identity.api.schemas import ActivityCalendarResponse
 from pymentor_core.modules.identity.api.schemas import ActivitySummaryResponse
 from pymentor_core.modules.identity.api.schemas import ActivityVisitResponse
@@ -100,42 +99,27 @@ FRONTEND_OPERATIONS = {
 }
 
 
+@pytest.fixture(autouse=True)
+def contract_app(runtime_db):
+    global app
+    app = http._client.app
+
+
 @pytest.fixture
-def clients(monkeypatch):
-    engine = create_engine(
-        "sqlite://",
-        connect_args={"check_same_thread": False},
-        poolclass=StaticPool,
-    )
-    Base.metadata.create_all(engine)
-    from pymentor_core.adapters.legacy_sqlite.account_lifecycles import ensure_sqlite_account_lifecycles
-    ensure_sqlite_account_lifecycles(engine)
-    sessions = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-    def override_get_db():
-        with sessions() as db:
-            yield db
-
-    monkeypatch.setitem(app.dependency_overrides, get_db, override_get_db)
+def clients(monkeypatch, runtime_db):
+    global app
+    app = http._client.app
+    sessions = runtime_db
     monkeypatch.setattr(course_service, "SessionLocal", sessions)
     monkeypatch.setenv("PYMENTOR_PUBLIC_RUNNER_ENABLED", "1")
-
     with sessions() as db:
-        admin = models.User(
-            username="Core Contract Admin",
-            email="c2-1-3-admin@example.test",
-            password="Core-contract-admin-password",
-            is_admin=True,
-        )
-        db.add(admin)
-        db.flush()
-        db.add(models.Session(user_id=admin.id, session_token=ADMIN_SESSION_TOKEN))
+        db.add(models.User(username="Core Contract Admin", email="c2-1-3-admin@example.test",
+                           password="Core-contract-admin-password", is_admin=True))
         db.commit()
-
-    try:
-        yield RawASGIClient(), RawASGIClient({"session": ADMIN_SESSION_TOKEN}), sessions
-    finally:
-        engine.dispose()
+    admin = RawASGIClient()
+    response = admin.post("/api/user/login", json={"email": "c2-1-3-admin@example.test", "password": "Core-contract-admin-password"})
+    assert response.status_code == 200
+    yield RawASGIClient(), admin, sessions
 
 
 class RawASGIResponse:
@@ -170,59 +154,13 @@ class RawASGIClient:
         return self.request("DELETE", path, params=params, cookies=cookies)
 
     def request(self, method, path, *, json=None, params=None, cookies=None):
-        body = json_module.dumps(json, ensure_ascii=False).encode("utf-8") if json is not None else b""
-        query_string = urlencode(params or {}).encode("ascii")
-        headers = [
-            (b"host", b"testserver"),
-            (b"content-length", str(len(body)).encode("ascii")),
-        ]
-        if json is not None:
-            headers.append((b"content-type", b"application/json"))
-        merged_cookies = {**self.cookies, **(cookies or {})}
-        if merged_cookies:
-            cookie_header = "; ".join(f"{key}={value}" for key, value in merged_cookies.items())
-            headers.append((b"cookie", cookie_header.encode("latin-1")))
-
-        messages = []
-        delivered = False
-
-        async def receive():
-            nonlocal delivered
-            if delivered:
-                return {"type": "http.disconnect"}
-            delivered = True
-            return {"type": "http.request", "body": body, "more_body": False}
-
-        async def send(message):
-            messages.append(message)
-
-        scope = {
-            "type": "http",
-            "asgi": {"version": "3.0", "spec_version": "2.4"},
-            "http_version": "1.1",
-            "method": method,
-            "scheme": "http",
-            "path": path,
-            "raw_path": path.encode("utf-8"),
-            "root_path": "",
-            "query_string": query_string,
-            "headers": headers,
-            "server": ("testserver", 80),
-            "client": ("127.0.0.1", 12345),
-        }
-        asyncio.run(app(scope, receive, send))
-        start = next(message for message in messages if message["type"] == "http.response.start")
-        response_body = b"".join(
-            message.get("body", b"")
-            for message in messages
-            if message["type"] == "http.response.body"
-        )
-        response_headers = {
-            key.decode("latin-1").lower(): value.decode("latin-1")
-            for key, value in start["headers"]
-        }
-        response_json = json_module.loads(response_body) if response_body else None
-        response = RawASGIResponse(start["status"], response_headers, response_json)
+        query = urlencode(params or {})
+        if query: path += "?" + query
+        merged = {**self.cookies, **(cookies or {})}
+        headers = {"Cookie": "; ".join(f"{key}={value}" for key, value in merged.items())} if merged else {}
+        if path == "/api/user/login": headers["Idempotency-Key"] = str(uuid4())
+        reply = http.call(method, path, body=json, headers=headers)
+        response = RawASGIResponse(reply.status, dict(reply.headers), reply.data)
         self.cookies.update(response.cookies)
         return response
 

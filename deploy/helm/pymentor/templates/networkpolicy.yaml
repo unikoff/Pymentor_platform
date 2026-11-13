@@ -93,4 +93,50 @@ spec:
           port: 53
         - protocol: TCP
           port: 53
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "pymentor.fullname" . }}-data-egress
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "pymentor.selectorLabels" . | nindent 6 }}
+    matchExpressions:
+      - key: app.kubernetes.io/component
+        operator: In
+        values: [core, migrations, notifications]
+  policyTypes: [Egress]
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: {{ .Values.networkPolicy.dataNamespace }}
+          podSelector:
+            matchLabels:
+              {{- toYaml .Values.networkPolicy.postgresPodLabels | nindent 14 }}
+      ports: [{protocol: TCP, port: 5432}]
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: {{ .Values.networkPolicy.dataNamespace }}
+          podSelector:
+            matchLabels:
+              {{- toYaml .Values.networkPolicy.redisPodLabels | nindent 14 }}
+      ports: [{protocol: TCP, port: 6379}]
+{{- if .Values.notificationWorker.enabled }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "pymentor.fullname" . }}-notifications-https
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "pymentor.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: notifications
+  policyTypes: [Egress]
+  egress:
+    - ports: [{protocol: TCP, port: 443}]
+{{- end }}
 {{- end }}

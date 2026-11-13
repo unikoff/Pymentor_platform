@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft-07/schema#",
   "type": "object",
-  "required": ["profile", "global", "images", "runtimeSecret", "runner", "core", "frontend", "ingress", "ingressController", "networkPolicy", "quota"],
+  "required": ["profile", "global", "images", "runtimeSecret", "runner", "core", "frontend", "ingress", "ingressController", "networkPolicy", "quota", "migrations", "notificationWorker"],
   "properties": {
     "profile": {"type": "string", "enum": ["local-single", "local-multinode", "production-single-vps", "future-production-ha"]},
     "global": {
@@ -23,11 +23,14 @@
     },
     "runtimeSecret": {
       "type": "object",
-      "required": ["name", "databaseUrlKey"],
+      "required": ["name", "databaseUrlKey", "redisUrlKey", "redisPrefixKey", "loginRecoveryKeyKey"],
       "properties": {
         "name": {"type": "string", "minLength": 1},
         "databaseUrlKey": {"type": "string", "minLength": 1},
-        "landingBotCredentialsKey": {"type": "string", "minLength": 1}
+        "landingBotCredentialsKey": {"type": "string", "minLength": 1},
+        "redisUrlKey": {"type": "string", "minLength": 1},
+        "redisPrefixKey": {"type": "string", "minLength": 1},
+        "loginRecoveryKeyKey": {"type": "string", "minLength": 1}
       }
     },
     "runner": {
@@ -37,14 +40,13 @@
     },
     "core": {
       "type": "object",
-      "required": ["replicaCount", "serviceAccountName", "port", "persistence", "resources", "terminationGracePeriodSeconds"],
+      "required": ["replicaCount", "serviceAccountName", "port", "resources", "terminationGracePeriodSeconds"],
       "properties": {
         "replicaCount": {"type": "integer", "const": 1},
         "serviceAccountName": {"type": "string", "minLength": 1},
         "port": {"type": "integer", "minimum": 1, "maximum": 65535},
-        "persistence": {"type": "object", "required": ["enabled", "accessMode", "size"], "properties": {"enabled": {"type": "boolean", "const": true}, "storageClassName": {"type": "string"}, "accessMode": {"type": "string", "enum": ["ReadWriteOnce"]}, "size": {"type": "string", "minLength": 1}}},
         "resources": {"$ref": "#/definitions/resources"},
-        "notificationWorkerEnabled": {"type": "boolean"},
+        "notificationWorkerEnabled": {"type": "boolean", "const": false},
         "terminationGracePeriodSeconds": {"type": "integer", "minimum": 1}
       }
     },
@@ -73,11 +75,14 @@
       }
     },
     "ingressController": {"type": "object", "required": ["configureBundledK3sTraefik", "replicas", "imageRepository", "imageTag"], "properties": {"configureBundledK3sTraefik": {"type": "boolean"}, "replicas": {"type": "integer", "minimum": 1}, "imageRepository": {"type": "string", "minLength": 1}, "imageTag": {"type": "string", "minLength": 1}}},
-    "networkPolicy": {"type": "object", "required": ["enabled", "trustedIngressNamespace"], "properties": {"enabled": {"type": "boolean"}, "trustedIngressNamespace": {"type": "string", "minLength": 1}}},
+    "networkPolicy": {"type": "object", "required": ["enabled", "trustedIngressNamespace", "dataNamespace", "postgresPodLabels", "redisPodLabels"], "properties": {"enabled": {"type": "boolean"}, "trustedIngressNamespace": {"type": "string", "minLength": 1}, "dataNamespace": {"type": "string", "minLength": 1}, "postgresPodLabels": {"type": "object", "minProperties": 1}, "redisPodLabels": {"type": "object", "minProperties": 1}}},
+    "migrations": {"type": "object", "required": ["enabled", "image", "secretName"], "properties": {"enabled": {"type": "boolean"}, "image": {"type": "string", "pattern": "^$|^[^ ]+@sha256:[a-f0-9]{64}$"}, "secretName": {"type": "string", "minLength": 1}}},
+    "notificationWorker": {"type": "object", "required": ["enabled", "suspend", "schedule"], "properties": {"enabled": {"type": "boolean"}, "suspend": {"type": "boolean"}, "schedule": {"type": "string", "minLength": 1}}},
     "quota": {"type": "object", "required": ["enabled", "pods", "requestsCpu", "requestsMemory", "limitsCpu", "limitsMemory", "requestsStorage"], "properties": {"enabled": {"type": "boolean"}, "pods": {"type": "string"}, "requestsCpu": {"type": "string"}, "requestsMemory": {"type": "string"}, "limitsCpu": {"type": "string"}, "limitsMemory": {"type": "string"}, "requestsStorage": {"type": "string"}}},
     "production": {"type": "object", "required": ["singleVpsHost", "haHost"], "properties": {"singleVpsHost": {"type": "string"}, "haHost": {"type": "string"}}}
   },
   "allOf": [
+    {"if": {"properties": {"migrations": {"properties": {"enabled": {"const": true}}, "required": ["enabled"]}}, "required": ["migrations"]}, "then": {"properties": {"migrations": {"properties": {"image": {"minLength": 1}}}}}},
     {
       "if": {
         "properties": {

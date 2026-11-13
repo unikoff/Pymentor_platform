@@ -1,13 +1,12 @@
-"""Password compatibility on synthetic, in-memory SQLite only."""
+"""Password compatibility on managed disposable PostgreSQL."""
 
 import bcrypt
 import pytest
-from sqlalchemy import create_engine
+from test_c2_1_4_auth_legacy import runtime_db
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from pymentor_core.adapters.sql import models
-from pymentor_core.app.database import Base
 from pymentor_core.modules.identity.passwords import hash_password
 from pymentor_core.modules.identity.passwords import is_bcrypt_hash
 from pymentor_core.modules.identity.passwords import verify_password
@@ -19,15 +18,12 @@ def model_cls(request):
 
 
 @pytest.fixture
-def session():
-    engine = create_engine("sqlite+pysqlite:///:memory:")
-    Base.metadata.create_all(engine, tables=[models.User.__table__, models.Admin.__table__])
-    with Session(engine) as db:
+def session(runtime_db):
+    with runtime_db() as db:
         yield db
-    engine.dispose()
 
 
-def test_plaintext_password_constructor_and_sqlite_round_trip(model_cls, session):
+def test_plaintext_password_constructor_and_postgres_round_trip(model_cls, session):
     plaintext = "correct horse battery staple"
     account = model_cls(username="Person", email="person@example.test", password=plaintext)
     assert account.password != plaintext

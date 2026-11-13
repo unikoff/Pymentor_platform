@@ -1,6 +1,6 @@
-"""Acceptance cases for idempotent local PostgreSQL/Redis login.
+"""Acceptance cases for idempotent single-runtime PostgreSQL/Redis login.
 
-The fixture creates only a synthetic account on an explicitly guarded lab.
+The fixture creates only a synthetic account on task-owned disposable services.
 """
 
 import asyncio
@@ -12,12 +12,12 @@ from redis.exceptions import ConnectionError as RedisConnectionError
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
-from pymentor_core.adapters.postgres.identity_sessions import AsyncIdentitySessions
+from pymentor_core.adapters.runtime import RuntimeIdentitySessions as AsyncIdentitySessions
 from pymentor_core.modules.identity.contracts import IdentityUnavailable
 from pymentor_core.modules.identity.contracts import InvalidSession
 from pymentor_core.modules.identity.passwords import hash_password
 from pymentor_core.adapters.postgres.async_database import AsyncUnitOfWork
-from test_c216_session_flow import run_scenario
+from runtime_scenarios import run_scenario
 
 
 def test_retry_of_confirmed_login_never_evicts_another_session():
@@ -134,7 +134,7 @@ def test_missing_redis_gate_before_commit_preserves_existing_sessions():
     run_scenario(scenario)
 
 
-def test_forced_logout_invalidates_a_pending_login_and_its_retry():
+def test_durable_revocation_invalidates_a_pending_login_and_its_retry():
     async def scenario(db, store, user_id, email, password):
         service = AsyncIdentitySessions(db, store, recovery_key=b"synthetic-recovery-key-32-bytes!!")
         operation = str(uuid4())
@@ -146,7 +146,16 @@ def test_forced_logout_invalidates_a_pending_login_and_its_retry():
             await real_add(uid, sessions)
             if not called:
                 called = True
-                await service.invalidate_user_sessions(user_id)
+                # Same durable revocation used by password changes. The old
+                # synthetic-only invalidation helper keeps its lab guards.
+                async with db.unit_of_work() as uow:
+                    await uow.session.execute(text(
+                        "UPDATE login_operations SET status='revoked' WHERE user_id=:id"
+                    ), {"id": user_id})
+                    await uow.session.execute(text(
+                        "DELETE FROM sessions WHERE user_id=:id"
+                    ), {"id": user_id})
+                    await uow.commit()
 
         with patch.object(store, "add_user_sessions", add_then_invalidate):
             with pytest.raises(InvalidSession):

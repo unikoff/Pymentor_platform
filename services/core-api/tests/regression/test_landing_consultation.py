@@ -4,21 +4,21 @@ import json
 from unittest import TestCase
 
 from fastapi import HTTPException
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+import pytest
+from test_c2_1_4_auth_legacy import runtime_db
 from unittest.mock import patch
 
 from pymentor_core.adapters.sql import models
-from pymentor_core.app.database import Base
 from pymentor_core.adapters.telegram.transport import send_landing_notification
 from pymentor_core.modules.landings.api import service
 
 
 class LandingConsultationEventTests(TestCase):
+    @pytest.fixture(autouse=True)
+    def database(self, runtime_db):
+        self.sessions = runtime_db
+
     def setUp(self) -> None:
-        self.engine = create_engine("sqlite://")
-        Base.metadata.create_all(self.engine)
-        self.sessions = sessionmaker(bind=self.engine)
         self.db = self.sessions()
         self.landing = service.create_landing(
             self.db,
@@ -36,8 +36,6 @@ class LandingConsultationEventTests(TestCase):
 
     def tearDown(self) -> None:
         self.db.close()
-        Base.metadata.drop_all(self.engine)
-        self.engine.dispose()
 
     def test_consultation_request_event_is_allowlisted_and_idempotent(self) -> None:
         payload = {

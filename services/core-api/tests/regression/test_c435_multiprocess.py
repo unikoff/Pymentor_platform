@@ -16,10 +16,10 @@ from uuid import uuid4
 import httpx
 from sqlalchemy import text
 
-from pymentor_core.adapters.postgres.identity_sessions import AsyncIdentitySessions
+from pymentor_core.adapters.runtime import RuntimeIdentitySessions as AsyncIdentitySessions
 from pymentor_core.modules.identity.login_recovery import derive_login_token
 from pymentor_core.adapters.redis.sessions import SessionDigest
-from test_c216_session_flow import run_scenario
+from runtime_scenarios import run_scenario
 
 
 RECOVERY_KEY_HEX = "42" * 32
@@ -50,7 +50,7 @@ def _stop_processes(processes):
 
 
 def test_same_login_retry_across_two_local_processes_replaces_only_oldest(monkeypatch):
-    monkeypatch.setenv("PYMENTOR_TEST_LOGIN_RECOVERY_KEY", RECOVERY_KEY_HEX)
+    monkeypatch.setenv("KNOWI_LOGIN_RECOVERY_KEY", RECOVERY_KEY_HEX)
 
     async def scenario(db, store, user_id, email, password):
         service = AsyncIdentitySessions(
@@ -97,16 +97,17 @@ def test_same_login_retry_across_two_local_processes_replaces_only_oldest(monkey
             ports[1] = _free_local_port()
         roots = [f"http://127.0.0.1:{port}" for port in ports]
         env = os.environ.copy()
-        env.pop("DATABASE_URL", None)
+        env.pop("PYMENTOR_DUAL_LOCAL_TEST", None)
+        env.pop("PYMENTOR_REDIS_PREFIX", None)
+        env.pop("PYMENTOR_LOGIN_RECOVERY_KEY", None)
         backend_path = str((Path(__file__).resolve().parents[4] / 'backend'))
         inherited_pythonpath = env.get("PYTHONPATH")
         env.update(
             PYTHONPATH=os.pathsep.join(filter(None, (backend_path, inherited_pythonpath))),
-            PYMENTOR_DUAL_LOCAL_TEST="1",
-            PYMENTOR_TEST_PG_URL=os.environ["PYMENTOR_TEST_PG_URL"],
-            PYMENTOR_TEST_REDIS_URL=os.environ["PYMENTOR_TEST_REDIS_URL"],
-            PYMENTOR_TEST_REDIS_PREFIX=prefix,
-            PYMENTOR_TEST_LOGIN_RECOVERY_KEY=RECOVERY_KEY_HEX,
+            DATABASE_URL=db.engine.url.set(drivername="postgresql+psycopg").render_as_string(hide_password=False),
+            REDIS_URL=os.environ["KNOWI_TEST_REDIS_URL"],
+            KNOWI_REDIS_PREFIX=prefix,
+            KNOWI_LOGIN_RECOVERY_KEY=RECOVERY_KEY_HEX,
             PYMENTOR_SCHEMA_MODE="managed",
             PYMENTOR_LOCAL_NOTIFICATIONS="0",
             PYTHON_DOTENV_DISABLED="1",
@@ -117,7 +118,7 @@ def test_same_login_retry_across_two_local_processes_replaces_only_oldest(monkey
             for port in ports:
                 processes.append(subprocess.Popen(
                     [
-                        sys.executable, "-m", "uvicorn", "dual_local:create_app",
+                        sys.executable, "-m", "uvicorn", "pymentor_core.app.asgi:create_app",
                         "--factory", "--host", "127.0.0.1", "--port", str(port),
                         "--log-level", "warning",
                     ],
@@ -130,7 +131,7 @@ def test_same_login_retry_across_two_local_processes_replaces_only_oldest(monkey
                 for process, root in zip(processes, roots):
                     deadline = time.monotonic() + 15
                     while True:
-                        assert process.poll() is None, "local dual process exited before readiness"
+                        assert process.poll() is None, "Core ASGI process exited before readiness"
                         try:
                             ready = await probe.get(f"{root}/health/ready")
                             if ready.status_code == 200:
@@ -138,7 +139,7 @@ def test_same_login_retry_across_two_local_processes_replaces_only_oldest(monkey
                         except (httpx.ConnectError, httpx.TimeoutException):
                             pass
                         if time.monotonic() >= deadline:
-                            raise AssertionError("local dual process did not become ready")
+                            raise AssertionError("Core ASGI process did not become ready")
                         await asyncio.sleep(0.1)
 
             headers = {"Idempotency-Key": operation_id}

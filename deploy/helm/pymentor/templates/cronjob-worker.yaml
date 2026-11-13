@@ -1,0 +1,41 @@
+{{- if .Values.notificationWorker.enabled }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "pymentor.fullname" . }}-notifications
+  labels:
+    {{- include "pymentor.labels" . | nindent 4 }}
+spec:
+  schedule: {{ .Values.notificationWorker.schedule | quote }}
+  suspend: {{ .Values.notificationWorker.suspend }}
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      activeDeadlineSeconds: 120
+      template:
+        metadata:
+          labels:
+            {{- include "pymentor.selectorLabels" . | nindent 12 }}
+            app.kubernetes.io/component: notifications
+        spec:
+          restartPolicy: Never
+          automountServiceAccountToken: false
+          securityContext: {runAsNonRoot: true, runAsUser: 10001, runAsGroup: 10001}
+          containers:
+            - name: worker
+              image: {{ include "pymentor.imageReference" .Values.images.core | quote }}
+              command: [python, -m, pymentor_core.app.worker]
+              envFrom:
+                - secretRef:
+                    name: {{ .Values.runtimeSecret.name }}
+                - configMapRef:
+                    name: {{ include "pymentor.fullname" . }}-runtime
+              resources:
+                requests: {cpu: 50m, memory: 128Mi}
+                limits: {cpu: "1", memory: 512Mi}
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities: {drop: [ALL]}
+{{- end }}

@@ -1,7 +1,4 @@
-"""Golden contract for the legacy manual completion endpoint (C2.1.5).
-
-All data lives in an isolated in-memory SQLite database.
-"""
+"""Manual completion policy with real PostgreSQL/Redis HTTP and UoW paths."""
 from __future__ import annotations
 
 import os
@@ -9,22 +6,12 @@ import sys
 
 import pytest
 from fastapi import HTTPException
-from fastapi import Request
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.pool import StaticPool
-
-# Refuse any persistent database even if this test is run in isolation.
-configured_db = os.getenv("DATABASE_URL")
-if configured_db not in (None, "sqlite://", "sqlite:///:memory:"):
-    raise RuntimeError("Complete-lesson golden tests require synthetic in-memory SQLite")
-os.environ.setdefault("DATABASE_URL", "sqlite://")
-if 'pymentor_core.app.database' in sys.modules:
-    db_url = sys.modules['pymentor_core.app.database'].engine.url
-    assert db_url.get_backend_name() == "sqlite" and db_url.database in (None, ":memory:")
 
 from pymentor_core.adapters.sql import models
-from pymentor_core.app.database import Base
+from test_c2_1_4_auth_legacy import runtime_db
+import test_c2_1_4_auth_legacy as http
+from types import SimpleNamespace
+from pymentor_core.app.dependencies import get_db, get_request_context
 from pymentor_core.adapters.sql.unit_of_work import SqlAlchemyUnitOfWork
 from pymentor_core.modules.learning import progress
 from pymentor_core.modules.learning.api import service
@@ -35,15 +22,14 @@ REVISION = "a" * 64
 
 
 @pytest.fixture
-def world(monkeypatch):
-    engine = create_engine("sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool)
-    Base.metadata.create_all(engine)
-    sessions = sessionmaker(bind=engine, autoflush=False)
+def world(monkeypatch, runtime_db):
+    sessions = runtime_db
     with sessions() as db:
-        db.add(models.User(id=9, username="Synthetic Student", email="complete@example.test", _password_hash="synthetic"))
-        db.add(models.Session(user_id=9, session_token="synthetic-session"))
+        db.add(models.User(id=9, username="Synthetic Student", email="complete@example.test", password=http.PASSWORD))
         db.commit()
 
+    global _token
+    _token = http.login(email="complete@example.test").cookie().value
     lessons = {
         "lesson-stable": {
             "id": "lesson-stable", "source_file": "chapter_02/block_05/demo.md",
@@ -60,20 +46,24 @@ def world(monkeypatch):
         service, "find_lesson",
         lambda lesson_id: lessons.get("lesson-stable" if lesson_id == "old-position-id" else lesson_id),
     )
-    try:
-        yield sessions, lessons
-    finally:
-        engine.dispose()
-
-
-def make_request(authenticated=True):
-    headers = [(b"cookie", b"session=synthetic-session")] if authenticated else []
-    return Request({"type": "http", "method": "POST", "path": "/learning/lessons/complete", "headers": headers})
+    yield sessions, lessons
 
 
 def finish(db, lesson_id, *, uow_enabled=False, authenticated=True):
-    kwargs = {"uow": SqlAlchemyUnitOfWork(db)} if uow_enabled else {}
-    return service.complete_lesson(lesson_id, make_request(authenticated), db, **kwargs)
+    app = http._client.app
+    previous = app.dependency_overrides.copy()
+    app.dependency_overrides[get_db] = lambda: db
+    app.dependency_overrides[get_request_context] = lambda: SimpleNamespace(
+        uow=SqlAlchemyUnitOfWork(db) if uow_enabled else None)
+    try:
+        reply = http.call("POST", f"/api/learning/lessons/{lesson_id}/complete",
+                          cookie=_token if authenticated else None)
+        if reply.status >= 400:
+            raise HTTPException(status_code=reply.status, detail=reply.data["detail"])
+        return reply.data
+    finally:
+        app.dependency_overrides.clear()
+        app.dependency_overrides.update(previous)
 
 
 def rows(sessions):

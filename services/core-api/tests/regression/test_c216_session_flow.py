@@ -745,8 +745,8 @@ def test_migration_downgrade_preserves_verification_and_live_session():
         # The new head refuses first, before older downgrade guards are reached.
         assert 'Refusing to discard pending email-change confirmations' in result.stderr
         async with db.unit_of_work() as uow:
-            from pymentor_core.app.schema_policy import DUAL_LOCAL_SCHEMA_REVISION
-            assert await uow.session.scalar(text('SELECT version_num FROM alembic_version')) == DUAL_LOCAL_SCHEMA_REVISION
+            from pymentor_core.app.schema_policy import SCHEMA_REVISION
+            assert await uow.session.scalar(text('SELECT version_num FROM alembic_version')) == SCHEMA_REVISION
         assert (await service.authenticate(token)).user_id == user_id
     run_scenario(scenario)
 

@@ -95,7 +95,7 @@ def start_processes(count, env, processes):
                 code = """
 import socket, sys, uvicorn, threading, time
 from contextlib import asynccontextmanager
-from tools.lab.dual_local import create_app
+from tools.lab.postgres_runtime import create_app
 s = socket.fromshare(sys.stdin.buffer.read())
 app = create_app()
 from pymentor_core.adapters.postgres.identity_sessions import AsyncIdentitySessions
@@ -169,7 +169,7 @@ uvicorn.Server(cfg).run(sockets=[s])
                         sys.executable,
                         "-m",
                         "uvicorn",
-                        "tools.lab.dual_local:create_app",
+                        "tools.lab.postgres_runtime:create_app",
                         "--factory",
                         "--fd",
                         str(fd),

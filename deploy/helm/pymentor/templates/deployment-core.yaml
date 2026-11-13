@@ -10,11 +10,11 @@ spec:
   revisionHistoryLimit: 2
   progressDeadlineSeconds: 300
   strategy:
-    # SQLite is single-writer; take the old pod down before creating its replacement.
+    # Stateless API; readiness gates a replacement against managed PG/Redis.
     type: RollingUpdate
     rollingUpdate:
-      maxUnavailable: 1
-      maxSurge: 0
+      maxUnavailable: 0
+      maxSurge: 1
   selector:
     matchLabels:
       {{- include "pymentor.selectorLabels" . | nindent 6 }}
@@ -60,6 +60,7 @@ spec:
         - name: core
           image: {{ include "pymentor.imageReference" .Values.images.core | quote }}
           imagePullPolicy: {{ .Values.images.core.pullPolicy }}
+          command: [uvicorn, pymentor_core.app.asgi:create_app, --factory, --host, "0.0.0.0", --port, {{ .Values.core.port | quote }}]
           ports:
             - name: http
               containerPort: {{ .Values.core.port }}
@@ -73,6 +74,21 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.runtimeSecret.name }}
                   key: {{ .Values.runtimeSecret.databaseUrlKey }}
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.runtimeSecret.name }}
+                  key: {{ .Values.runtimeSecret.redisUrlKey }}
+            - name: PYMENTOR_REDIS_PREFIX
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.runtimeSecret.name }}
+                  key: {{ .Values.runtimeSecret.redisPrefixKey }}
+            - name: PYMENTOR_LOGIN_RECOVERY_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.runtimeSecret.name }}
+                  key: {{ .Values.runtimeSecret.loginRecoveryKeyKey }}
             - name: PYMENTOR_LANDING_BOT_CREDENTIALS
               valueFrom:
                 secretKeyRef:
@@ -108,8 +124,6 @@ spec:
             capabilities:
               drop: ["ALL"]
           volumeMounts:
-            - name: sqlite-data
-              mountPath: /data
             - name: tmp
               mountPath: /tmp
             {{- if .Values.runner.enabled }}
@@ -118,9 +132,6 @@ spec:
               subPath: .runner.lock
             {{- end }}
       volumes:
-        - name: sqlite-data
-          persistentVolumeClaim:
-            claimName: {{ include "pymentor.fullname" . }}-sqlite
         - name: tmp
           emptyDir:
             medium: Memory

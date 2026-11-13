@@ -27,10 +27,8 @@ def _utcnow() -> datetime:
 
 
 def _start_write_transaction(db: Session) -> None:
-    if db.bind is not None and db.bind.dialect.name == "sqlite":
-        if db.in_transaction():
-            db.rollback()
-        db.execute(text("BEGIN IMMEDIATE"))
+    if db.get_bind().dialect.name != "postgresql":
+        raise RuntimeError("Landing writes require PostgreSQL")
 
 
 def _canonical_payload(

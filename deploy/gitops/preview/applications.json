@@ -174,10 +174,6 @@
               {
                 "env": [
                   {
-                    "name": "PYMENTOR_PROFILE",
-                    "value": "postgres_redis"
-                  },
-                  {
                     "name": "PYMENTOR_REDIS_PREFIX",
                     "value": "pymentor-preview-migrated:"
                   },
@@ -282,6 +278,14 @@
                         "key": "EMAIL_TOKEN_SECRET"
                       }
                     }
+                  },
+                  {
+                    "name": "PYMENTOR_SCHEMA_MODE",
+                    "value": "managed"
+                  },
+                  {
+                    "name": "PYTHON_DOTENV_DISABLED",
+                    "value": "1"
                   }
                 ],
                 "image": "pymentor/core-api:vps-20261108-secure2",

@@ -6,7 +6,6 @@ import logging
 import os
 import sys
 from logging.handlers import RotatingFileHandler
-from pathlib import Path
 
 
 def _parse_args(max_batch_size) -> argparse.Namespace:
@@ -28,11 +27,6 @@ def _parse_args(max_batch_size) -> argparse.Namespace:
         help="Check cron environment without sending messages",
     )
     parser.add_argument(
-        "--backup-db",
-        type=Path,
-        help="Create a consistent SQLite backup before migrating",
-    )
-    parser.add_argument(
         "--retry-failed", action="store_true", help="Requeue permanently failed events"
     )
     return parser.parse_args()
@@ -45,7 +39,6 @@ def _run_worker() -> int:
     from pymentor_core.adapters.sql.notification_outbox import MAX_BATCH_SIZE
     from pymentor_core.adapters.sql.notification_outbox import LOG_PATH
     from pymentor_core.adapters.sql.notification_outbox import logger
-    from pymentor_core.adapters.sql.notification_outbox import backup_database
     from pymentor_core.adapters.sql.notification_outbox import _ensure_outbox_table
     from pymentor_core.adapters.sql.notification_outbox import _worker_lock
     from pymentor_core.adapters.sql.notification_outbox import _release_worker_lock
@@ -78,13 +71,6 @@ def _run_worker() -> int:
         logger.error("limit must be between 1 and %s", MAX_BATCH_SIZE)
         return 2
     try:
-        if args.backup_db is not None:
-            print(
-                json.dumps(
-                    {"backup": str(backup_database(args.backup_db))}, ensure_ascii=False
-                )
-            )
-            return 0
         _ensure_outbox_table()
         if args.check:
             configured = (
@@ -142,27 +128,19 @@ def _run_worker() -> int:
 
 
 def main(profile=None) -> int:
-    from pymentor_core.app.paths import LEGACY_ROOT
     from pymentor_core.app.settings import Settings
 
-    if profile == "legacy_sqlite" or os.getenv("PYMENTOR_PROFILE") == "legacy_sqlite":
-        from dotenv import load_dotenv
-
-        load_dotenv(LEGACY_ROOT / ".env")
-    settings = Settings.from_environment(profile, legacy_root=LEGACY_ROOT)
+    settings = Settings.from_environment(profile)
     existing = sys.modules.get("pymentor_core.app.database")
     if existing is not None:
         from sqlalchemy.engine import make_url
 
         if existing.engine.url != make_url(settings.synchronous_database_url):
-            raise RuntimeError("A different database profile requires a fresh process")
+            raise RuntimeError("A different database identity requires a fresh process")
     os.environ["DATABASE_URL"] = settings.synchronous_database_url
     os.environ["PYMENTOR_PROFILE"] = settings.profile
-    if settings.profile == "postgres_redis":
-        os.environ["PYMENTOR_SCHEMA_MODE"] = "managed"
-        os.environ["PYTHON_DOTENV_DISABLED"] = "1"
-    if str(LEGACY_ROOT) not in sys.path:
-        sys.path.insert(0, str(LEGACY_ROOT))
+    os.environ["PYMENTOR_SCHEMA_MODE"] = "managed"
+    os.environ["PYTHON_DOTENV_DISABLED"] = "1"
     from pymentor_core.app.database import engine
 
     try:

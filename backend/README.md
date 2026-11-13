@@ -1,17 +1,14 @@
-# Совместимость со старым хостингом
+# Учебные ресурсы
 
-Рабочий backend находится в `../services/core-api`. Здесь остаются:
+Рабочий Core расположен в [services/core-api](../services/core-api/README.md).
+API запускается через `pymentor_core.app.asgi:create_app --factory`, worker —
+через `python -m pymentor_core.app.worker`. Зависимости и Dockerfile находятся
+в `services/core-api`; прежние Passenger/SQLite/cron-обёртки удалены.
 
-* `main.py`, `_core_entrypoint.py`, `sitecustomize.py` — старый запуск той же общей factory;
-* `notifications/worker.py`, `services/notification_worker.py` — прежние имена cron-команд;
-* `content/materials` и чистый `content/practice/helpers.py` — учебные ресурсы до MC2;
-* `test.db`, локальный `.env`, существующие log/lock/output — сохранённые рабочие данные старого профиля.
+В этом каталоге сохраняются `content/materials` и `content/practice/helpers.py`.
+Путь `backend` в `PYTHONPATH` нужен для пакета `content`, а не для старого запуска.
+SQLite в учебных примерах относится к содержанию курса.
 
-Оригинальная SQLite не перемещена и не преобразована. Миграции выполняются только явными
-инструментами над выбранной копией. Временно остаются прежние requirements/Dockerfile:
-CI/CD не менялся, его старый build context **не подходит** для нового расположения пакета.
-До отдельного разрешённого обновления CI выпуск этой структуры запрещён техническим gate.
-
-Тестов, ORM-моделей, бизнес-сервисов и лабораторных реализаций здесь больше нет.
-Команды, структура и два профиля описаны в `../services/core-api/README.md`.
-Не удаляйте этот каталог целиком: он содержит рабочую базу и материалы.
+Локальные `.env`, базы, backup/log/lock/output не являются частью runtime image.
+Очистка исходников не удаляет такие файлы или production-данные. Не удаляйте
+каталог целиком: в нём находятся материалы курса и могут находиться архивы.

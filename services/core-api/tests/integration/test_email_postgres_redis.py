@@ -1,8 +1,4 @@
-"""Email flows on the opt-in disposable PostgreSQL/Redis Core profile.
-
-Run in a fresh process with PYMENTOR_TEST_PG_URL and PYMENTOR_TEST_REDIS_URL.
-The existing dual-local factory enforces the database allowlist and schema revision.
-"""
+"""Email flows on the single Core runtime against task-owned disposable services."""
 
 import os
 import hashlib
@@ -14,29 +10,42 @@ from uuid import uuid4
 import pytest
 
 
-def test_email_flows_with_postgres_redis(monkeypatch):
-    pg = os.environ.get("PYMENTOR_TEST_PG_URL")
-    redis = os.environ.get("PYMENTOR_TEST_REDIS_URL")
-    if not pg or not redis:
+@pytest.fixture
+def email_runtime(monkeypatch):
+    pg = os.environ.get("KNOWI_TEST_PG_URL")
+    redis = os.environ.get("KNOWI_TEST_REDIS_URL")
+    if os.getenv("KNOWI_PG02_INTEGRATION") != "1" or not pg or not redis:
         pytest.skip("requires disposable PostgreSQL and Redis")
-    if redis != "redis://127.0.0.1:57146/0":
+    from sqlalchemy.engine import make_url
+    url = make_url(pg)
+    if (url.host, url.port, url.database, url.username) != ("127.0.0.1", 57382, "pymentor_test", "pymentor_test"):
+        raise ValueError("PostgreSQL is outside the task-owned disposable allowlist")
+    if redis != "redis://127.0.0.1:57381/0":
         raise ValueError("Redis is outside the disposable local allowlist")
 
+    monkeypatch.delenv("PYMENTOR_DUAL_LOCAL_TEST", raising=False)
+    monkeypatch.delenv("PYMENTOR_PROFILE", raising=False)
     for key, value in {
-        "PYMENTOR_DUAL_LOCAL_TEST": "1",
-        "PYMENTOR_TEST_REDIS_PREFIX": f"pymentor-c216-test:{uuid4()}:",
-        "PYMENTOR_TEST_LOGIN_RECOVERY_KEY": "ab" * 32,
+        "DATABASE_URL": pg,
+        "REDIS_URL": redis,
+        "KNOWI_REDIS_PREFIX": f"pg04-email:{uuid4()}:",
+        "KNOWI_LOGIN_RECOVERY_KEY": "ab" * 32,
         "PYMENTOR_EMAIL_TOKEN_SECRET": "synthetic-test-secret-at-least-32-bytes",
         "PYMENTOR_COOKIE_SECURE": "0",
     }.items():
         monkeypatch.setenv(key, value)
 
+    from pymentor_core.app.factory import create_app
+    return create_app()
+
+
+def test_email_flows_with_postgres_redis(monkeypatch, email_runtime):
     from fastapi.testclient import TestClient
-    from tools.lab.dual_local import create_app
-    app = create_app()
+    app = email_runtime
+    redis = os.environ["KNOWI_TEST_REDIS_URL"]
     from pymentor_core.adapters.sql import email_auth
     sent = []
-    monkeypatch.setattr(email_auth, "send_account_email", lambda config, email, purpose, token: sent.append((email, purpose, token)))
+    monkeypatch.setattr(email_auth, "send_account_email", lambda config, email, purpose, token, **kwargs: sent.append((email, purpose, token)))
     email = f"email-sprint-{uuid4()}@example.test"
     initial = "Synthetic-old-password-123"
     updated = "Synthetic-new-password-456"
@@ -96,7 +105,7 @@ def test_email_flows_with_postgres_redis(monkeypatch):
         digest = hashlib.sha256(("reset-email\0" + email).encode()).hexdigest()
         cache = Redis.from_url(redis)
         try:
-            cache.delete(f'{os.environ["PYMENTOR_TEST_REDIS_PREFIX"]}email-rate:{digest}')
+            cache.delete(f'{os.environ["KNOWI_REDIS_PREFIX"]}email-rate:{digest}')
         finally:
             cache.close()
         reset = client.post("/api/user/password-reset/request", json={"email": email})
@@ -110,7 +119,7 @@ def test_email_flows_with_postgres_redis(monkeypatch):
         assert login(final).status_code == 200
         cache = Redis.from_url(redis)
         try:
-            cache.delete(f'{os.environ["PYMENTOR_TEST_REDIS_PREFIX"]}email-rate:{digest}')
+            cache.delete(f'{os.environ["KNOWI_REDIS_PREFIX"]}email-rate:{digest}')
         finally:
             cache.close()
         assert client.post("/api/user/password-reset/request", json={"email": email}).status_code == 202
@@ -132,12 +141,12 @@ def test_email_flows_with_postgres_redis(monkeypatch):
         winning_password = candidates[results.index(True)]
         cache = Redis.from_url(redis)
         try:
-            cache.delete(f'{os.environ["PYMENTOR_TEST_REDIS_PREFIX"]}email-rate:{digest}')
+            cache.delete(f'{os.environ["KNOWI_REDIS_PREFIX"]}email-rate:{digest}')
         finally:
             cache.close()
         assert client.post("/api/user/password-reset/request", json={"email": email}).status_code == 202
         next_token = sent[-1][2]
-        store = app.state.local_async_identity.redis
+        store = app.state.identity_sessions.redis
         original_add = store.add_user_sessions
         reserved, release = Event(), Event()
 
@@ -157,3 +166,29 @@ def test_email_flows_with_postgres_redis(monkeypatch):
             finally:
                 release.set()
             assert pending_login.result(timeout=10).status_code == 401
+
+
+def test_email_change_requires_both_confirmations_and_rejects_replay(monkeypatch, email_runtime):
+    from fastapi.testclient import TestClient
+    from pymentor_core.adapters.sql import email_auth
+    sent = []
+    monkeypatch.setattr(email_auth, "send_account_email", lambda config, email, purpose, token, **kwargs: sent.append((email, purpose, token)))
+    old, new = f"old-{uuid4()}@example.test", f"new-{uuid4()}@example.test"
+    password = "Synthetic-double-confirm-123"
+    with TestClient(email_runtime) as client:
+        assert client.post("/api/user/register", json={"username": "Synthetic", "email": old, "password": password}).status_code == 200
+        assert client.post("/api/user/email-verification/confirm", json={"token": sent[-1][2]}).status_code == 200
+        assert client.post("/api/user/login", json={"email": old, "password": password}, headers={"Idempotency-Key": str(uuid4())}).status_code == 200
+        sent.clear()
+        assert client.post("/api/user/email-change/request", json={"email": new}).status_code == 200
+        assert {item[0] for item in sent} == {old, new}
+        first = client.post("/api/user/email-change/confirm", json={"token": sent[0][2]})
+        assert first.status_code == 200 and first.json()["completed"] is False
+        assert client.get("/api/user/me").json()["user"]["email"] == old
+        second = client.post("/api/user/email-change/confirm", json={"token": sent[1][2]})
+        assert second.status_code == 200 and second.json()["completed"] is True
+        user = client.get("/api/user/me").json()["user"]
+        assert user["email"] == new and user["verified"] is True
+        assert client.post("/api/user/email-change/confirm", json={"token": sent[0][2]}).status_code == 400
+        assert client.post("/api/user/login", json={"email": old, "password": password}, headers={"Idempotency-Key": str(uuid4())}).status_code == 401
+        assert client.post("/api/user/login", json={"email": new, "password": password}, headers={"Idempotency-Key": str(uuid4())}).status_code == 200

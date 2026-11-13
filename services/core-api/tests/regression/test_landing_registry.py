@@ -6,26 +6,23 @@ from unittest import TestCase
 from unittest.mock import patch
 
 from fastapi import HTTPException
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+import pytest
+from test_c2_1_4_auth_legacy import runtime_db
 
 from pymentor_core.adapters.sql import models
-from pymentor_core.app.database import Base
-from pymentor_core.adapters.legacy_sqlite.bootstrap import ensure_default_landing
 from pymentor_core.modules.landings.api import service
 
 
 class LandingRegistryTests(TestCase):
+    @pytest.fixture(autouse=True)
+    def database(self, runtime_db):
+        self.sessions = runtime_db
+
     def setUp(self) -> None:
-        self.engine = create_engine("sqlite://")
-        Base.metadata.create_all(self.engine)
-        self.sessions = sessionmaker(bind=self.engine)
         self.db = self.sessions()
 
     def tearDown(self) -> None:
         self.db.close()
-        Base.metadata.drop_all(self.engine)
-        self.engine.dispose()
 
     def test_two_landing_ids_can_be_enabled_independently(self) -> None:
         first = service.create_landing(
@@ -43,26 +40,7 @@ class LandingRegistryTests(TestCase):
         self.assertFalse(first.is_active)
         self.assertTrue(second.is_active)
 
-    def test_existing_backend_route_is_registered_idempotently(self) -> None:
-        first = ensure_default_landing(self.sessions)
-        second = ensure_default_landing(self.sessions)
 
-        self.assertEqual(first.id, "pymentor-backend")
-        self.assertEqual(first.id, second.id)
-        self.assertEqual(first.slug, "backend")
-        self.assertTrue(first.is_active)
-        self.assertEqual(self.db.query(models.Landing).count(), 1)
-
-    def test_bootstrap_keeps_an_existing_backend_landing_identity(self) -> None:
-        existing = service.create_landing(
-            self.db, slug="backend", title="Custom title", description="Already configured"
-        )
-
-        seeded = ensure_default_landing(self.sessions)
-
-        self.assertEqual(seeded.id, existing.id)
-        self.assertEqual(seeded.title, "Custom title")
-        self.assertEqual(seeded.description, "Already configured")
 
     def test_duplicate_slug_is_rejected_without_creating_a_second_landing(self) -> None:
         service.create_landing(

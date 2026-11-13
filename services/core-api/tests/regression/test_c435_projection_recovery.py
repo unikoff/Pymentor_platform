@@ -5,9 +5,9 @@ from hashlib import sha256
 from uuid import uuid4
 from sqlalchemy import text
 
-from pymentor_core.adapters.postgres.identity_sessions import AsyncIdentitySessions
+from pymentor_core.adapters.runtime import RuntimeIdentitySessions as AsyncIdentitySessions
 from pymentor_core.modules.identity.contracts import InvalidSession
-from test_c216_session_flow import run_scenario
+from runtime_scenarios import run_scenario
 
 
 def test_projection_repair_does_not_authenticate_after_concurrent_logout():
@@ -38,7 +38,7 @@ def test_projection_repair_does_not_authenticate_after_concurrent_logout():
 
 def test_sql_row_without_confirmed_operation_does_not_repair_redis():
     async def scenario(db, store, user_id, _email, _password):
-        service = AsyncIdentitySessions(db, store)
+        service = AsyncIdentitySessions(db, store, recovery_key=b"synthetic-recovery-key-32-bytes!!")
         token = str(uuid4())
         digest = sha256(token.encode()).hexdigest()
         async with db.unit_of_work() as uow:
