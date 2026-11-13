@@ -38,6 +38,13 @@ def _network_url(value: str, schemes: set[str], name: str) -> None:
         raise ValueError(f"Invalid {name}") from None
 
 
+def _compatible_setting(env: Mapping[str, str], neutral: str, legacy: str) -> str:
+    """Allow either name during rollout, but reject ambiguous session state."""
+    if neutral in env and legacy in env and env[neutral] != env[legacy]:
+        raise ValueError(f"Conflicting {neutral} and {legacy}")
+    return env.get(neutral, env.get(legacy, ""))
+
+
 @dataclass(frozen=True)
 class Settings:
     profile: str
@@ -112,12 +119,16 @@ class Settings:
         if selected == "postgres_redis":
             redis_url = env.get("REDIS_URL", "")
             _network_url(redis_url, {"redis", "rediss"}, "REDIS_URL")
-            redis_prefix = env.get("PYMENTOR_REDIS_PREFIX", "")
+            redis_prefix = _compatible_setting(
+                env, "KNOWI_REDIS_PREFIX", "PYMENTOR_REDIS_PREFIX"
+            )
             if not redis_prefix.strip() or redis_prefix.lower().startswith(
                 "pymentor-c216-test"
             ):
                 raise ValueError("Invalid PYMENTOR_REDIS_PREFIX")
-            recovery_key = env.get("PYMENTOR_LOGIN_RECOVERY_KEY", "")
+            recovery_key = _compatible_setting(
+                env, "KNOWI_LOGIN_RECOVERY_KEY", "PYMENTOR_LOGIN_RECOVERY_KEY"
+            )
             if not re.fullmatch(r"[0-9a-fA-F]{64}", recovery_key):
                 raise ValueError("Invalid PYMENTOR_LOGIN_RECOVERY_KEY")
 
