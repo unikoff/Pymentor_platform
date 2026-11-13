@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: pymentor-preview
+  namespace: argocd-preview
+spec:
+  project: preview
+  source:
+    repoURL: https://github.com/unikoff/Pymentor_platform.git
+    targetRevision: Release
+    path: deploy/gitops/preview
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: pymentor
+  syncPolicy:
+    automated:
+      enabled: true
+      prune: false
+      selfHeal: true
+    syncOptions:
+    - PruneLast=true
+    - ClientSideApplyMigration=false
+  ignoreDifferences:
+  - group: ''
+    kind: Service
+    jqPathExpressions:
+    - .spec.selector

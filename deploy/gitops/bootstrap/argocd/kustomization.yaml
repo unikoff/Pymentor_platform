@@ -1,0 +1,40 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: argocd-preview
+resources:
+- upstream.yaml
+patches:
+- target:
+    kind: ConfigMap
+    name: argocd-cm
+  patch: '[{"op": "add", "path": "/data", "value": {"admin.enabled": "false", "resource.respectRBAC":
+    "normal"}}]'
+- target:
+    kind: Deployment
+    name: argocd-repo-server
+  patch: "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: argocd-repo-server\n\
+    spec:\n  template:\n    spec:\n      containers:\n      - name: argocd-repo-server\n\
+    \        resources:\n          limits:\n            cpu: 500m\n            memory:\
+    \ 512Mi\n          requests:\n            cpu: 25m\n            memory: 64Mi\n"
+- target:
+    kind: Deployment
+    name: argocd-server
+  patch: "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: argocd-server\n\
+    spec:\n  template:\n    spec:\n      containers:\n      - name: argocd-server\n\
+    \        resources:\n          limits:\n            cpu: 500m\n            memory:\
+    \ 256Mi\n          requests:\n            cpu: 25m\n            memory: 64Mi\n"
+- target:
+    kind: Deployment
+    name: argocd-redis
+  patch: "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: argocd-redis\n\
+    spec:\n  template:\n    spec:\n      containers:\n      - name: redis\n      \
+    \  resources:\n          limits:\n            cpu: 500m\n            memory: 128Mi\n\
+    \          requests:\n            cpu: 25m\n            memory: 64Mi\n"
+- target:
+    kind: StatefulSet
+    name: argocd-application-controller
+  patch: "apiVersion: apps/v1\nkind: StatefulSet\nmetadata:\n  name: argocd-application-controller\n\
+    spec:\n  template:\n    spec:\n      containers:\n      - name: argocd-application-controller\n\
+    \        resources:\n          limits:\n            cpu: 500m\n            memory:\
+    \ 512Mi\n          requests:\n            cpu: 25m\n            memory: 64Mi\n"
+- path: params-patch.yaml

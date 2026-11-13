@@ -10,6 +10,8 @@ RUN npm exec -- tsc --noEmit -p config/tsconfig.json \
     && ./node_modules/.bin/vite build --config config/vite.config.ts --configLoader native --outDir /tmp/frontend-dist
 
 FROM nginx:1.30.6-alpine3.24-slim AS runtime
+# Alpine security advisory CVE-2026-4738: require the fixed zlib package.
+RUN apk add --no-cache --upgrade "zlib>=1.4-r0"
 
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /tmp/frontend-dist/ /usr/share/nginx/html/

@@ -1,0 +1,54 @@
+{
+  "apiVersion": "v1",
+  "kind": "List",
+  "items": [
+    {
+      "apiVersion": "traefik.io/v1alpha1",
+      "kind": "TraefikService",
+      "metadata": {
+        "name": "core-api-weighted",
+        "namespace": "pymentor"
+      },
+      "spec": {
+        "weighted": {
+          "services": [
+            {
+              "name": "core-api",
+              "port": 8001,
+              "weight": 100
+            },
+            {
+              "name": "core-api-canary",
+              "port": 8001,
+              "weight": 0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "apiVersion": "traefik.io/v1alpha1",
+      "kind": "TraefikService",
+      "metadata": {
+        "name": "frontend-weighted",
+        "namespace": "pymentor"
+      },
+      "spec": {
+        "weighted": {
+          "services": [
+            {
+              "name": "frontend",
+              "port": 8080,
+              "weight": 100
+            },
+            {
+              "name": "frontend-canary",
+              "port": 8080,
+              "weight": 0
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

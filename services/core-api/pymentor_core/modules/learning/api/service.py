@@ -1,8 +1,11 @@
 """Course access, material delivery and solution submission workflows."""
 
 import logging
+import json
+from urllib.request import Request as URLRequest, urlopen
 import os
 from copy import deepcopy
+from concurrent.futures import ThreadPoolExecutor
 from time import perf_counter
 from typing import Any
 
@@ -13,6 +16,8 @@ from sqlalchemy.orm import Session
 from starlette.concurrency import run_in_threadpool
 
 from pymentor_core.shared.ports import UnitOfWork
+from pymentor_core.adapters.legacy_runner import python as legacy_python
+from pymentor_core.modules.learning.api import solve_bridge
 from pymentor_core.modules.identity.principal import Principal
 from pymentor_core.modules.practice.save_progress import save_progress
 from pymentor_core.modules.learning.complete_lesson import CompletionError
@@ -545,7 +550,148 @@ def _save_task_progress(context: dict, composition_root: Any | None = None) -> N
         )
 
 
+def _remote_unavailable() -> HTTPException:
+    return HTTPException(status_code=503, detail="Проверка временно недоступна.", headers={"Retry-After": "2"})
+
+
+def _remote_url() -> str | None:
+    value = os.environ.get("PYMENTOR_REMOTE_RUNNER_URL", "").strip()
+    return value or None
+
+
+def _remote_call(url: str, code: str) -> dict:
+    try:
+        body = json.dumps({"code": code}, ensure_ascii=False).encode("utf-8")
+        request = URLRequest(url, data=body, headers={"Content-Type": "application/json"}, method="POST")
+        with urlopen(request, timeout=35) as response:
+            raw = response.read(65537)
+        if len(raw) > 65536:
+            raise ValueError("response too large")
+        def unique_pairs(pairs):
+            result = {}
+            for key, value in pairs:
+                if key in result:
+                    raise ValueError("duplicate key")
+                result[key] = value
+            return result
+        result = json.loads(raw, object_pairs_hook=unique_pairs)
+        if not isinstance(result, dict) or set(result) != {"ok", "stdout", "stderr", "error", "traceback"}:
+            raise ValueError("invalid fields")
+        if type(result["ok"]) is not bool or not isinstance(result["stdout"], str):
+            raise ValueError("invalid result")
+        if any(result[k] is not None and not isinstance(result[k], str) for k in ("stderr", "error", "traceback")):
+            raise ValueError("invalid details")
+        if any(len(result[k] or "") > 12000 for k in ("stdout", "stderr", "error", "traceback")):
+            raise ValueError("output too large")
+        if result["ok"] and (result["error"] or result["traceback"]):
+            raise ValueError("inconsistent result")
+        return result
+    except Exception:
+        raise _remote_unavailable() from None
+
+
+def _normalize_remote_stdout(value: str) -> str:
+    value = value.replace("\r\n", "\n").replace("\r", "\n")
+    return value[:-1] if value.endswith("\n") else value
+
+
+def _remote_script(code: str, namespace: Any) -> str:
+    # JSON-only values prevent code injection and preserve Python value types.
+    if namespace is None:
+        namespace = {}
+    if type(namespace) is not dict or any(type(key) is not str for key in namespace):
+        raise _remote_unavailable()
+    if any(key in namespace for key in ("__builtins__", "__name__")):
+        raise _remote_unavailable()
+    remaining = [4096]
+    def validate(value, depth):
+        remaining[0] -= 1
+        if remaining[0] < 0 or depth > 32:
+            raise ValueError("namespace too complex")
+        if type(value) is dict:
+            for key, item in value.items():
+                if type(key) is not str:
+                    raise ValueError("non-string key")
+                validate(item, depth + 1)
+        elif type(value) is list:
+            for item in value:
+                validate(item, depth + 1)
+        elif type(value) not in (str, int, float, bool, type(None)):
+            raise ValueError("non-JSON value")
+    try:
+        validate(namespace, 0)
+        encoded = json.dumps(namespace, ensure_ascii=True, allow_nan=False, separators=(",", ":"))
+        if len(encoded.encode("utf-8")) > 6000:
+            raise ValueError("namespace too large")
+        if not namespace:
+            script = code
+        else:
+            script = ("import json\n"
+                      "_ns = json.loads(" + repr(encoded) + ")\n"
+                      "_ns['__name__'] = '__student__'\n"
+                      "exec(" + repr(code) + ", _ns)\n")
+        if not 1 <= len(script) <= 8000 or len(script.encode("utf-8")) > 32000:
+            raise ValueError("broker code limit")
+        return script
+    except (ValueError, TypeError, OverflowError, RecursionError, UnicodeError):
+        raise _remote_unavailable() from None
+
+
+def _remote_task(url: str, function, code: str, task: dict) -> dict:
+    if task.get("mode", "solve") == "solve":
+        if function not in (run_python_task, run_python_preview):
+            raise _remote_unavailable()
+        return solve_bridge.run(code, task, function is run_python_preview, lambda source: _remote_call(url, source), legacy_python, _remote_unavailable)
+    tests = task.get("tests")
+    if (task.get("mode") != "script" or not isinstance(tests, list) or not tests
+        or any(not isinstance(t, dict) or bool(set(t) - {"name", "assert", "namespace", "expected", "float_tolerance"}) or t.get("assert") != "stdout"
+               or (function is run_python_task and "expected" not in t) or not isinstance(t.get("expected", ""), str)
+               for t in tests)):
+        raise _remote_unavailable()
+    error = None
+    kind = None
+    if len(code) > legacy_python.MAX_CODE_LENGTH:
+        error = f"Код слишком длинный. Лимит: {legacy_python.MAX_CODE_LENGTH} символов."
+    else:
+        error = legacy_python._blocked_reason(code) or legacy_python._syntax_error_reason(code)
+        if not error and function is run_python_task:
+            error = legacy_python._requirements_error(code, task.get("requirements"))
+            kind = "requirements" if error else None
+    if error:
+        result = {"ok": False, "score": 0, "tests": [], "stdout": "", "error": error}
+        if kind:
+            result["error_kind"] = kind
+        return result
+    if function is run_python_preview:
+        return _remote_call(url, _remote_script(code, tests[0].get("namespace")))
+    scripts = [_remote_script(code, test.get("namespace")) for test in tests]
+    if function is not run_python_task:
+        raise _remote_unavailable()
+    try:
+        with ThreadPoolExecutor(max_workers=3) as executor:
+            futures = [executor.submit(_remote_call, url, script) for script in scripts]
+            responses = [future.result() for future in futures]
+    except Exception:
+        raise _remote_unavailable() from None
+    results, outputs = [], []
+    for index, (test, response) in enumerate(zip(tests, responses), 1):
+        expected = test.get("expected", "")
+        actual = response["stdout"]
+        passed = response["ok"] and _normalize_remote_stdout(expected) == _normalize_remote_stdout(actual)
+        item = {"name": test.get("name") or f"test {index}", "passed": passed, "expected": expected, "actual": actual if response["ok"] else None}
+        if not response["ok"]:
+            item["error"] = response["error"] or "Ошибка выполнения."
+        results.append(item)
+        outputs.append(actual)
+    count = sum(item["passed"] for item in results)
+    return {"ok": count == len(results), "score": round(count / len(results) * 100), "tests": results, "stdout": "".join(outputs)[-1200:]}
+
+
 async def _execute_task(function, code: str, task: dict) -> dict:
+    remote_url = _remote_url()
+    if remote_url:
+        return await run_in_threadpool(_remote_task, remote_url, function, code, task)
+    _require_runner_enabled()
     try:
         return await get_runner_executor().run(function, code=code, task=task)
     except RunnerBusy:
@@ -635,7 +781,8 @@ def _invalid_source_file_submit_result() -> dict[str, Any]:
 
 
 async def submit_task(task_id: str, payload: CodeSubmitRequest, request: Request):
-    _require_runner_enabled()
+    if not _remote_url():
+        _require_runner_enabled()
     context = await run_in_threadpool(
         _prepare_task, task_id, payload.task_revision, request
     )
@@ -660,7 +807,8 @@ async def submit_task(task_id: str, payload: CodeSubmitRequest, request: Request
 
 async def run_task_code(task_id: str, payload: CodeSubmitRequest, request: Request):
     """Запускает одну демонстрационную проверку без зачёта урока."""
-    _require_runner_enabled()
+    if not _remote_url():
+        _require_runner_enabled()
     context = await run_in_threadpool(
         _prepare_task, task_id, payload.task_revision, request
     )
@@ -670,6 +818,8 @@ async def run_task_code(task_id: str, payload: CodeSubmitRequest, request: Reque
 async def run_interpreter_code(payload: InterpreterRunRequest):
     """Запускает самостоятельный фрагмент Python без проверки и зачёта урока."""
     _require_runner_enabled()
+    if _remote_url():
+        raise _remote_unavailable()
     try:
         return await get_runner_executor().run(run_python_code, code=payload.code)
     except RunnerBusy:

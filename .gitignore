@@ -50,3 +50,4 @@ docs/stage-system-setup/**/core-check-*/
 !/docs/make les stage/
 /docs/make les stage/*
 !/docs/make les stage/THEORY_PRACTICE_STANDARD.md
+data/core-api/.runner.lock
