@@ -4,6 +4,9 @@ from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[3]
 
+def test_sqlite_runtime_adapter_is_physically_retired():
+    assert not (ROOT / 'services/core-api/pymentor_core/adapters/legacy_sqlite').exists()
+
 def test_business_and_new_storage_do_not_import_sqlite_implementation():
     areas=[ROOT/'backend'/name for name in ('identity','routers','learning','practice')]
     areas += [ROOT/'services/core-api/pymentor_core'/name for name in ('modules','adapters/postgres','adapters/redis')]

@@ -7,23 +7,21 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from types import SimpleNamespace
 
-os.environ.setdefault("DATABASE_URL", "sqlite://")
 os.environ["PYTHON_DOTENV_DISABLED"] = "1"
 
-from sqlalchemy import create_engine, select
+from sqlalchemy import select
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from pymentor_core.adapters.sql.models import User
-from pymentor_core.adapters.sql.models import Session as SessionModel
+from test_c2_1_4_auth_legacy import runtime_db
+from pymentor_core.app.database import engine
 from pymentor_core.modules.identity.access import serialize_user
 from pymentor_core.modules.identity.api.schemas import UserPublic
 
 
-def test_verified_defaults_false_and_serializes_after_confirmation():
+def test_verified_defaults_false_and_serializes_after_confirmation(runtime_db):
     assert "verified" in User.__table__.columns
-    engine = create_engine("sqlite://")
-    User.__table__.create(engine)
     with Session(engine) as db:
         user = User(username="student", email="student@example.test", password="test-password")
         db.add(user)
@@ -37,49 +35,16 @@ def test_verified_defaults_false_and_serializes_after_confirmation():
         assert UserPublic.model_validate(serialize_user(user)).verified is True
 
 
-def test_legacy_users_are_preserved_and_unverified_on_upgrade():
-    from pymentor_core.adapters.legacy_sqlite import bootstrap
-
-    migrate = getattr(bootstrap, "ensure_verified_column", None)
-    assert callable(migrate)
-    engine = create_engine("sqlite://")
-    with engine.begin() as connection:
-        connection.execute(text("CREATE TABLE users (id INTEGER PRIMARY KEY, email TEXT NOT NULL)"))
-        connection.execute(text("INSERT INTO users (id, email) VALUES (1, 'existing@example.test')"))
-    migrate(engine)
-    migrate(engine)
-    with engine.connect() as connection:
-        row = connection.execute(text("SELECT id, email, verified FROM users")).one()
-        assert tuple(row) == (1, "existing@example.test", 0)
 
 
-def test_login_repository_rejects_stale_password_snapshot():
-    from pymentor_core.adapters.legacy_sqlite.sessions import SqlSessionRepository
-
-    engine = create_engine("sqlite://")
-    User.__table__.create(engine)
-    with Session(engine) as db:
-        user = User(username="student", email="student@example.test", password="test-password")
-        db.add(user)
-        db.commit()
-        old_hash = user.password
-        user.password = "different-password"
-        db.commit()
-        repository = SqlSessionRepository(db)
-        assert callable(getattr(repository, "claim_password_state", None))
-        assert repository.claim_password_state(user.id, old_hash) is False
-        assert repository.claim_password_state(user.id, user.password) is True
 
 
-def test_parallel_password_links_cannot_both_be_applied(tmp_path, monkeypatch):
+def test_parallel_password_links_cannot_both_be_applied(runtime_db, monkeypatch):
     from pymentor_core.adapters.sql import email_auth
     from pymentor_core.modules.identity.email_tokens import EmailTokens
 
     secret = "synthetic-only-secret-at-least-32-bytes"
     monkeypatch.setenv("PYMENTOR_EMAIL_TOKEN_SECRET", secret)
-    engine = create_engine(f"sqlite:///{(tmp_path / 'account.sqlite').as_posix()}")
-    User.__table__.create(engine)
-    SessionModel.__table__.create(engine)
     with Session(engine) as db:
         user = User(username="student", email="student@example.test", password="test-password", verified=True)
         db.add(user)
@@ -103,15 +68,12 @@ def test_parallel_password_links_cannot_both_be_applied(tmp_path, monkeypatch):
     assert sorted(outcomes) == [False, True]
 
 
-def test_parallel_email_change_confirmations_complete_once(tmp_path, monkeypatch):
+def test_parallel_email_change_confirmations_complete_once(runtime_db, monkeypatch):
     from pymentor_core.adapters.sql import email_auth
     from pymentor_core.adapters.sql.models import EmailChangeRequest
 
     secret = "synthetic-only-secret-at-least-32-bytes"
     monkeypatch.setenv("PYMENTOR_EMAIL_TOKEN_SECRET", secret)
-    engine = create_engine(f"sqlite:///{(tmp_path / 'email-change.sqlite').as_posix()}")
-    User.__table__.create(engine)
-    EmailChangeRequest.__table__.create(engine)
     sent = []
     monkeypatch.setattr(email_auth, "send_account_email", lambda config, recipient, purpose, token, **kwargs: sent.append(token))
     with Session(engine) as db:

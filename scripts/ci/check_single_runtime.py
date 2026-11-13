@@ -9,9 +9,8 @@ import subprocess
 ROOT = Path(__file__).resolve().parents[2]
 # Source retention only. All these paths are excluded from the canonical image.
 RETAINED = {
-    "adapters/legacy_sqlite": "one-way import/retirement evidence until CORP-56/PG12",
-    "app/passenger.py": "historical hosting wrapper until CORP-56/PG13",
-    "app/wsgi.py": "historical hosting wrapper until CORP-56/PG13",
+    "app/passenger.py": "historical hosting wrapper until PG13",
+    "app/wsgi.py": "historical hosting wrapper until PG13",
 }
 CONFIGS = (
     ".github/workflows/release.yml", "services/core-api/Dockerfile",
@@ -23,6 +22,8 @@ CONFIGS = (
 def scan_package(package):
     package = Path(package)
     violations = []
+    if (package / "adapters/legacy_sqlite").exists():
+        violations.append("adapters/legacy_sqlite:retired-runtime-adapter-present")
     files = list(package.rglob("*.py"))
     if not files:
         return ["missing-or-empty-runtime-package"]

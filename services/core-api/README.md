@@ -20,7 +20,6 @@ services/core-api/
       sql/                общие модели, UoW и SQL реализации команд
       postgres/           async sessions, cleanup и защита импортированного outbox
       redis/              хранилище сеансов
-      legacy_sqlite/      неподдерживаемый исходный остаток до PG12, вне runtime image
       course_local/       чтение существующих файлов через CourseCatalog/LessonContent/PracticeSpec
       legacy_runner/      текущий subprocess interpreter за портом
       telegram/           транспорт уведомлений

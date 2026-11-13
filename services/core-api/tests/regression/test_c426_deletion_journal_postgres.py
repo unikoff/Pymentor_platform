@@ -4,12 +4,13 @@ from sqlalchemy import text
 
 from test_account_progress_deletion import add_user
 from test_account_progress_deletion import database
+from test_c2_1_4_auth_legacy import runtime_db
 
 
 def test_direct_delete_commits_only_a_generation_marker(database):
     engine, factory = database
     with factory() as db:
-        user_id = add_user(db, "synthetic-owner")
+        user_id = add_user(db, "synthetic-owner", seed_progress=False)
         ref = db.scalar(text("SELECT lifecycle_id FROM account_lifecycles WHERE user_id=:id"), {"id": user_id})
     with engine.begin() as connection:
         connection.execute(text("DELETE FROM users WHERE id=:id"), {"id": user_id})
@@ -21,7 +22,7 @@ def test_direct_delete_commits_only_a_generation_marker(database):
 def test_rollback_does_not_leave_a_deletion_marker(database):
     engine, factory = database
     with factory() as db:
-        user_id = add_user(db, "synthetic-owner")
+        user_id = add_user(db, "synthetic-owner", seed_progress=False)
         ref = db.scalar(text("SELECT lifecycle_id FROM account_lifecycles WHERE user_id=:id"), {"id": user_id})
     with engine.connect() as connection:
         transaction = connection.begin()

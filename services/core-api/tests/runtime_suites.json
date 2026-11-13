@@ -23,7 +23,14 @@
     "regression/test_c2_1_5_complete_lesson.py",
     "regression/test_pg08_business.py",
     "regression/test_c2_1_3_api_contracts.py",
-    "regression/test_c2_1_3_errors.py"
+    "regression/test_c2_1_3_errors.py",
+    "regression/test_account_progress_deletion.py",
+    "regression/test_c426_guarded_delete.py",
+    "regression/test_c426_deletion_journal_postgres.py",
+    "regression/test_c426_postgres_account_lifecycles.py",
+    "regression/test_email_verified_state.py",
+    "regression/test_landing_registry.py",
+    "regression/test_notification_worker.py"
   ],
   "runtime": [
     "integration/test_pg02_runtime.py",

@@ -8,17 +8,17 @@ import json
 import os
 from pathlib import Path
 import subprocess
-import sqlite3
 import sys
 import tempfile
 from unittest import TestCase
 from unittest.mock import Mock
 from unittest.mock import patch
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+import pytest
+from sqlalchemy import text
+from test_c2_1_4_auth_legacy import runtime_db
 
-from pymentor_core.app.database import Base
+from pymentor_core.adapters.sql.bookings import _add_linked_notification
 from pymentor_core.adapters.sql import models
 from pymentor_core.modules.bookings.api import service as crud
 from pymentor_core.adapters.sql.notification_outbox import MAX_ATTEMPTS
@@ -41,12 +41,11 @@ class NotificationOutboxTests(TestCase):
             return value.replace(tzinfo=timezone.utc)
         return value.astimezone(timezone.utc)
 
+    @pytest.fixture(autouse=True)
+    def database(self, runtime_db):
+        self.sessions = runtime_db
+
     def setUp(self) -> None:
-        self.engine = create_engine("sqlite://")
-        Base.metadata.create_all(self.engine)
-        from pymentor_core.adapters.legacy_sqlite.account_lifecycles import ensure_sqlite_account_lifecycles
-        ensure_sqlite_account_lifecycles(self.engine)
-        self.sessions = sessionmaker(bind=self.engine)
         self.db = self.sessions()
         self.user = models.User(
             username="Никита",
@@ -75,8 +74,6 @@ class NotificationOutboxTests(TestCase):
 
     def tearDown(self) -> None:
         self.db.close()
-        Base.metadata.drop_all(self.engine)
-        self.engine.dispose()
 
     def _enqueue(self, event_type: str = "booking_created", *, slot_id: int | None = None):
         event = models.BookingNotificationOutbox(
@@ -87,7 +84,7 @@ class NotificationOutboxTests(TestCase):
             slot_date=self.slot_date,
             start_time="18:00",
         )
-        self.db.add(event)
+        _add_linked_notification(self.db, self.user.id, event)
         self.db.commit()
         self.db.refresh(event)
         return event
@@ -295,67 +292,26 @@ class NotificationOutboxTests(TestCase):
         self.assertEqual(self._reload_event(older.id).status, "failed")
 
 
+def test_network_delivery_does_not_hold_claim_transaction(runtime_db):
+    from pymentor_core.app.database import engine
+    with runtime_db() as db:
+        db.add(models.BookingNotificationOutbox(event_type="booking_created", slot_id=1, username="Test",
+            email="synthetic@example.test", slot_date=date.today(), start_time="18:00"))
+        db.commit()
+
+    def send(event):
+        # The claimed row is unlocked before the network call. A second real PG
+        # transaction must be able to update it without waiting for delivery.
+        with engine.begin() as connection:
+            connection.execute(text("SET LOCAL lock_timeout = '200ms'"))
+            assert connection.execute(text("UPDATE booking_notification_outbox SET username='updated during delivery' WHERE id=:id"), {"id": event.id}).rowcount == 1
+
+    counts = drain_notifications(session_factory=runtime_db, send=send)
+    assert counts["sent"] == 1 and counts["retry"] == 0
+
+
 class NotificationWorkerProcessTests(TestCase):
-    def test_network_delivery_does_not_hold_sqlite_write_transaction(self) -> None:
-        with tempfile.TemporaryDirectory(prefix="pymentor-outbox-transaction-") as directory:
-            db_path = Path(directory) / "queue.sqlite3"
-            engine = create_engine(f"sqlite:///{db_path.as_posix()}")
-            sessions = sessionmaker(bind=engine)
-            try:
-                Base.metadata.create_all(engine)
-                with sessions() as session:
-                    session.add(models.BookingNotificationOutbox(
-                        event_type="booking_created", slot_id=1, username="Test",
-                        email="test@example.com", slot_date=date.today(), start_time="18:00",
-                    ))
-                    session.commit()
 
-                def send(event):
-                    connection = sqlite3.connect(db_path, timeout=0.2)
-                    try:
-                        connection.execute("CREATE TABLE api_write_during_delivery (value INTEGER)")
-                        connection.execute("INSERT INTO api_write_during_delivery VALUES (1)")
-                        connection.commit()
-                    finally:
-                        connection.close()
-
-                counts = drain_notifications(session_factory=sessions, send=send)
-                self.assertEqual(counts["sent"], 1)
-                self.assertEqual(counts["retry"], 0)
-            finally:
-                engine.dispose()
-
-    def test_cron_cli_initializes_schema_idempotently_on_isolated_database(self) -> None:
-        with tempfile.TemporaryDirectory(prefix="pymentor-outbox-cli-") as directory:
-            db_path = Path(directory) / "queue.sqlite3"
-            with sqlite3.connect(db_path) as connection:
-                connection.execute("CREATE TABLE existing_data (value TEXT)")
-                connection.execute("INSERT INTO existing_data VALUES ('preserved')")
-            connection.close()
-            env = dict(os.environ, DATABASE_URL=f"sqlite:///{db_path.as_posix()}")
-            backend = (Path(__file__).resolve().parents[4] / 'backend')
-            backup = Path(directory) / "before-migration.sqlite3"
-            result = subprocess.run(
-                [sys.executable, "-m", "notifications.worker", "--backup-db", str(backup)],
-                cwd=backend, env=env, capture_output=True, text=True, timeout=15,
-            )
-            self.assertEqual(result.returncode, 0, result.stderr + result.stdout)
-            connection = sqlite3.connect(backup)
-            try:
-                self.assertEqual(connection.execute("SELECT value FROM existing_data").fetchone()[0], "preserved")
-                self.assertIsNone(connection.execute("SELECT name FROM sqlite_master WHERE name='booking_notification_outbox'").fetchone())
-            finally:
-                connection.close()
-            for _ in range(2):
-                result = subprocess.run(
-                    [sys.executable, "-m", "notifications.worker", "--stats"],
-                    cwd=backend, env=env, capture_output=True, text=True, timeout=15,
-                )
-                self.assertEqual(result.returncode, 0, result.stderr + result.stdout)
-                self.assertEqual(json.loads(result.stdout)["counts"], {})
-            with sqlite3.connect(db_path) as connection:
-                self.assertEqual(connection.execute("SELECT value FROM existing_data").fetchone()[0], "preserved")
-            connection.close()
 
     def test_worker_lock_excludes_another_process_and_recovers_after_release(self) -> None:
         with tempfile.TemporaryDirectory(prefix="pymentor-outbox-lock-") as directory:
