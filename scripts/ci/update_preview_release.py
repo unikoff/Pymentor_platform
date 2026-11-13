@@ -6,9 +6,9 @@ import re
 
 ROOT = Path(__file__).resolve().parents[2] / 'deploy/gitops/preview'
 IMAGES = {
-    'pymentor/core-api': 'ghcr.io/unikoff/pymentor-platform-core',
-    'pymentor/frontend': 'ghcr.io/unikoff/pymentor-platform-frontend',
-    'pymentor/preview-pool': 'ghcr.io/unikoff/pymentor-platform-runner-pool',
+    'pymentor/core-api': 'ghcr.io/unikoff/knowi-platform-core',
+    'pymentor/frontend': 'ghcr.io/unikoff/knowi-platform-frontend',
+    'pymentor/preview-pool': 'ghcr.io/unikoff/knowi-platform-runner-pool',
 }
 RESOURCES = {'applications.json', 'checks.json', 'analysis.json', 'routes.json', 'runner.json', 'notifications.json'}
 
