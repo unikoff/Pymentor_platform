@@ -119,10 +119,6 @@ def ensure_notification_schema(engine):
             raise RuntimeError("Database migration required before starting notification worker")
 
 
-def initialize_legacy_schema():
-    raise RuntimeError("Legacy SQLite startup has been retired")
-
-
 def configure_bindings():
     from pymentor_core.shared.bindings import Bindings
     from pymentor_core.shared.bindings import install_bindings

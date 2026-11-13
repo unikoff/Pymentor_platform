@@ -36,10 +36,6 @@
                 ],
                 "env": [
                   {
-                    "name": "PYMENTOR_PROFILE",
-                    "value": "postgres_redis"
-                  },
-                  {
                     "name": "PYMENTOR_REDIS_PREFIX",
                     "value": "pymentor-preview-migrated:"
                   },

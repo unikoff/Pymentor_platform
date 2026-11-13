@@ -27,17 +27,6 @@ REQUIRED_TABLES = (
     "account_deletion_redis_keys",
 )
 
-# Historical test/import consumers may still read these names; no DB mode selection.
-DUAL_LOCAL_SCHEMA_REVISION = SCHEMA_REVISION
-DUAL_LOCAL_REQUIRED_TABLES = REQUIRED_TABLES
-
-
 def compatible_schema_revision(actual: str, expected: str) -> bool:
     """Allow only the tested additive email schema during the release bridge."""
     return actual == expected or (expected == "c426_deletion_outbox" and actual == "c503_dual_email_change")
-
-
-def should_run_legacy_bootstrap(database_backend: str, mode: str | None) -> bool:
-    if database_backend != "postgresql" or mode not in (None, "managed"):
-        raise RuntimeError("Core supports only externally managed PostgreSQL schemas")
-    return False

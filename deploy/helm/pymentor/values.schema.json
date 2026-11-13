@@ -40,12 +40,11 @@
     },
     "core": {
       "type": "object",
-      "required": ["replicaCount", "serviceAccountName", "port", "persistence", "resources", "terminationGracePeriodSeconds"],
+      "required": ["replicaCount", "serviceAccountName", "port", "resources", "terminationGracePeriodSeconds"],
       "properties": {
         "replicaCount": {"type": "integer", "const": 1},
         "serviceAccountName": {"type": "string", "minLength": 1},
         "port": {"type": "integer", "minimum": 1, "maximum": 65535},
-        "persistence": {"type": "object", "required": ["enabled", "accessMode", "size"], "properties": {"enabled": {"type": "boolean", "const": true}, "storageClassName": {"type": "string"}, "accessMode": {"type": "string", "enum": ["ReadWriteOnce"]}, "size": {"type": "string", "minLength": 1}}},
         "resources": {"$ref": "#/definitions/resources"},
         "notificationWorkerEnabled": {"type": "boolean", "const": false},
         "terminationGracePeriodSeconds": {"type": "integer", "minimum": 1}

@@ -7,6 +7,11 @@ from pathlib import Path
 import subprocess
 
 ROOT = Path(__file__).resolve().parents[2]
+RETIRED_PATHS = (
+    "backend/main.py", "backend/_core_entrypoint.py", "backend/sitecustomize.py",
+    "backend/notifications/worker.py", "backend/services/notification_worker.py", "backend/Dockerfile",
+    "services/core-api/pymentor_core/app/passenger.py", "deploy/helm/pymentor/templates/pvc.yaml",
+)
 CONFIGS = (
     ".github/workflows/release.yml", "services/core-api/Dockerfile",
     "scripts/ci/preview_checks.py", "scripts/local-k3s/build-images.sh", "scripts/local-k3s/cluster.sh",
@@ -49,7 +54,7 @@ def scan_package(package):
 
 
 def scan_config(root):
-    violations = []
+    violations = [f"{name}:retired-runtime-source-present" for name in RETIRED_PATHS if (Path(root) / name).exists()]
     for name in CONFIGS:
         path = Path(root) / name
         if not path.is_file():

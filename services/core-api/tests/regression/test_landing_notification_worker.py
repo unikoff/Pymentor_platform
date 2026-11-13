@@ -10,11 +10,10 @@ from unittest import TestCase
 from unittest.mock import call
 from unittest.mock import patch
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+import pytest
+from test_c2_1_4_auth_legacy import runtime_db
 
 from pymentor_core.adapters.sql import models
-from pymentor_core.app.database import Base
 from pymentor_core.adapters.sql.notification_outbox import drain_notifications
 from pymentor_core.adapters.sql.notification_outbox import queue_stats
 from pymentor_core.adapters.sql.notification_outbox import retry_failed
@@ -23,10 +22,11 @@ from pymentor_core.modules.landings.api import service
 
 
 class LandingNotificationWorkerTests(TestCase):
+    @pytest.fixture(autouse=True)
+    def database(self, runtime_db):
+        self.sessions = runtime_db
+
     def setUp(self) -> None:
-        self.engine = create_engine("sqlite://")
-        Base.metadata.create_all(self.engine)
-        self.sessions = sessionmaker(bind=self.engine)
         self.db = self.sessions()
         self.landing = service.create_landing(
             self.db, slug="backend", title="Pymentor", description="Основной лендинг"
@@ -48,8 +48,6 @@ class LandingNotificationWorkerTests(TestCase):
 
     def tearDown(self) -> None:
         self.db.close()
-        Base.metadata.drop_all(self.engine)
-        self.engine.dispose()
 
     def test_worker_sends_landing_event_to_its_original_config_version(self) -> None:
         service.configure_landing_telegram(

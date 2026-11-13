@@ -31,12 +31,6 @@ core:
   replicaCount: 1
   serviceAccountName: pymentor-core
   port: 8001
-  persistence:
-    # Unmounted old resource retained until CORP-56/PG14; never a runtime volume.
-    enabled: true
-    storageClassName: local-path
-    accessMode: ReadWriteOnce
-    size: 1Gi
   resources:
     requests:
       cpu: 200m

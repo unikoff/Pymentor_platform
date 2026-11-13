@@ -97,7 +97,7 @@ def test_parallel_email_change_confirmations_complete_once(runtime_db, monkeypat
 def test_managed_migration_only_adds_false_default_and_refuses_data_loss(monkeypatch):
     import pytest
     from sqlalchemy import Boolean
-    from pymentor_core.app.schema_policy import DUAL_LOCAL_SCHEMA_REVISION
+    from pymentor_core.app.schema_policy import SCHEMA_REVISION
 
     path = Path(__file__).resolve().parents[2] / "migrations" / "versions" / "c501_verified.py"
     spec = importlib.util.spec_from_file_location("email_verified_migration", path)
@@ -108,7 +108,7 @@ def test_managed_migration_only_adds_false_default_and_refuses_data_loss(monkeyp
     migration.upgrade()
     assert migration.down_revision == "c426_deletion_outbox"
     assert migration.revision == "c501_verified"
-    assert DUAL_LOCAL_SCHEMA_REVISION == "c503_dual_email_change"
+    assert SCHEMA_REVISION == "c503_dual_email_change"
     assert len(captured) == 1
     table, column = captured[0]
     assert table == "users" and column.name == "verified"

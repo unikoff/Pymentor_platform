@@ -5,10 +5,9 @@ from datetime import timezone
 import unittest
 
 from fastapi import HTTPException
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+import pytest
+from test_c2_1_4_auth_legacy import runtime_db
 
-from pymentor_core.app.database import Base
 from pymentor_core.adapters.sql import models
 from pymentor_core.modules.bookings.api import service as crud
 
@@ -17,16 +16,18 @@ MOSCOW_TZ = timezone(timedelta(hours=3))
 
 
 class BookingSlotsVisibilityTests(unittest.TestCase):
+    @pytest.fixture(autouse=True)
+    def database(self, runtime_db):
+        self.sessions = runtime_db
+
     def setUp(self) -> None:
-        self.engine = create_engine("sqlite://")
-        Base.metadata.create_all(self.engine)
-        self.session = sessionmaker(bind=self.engine)()
+        self.session = self.sessions()
+        self.session.add_all([models.User(id=uid, username="Synthetic", email=f"slot-{uid}@example.test", _password_hash="synthetic") for uid in (7,8)])
+        self.session.commit()
         self.now = datetime(2026, 9, 11, 18, 0, tzinfo=MOSCOW_TZ)
 
     def tearDown(self) -> None:
         self.session.close()
-        Base.metadata.drop_all(self.engine)
-        self.engine.dispose()
 
     def _add_slot(self, day: date, start_time: str, student_id: int | None = None) -> models.BookingSlot:
         slot = models.BookingSlot(

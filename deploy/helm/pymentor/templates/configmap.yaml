@@ -11,5 +11,4 @@ data:
   PYMENTOR_SCHEMA_MODE: managed
   PYTHON_DOTENV_DISABLED: "1"
   # Fixed marker retained while earlier PostgreSQL images coexist during release.
-  PYMENTOR_PROFILE: postgres_redis
   PYMENTOR_COOKIE_SECURE: {{ .Values.global.cookieSecure | toString | quote }}

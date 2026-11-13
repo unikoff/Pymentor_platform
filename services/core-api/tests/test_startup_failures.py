@@ -46,8 +46,8 @@ def test_failed_redis_startup_closes_resources_without_publishing_identity(monke
     import sqlalchemy
     import pymentor_core.app.database as sql
     import pymentor_core.adapters.runtime as runtime
-    from pymentor_core.app.schema_policy import REQUIRED_TABLES as DUAL_LOCAL_REQUIRED_TABLES
-    from pymentor_core.app.schema_policy import SCHEMA_REVISION as DUAL_LOCAL_SCHEMA_REVISION
+    from pymentor_core.app.schema_policy import REQUIRED_TABLES
+    from pymentor_core.app.schema_policy import SCHEMA_REVISION
     from pymentor_core.app.wiring import postgres_resources
     closed=[]
     class Database:
@@ -61,11 +61,11 @@ def test_failed_redis_startup_closes_resources_without_publishing_identity(monke
         def __init__(self,*args,**kwargs): pass
         async def check_async_database(self): pass
     connection=MagicMock()
-    connection.execute.side_effect=[SimpleNamespace(one=lambda:('core','app')),SimpleNamespace(scalar_one=lambda:DUAL_LOCAL_SCHEMA_REVISION)]
+    connection.execute.side_effect=[SimpleNamespace(one=lambda:('core','app')),SimpleNamespace(scalar_one=lambda:SCHEMA_REVISION)]
     engine=MagicMock(); engine.url=make_url('postgresql+psycopg://app:p@postgres/core')
     engine.connect.return_value.__enter__.return_value=connection
     monkeypatch.setattr(sql,'engine',engine)
-    monkeypatch.setattr(sqlalchemy,'inspect',lambda c:SimpleNamespace(get_table_names=lambda:DUAL_LOCAL_REQUIRED_TABLES))
+    monkeypatch.setattr(sqlalchemy,'inspect',lambda c:SimpleNamespace(get_table_names=lambda:REQUIRED_TABLES))
     monkeypatch.setattr(runtime,'RuntimeAsyncDatabase',Database)
     monkeypatch.setattr(runtime,'RuntimeRedisSessionStore',Store)
     monkeypatch.setattr(runtime,'RuntimeIdentitySessions',Identity)

@@ -1,20 +1,17 @@
-"""Opt-in disposable PostgreSQL test entrypoint for existing Core routes.
+"""Opt-in disposable PostgreSQL lab entrypoint using the canonical runtime.
 
-This synchronous transition slice is not the complete async/Redis Core 2.0 and
-must not be used against production or a real data snapshot.
+Lab address/schema guards are preserved. Never use production or a real snapshot.
 """
 
-import asyncio
 import os
 import re
 import sys
-from contextlib import asynccontextmanager
 
 from sqlalchemy import create_engine
 from sqlalchemy import text
 from sqlalchemy.engine import make_url
 from sqlalchemy.pool import NullPool
-from pymentor_core.app.schema_policy import DUAL_LOCAL_SCHEMA_REVISION
+from pymentor_core.app.schema_policy import SCHEMA_REVISION
 
 
 def _validated_url(raw: str):
@@ -70,7 +67,7 @@ def create_app():
             version = connection.execute(
                 text("SELECT version_num FROM alembic_version")
             ).scalar_one()
-            if version != DUAL_LOCAL_SCHEMA_REVISION:
+            if version != SCHEMA_REVISION:
                 raise RuntimeError("Test PostgreSQL migration version is not current")
     finally:
         probe.dispose()
@@ -78,53 +75,16 @@ def create_app():
     os.environ["PYMENTOR_SCHEMA_MODE"] = "managed"
     os.environ["PYTHON_DOTENV_DISABLED"] = "1"
     os.environ["PYMENTOR_LOCAL_NOTIFICATIONS"] = "0"
-    from pymentor_core.adapters.postgres.identity_sessions import AsyncIdentitySessions
-    from pymentor_core.adapters.postgres.deletion_cleanup import cleanup_loop
-    from pymentor_core.adapters.postgres.async_database import AsyncDatabase
-    from pymentor_core.adapters.redis.sessions import RedisSessionStore
-    from main import app
-
-    original_lifespan = app.router.lifespan_context
-
-    @asynccontextmanager
-    async def local_lifespan(application):
-        async_database = AsyncDatabase(
-            os.environ["PYMENTOR_TEST_PG_URL"],
-            pool_size=3,
-            max_overflow=0,
-            pool_timeout=3,
-            connect_timeout=3,
-            command_timeout=3,
-            statement_timeout_ms=3000,
-            lock_timeout_ms=1000,
-        )
-        store = None
-        cleanup_task = None
-        try:
-            store = RedisSessionStore(
-                os.environ["PYMENTOR_TEST_REDIS_URL"],
-                prefix=os.environ["PYMENTOR_TEST_REDIS_PREFIX"],
-                max_connections=6,
-                socket_timeout=2,
-            )
-            application.state.local_async_identity = AsyncIdentitySessions(
-                async_database, store, recovery_key=recovery_key
-            )
-            async with original_lifespan(application):
-                cleanup_task = asyncio.create_task(cleanup_loop(async_database, store))
-                yield
-        finally:
-            try:
-                if cleanup_task is not None:
-                    cleanup_task.cancel()
-                    try:
-                        await cleanup_task
-                    except asyncio.CancelledError:
-                        pass
-                if store is not None:
-                    await store.close()
-            finally:
-                await async_database.dispose()
-
-    app.router.lifespan_context = local_lifespan
-    return app
+    # The old lab opt-in is consumed here, never passed to the serving package.
+    from urllib.parse import urlsplit
+    redis_url = os.environ.get("PYMENTOR_TEST_REDIS_URL", "")
+    redis = urlsplit(redis_url)
+    if (redis.scheme != "redis" or redis.hostname != "127.0.0.1" or redis.port != 57146
+            or redis.path not in {"", "/0"} or redis.username or redis.password or redis.query or redis.fragment):
+        raise ValueError("Expected the disposable local Redis")
+    os.environ.pop("PYMENTOR_DUAL_LOCAL_TEST", None)
+    os.environ["REDIS_URL"] = redis_url
+    os.environ["KNOWI_REDIS_PREFIX"] = os.environ["PYMENTOR_TEST_REDIS_PREFIX"]
+    os.environ["KNOWI_LOGIN_RECOVERY_KEY"] = recovery_key.hex()
+    from pymentor_core.app.factory import create_app as canonical_create_app
+    return canonical_create_app()

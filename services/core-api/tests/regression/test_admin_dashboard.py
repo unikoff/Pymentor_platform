@@ -4,20 +4,21 @@ from datetime import timezone
 from unittest import TestCase
 from unittest.mock import patch
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+import pytest
+from test_c2_1_4_auth_legacy import runtime_db
 
-from pymentor_core.app.database import Base
 from pymentor_core.adapters.sql import models
 from pymentor_core.modules.administration.api.router import list_users
 from pymentor_core.modules.bookings.api import service as crud
 
 
 class AdminDashboardTests(TestCase):
+    @pytest.fixture(autouse=True)
+    def database(self, runtime_db):
+        self.sessions = runtime_db
+
     def setUp(self):
-        self.engine = create_engine("sqlite://")
-        Base.metadata.create_all(self.engine)
-        self.db = sessionmaker(bind=self.engine)()
+        self.db = self.sessions()
         self.now = datetime(2026, 10, 22, 12, tzinfo=timezone.utc)
         self.active = self.add_user("Анна", datetime(2099, 1, 1, tzinfo=timezone.utc))
         self.expired = self.add_user("Борис", datetime(2001, 1, 1, tzinfo=timezone.utc))
@@ -34,7 +35,6 @@ class AdminDashboardTests(TestCase):
 
     def tearDown(self):
         self.db.close()
-        self.engine.dispose()
 
     def add_user(self, name, until):
         user = models.User(username=name, email=f"{name}@example.com", _password_hash="test-hash", subscription_until=until)

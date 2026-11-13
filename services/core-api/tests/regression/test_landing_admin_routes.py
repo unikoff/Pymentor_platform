@@ -9,10 +9,10 @@ from unittest import TestCase
 from unittest.mock import patch
 
 from fastapi import FastAPI
-from sqlalchemy import create_engine
+import pytest
+from test_c2_1_4_auth_legacy import runtime_db
+import test_c2_1_4_auth_legacy as http
 from sqlalchemy import event
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.pool import StaticPool
 
 from pymentor_core.app.dependencies import get_db
 from pymentor_core.app.web import configure_web
@@ -25,87 +25,41 @@ from pymentor_core.modules.landings.api import service as landing_service
 from pymentor_core.modules.landings.api.public import router as public_landing_router
 
 
-async def _request(
-    app, method: str, path, *, payload=None, cookie: str | None = None, extra_headers=None,
-    include_content_length: bool = True,
-):
-    body = json.dumps(payload).encode("utf-8") if payload is not None else b""
-    headers = [(b"host", b"testserver")]
-    if include_content_length:
-        headers.append((b"content-length", str(len(body)).encode()))
-    if payload is not None:
-        headers.append((b"content-type", b"application/json"))
+async def _request(app, method, path, *, payload=None, cookie=None, extra_headers=None, include_content_length=True):
+    headers = dict(extra_headers or {})
     if cookie:
-        headers.append((b"cookie", cookie.encode("latin-1")))
-    if extra_headers:
-        headers.extend((name.lower().encode("latin-1"), value.encode("latin-1")) for name, value in extra_headers.items())
-    messages = []
-    delivered = False
-
-    async def receive():
-        nonlocal delivered
-        if delivered:
-            return {"type": "http.request", "body": b"", "more_body": False}
-        delivered = True
-        return {"type": "http.request", "body": body, "more_body": False}
-
-    async def send(message):
-        messages.append(message)
-
-    await app(
-        {"type": "http", "asgi": {"version": "3.0", "spec_version": "2.3"},
-         "http_version": "1.1", "method": method, "scheme": "http", "path": path,
-         "raw_path": path.encode(), "query_string": b"", "headers": headers,
-         "server": ("testserver", 80), "client": ("127.0.0.1", 12345)},
-        receive,
-        send,
-    )
-    start = next(message for message in messages if message["type"] == "http.response.start")
-    response_body = b"".join(
-        message.get("body", b"") for message in messages if message["type"] == "http.response.body"
-    )
-    return start["status"], json.loads(response_body) if response_body else None
+        headers['Cookie'] = cookie
+    app.cookies.clear()
+    request = app.build_request(method, path, json=payload, headers=headers)
+    if not include_content_length:
+        request.headers.pop('content-length', None)
+    response = app.send(request)
+    app.cookies.clear()
+    return response.status_code, response.json() if response.content else None
 
 
 class LandingAdminRouteTests(TestCase):
+    @pytest.fixture(autouse=True)
+    def database(self, runtime_db):
+        self.sessions = runtime_db
+
     def setUp(self) -> None:
-        self.engine = create_engine(
-            "sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool
-        )
-        Base.metadata.create_all(self.engine)
-        self.sessions = sessionmaker(bind=self.engine)
+        from pymentor_core.app.database import engine
+        self.engine = engine
+        self.admin_id = http.register(email="admin@example.test").data['user']['id']
+        self.student_id = http.register(email="student@example.test").data['user']['id']
         with self.sessions() as db:
-            admin = models.User(username="Admin", email="admin@example.test", _password_hash="hash", is_admin=True)
-            student = models.User(username="Student", email="student@example.test", _password_hash="hash")
-            db.add_all([admin, student])
-            db.flush()
-            self.admin_id = admin.id
-            self.student_id = student.id
-            db.add_all([
-                models.Session(user_id=admin.id, session_token="admin-session", created_at=datetime.now(timezone.utc)),
-                models.Session(user_id=student.id, session_token="student-session", created_at=datetime.now(timezone.utc)),
-            ])
+            db.get(models.User, self.admin_id).is_admin = True
             db.commit()
-        self.app = FastAPI()
-        configure_web(self.app)
-        self.app.include_router(admin_router, prefix="/api/admin")
-        self.app.include_router(public_landing_router, prefix="/api/landings")
+        self.admin_token = http.login(email="admin@example.test").cookie().value
+        self.student_token = http.login(email="student@example.test").cookie().value
+        self.app = http._client
 
-        def override_get_db():
-            with self.sessions() as db:
-                yield db
-
-        self.app.dependency_overrides[get_db] = override_get_db
-
-    def tearDown(self) -> None:
-        self.app.dependency_overrides.clear()
-        Base.metadata.drop_all(self.engine)
-        self.engine.dispose()
 
     def test_landing_configuration_requires_admin_authorization(self) -> None:
         anonymous_status, _ = asyncio.run(_request(self.app, "GET", "/api/admin/landings"))
         student_status, _ = asyncio.run(
-            _request(self.app, "GET", "/api/admin/landings", cookie="session=student-session")
+            _request(self.app, "GET", "/api/admin/landings", cookie=f"session={self.student_token}")
         )
 
         self.assertEqual(anonymous_status, 401)
@@ -118,7 +72,7 @@ class LandingAdminRouteTests(TestCase):
                 "POST",
                 "/api/admin/landings",
                 payload={"slug": "backend", "title": "Pymentor", "description": "Основной лендинг"},
-                cookie="session=admin-session",
+                cookie=f"session={self.admin_token}",
             )
         )
         self.assertEqual(created_status, 201)
@@ -133,7 +87,7 @@ class LandingAdminRouteTests(TestCase):
                     "PUT",
                     f"/api/admin/landings/{created['id']}/telegram",
                     payload={"secret_ref": "backend-bot-v1", "chat_id": "12345"},
-                    cookie="session=admin-session",
+                    cookie=f"session={self.admin_token}",
                 )
             )
 
@@ -145,7 +99,7 @@ class LandingAdminRouteTests(TestCase):
         created_status, created = asyncio.run(
             _request(self.app, "POST", "/api/admin/landings",
                      payload={"slug": "verify-release", "title": "Test", "description": ""},
-                     cookie="session=admin-session")
+                     cookie=f"session={self.admin_token}")
         )
         self.assertEqual(created_status, 201)
         checked_out = 0
@@ -173,7 +127,7 @@ class LandingAdminRouteTests(TestCase):
                 status_code, config = asyncio.run(
                     _request(self.app, "PUT", f"/api/admin/landings/{created['id']}/telegram",
                              payload={"secret_ref": "test-ref", "chat_id": "12345"},
-                             cookie="session=admin-session")
+                             cookie=f"session={self.admin_token}")
                 )
             self.assertEqual(status_code, 200)
             self.assertEqual(config["bot_username"], "synthetic_bot")
@@ -187,7 +141,7 @@ class LandingAdminRouteTests(TestCase):
         _, created = asyncio.run(
             _request(self.app, "POST", "/api/admin/landings",
                      payload={"slug": "verify-failure", "title": "Test", "description": ""},
-                     cookie="session=admin-session")
+                     cookie=f"session={self.admin_token}")
         )
         url = f"/api/admin/landings/{created['id']}/telegram"
         credentials = {"PYMENTOR_LANDING_BOT_CREDENTIALS": json.dumps({"test-ref": "test-token"})}
@@ -195,17 +149,17 @@ class LandingAdminRouteTests(TestCase):
             with patch('pymentor_core.modules.landings.api.admin.verify_telegram_destination', return_value="old_bot"):
                 status_code, original = asyncio.run(
                     _request(self.app, "PUT", url, payload={"secret_ref": "test-ref", "chat_id": "123"},
-                             cookie="session=admin-session")
+                             cookie=f"session={self.admin_token}")
                 )
             self.assertEqual(status_code, 200)
             with patch('pymentor_core.modules.landings.api.admin.verify_telegram_destination',
                        side_effect=TelegramDeliveryError("test failure", retryable=True)):
                 status_code, _ = asyncio.run(
                     _request(self.app, "PUT", url, payload={"secret_ref": "test-ref", "chat_id": "456"},
-                             cookie="session=admin-session")
+                             cookie=f"session={self.admin_token}")
                 )
             self.assertEqual(status_code, 503)
-            status_code, after = asyncio.run(_request(self.app, "GET", url, cookie="session=admin-session"))
+            status_code, after = asyncio.run(_request(self.app, "GET", url, cookie=f"session={self.admin_token}"))
         self.assertEqual(status_code, 200)
         self.assertEqual(after, original)
 
@@ -216,7 +170,7 @@ class LandingAdminRouteTests(TestCase):
                 "POST",
                 "/api/admin/landings",
                 payload={"slug": "backend", "title": "Pymentor", "description": ""},
-                cookie="session=admin-session",
+                cookie=f"session={self.admin_token}",
             )
         )
         with patch.dict(
@@ -229,7 +183,7 @@ class LandingAdminRouteTests(TestCase):
                     "PUT",
                     f"/api/admin/landings/{landing['id']}/telegram",
                     payload={"secret_ref": "backend-bot-v1", "chat_id": "12345"},
-                    cookie="session=admin-session",
+                    cookie=f"session={self.admin_token}",
                 )
             )
 
@@ -241,7 +195,7 @@ class LandingAdminRouteTests(TestCase):
                 "POST",
                 path,
                 payload={"event_type": "telegram_connection_test.v1", "payload": {}},
-                cookie="session=admin-session",
+                cookie=f"session={self.admin_token}",
                 extra_headers={"Idempotency-Key": key},
             )
         )
@@ -251,7 +205,7 @@ class LandingAdminRouteTests(TestCase):
                 "POST",
                 path,
                 payload={"event_type": "telegram_connection_test.v1", "payload": {}},
-                cookie="session=admin-session",
+                cookie=f"session={self.admin_token}",
                 extra_headers={"Idempotency-Key": key},
             )
         )
@@ -261,7 +215,7 @@ class LandingAdminRouteTests(TestCase):
                 "POST",
                 path,
                 payload={"event_type": "telegram_connection_test.v1", "payload": {"email": "private@example.test"}},
-                cookie="session=admin-session",
+                cookie=f"session={self.admin_token}",
                 extra_headers={"Idempotency-Key": key},
             )
         )
@@ -270,7 +224,7 @@ class LandingAdminRouteTests(TestCase):
                 self.app,
                 "GET",
                 f"/api/admin/landings/{landing['id']}/events/{created['event_id']}",
-                cookie="session=admin-session",
+                cookie=f"session={self.admin_token}",
             )
         )
 
@@ -293,7 +247,7 @@ class LandingAdminRouteTests(TestCase):
                 "POST",
                 "/api/admin/landings",
                 payload={"slug": "backend", "title": "Pymentor", "description": ""},
-                cookie="session=admin-session",
+                cookie=f"session={self.admin_token}",
             )
         )
         with patch.dict(
@@ -306,7 +260,7 @@ class LandingAdminRouteTests(TestCase):
                     "PUT",
                     f"/api/admin/landings/{landing['id']}/telegram",
                     payload={"secret_ref": "backend-bot-v1", "chat_id": "12345"},
-                    cookie="session=admin-session",
+                    cookie=f"session={self.admin_token}",
                 )
             )
         path = f"/api/admin/landings/{landing['id']}/events"
@@ -317,7 +271,7 @@ class LandingAdminRouteTests(TestCase):
                     "POST",
                     path,
                     payload={"event_type": "telegram_connection_test.v1", "payload": {}},
-                    cookie="session=admin-session",
+                    cookie=f"session={self.admin_token}",
                     extra_headers={"Idempotency-Key": f"123e4567-e89b-12d3-a456-42661417400{index}"},
                 )
             )[0]
@@ -328,7 +282,7 @@ class LandingAdminRouteTests(TestCase):
                 self.app,
                 "DELETE",
                 f"/api/admin/landings/{landing['id']}/telegram",
-                cookie="session=admin-session",
+                cookie=f"session={self.admin_token}",
             )
         )
         after_disable_status, _ = asyncio.run(
@@ -337,7 +291,7 @@ class LandingAdminRouteTests(TestCase):
                 "POST",
                 path,
                 payload={"event_type": "telegram_connection_test.v1", "payload": {}},
-                cookie="session=admin-session",
+                cookie=f"session={self.admin_token}",
                 extra_headers={"Idempotency-Key": "123e4567-e89b-12d3-a456-426614174099"},
             )
         )
@@ -353,7 +307,7 @@ class LandingAdminRouteTests(TestCase):
                 "POST",
                 "/api/admin/landings/unknown/events",
                 payload={"event_type": "telegram_connection_test.v1", "payload": {"x": "x" * 3000}},
-                cookie="session=admin-session",
+                cookie=f"session={self.admin_token}",
                 extra_headers={"Idempotency-Key": "123e4567-e89b-12d3-a456-426614174088"},
                 include_content_length=False,
             )

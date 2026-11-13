@@ -13,9 +13,6 @@ ingressController:
   replicas: 1
 core:
   replicaCount: 1
-  persistence:
-    storageClassName: ""
-    size: 10Gi
 frontend:
   replicaCount: 1
   topologySpread: false

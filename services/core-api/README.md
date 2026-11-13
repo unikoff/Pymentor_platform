@@ -207,5 +207,5 @@ Backup/restore текущего PostgreSQL выполняются по суще�
 Read-only baseline AlphaVPS13.11: `knowi01`, namespace`pymentor`, PostgreSQL revisionc503,
 Redis PING/readiness200; Core/worker используют Secret`preview-migrated-runtime`, без
 SQLite mounts. Подробные checks и ограничения — CORP-519 в Jira. Данные/секреты не
-дублируются в документации. Следующие этапы PG12–14 удаляют оставшиеся source artifacts;
+дублируются в документации. SQLite adapter, Passenger/cron wrappers и старые build profiles удалены;
 course-local/Runner сохраняются до своих отдельных переходов.

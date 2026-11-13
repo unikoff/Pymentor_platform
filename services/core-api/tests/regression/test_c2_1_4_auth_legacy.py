@@ -93,7 +93,7 @@ def runtime_db(monkeypatch):
     monkeypatch.delenv("PYMENTOR_PROFILE", raising=False)
     def clear():
         with engine.begin() as connection:
-            connection.execute(text("TRUNCATE users, consumed_email_changes, email_change_requests, booking_slots, booking_notification_outbox, booking_notification_delivery_state, landings, landing_notification_outbox, landing_notification_delivery_state, account_deletion_events, account_deletion_redis_keys RESTART IDENTITY CASCADE"))
+            connection.execute(text("TRUNCATE users, admins, consumed_email_changes, email_change_requests, booking_slots, booking_notification_outbox, booking_notification_delivery_state, landings, landing_notification_outbox, landing_notification_delivery_state, account_deletion_events, account_deletion_redis_keys RESTART IDENTITY CASCADE"))
     clear()
     sessions = sessionmaker(bind=engine, autocommit=False, autoflush=False)
     try:

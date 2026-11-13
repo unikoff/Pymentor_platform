@@ -10,14 +10,16 @@
     "test_pg04_identity_contract.py",
     "test_legacy_boundary.py",
     "test_release.py",
-    "regression/test_c2_2_2_schema_policy.py",
     "regression/test_email_tokens.py",
     "regression/test_c2_1_4_principal.py",
     "regression/test_c2_1_5_practice_progress.py",
     "regression/test_account_email_transport.py",
     "regression/test_telegram_notifications.py",
     "test_ci_runtime_gate.py",
-    "regression/test_health.py"
+    "regression/test_health.py",
+    "regression/test_c224_timeouts.py",
+    "regression/test_c225_role_guards.py",
+    "test_postgres_lab_entrypoint.py"
   ],
   "http": [
     "regression/test_c2_1_4_auth_legacy.py",
@@ -31,7 +33,13 @@
     "regression/test_c426_postgres_account_lifecycles.py",
     "regression/test_email_verified_state.py",
     "regression/test_landing_registry.py",
-    "regression/test_notification_worker.py"
+    "regression/test_notification_worker.py",
+    "regression/test_admin_dashboard.py",
+    "regression/test_booking_slots.py",
+    "regression/test_landing_notification_worker.py",
+    "regression/test_landing_consultation.py",
+    "regression/test_c214_passwords.py",
+    "regression/test_landing_admin_routes.py"
   ],
   "runtime": [
     "integration/test_pg02_runtime.py",

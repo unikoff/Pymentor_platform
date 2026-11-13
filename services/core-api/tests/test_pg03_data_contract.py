@@ -27,17 +27,8 @@ else:
     assert result.returncode == 0, result.stderr
 
 
-@pytest.mark.parametrize("mode", [None, "managed"])
-def test_postgres_schema_checks_never_request_bootstrap(mode):
-    from pymentor_core.app.schema_policy import should_run_legacy_bootstrap
-    assert should_run_legacy_bootstrap("postgresql", mode) is False
 
 
-@pytest.mark.parametrize("mode", [None, "managed", "legacy"])
-def test_sqlite_is_not_a_runtime_schema_policy(mode):
-    from pymentor_core.app.schema_policy import should_run_legacy_bootstrap
-    with pytest.raises(RuntimeError):
-        should_run_legacy_bootstrap("sqlite", mode)
 
 
 @pytest.mark.parametrize("adapter", ["bookings", "landings"])

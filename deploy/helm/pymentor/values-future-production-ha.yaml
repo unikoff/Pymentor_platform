@@ -13,9 +13,6 @@ ingressController:
   replicas: 3
 core:
   replicaCount: 1
-  persistence:
-    storageClassName: production-rwo
-    size: 10Gi
 frontend:
   replicaCount: 3
   topologySpread: true
