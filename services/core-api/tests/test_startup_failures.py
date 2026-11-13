@@ -24,28 +24,30 @@ def test_configuration_rejects_parameters_not_supported_by_runtime(key,value):
 def test_worker_refuses_to_reuse_loaded_engine_before_mutating_environment(monkeypatch):
     from pymentor_core.app.worker import main
     from pymentor_core.app.database import engine
-    assert engine.url.get_backend_name()=='sqlite'
+    assert engine.url.get_backend_name()=='postgresql'
     for key,value in ENV.items(): monkeypatch.setenv(key,value)
     before=__import__('os').environ['DATABASE_URL']
     with pytest.raises(RuntimeError,match='fresh process'):
         main(profile='postgres_redis')
     assert __import__('os').environ['DATABASE_URL']==before
 
-def test_lab_factory_rejects_a_preloaded_different_database(monkeypatch):
+def test_factory_rejects_retired_lab_entrypoint_without_mutating_database(monkeypatch):
     from pymentor_core.app.factory import create_app
     from pymentor_core.app.database import engine
-    assert engine.url.get_backend_name()=='sqlite'
+    assert engine.url.get_backend_name()=='postgresql'
     monkeypatch.setenv('PYMENTOR_DUAL_LOCAL_TEST','1')
     monkeypatch.setenv('PYMENTOR_TEST_PG_URL','postgresql+asyncpg://pymentor_test@127.0.0.1:57152/pymentor_test')
-    with pytest.raises(RuntimeError,match='fresh process'):
+    before=__import__('os').environ.get('DATABASE_URL')
+    with pytest.raises(ValueError,match='Laboratory'):
         create_app(laboratory=True)
+    assert __import__('os').environ.get('DATABASE_URL')==before
 
 def test_failed_redis_startup_closes_resources_without_publishing_identity(monkeypatch):
     import sqlalchemy
     import pymentor_core.app.database as sql
     import pymentor_core.adapters.runtime as runtime
-    from pymentor_core.app.factory import DUAL_LOCAL_REQUIRED_TABLES
-    from pymentor_core.app.factory import DUAL_LOCAL_SCHEMA_REVISION
+    from pymentor_core.app.schema_policy import REQUIRED_TABLES as DUAL_LOCAL_REQUIRED_TABLES
+    from pymentor_core.app.schema_policy import SCHEMA_REVISION as DUAL_LOCAL_SCHEMA_REVISION
     from pymentor_core.app.wiring import postgres_resources
     closed=[]
     class Database:
@@ -75,17 +77,17 @@ def test_failed_redis_startup_closes_resources_without_publishing_identity(monke
     with pytest.raises(OSError,match='synthetic Redis'):
         asyncio.run(run())
     assert closed==['redis','database']
-    assert getattr(app.state,'local_async_identity',None) is None
+    assert getattr(app.state,'identity_sessions',None) is None
 
 
 def test_normal_postgres_http_uses_async_identity_without_lab_flag(monkeypatch):
-    from pymentor_core.modules.identity.api.sessions import _local_async_identity
+    from pymentor_core.modules.identity.api.sessions import require_identity
     monkeypatch.delenv('PYMENTOR_DUAL_LOCAL_TEST',raising=False)
     sessions=object()
-    request=SimpleNamespace(app=SimpleNamespace(state=SimpleNamespace(profile='postgres_redis',local_async_identity=sessions)))
-    assert _local_async_identity(request) is sessions
-    request.app.state.local_async_identity=None
+    request=SimpleNamespace(app=SimpleNamespace(state=SimpleNamespace(profile='postgres_redis',identity_sessions=sessions)))
+    assert require_identity(request) is sessions
+    request.app.state.identity_sessions=None
     from fastapi import HTTPException
     with pytest.raises(HTTPException) as error:
-        _local_async_identity(request)
+        require_identity(request)
     assert error.value.status_code==503

@@ -1,5 +1,5 @@
-# Configuration scaffold only. Core deliberately remains one SQLite writer;
-# PostgreSQL and the Stage 2 migration are prerequisites for Core replicas > 1.
+# Configuration scaffold only. Multiple API replicas require separate CORP-250/252
+# load/capacity acceptance; this sprint keeps a single PostgreSQL/Redis API replica.
 profile: future-production-ha
 global:
   host: pymentor-ha.example.invalid

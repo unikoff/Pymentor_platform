@@ -6,19 +6,23 @@ cd "$repo_root"
 
 build_root="$(mktemp -d)"
 trap 'rm -rf -- "$build_root"' EXIT
-mkdir -p "$build_root/backend" "$build_root/frontend"
+mkdir -p "$build_root/core" "$build_root/frontend"
 
 # Stage a clean context on WSL's Linux filesystem. This avoids traversing
 # permission-protected Windows pytest cache directories and excludes local
 # env files, SQLite data, caches, and generated frontend output.
-tar -C backend \
+tar -C "$repo_root" \
   --exclude=.pytest_cache --exclude='.pytest-tmp*' \
   --exclude=.env --exclude='.env.*' \
   --exclude='*.db*' --exclude='*.sqlite*' \
   --exclude=.venv --exclude='*/.venv' \
   --exclude=tests --exclude='*/tests' \
   --exclude=__pycache__ --exclude='*/__pycache__' \
-  -cf - . | tar -C "$build_root/backend" -xf -
+  --exclude='*/adapters/legacy_sqlite' \
+  -cf - services/core-api/Dockerfile services/core-api/Dockerfile.dockerignore \
+  services/core-api/requirements-runtime.txt services/core-api/requirements-migration.txt \
+  services/core-api/alembic-runtime.ini services/core-api/migrations \
+  services/core-api/pymentor_core backend/content | tar -C "$build_root/core" -xf -
 tar -C frontend \
   --exclude=.pytest_cache --exclude='.pytest-tmp*' \
   --exclude=.env --exclude='.env.*' \
@@ -33,8 +37,9 @@ tar -C frontend \
 
 docker buildx build --platform linux/amd64 --provenance=false --sbom=false \
   --output=type=docker \
-  -f "$build_root/backend/Dockerfile" \
-  -t pymentor/core-api:c1.3-local "$build_root/backend"
+  -f "$build_root/core/services/core-api/Dockerfile" \
+  --target runtime \
+  -t pymentor/core-api:c1.3-local "$build_root/core"
 if [[ "${BUILD_FRONTEND:-1}" == "1" ]]; then
   docker buildx build --platform linux/amd64 --provenance=false --sbom=false \
     --output=type=docker \

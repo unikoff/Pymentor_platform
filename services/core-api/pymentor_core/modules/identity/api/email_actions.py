@@ -3,15 +3,13 @@
 import hashlib
 import logging
 import re
-import threading
-import time
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, constr, field_validator
 from sqlalchemy.orm import Session
 
 from pymentor_core.app.dependencies import get_db
-from pymentor_core.modules.identity.api.sessions import get_current_user
+from pymentor_core.modules.identity.api.sessions import get_current_user, require_identity
 from pymentor_core.modules.identity.passwords import validate_bcrypt_length
 from pymentor_core.shared.bindings import get_bindings
 from pymentor_core.shared.api_contracts import LegacyErrorResponse
@@ -21,8 +19,6 @@ from pymentor_core.modules.identity.api.schemas import CurrentUserResponse
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
-_attempts: dict[str, list[float]] = {}
-_attempt_lock = threading.Lock()
 _GENERIC = {"message": "Если для этого адреса доступно восстановление, мы отправили письмо"}
 
 
@@ -75,32 +71,11 @@ class PasswordRequest(TokenRequest):
     _validate_password_length = field_validator("new_password")(validate_bcrypt_length)
 
 
-def _allowed(kind: str, key: str) -> bool:
-    """Bound per-process request rates without storing raw addresses or IPs."""
-    digest = hashlib.sha256((kind + "\0" + key).encode()).hexdigest()
-    now = time.monotonic()
-    with _attempt_lock:
-        if len(_attempts) >= 10000:
-            for item, stamps in list(_attempts.items()):
-                if not any(now - stamp < 60 for stamp in stamps):
-                    del _attempts[item]
-            if len(_attempts) >= 10000:
-                return False
-        recent = [stamp for stamp in _attempts.get(digest, []) if now - stamp < 60]
-        limit = 20 if kind == "reset-ip" else 5 if kind == "confirm" else 1
-        if len(recent) >= limit:
-            return False
-        _attempts[digest] = [*recent, now]
-        return True
-
-
 def _request_allowed(request: Request, kind: str, key: str) -> bool:
-    if getattr(request.app.state, "profile", None) != "postgres_redis":
-        return _allowed(kind, key)
     from anyio import from_thread
 
-    identity = getattr(request.app.state, "local_async_identity", None)
-    if identity is None or identity.redis is None:
+    identity = require_identity(request)
+    if identity.redis is None:
         raise HTTPException(status_code=503, detail="Сервис временно недоступен")
     digest = hashlib.sha256((kind + "\0" + key).encode()).hexdigest()
     limit = 20 if kind == "reset-ip" else 5 if kind == "confirm" else 1

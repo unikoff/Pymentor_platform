@@ -104,6 +104,14 @@
                         "key": "landing-bots-json"
                       }
                     }
+                  },
+                  {
+                    "name": "PYMENTOR_SCHEMA_MODE",
+                    "value": "managed"
+                  },
+                  {
+                    "name": "PYTHON_DOTENV_DISABLED",
+                    "value": "1"
                   }
                 ],
                 "resources": {

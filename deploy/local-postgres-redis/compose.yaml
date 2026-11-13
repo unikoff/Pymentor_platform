@@ -1,0 +1,91 @@
+# Disposable developer stack only. All credentials below are synthetic local data.
+x-core-env: &core-env
+  DATABASE_URL: postgresql+psycopg://core_local:local-disposable@postgres:5432/core_local
+  REDIS_URL: redis://redis:6379/0
+  KNOWI_REDIS_PREFIX: "core-local:"
+  KNOWI_LOGIN_RECOVERY_KEY: abababababababababababababababababababababababababababababababab
+  PYMENTOR_EMAIL_TOKEN_SECRET: local-disposable-email-token-secret-32-bytes
+  PYMENTOR_SCHEMA_MODE: managed
+  PYMENTOR_LOG_TO_STDOUT: "1"
+
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: core_local
+      POSTGRES_PASSWORD: local-disposable
+      POSTGRES_DB: core_local
+    tmpfs: [/var/lib/postgresql/data]
+    mem_limit: 384m
+    cpus: 1
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U core_local -d core_local]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+  redis:
+    image: redis:7-alpine
+    command: [redis-server, --save, "", --appendonly, "no", --maxmemory, 32mb, --maxmemory-policy, noeviction]
+    mem_limit: 96m
+    cpus: 0.5
+    healthcheck:
+      test: [CMD, redis-cli, ping]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+  migrate:
+    image: knowi/core-local-migrations:pg06
+    build:
+      context: ../..
+      dockerfile: services/core-api/Dockerfile
+      target: migrations
+    environment:
+      KNOWI_MIGRATION_URL: postgresql+asyncpg://core_local:local-disposable@postgres:5432/core_local
+      KNOWI_MIGRATION_HOST: postgres
+      KNOWI_MIGRATION_DATABASE: core_local
+      KNOWI_MIGRATION_USER: core_local
+    depends_on:
+      postgres: {condition: service_healthy}
+    restart: "no"
+    mem_limit: 192m
+  core:
+    image: knowi/core-local:pg06
+    build:
+      context: ../..
+      dockerfile: services/core-api/Dockerfile
+      target: runtime
+    environment: *core-env
+    tmpfs: [/tmp]
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    mem_limit: 384m
+    cpus: 1
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+      redis: {condition: service_healthy}
+    healthcheck:
+      test: [CMD, python, -c, "from urllib.request import urlopen; urlopen('http://127.0.0.1:8001/health/ready', timeout=2)"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+  worker:
+    image: knowi/core-local:pg06
+    environment: *core-env
+    command: [python, -m, pymentor_core.app.worker, --stats]
+    profiles: [tools]
+    depends_on:
+      core: {condition: service_healthy}
+    read_only: true
+    tmpfs: [/tmp]
+    mem_limit: 192m
+  smoke:
+    image: python:3.12.16-slim-trixie
+    user: "10001:10001"
+    command: [python, /smoke.py]
+    volumes: ["./smoke.py:/smoke.py:ro"]
+    profiles: [tools]
+    depends_on:
+      core: {condition: service_healthy}
+    read_only: true
+    mem_limit: 128m

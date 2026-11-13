@@ -1,0 +1,2 @@
+# Separate migration image; runtime drivers are inherited from the Core venv.
+alembic==1.20.1

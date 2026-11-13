@@ -1,7 +1,7 @@
 # Core API
 
-Единственный рабочий пакет — `pymentor_core`. Старый хостинг и новый профиль
-используют одну реализацию. Это модульный монолит с границами для дальнейшего
+Единственный рабочий пакет — `pymentor_core`, runtime — PostgreSQL и Redis.
+Это модульный монолит с границами для дальнейшего
 выделения сервисов. Отдельный HTTP сервис курсов реализуется в MC2, не этим переносом.
 
 ```text
@@ -42,7 +42,7 @@ Telegram отправляется worker вне бизнес-транзакци�
 
 - `app/factory.py` собирает HTTP-приложение, `app/worker.py` запускает обработчик уведомлений.
 - `app/wiring.py` подключает реализации; `app/paths.py` задаёт все пути к коду, контенту и writable state.
-- `app/schema_policy.py` хранит единственную ожидаемую ревизию/набор таблиц и правила SQLite bootstrap.
+- `app/schema_policy.py` хранит ожидаемую ревизию/набор таблиц; runtime не выполняет DDL.
 - `modules/<область>/` содержит правила и операции области. `api/` — её HTTP-граница:
   роуты, модели запроса/ответа, авторизация и перевод ошибок.
 - `adapters/<технология>/` содержит SQL, Redis, файловые и сетевые реализации. Блокировки,
@@ -68,17 +68,14 @@ Runtime не зависит от tools/tests; модули не импортир
 от приложения и бизнес-модулей. Чистые бизнес-правила не импортируют SQLAlchemy/FastAPI.
 Динамические импорты проверяются отдельными тестами запуска, а не этим AST-анализатором.
 
-## Два профиля
+## Единственный runtime
 
-`legacy_sqlite`: прежний hosting/Passenger, SQL-сеансы, исходная `backend/test.db`.
-`backend/main.py` явно выбирает его. Passenger инициализирует схему один раз при первом
-HTTP запросе, поскольку WSGI-адаптер не запускает ASGI lifespan.
-
-`postgres_redis`: явные `DATABASE_URL` (`postgresql+psycopg` или `postgresql+asyncpg`),
+Явные `DATABASE_URL` (`postgresql+psycopg` или `postgresql+asyncpg`),
 `REDIS_URL`, отдельный `PYMENTOR_REDIS_PREFIX`, `PYMENTOR_LOGIN_RECOVERY_KEY` (64 hex).
 Секреты передаются окружением. Startup/readiness проверяют готовую схему и Redis;
-скрытого перехода к SQLite/SQL-only входу нет. Профиль выбирается **до импорта** и меняется
-только перезапуском процесса. Часть бизнес-запросов ещё использует sync PostgreSQL pool:
+скрытого перехода к SQLite/SQL-only входу нет. PYMENTOR_PROFILE не требуется;
+старые значения отклоняются. Смена целевой DB требует нового процесса.
+Часть бизнес-запросов ещё использует sync PostgreSQL pool:
 полный async — PYM-37, реальные replicas/load — PYM-250/252.
 
 Для постепенного переименования настроек сессий Core принимает
@@ -100,23 +97,53 @@ Content transport сейчас только `local`, адреса/ID/ревиз�
 
 ```powershell
 $env:PYTHONPATH="$PWD\services\core-api;$PWD\backend"
-$env:PYMENTOR_PROFILE="legacy_sqlite"
-# Для безопасного пробного запуска используйте отдельную копию, не рабочую test.db:
-$env:DATABASE_URL="sqlite:///C:/temp/pymentor-demo.sqlite3"
+$env:DATABASE_URL="postgresql+psycopg://<user>:<secret>@<host>:5432/<database>"
+$env:REDIS_URL="redis://<host>:6379/0"
+$env:KNOWI_REDIS_PREFIX="<environment>:"
+$env:KNOWI_LOGIN_RECOVERY_KEY="<64 hex characters>"
 python -m uvicorn pymentor_core.app.asgi:create_app --factory --host 127.0.0.1 --port 8001
 ```
 
-Каталог C:/temp предварительно должен существовать. Приложение будет на
-http://127.0.0.1:8001; `/health/live`, `/health/ready`, `/docs` доступны для проверки.
-Для PostgreSQL задать перечисленное окружение, `PYMENTOR_PROFILE=postgres_redis` и
-использовать ту же команду. Схема должна быть подготовлена отдельно; текущие migration
-инструменты сохраняют строгую allowlist локальной лаборатории и не пригодны для VPS
-без отдельного этапа принятия целевого сервера.
+Приложение будет на http://127.0.0.1:8001. Схему предварительно применяет отдельная
+операция: `python -m alembic -c services/core-api/alembic-runtime.ini upgrade head`.
+Перед ней задать KNOWI_MIGRATION_URL (asyncpg), KNOWI_MIGRATION_HOST,
+KNOWI_MIGRATION_DATABASE и KNOWI_MIGRATION_USER с совпадающей явной целью.
+Миграционная роль имеет DDL-права; runtime роль не обязана их иметь.
+Старые lab-инструменты сохраняют свою строгую allowlist.
+
+Полный disposable smoke из корня репозитория (Docker Compose):
+
+```powershell
+pwsh -File scripts/local-postgres-redis/smoke.ps1
+```
+
+Команда собирает canonical runtime и отдельный migration target, запускает PostgreSQL
+и Redis без постоянных volumes/публичных портов, применяет миграции, проверяет
+health → login/cookie → PostgreSQL write/read → logout → worker --stats, затем удаляет
+только свой Compose project. Все данные/ключи в этом stack синтетические.
+Canonical build: `docker build -f services/core-api/Dockerfile --target runtime -t knowi/core-local:pg06 .`.
+Runtime зависимости: requirements-runtime.txt; Alembic только в target migrations.
+Legacy SQLite adapter/WSGI wrappers исключены из build context, контент курса включён.
 
 ```powershell
 python -m pymentor_core.app.worker --stats
-python -m pytest services/core-api/tests -p no:cacheprovider
+# CI runner with actual disposable PG/Redis services provisioned by release.yml:
+python scripts/ci/preview_checks.py
 ```
+
+Целевые test groups заданы в `tests/runtime_suites.json`: unit/contract,
+реальные PG/Redis scenarios и HTTP modules с отдельной DB identity/процессом.
+CI требует PostgreSQL на loopback57382 (DB/user pymentor_test) и Redis57381;
+создаёт только именованные disposable DB через отдельный migration operation.
+Для собственного disposable стенда задать KNOWI_TEST_PG_URL и
+KNOWI_TEST_REDIS_URL по этому ограниченному контракту. Скрипт откажется при
+отсутствии сервисов, пустом результате или skipped critical tests.
+Старые lab/import/recovery tests сохраняют собственные guards и выполняются
+отдельно; весь исторический tests tree не является одной runtime-матрицей.
+
+`python scripts/ci/check_single_runtime.py` проверяет production sources/config,
+а `--image IMAGE` дополнительно запускает network-disabled nonroot assembly check.
+`python scripts/ci/image_smoke.py` выполняет canonical build и disposable smoke.
 
 `--stats` не отправляет сообщения. Worker без этого флага отправляет реальную очередь;
 не запускайте его на рабочей базе для пробной проверки. Перед тестами задайте

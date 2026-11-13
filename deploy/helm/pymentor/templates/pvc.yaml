@@ -3,6 +3,9 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: {{ include "pymentor.fullname" . }}-sqlite
+  annotations:
+    helm.sh/resource-policy: keep
+    argocd.argoproj.io/sync-options: Prune=false
   labels:
     {{- include "pymentor.labels" . | nindent 4 }}
 spec:

@@ -29,14 +29,9 @@ from pymentor_core.modules.bookings.policy import quota_status
 
 
 def _start_write_transaction(db: Session) -> None:
-    """Acquire SQLite's write lock before checking quotas or overlapping slots."""
-    if db.bind is not None and db.bind.dialect.name == "sqlite":
-        # The auth dependency has already performed a read on this Session.
-        # It leaves SQLite in a deferred transaction, which cannot be upgraded
-        # with BEGIN IMMEDIATE. That read has no pending writes, so reset it.
-        if db.in_transaction():
-            db.rollback()
-        db.execute(text("BEGIN IMMEDIATE"))
+    """Validate the sole backend; PostgreSQL owns transaction and row locks."""
+    if db.get_bind().dialect.name != "postgresql":
+        raise RuntimeError("Booking writes require PostgreSQL")
 
 
 def _require_postgres_read_committed(db: Session) -> None:

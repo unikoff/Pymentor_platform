@@ -1,4 +1,4 @@
-"""Run isolated, fail-closed preview profile smoke checks in fresh processes."""
+"""Required PostgreSQL/Redis release checks in isolated processes."""
 import os
 from pathlib import Path
 import subprocess
@@ -6,8 +6,8 @@ import sys
 import tempfile
 
 ROOT = Path(__file__).resolve().parents[2]
-PG = 'postgresql+asyncpg://pymentor_test:pymentor_test@127.0.0.1:57152/pymentor_test'
-REDIS = 'redis://127.0.0.1:57146/0'
+PG = 'postgresql+psycopg://pymentor_test:pymentor_test@127.0.0.1:57382/pymentor_test'
+REDIS = 'redis://127.0.0.1:57381/0'
 
 
 def run(command, env):
@@ -56,6 +56,17 @@ def updater_tests():
         rejected(sha, *digests)
         write('kustomization.yaml', base)
         updater.update(directory, sha, *digests)
+        before = read('release.json')
+        assert before == dict(source_sha=sha, core_digest=digests[0], frontend_digest=digests[1], runner_digest=digests[2])
+        try:
+            updater.update(directory, sha, *digests, migration_digest='invalid')
+        except ValueError:
+            pass
+        else:
+            raise AssertionError('invalid migration digest accepted')
+        assert read('release.json') == before
+        updater.update(directory, sha, *digests, migration_digest='sha256:' + '4' * 64)
+        assert read('release.json')['migration_digest'] == 'sha256:' + '4' * 64
         mappings = read('kustomization.yaml')['images']
         assert [(entry['name'], entry['newName'], entry['digest']) for entry in mappings] == [
             (name, target, digest) for (name, target), digest in zip(updater.IMAGES.items(), digests)]
@@ -65,48 +76,64 @@ def updater_tests():
             template = workload_item['spec']['template']
             assert template['metadata']['annotations']['pymentor.io/source-revision'] == sha
             assert template['spec']['containers'][0]['env'][0]['value'] == sha
-        assert read('release.json') == dict(source_sha=sha, core_digest=digests[0], frontend_digest=digests[1], runner_digest=digests[2])
+        assert read('release.json') == dict(source_sha=sha, core_digest=digests[0], frontend_digest=digests[1], runner_digest=digests[2], migration_digest='sha256:' + '4' * 64)
         updater.update(directory, sha, *digests)
         assert len(read('runner.json')['spec']['template']['spec']['containers'][0]['env']) == 1
     print('Preview updater fixture tests passed', flush=True)
 
+def require_test_results(path):
+    from xml.etree import ElementTree
+    suites = list(ElementTree.parse(path).getroot().iter('testsuite'))
+    counts = {key: sum(int(item.get(key, '0')) for item in suites)
+              for key in ('tests', 'failures', 'errors', 'skipped')}
+    if counts['tests'] <= 0 or any(counts[key] for key in ('failures', 'errors', 'skipped')):
+        raise RuntimeError('Critical test results missing, failed or skipped')
+
+
+def pytest_checked(files, env, report):
+    run([sys.executable, '-m', 'pytest', '-q', '-p', 'no:cacheprovider', '--tb=short', '--maxfail=1',
+         '--junitxml=' + str(report), *['services/core-api/tests/' + name for name in files]], env)
+    require_test_results(report)
+
+
 def main():
+    import json
     updater_tests()
-    run([sys.executable, "-B", "-m", "unittest", "scripts.ci.test_preview_checks_contract", "-v"], os.environ.copy())
+    run([sys.executable, '-B', '-m', 'unittest', 'scripts.ci.test_preview_checks_contract', '-v'], os.environ.copy())
+    run([sys.executable, 'scripts/ci/check_single_runtime.py'], os.environ.copy())
     env = os.environ.copy()
-    env.update(PYTHONPATH=os.pathsep.join((str(ROOT / 'services/core-api'), str(ROOT / 'backend'))),
-               PYTHON_DOTENV_DISABLED='1', PYTHONDONTWRITEBYTECODE='1',
-               PYMENTOR_LOCAL_NOTIFICATIONS='0', PYMENTOR_REQUIRE_DATABASE_URL='1')
-    for key in ('PYMENTOR_DUAL_LOCAL_TEST', 'PYMENTOR_TEST_PG_URL', 'PYMENTOR_TEST_REDIS_URL'):
+    for key in ('PYMENTOR_PROFILE', 'PYMENTOR_DUAL_LOCAL_TEST', 'PYMENTOR_TEST_PG_URL',
+                'PYMENTOR_TEST_REDIS_URL', 'PYMENTOR_REDIS_PREFIX', 'PYMENTOR_LOGIN_RECOVERY_KEY'):
         env.pop(key, None)
-    # Only the migration tool's hard-coded disposable endpoint can be used.
-    env['PYMENTOR_MIGRATION_URL'] = PG
-    run([sys.executable, '-m', 'alembic', '-c', 'services/core-api/alembic.ini', 'upgrade', 'head'], env)
-    with tempfile.TemporaryDirectory(prefix='pymentor-preview-ci-') as temp:
-        legacy = dict(env, PYMENTOR_PROFILE='legacy_sqlite',
-                      DATABASE_URL='sqlite:///' + (Path(temp) / 'smoke.sqlite3').as_posix())
-        postgres = dict(env, PYMENTOR_PROFILE='postgres_redis', DATABASE_URL=PG,
-                        REDIS_URL=REDIS, PYMENTOR_REDIS_PREFIX='preview-ci:',
-                        PYMENTOR_LOGIN_RECOVERY_KEY='42' * 32)
-        code = '''from fastapi.testclient import TestClient
-from pymentor_core.app.factory import create_app
-with TestClient(create_app()) as client:
-    for path in ("/health/live", "/health/ready", "/api/learning/tracks"):
-        response = client.get(path)
-        assert response.status_code == 200, (path, response.status_code, response.text[:500])
-'''
-        for profile in (legacy, postgres):
-            print('Checking', profile['PYMENTOR_PROFILE'], flush=True)
-            run([sys.executable, '-c', code], profile)
-    test_env = dict(env, PYMENTOR_PROFILE='legacy_sqlite', DATABASE_URL='sqlite:///:memory:')
-    run([sys.executable, '-m', 'pytest', '-q', '-p', 'no:cacheprovider',
-         'services/core-api/tests/test_settings.py',
-         'services/core-api/tests/test_runtime_policy.py',
-         'services/core-api/tests/test_release.py'], test_env)
-    email_env = dict(env, PYMENTOR_TEST_PG_URL=PG, PYMENTOR_TEST_REDIS_URL=REDIS)
-    run([sys.executable, '-m', 'pytest', '-q', '-p', 'no:cacheprovider',
-         'services/core-api/tests/integration/test_email_postgres_redis.py'], email_env)
-    run([sys.executable, '-B', '-m', 'unittest', 'discover', '-s', 'services/runner-pool/tests', '-v'], test_env)
+    env.update(PYTHONPATH=os.pathsep.join((str(ROOT / 'services/core-api'), str(ROOT / 'backend'))),
+               PYTHON_DOTENV_DISABLED='1', PYTHONDONTWRITEBYTECODE='1', PYMENTOR_SCHEMA_MODE='managed',
+               PYMENTOR_LOCAL_NOTIFICATIONS='0', KNOWI_PG02_INTEGRATION='1',
+               KNOWI_TEST_PG_URL=env.get('KNOWI_TEST_PG_URL', PG),
+               KNOWI_TEST_REDIS_URL=env.get('KNOWI_TEST_REDIS_URL', REDIS),
+               KNOWI_REDIS_PREFIX='preview-ci:', KNOWI_LOGIN_RECOVERY_KEY='42' * 32)
+    env['DATABASE_URL'] = env['KNOWI_TEST_PG_URL']
+    env['REDIS_URL'] = env['KNOWI_TEST_REDIS_URL']
+    if env['REDIS_URL'] != REDIS:
+        raise RuntimeError('Disposable Redis target rejected')
+    run([sys.executable, 'scripts/ci/prepare_test_databases.py'], env)
+    from redis import Redis
+    with Redis.from_url(REDIS, socket_connect_timeout=3, socket_timeout=3) as cache:
+        if not cache.ping(): raise RuntimeError('Required Redis unavailable')
+    suites = json.loads((ROOT / 'services/core-api/tests/runtime_suites.json').read_text(encoding='utf-8'))
+    with tempfile.TemporaryDirectory(prefix='core-target-ci-') as temp:
+        reports = Path(temp)
+        unit = dict(env, DATABASE_URL='postgresql+psycopg://synthetic:synthetic@127.0.0.1:9/synthetic')
+        # Unit fixtures explicitly select their own aliases and recovery keys.
+        for key in ('KNOWI_REDIS_PREFIX', 'KNOWI_LOGIN_RECOVERY_KEY'):
+            unit.pop(key, None)
+        pytest_checked(suites['unit'], unit, reports / 'unit.xml')
+        pytest_checked(suites['runtime'], env, reports / 'runtime.xml')
+        from sqlalchemy.engine import make_url
+        http_env = dict(env, DATABASE_URL=make_url(env['DATABASE_URL']).set(database='pg08_http_test').render_as_string(hide_password=False))
+        for index, name in enumerate(suites['http']):
+            pytest_checked([name], http_env, reports / f'http-{index}.xml')
+    # Existing Runner/security suite remains a required failure-propagating step.
+    run([sys.executable, '-B', '-m', 'unittest', 'discover', '-s', 'services/runner-pool/tests', '-v'], env)
 
 
 if __name__ == '__main__':

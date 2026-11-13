@@ -8,12 +8,12 @@ import pytest
 from redis.exceptions import ConnectionError as RedisConnectionError
 from sqlalchemy import text
 
-from pymentor_core.adapters.postgres.identity_sessions import AsyncIdentitySessions
+from pymentor_core.adapters.runtime import RuntimeIdentitySessions as AsyncIdentitySessions
 from pymentor_core.modules.identity.contracts import InvalidSession
 from pymentor_core.adapters.postgres.deletion_cleanup import cleanup_one
 from pymentor_core.modules.identity.passwords import hash_password
 from pymentor_core.adapters.redis.sessions import SessionDigest
-from test_c216_session_flow import run_scenario
+from runtime_scenarios import run_scenario
 
 
 def test_deletion_retry_cleans_late_redis_projection_and_does_not_revive_session():

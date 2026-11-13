@@ -21,3 +21,14 @@ def test_business_and_new_storage_do_not_import_sqlite_implementation():
 def test_identity_cookie_and_device_policy_has_no_relational_model_imports():
     tree=ast.parse((ROOT/'services/core-api/pymentor_core/modules/identity/api/sessions.py').read_text(encoding='utf-8'))
     assert not any(isinstance(n,ast.ImportFrom) and n.module in {'db','pymentor_core.adapters.sql.models','pymentor_core.app.database'} for n in ast.walk(tree))
+
+
+def test_serving_and_worker_assembly_never_imports_sqlite_or_hosting_bootstrap():
+    package = ROOT / 'services/core-api/pymentor_core'
+    for name in ('settings', 'factory', 'database', 'wiring', 'worker'):
+        path = package / 'app' / f'{name}.py'
+        tree = ast.parse(path.read_text(encoding='utf-8'))
+        for node in ast.walk(tree):
+            names = ([node.module or ''] if isinstance(node, ast.ImportFrom)
+                     else [alias.name for alias in node.names] if isinstance(node, ast.Import) else [])
+            assert not any('legacy_sqlite' in name or name in {'sqlite3', 'dotenv', 'main'} for name in names), (path, node.lineno)

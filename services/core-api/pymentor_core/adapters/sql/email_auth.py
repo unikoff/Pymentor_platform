@@ -176,16 +176,14 @@ def confirm_password(db, token, password, *, current_user_id=None, current_sessi
         return False
     keep_session_id = None
     if current_user_id == user_id and current_session:
-        session_key = (hashlib.sha256(current_session.encode("utf-8")).hexdigest()
-                       if db.get_bind().dialect.name == "postgresql" else current_session)
+        session_key = hashlib.sha256(current_session.encode("utf-8")).hexdigest()
         keep_session_id = db.scalar(select(Session.id).where(
             Session.user_id == user_id, Session.session_token == session_key
         ))
-    if db.get_bind().dialect.name == "postgresql":
-        query = "UPDATE login_operations SET status = 'revoked', session_id = NULL, committed_at = NULL WHERE user_id = :uid"
-        if keep_session_id is not None:
-            query += " AND (session_id IS NULL OR session_id <> :keep_id)"
-        db.execute(text(query), {"uid": user_id, "keep_id": keep_session_id})
+    query = "UPDATE login_operations SET status = 'revoked', session_id = NULL, committed_at = NULL WHERE user_id = :uid"
+    if keep_session_id is not None:
+        query += " AND (session_id IS NULL OR session_id <> :keep_id)"
+    db.execute(text(query), {"uid": user_id, "keep_id": keep_session_id})
     deleted = delete(Session).where(Session.user_id == user_id)
     if keep_session_id is not None:
         deleted = deleted.where(Session.id != keep_session_id)

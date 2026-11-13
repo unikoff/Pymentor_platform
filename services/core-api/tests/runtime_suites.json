@@ -1,0 +1,42 @@
+{
+  "unit": [
+    "test_settings.py",
+    "test_factory.py",
+    "test_startup_failures.py",
+    "test_single_runtime_contract.py",
+    "test_pg03_data_contract.py",
+    "test_managed_migrations.py",
+    "test_runtime_policy.py",
+    "test_pg04_identity_contract.py",
+    "test_legacy_boundary.py",
+    "test_release.py",
+    "regression/test_c2_2_2_schema_policy.py",
+    "regression/test_email_tokens.py",
+    "regression/test_c2_1_4_principal.py",
+    "regression/test_c2_1_5_practice_progress.py",
+    "regression/test_account_email_transport.py",
+    "regression/test_telegram_notifications.py",
+    "test_ci_runtime_gate.py"
+  ],
+  "http": [
+    "regression/test_c2_1_4_auth_legacy.py",
+    "regression/test_c2_1_5_complete_lesson.py",
+    "regression/test_pg08_business.py",
+    "regression/test_c2_1_3_api_contracts.py",
+    "regression/test_c2_1_3_errors.py"
+  ],
+  "runtime": [
+    "integration/test_pg02_runtime.py",
+    "integration/test_pg03_transactions.py",
+    "integration/test_pg05_worker.py",
+    "integration/test_email_postgres_redis.py",
+    "regression/test_c435_login_replay.py",
+    "regression/test_pg04_sessions.py",
+    "regression/test_c426_deletion_redis.py",
+    "regression/test_c426_notification_postgres.py",
+    "regression/test_c435_multiprocess.py",
+    "regression/test_c435_projection_recovery.py",
+    "regression/test_dual_postgres_booking.py"
+  ],
+  "note": "Explicit target suites; service groups require actual disposable PG/Redis with integration opt-in. Retained lab/import tests are not silently counted as passing."
+}

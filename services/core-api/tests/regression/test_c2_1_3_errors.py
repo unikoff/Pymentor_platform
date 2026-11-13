@@ -6,6 +6,7 @@ from datetime import timedelta
 import pytest
 
 from test_c2_1_3_api_contracts import clients
+from test_c2_1_4_auth_legacy import runtime_db
 
 
 def _error(response, status, detail):

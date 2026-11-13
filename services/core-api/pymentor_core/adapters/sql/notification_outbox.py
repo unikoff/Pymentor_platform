@@ -6,7 +6,6 @@ import json
 import logging
 import os
 import random
-import sqlite3
 import time
 import threading
 from datetime import datetime
@@ -18,10 +17,8 @@ from urllib.error import URLError
 from uuid import uuid4
 from sqlalchemy import and_
 from sqlalchemy import func
-from sqlalchemy import inspect
 from sqlalchemy import or_
 from sqlalchemy import select
-from sqlalchemy import text
 from sqlalchemy.orm import Session
 from sqlalchemy.orm import aliased
 from sqlalchemy.orm import sessionmaker
@@ -30,7 +27,6 @@ from pymentor_core.app.database import engine
 from pymentor_core.app.paths import state_directory
 
 BACKEND_ROOT = state_directory()
-from pymentor_core.app.schema_policy import should_run_legacy_bootstrap
 from pymentor_core.adapters.sql import models
 from pymentor_core.adapters.telegram.transport import TelegramDeliveryError
 from pymentor_core.adapters.telegram.transport import _get_landing_bot_token
@@ -70,32 +66,6 @@ def _ensure_outbox_table() -> None:
     from pymentor_core.app.wiring import ensure_notification_schema
 
     ensure_notification_schema(engine)
-
-
-def backup_database(destination: Path) -> Path:
-    if engine.dialect.name != "sqlite" or not engine.url.database:
-        raise ValueError("Backup command requires a file-based SQLite database")
-    source = Path(engine.url.database).resolve()
-    destination = destination.resolve()
-    if not source.is_file() or source == destination:
-        raise ValueError("Invalid SQLite backup source or destination")
-    # Exclusive creation prevents overwriting a previous backup.
-    descriptor = os.open(destination, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
-    os.close(descriptor)
-    try:
-        source_connection = sqlite3.connect(source.as_uri() + "?mode=ro", uri=True)
-        try:
-            target_connection = sqlite3.connect(destination)
-            try:
-                source_connection.backup(target_connection)
-            finally:
-                target_connection.close()
-        finally:
-            source_connection.close()
-    except Exception:
-        destination.unlink(missing_ok=True)
-        raise
-    return destination
 
 
 def _worker_lock():
@@ -144,7 +114,8 @@ def _claim_next(
     session: Session, now: datetime | None = None
 ) -> ClaimedNotification | None:
     now = now or _utcnow()
-    dialect = session.get_bind().dialect.name
+    if session.get_bind().dialect.name != "postgresql":
+        raise RuntimeError("Notification claims require PostgreSQL")
     earlier = aliased(models.BookingNotificationOutbox)
     due = or_(
         and_(
@@ -168,13 +139,9 @@ def _claim_next(
     query = session.query(models.BookingNotificationOutbox).filter(
         due, ~has_earlier_unfinished
     )
-    if dialect != "sqlite":
-        query = query.with_for_update(skip_locked=True)
+    query = query.with_for_update(skip_locked=True)
 
     while True:
-        if dialect == "sqlite":
-            # Repeat after a commit of an exhausted lease as well.
-            session.execute(text("BEGIN IMMEDIATE"))
         cooldown = session.get(models.BookingNotificationDeliveryState, 1)
         if cooldown is not None and _as_utc(cooldown.blocked_until) > _as_utc(now):
             session.commit()
@@ -217,7 +184,8 @@ def _claim_next_landing(
     session: Session, now: datetime | None = None
 ) -> ClaimedLandingNotification | None:
     now = now or _utcnow()
-    dialect = session.get_bind().dialect.name
+    if session.get_bind().dialect.name != "postgresql":
+        raise RuntimeError("Notification claims require PostgreSQL")
     cooldown = aliased(models.LandingNotificationDeliveryState)
     due = or_(
         and_(
@@ -252,14 +220,11 @@ def _claim_next_landing(
             ),
         )
     )
-    if dialect != "sqlite":
-        query = query.with_for_update(
-            of=models.LandingNotificationOutbox, skip_locked=True
-        )
+    query = query.with_for_update(
+        of=models.LandingNotificationOutbox, skip_locked=True
+    )
 
     while True:
-        if dialect == "sqlite":
-            session.execute(text("BEGIN IMMEDIATE"))
         event = query.order_by(models.LandingNotificationOutbox.id).first()
         if event is None:
             session.commit()

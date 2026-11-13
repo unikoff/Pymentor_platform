@@ -49,10 +49,10 @@ def register_user(user: UserCreate, background_tasks: BackgroundTasks, db: Sessi
 
 @user_router.get("/login-capabilities")
 def login_capabilities(request: Request):
-    # The experimental async service exists only in the isolated local mode.
-    from pymentor_core.modules.identity.api.sessions import _local_async_identity
+    # The single runtime always uses credentialed, recoverable login operations.
+    from pymentor_core.modules.identity.api.sessions import require_identity
 
-    identity = _local_async_identity(request)
+    identity = require_identity(request)
     return {
         "idempotent_login": bool(
             identity and getattr(identity, "supports_login_retry", False)

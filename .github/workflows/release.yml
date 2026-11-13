@@ -13,6 +13,10 @@ on:
       - 'frontend/**'
       - 'requirements.txt'
       - 'deploy/gitops/preview/**'
+      - 'deploy/helm/**'
+      - 'deploy/local-postgres-redis/**'
+      - 'scripts/local-postgres-redis/**'
+      - 'scripts/local-k3s/**'
 
 concurrency:
   group: release-ci-${{ github.ref }}
@@ -33,13 +37,13 @@ jobs:
           POSTGRES_USER: pymentor_test
           POSTGRES_PASSWORD: pymentor_test
           POSTGRES_DB: pymentor_test
-        ports: ['57152:5432']
+        ports: ['57382:5432']
         options: >-
           --health-cmd "pg_isready -U pymentor_test -d pymentor_test"
           --health-interval 5s --health-timeout 5s --health-retries 12
       redis:
         image: redis:7
-        ports: ['57146:6379']
+        ports: ['57381:6379']
         options: >-
           --health-cmd "redis-cli ping" --health-interval 5s
           --health-timeout 5s --health-retries 12
@@ -51,9 +55,11 @@ jobs:
         with:
           python-version: '3.12'
       - name: Install test dependencies
-        run: python -m pip install -r backend/requirements-dual-local.txt pytest==9.1.1 httpx==0.28.1
-      - name: Exercise isolated profiles
+        run: python -m pip install -r services/core-api/requirements-runtime.txt -r services/core-api/requirements-migration.txt pytest==9.1.1 httpx==0.28.1
+      - name: Exercise required PostgreSQL and Redis target suites
         run: python scripts/ci/preview_checks.py
+      - name: Build canonical image and exercise disposable image smoke
+        run: python scripts/ci/image_smoke.py
 
   images:
     if: github.event_name == 'push' && github.ref == 'refs/heads/Release' && github.repository_id == '1288938642'
@@ -67,6 +73,7 @@ jobs:
       core: ${{ steps.build.outputs.core }}
       frontend: ${{ steps.build.outputs.frontend }}
       runner: ${{ steps.build.outputs.runner }}
+      migrations: ${{ steps.build.outputs['core-migrations'] }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
@@ -93,7 +100,8 @@ jobs:
             echo "$name=$digest" >> "$GITHUB_OUTPUT"
             echo "$name: $digest" >> "$GITHUB_STEP_SUMMARY"
           }
-          build_image core . services/core-api/Dockerfile --build-arg PROFILE=postgres_redis
+          build_image core . services/core-api/Dockerfile --target runtime
+          build_image core-migrations . services/core-api/Dockerfile --target migrations
           build_image frontend frontend frontend/Dockerfile
           build_image runner-pool services/runner-pool services/runner-pool/Dockerfile
           echo "runner=$(python -c 'import json,os; print(json.load(open(os.environ["RUNNER_TEMP"] + "/runner-pool-metadata.json"))["containerimage.digest"])')" >> "$GITHUB_OUTPUT"
@@ -108,6 +116,13 @@ jobs:
         uses: anchore/scan-action@e1165082ffb1fe366ebaf02d8526e7c4989ea9d2
         with:
           image: ghcr.io/unikoff/knowi-platform-frontend@${{ steps.build.outputs.frontend }}
+          output-format: table
+          severity-cutoff: critical
+          fail-build: true
+      - name: Scan migration image
+        uses: anchore/scan-action@e1165082ffb1fe366ebaf02d8526e7c4989ea9d2
+        with:
+          image: ghcr.io/unikoff/knowi-platform-core-migrations@${{ steps.build.outputs['core-migrations'] }}
           output-format: table
           severity-cutoff: critical
           fail-build: true
@@ -136,11 +151,12 @@ jobs:
           CORE_DIGEST: ${{ needs.images.outputs.core }}
           FRONTEND_DIGEST: ${{ needs.images.outputs.frontend }}
           RUNNER_DIGEST: ${{ needs.images.outputs.runner }}
+          MIGRATION_DIGEST: ${{ needs.images.outputs.migrations }}
         shell: bash
         run: |
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
-          python scripts/ci/update_preview_release.py --source-sha "$GITHUB_SHA" --core-digest "$CORE_DIGEST" --frontend-digest "$FRONTEND_DIGEST" --runner-digest "$RUNNER_DIGEST"
+          python scripts/ci/update_preview_release.py --source-sha "$GITHUB_SHA" --core-digest "$CORE_DIGEST" --frontend-digest "$FRONTEND_DIGEST" --runner-digest "$RUNNER_DIGEST" --migration-digest "$MIGRATION_DIGEST"
           git add -- deploy/gitops/preview/kustomization.yaml deploy/gitops/preview/applications.json deploy/gitops/preview/release.json
           if test -f deploy/gitops/preview/runner.json; then git add -- deploy/gitops/preview/runner.json; fi
           if git diff --cached --quiet; then exit 0; fi

@@ -63,5 +63,12 @@ class RuntimeRedisSessionStore(RedisSessionStore):
 
 
 class RuntimeIdentitySessions(AsyncIdentitySessions):
+    def __init__(self, database, redis_store, *, mode="redis", recovery_key=None):
+        if mode != "redis" or redis_store is None:
+            raise ValueError("Core requires Redis sessions")
+        if recovery_key is None:
+            raise ValueError("Core requires a login recovery key")
+        super().__init__(database, redis_store, recovery_key=recovery_key)
+
     def _validate_database(self, database) -> None:
         _runtime_database_url(database.engine.url)

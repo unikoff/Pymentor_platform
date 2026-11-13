@@ -265,13 +265,18 @@ EOF
     # The app images above are imported directly from the local Docker engine.
     kubectl --context "$context" get namespace pymentor >/dev/null 2>&1 \
       || kubectl --context "$context" create namespace pymentor
-    kubectl --context "$context" -n pymentor create secret generic pymentor-runtime \
-      --from-literal=DATABASE_URL='sqlite:////data/pymentor.sqlite3' \
-      --dry-run=client -o yaml | kubectl --context "$context" apply -f -
+    # Provision PostgreSQL/Redis and externally migrate first. Never create a
+    # SQLite secret or overwrite an existing runtime identity during bootstrap.
+    kubectl --context "$context" -n pymentor get secret pymentor-runtime >/dev/null || {
+      echo 'Missing PostgreSQL/Redis runtime Secret; see services/core-api/README.md. Disposable smoke: scripts/local-postgres-redis/smoke.ps1' >&2
+      exit 1
+    }
     helm upgrade --install pymentor "$chart_dir" \
       --kube-context "$context" --namespace pymentor --create-namespace \
       --values "$values_file" \
+      --set-string "images.core.repository=${core_ref%:*}" \
       --set images.core.digest=null --set-string "images.core.tag=${core_ref##*:}" \
+      --set-string "images.frontend.repository=${frontend_ref%:*}" \
       --set images.frontend.digest=null --set-string "images.frontend.tag=${frontend_ref##*:}" \
       --wait --timeout 8m
     kubectl --context "$context" rollout status deployment/traefik -n kube-system --timeout=240s

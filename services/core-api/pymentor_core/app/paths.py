@@ -12,15 +12,7 @@ MATERIALS_ROOT = LEGACY_ROOT / "content" / "materials"
 
 def state_directory():
     configured = os.environ.get("PYMENTOR_STATE_DIR", "").strip()
-    path = (
-        Path(configured)
-        if configured
-        else (
-            LEGACY_ROOT
-            if os.environ.get("PYMENTOR_PROFILE", "legacy_sqlite") == "legacy_sqlite"
-            else PROJECT_ROOT / "data" / "core-api"
-        )
-    )
+    path = Path(configured) if configured else PROJECT_ROOT / "data" / "core-api"
     if not path.is_absolute():
         raise ValueError("PYMENTOR_STATE_DIR must be absolute")
     return path

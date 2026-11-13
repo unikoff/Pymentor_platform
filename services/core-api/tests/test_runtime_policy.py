@@ -39,7 +39,8 @@ def test_runtime_constructors_accept_cluster_dns_without_connecting():
          patch('pymentor_core.adapters.redis.sessions.Redis.from_pool'):
         RuntimeRedisSessionStore(REDIS, prefix="production:")
         pool.assert_called_once()
-    assert RuntimeIdentitySessions(database(PG), None, mode="sql").mode == "sql"
+    service = RuntimeIdentitySessions(database(PG), object(), recovery_key=b"x" * 32)
+    assert service.mode == "redis"
 
 
 @pytest.mark.parametrize("url", [
@@ -51,7 +52,7 @@ def test_runtime_rejects_invalid_postgres_urls(url):
     with pytest.raises(ValueError, match="Invalid runtime PostgreSQL"):
         RuntimeAsyncDatabase(url)
     with pytest.raises(ValueError, match="Invalid runtime PostgreSQL"):
-        RuntimeIdentitySessions(database(url), None, mode="sql")
+        RuntimeIdentitySessions(database(url), object(), recovery_key=b"x" * 32)
 
 
 @pytest.mark.parametrize("url,prefix", [
@@ -70,7 +71,7 @@ def test_runtime_retains_pool_and_identity_guards():
         RuntimeAsyncDatabase(PG, pool_size=21)
     with pytest.raises(ValueError, match="bounded pool"):
         RuntimeRedisSessionStore(REDIS, prefix="production:", max_connections=65)
-    with pytest.raises(ValueError, match="Redis projection"):
+    with pytest.raises(ValueError, match="Redis sessions"):
         RuntimeIdentitySessions(database(PG), None, mode="redis")
 
 

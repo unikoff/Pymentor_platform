@@ -15,17 +15,19 @@ from sqlalchemy import event
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from c222_pg_guard import validate_test_url
+from sqlalchemy.engine import make_url
 from pymentor_core.adapters.sql import models
 from pymentor_core.modules.bookings.api import service
 
 
 @pytest.fixture
 def pg_engine():
-    raw = os.environ.get("PYMENTOR_TEST_PG_URL")
-    if not raw:
-        pytest.skip("requires explicitly configured disposable local PostgreSQL")
-    url = validate_test_url(raw).set(drivername="postgresql+psycopg")
+    if os.getenv("KNOWI_PG02_INTEGRATION") != "1":
+        pytest.fail("Target concurrency suite requires actual PostgreSQL/Redis")
+    url = make_url(os.environ["KNOWI_TEST_PG_URL"]).set(drivername="postgresql+psycopg")
+    assert (url.host, url.port, url.database, url.username) == ("127.0.0.1", 57382, "pymentor_test", "pymentor_test")
+    from pymentor_core.app.wiring import configure_bindings
+    configure_bindings()
     engine = create_engine(url, pool_size=4, max_overflow=0, pool_timeout=3,
                            connect_args={"connect_timeout": 3}, hide_parameters=True)
     try:
