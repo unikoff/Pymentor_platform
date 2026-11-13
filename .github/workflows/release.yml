@@ -86,7 +86,7 @@ jobs:
             local name="$1" context="$2" dockerfile="$3"
             shift 3
             local metadata="$RUNNER_TEMP/$name-metadata.json"
-            docker buildx build --push --provenance=mode=max --sbom=true --label org.opencontainers.image.source=https://github.com/unikoff/Pymentor_platform --label org.opencontainers.image.revision="$GITHUB_SHA" --cache-from "type=registry,ref=ghcr.io/unikoff/pymentor-platform-$name:buildcache" --cache-to "type=registry,ref=ghcr.io/unikoff/pymentor-platform-$name:buildcache,mode=max" --file "$dockerfile" --tag "ghcr.io/unikoff/pymentor-platform-$name:$GITHUB_SHA" --metadata-file "$metadata" "$@" "$context"
+            docker buildx build --push --provenance=mode=max --sbom=true --label "org.opencontainers.image.source=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY" --label org.opencontainers.image.revision="$GITHUB_SHA" --cache-from "type=registry,ref=ghcr.io/unikoff/pymentor-platform-$name:buildcache" --cache-to "type=registry,ref=ghcr.io/unikoff/pymentor-platform-$name:buildcache,mode=max" --file "$dockerfile" --tag "ghcr.io/unikoff/pymentor-platform-$name:$GITHUB_SHA" --tag "ghcr.io/unikoff/knowi-platform-$name:$GITHUB_SHA" --metadata-file "$metadata" "$@" "$context"
             local digest
             digest=$(python -c 'import json,sys; print(json.load(open(sys.argv[1]))["containerimage.digest"])' "$metadata")
             [[ "$digest" =~ ^sha256:[0-9a-f]{64}$ ]]
