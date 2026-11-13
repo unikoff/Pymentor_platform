@@ -164,7 +164,7 @@
               "app": "core-api-progressive"
             },
             "annotations": {
-              "pymentor.io/source-revision": "63ac7ce7b828a7280bbb6a4d2047b89f4196b2b1",
+              "pymentor.io/source-revision": "ceb2dd0e96111c48e9f8b928c30d536fafb0c7c3",
               "pymentor.io/ownership-check": "20261109"
             }
           },
@@ -239,7 +239,7 @@
                   },
                   {
                     "name": "PYMENTOR_RELEASE_REVISION",
-                    "value": "63ac7ce7b828a7280bbb6a4d2047b89f4196b2b1"
+                    "value": "ceb2dd0e96111c48e9f8b928c30d536fafb0c7c3"
                   }
                 ],
                 "image": "pymentor/core-api:vps-20261108-secure2",
@@ -521,7 +521,7 @@
               "app": "frontend-progressive"
             },
             "annotations": {
-              "pymentor.io/source-revision": "63ac7ce7b828a7280bbb6a4d2047b89f4196b2b1",
+              "pymentor.io/source-revision": "ceb2dd0e96111c48e9f8b928c30d536fafb0c7c3",
               "pymentor.io/ownership-check": "20261109"
             }
           },
@@ -561,7 +561,7 @@
                 "env": [
                   {
                     "name": "PYMENTOR_RELEASE_REVISION",
-                    "value": "63ac7ce7b828a7280bbb6a4d2047b89f4196b2b1"
+                    "value": "ceb2dd0e96111c48e9f8b928c30d536fafb0c7c3"
                   }
                 ],
                 "securityContext": {
