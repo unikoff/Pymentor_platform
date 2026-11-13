@@ -202,7 +202,8 @@ def test_two_local_asgi_apps_share_login_and_logout():
                 assert response.status_code == 200
                 assert response.json()['user']['id'] == user_id
                 assert set(response.json()) == {'message', 'user'}
-                assert set(response.json()['user']) == {'id', 'username', 'email', 'subscription_until', 'subscription_plan', 'has_active_subscription', 'is_admin'}
+                assert set(response.json()['user']) == {'id', 'username', 'email', 'subscription_until', 'subscription_plan', 'has_active_subscription', 'is_admin', 'verified'}
+                assert response.json()['user']['verified'] is False
                 assert 'httponly' in response.headers['set-cookie'].lower()
                 assert 'max-age=2592000' in response.headers['set-cookie'].lower()
                 b.cookies.set('session', a.cookies['session'])
@@ -728,7 +729,7 @@ def test_concurrent_legacy_import_and_login_are_serialized():
                 await service.authenticate(old.token)
     run_scenario(scenario)
 
-def test_migration_downgrade_refuses_to_delete_live_import_marker():
+def test_migration_downgrade_preserves_verification_and_live_session():
 
     async def scenario(db, store, user_id, email, password):
         import subprocess
@@ -741,7 +742,8 @@ def test_migration_downgrade_refuses_to_delete_live_import_marker():
         alembic_ini = Path(__file__).resolve().parents[2] / 'alembic.ini'
         result = await asyncio.to_thread(subprocess.run, [sys.executable, '-m', 'alembic', '-c', str(alembic_ini), 'downgrade', 'c222_initial_pg'], env=env, capture_output=True, text=True, timeout=15)
         assert result.returncode != 0
-        assert 'session import markers are not empty' in result.stderr
+        # The new head refuses first, before older downgrade guards are reached.
+        assert 'Refusing to discard pending email-change confirmations' in result.stderr
         async with db.unit_of_work() as uow:
             from pymentor_core.app.schema_policy import DUAL_LOCAL_SCHEMA_REVISION
             assert await uow.session.scalar(text('SELECT version_num FROM alembic_version')) == DUAL_LOCAL_SCHEMA_REVISION

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Stage 3: практика"
+  short_description: "Понятные задания, ТЗ и пошаговые разборы"
+  default_prompt: "Используй $stage-3-practice-author для создания практики одного занятия по принятому плану Stage 3."

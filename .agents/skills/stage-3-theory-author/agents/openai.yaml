@@ -1,0 +1,4 @@
+interface:
+  display_name: "Stage 3: теория"
+  short_description: "Понятная теория с независимыми примерами"
+  default_prompt: "Используй $stage-3-theory-author для создания теории одного занятия по принятому плану Stage 3."

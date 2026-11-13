@@ -1,0 +1,29 @@
+# Проектные роли материалов. Модель, лимиты и полномочия наследуются от текущего запуска.
+
+[agents.methodist]
+description = "Проект курса: концепции глав и блоков, учебная последовательность и доработка методичек Stage 1–5."
+config_file = "agents/methodist.toml"
+
+[agents.materials]
+description = "Проект курса: план одного занятия Stage 2 или создание теории и практики Stage 3 по полной методичке."
+config_file = "agents/materials.toml"
+
+[agents.visual]
+description = "Проект курса: независимый визуальный осмотр занятий и блоков по реальной локальной платформе."
+config_file = "agents/visual.toml"
+
+[agents.frontend]
+description = "Проект курса: реализация схем, интерактивов и интерфейса занятия с проверкой адаптивности и состояний."
+config_file = "agents/frontend.toml"
+
+[agents.editor]
+description = "Проект курса: ясность и связность теории, условий, ТЗ и разборов с сохранением учебного содержания."
+config_file = "agents/editor.toml"
+
+[agents.context]
+description = "Проект курса: адресный поиск паспортов, планов, уроков, практики и источников изученных знаний."
+config_file = "agents/context.toml"
+
+[agents.check]
+description = "Проект курса: независимая приёмка результата выбранного Stage по относящимся к нему требованиям."
+config_file = "agents/check.toml"

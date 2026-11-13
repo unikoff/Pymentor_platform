@@ -101,6 +101,13 @@ def login_user(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password"
         )
 
+    # The password may have changed after verification. Lock the matching row
+    # before creating the session so a concurrent reset cannot revive old access.
+    if not repository.claim_password_state(user_db.id, user_db.password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password"
+        )
+
     # Держим не больше 3 активных сессий: при входе с 4-го устройства
     # вытесняем самую старую вместо вечного 403 (раньше логин блокировался
     # навсегда, потому что сессии никогда не удалялись).

@@ -171,6 +171,18 @@ class RedisSessionStore:
             raise ValueError("Invalid session token")
         return sha256(token.encode("utf-8")).hexdigest()
 
+    async def allow_email_request(self, digest: str, limit: int) -> bool:
+        """Atomically enforce a one-minute window across Core processes."""
+        if not re.fullmatch(r"[0-9a-f]{64}", digest) or limit not in (1, 5, 20):
+            raise ValueError("Invalid email rate limit key")
+        result = await self._client.eval(
+            "local n = redis.call('INCR', KEYS[1]); "
+            "if n == 1 then redis.call('EXPIRE', KEYS[1], 60) end; "
+            "return n <= tonumber(ARGV[1]) and 1 or 0",
+            1, f"{self._prefix}email-rate:{digest}", limit,
+        )
+        return result == 1
+
     def _user_key(self, user_id: int) -> str:
         if (
             not isinstance(user_id, int)

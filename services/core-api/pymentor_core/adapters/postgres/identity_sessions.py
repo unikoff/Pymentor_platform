@@ -285,6 +285,7 @@ class AsyncIdentitySessions:
                     "subscription_plan": user.subscription_plan,
                     "has_active_subscription": until is not None and until > now,
                     "is_admin": bool(user.is_admin),
+                    "verified": bool(user.verified),
                 }
                 principal = Principal.from_user(user)
                 await uow.commit()
@@ -505,6 +506,7 @@ class AsyncIdentitySessions:
                     "subscription_plan": user.subscription_plan,
                     "has_active_subscription": until is not None and until > now,
                     "is_admin": bool(user.is_admin),
+                    "verified": bool(user.verified),
                 }
                 principal = Principal.from_user(user)
                 await uow.commit()

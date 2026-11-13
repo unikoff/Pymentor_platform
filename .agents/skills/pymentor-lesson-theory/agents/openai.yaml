@@ -1,4 +1,0 @@
-interface:
-  display_name: "Pymentor: теория"
-  short_description: "Понятная теория с независимыми примерами"
-  default_prompt: "Используй $pymentor-lesson-theory для создания теории одного занятия по принятому плану Stage 3."

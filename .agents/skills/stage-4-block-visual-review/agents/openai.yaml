@@ -1,0 +1,4 @@
+interface:
+  display_name: "Stage 4: визуальный аудит блока"
+  short_description: "Визуальная проверка блока на локальной платформе"
+  default_prompt: "Используй $stage-4-block-visual-review для задачи «Stage 4: визуальный аудит блока» по действующей методичке и в пределах поручения."

@@ -71,16 +71,45 @@
 .account-detail-card > header > svg { color: var(--accent); }
 .account-detail-card > header p { margin: 5px 0 0; color: var(--muted); font-size: 0.74rem; line-height: 1.5; }
 .account-settings-readonly { padding: 5px 9px; border: 1px solid var(--line-soft); border-radius: var(--radius-pill); background: var(--surface-2); color: var(--muted); font-size: 0.68rem; }
-.account-settings-details { display: grid; gap: 0; margin: 20px 0 12px; }
-.account-settings-details > div { display: grid; gap: 8px; padding-block: 14px; border-bottom: 1px solid var(--line-soft); }
+.account-settings-details { display: grid; gap: 0; margin: 18px 0 0; }
+.account-settings-details > .account-settings-field { display: grid; min-width: 0; gap: 8px; padding: 16px 0; }
+.account-settings-details > .account-settings-field + .account-settings-field { border-top: 1px solid var(--line-soft); }
+.account-settings-details > .account-settings-field:last-child { padding-bottom: 0; }
 .account-settings-details dt { display: flex; align-items: center; gap: 7px; color: var(--muted); font-size: 0.75rem; }
 .account-settings-details dt svg { color: var(--accent); }
 .account-settings-details dd { overflow-wrap: anywhere; margin: 0; font-size: 0.88rem; font-weight: 650; }
-.account-settings-email { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-.account-settings-email > span { min-width: 0; overflow-wrap: anywhere; }
-.account-settings-email button { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 6px; min-height: 30px; padding: 0 8px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface-2); color: var(--muted); font-size: 0.7rem; font-weight: 650; cursor: pointer; }
-.account-settings-email button:hover { border-color: var(--border-tint-accent); color: var(--text); }
-.account-settings-note { margin: 12px 0 0; color: var(--muted); font-size: 0.74rem; line-height: 1.5; }
+.account-settings-email { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 12px; }
+.account-settings-email__value { flex: 1 1 130px; min-width: 0; overflow-wrap: anywhere; }
+.account-settings-email__actions { display: inline-flex; align-items: center; gap: 12px; margin-left: auto; }
+.account-settings-email__copy { display: inline-grid; flex: 0 0 auto; width: 32px; height: 32px; place-items: center; padding: 0; border: 1px solid var(--line); border-radius: 9px; background: var(--surface); color: var(--muted); cursor: pointer; }
+.account-settings-email__copy:hover { border-color: var(--border-tint-accent); color: var(--text); }
+.account-settings-email__change { min-height: 32px; padding: 4px 0; border: 0; background: transparent; color: var(--muted); font-size: .75rem; font-weight: 650; cursor: pointer; }
+.account-settings-email__change:hover:not(:disabled) { color: var(--accent); }
+.account-settings-email__change:disabled { opacity: .5; cursor: not-allowed; }
+.account-settings-email__copy:focus-visible, .account-settings-email__change:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.account-settings-edit-row { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+.account-settings-edit-row button, .account-settings-edit-form button { border:0; background:transparent; color:var(--muted); font-size:0.75rem; font-weight:650; cursor:pointer; }
+.account-settings-edit-row button:hover:not(:disabled), .account-settings-edit-form button:hover:not(:disabled) { color:var(--accent); }
+.account-settings-edit-row button:disabled { opacity:.5; cursor:not-allowed; }
+.account-settings-edit-form { display:grid; gap:10px; padding-top:6px; }
+.account-settings-edit-form label { display:grid; gap:6px; color:var(--muted); font-size:.75rem; }
+.account-settings-edit-form input { width:100%; box-sizing:border-box; padding:10px 12px; color:var(--text); background:var(--surface); border:1px solid var(--line); border-radius:9px; font:inherit; }
+.account-settings-edit-form p, .account-detail-card > .account-settings-feedback { margin:0; color:var(--muted); font-size:.74rem; font-weight:400; line-height:1.5; }
+.account-settings-edit-form > div { display:flex; gap:16px; }
+.account-settings-edit-form button:first-child { color:var(--accent); }
+.account-settings-details > .account-settings-password { grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px 12px; }
+.account-settings-password .account-settings-feedback { grid-column: 1 / -1; }
+.account-settings-password button { min-height: 32px; padding: 4px 0; border: 0; background: transparent; color: var(--muted); font-size: 0.75rem; font-weight: 650; cursor: pointer; }
+.account-settings-password button:hover:not(:disabled) { color: var(--accent); }
+.account-settings-password button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 3px; }
+.account-settings-password button:disabled { opacity: 0.6; cursor: not-allowed; }
+.account-settings-details dd.account-email-verification { font-weight: 400; }
+.account-email-verification__row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 12px; }
+.account-email-verification__row span { flex: 1 1 160px; min-width: 0; color: var(--muted); font-size: 0.74rem; line-height: 1.5; }
+.account-email-verification__row button { min-height: 32px; padding: 4px 0; border: 0; background: transparent; color: var(--accent); font-size: 0.75rem; font-weight: 650; cursor: pointer; }
+.account-email-verification__row button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 3px; }
+.account-email-verification__row button:disabled { opacity: 0.6; cursor: wait; }
+.account-settings-details dd.account-settings-feedback { color: var(--muted); font-size: 0.74rem; font-weight: 400; line-height: 1.5; }
 .account-settings-logout { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 20px; border: 1px solid color-mix(in srgb, var(--border-tint-negative) 28%, var(--line-soft)); border-radius: var(--radius-lg); background: color-mix(in srgb, var(--negative) 5%, var(--surface)); }
 .account-settings-logout > div { display: grid; gap: 4px; }
 .account-settings-logout > div strong { font-size: 0.84rem; font-weight: 650; }
@@ -261,7 +290,6 @@
   .account-invoice { grid-template-columns: minmax(0, 1fr) auto; gap: 12px; }
   .account-invoice > span:last-child { grid-column: 1 / -1; }
   .account-achievements-grid { grid-template-columns: minmax(0, 1fr); }
-  .account-settings-email { align-items: flex-start; flex-direction: column; }
   .account-history-row { grid-template-columns: 34px minmax(0, 1fr); }
   .account-history-row__status { grid-column: 2; }
   .account-course-lesson { grid-template-columns: 18px minmax(0, 1fr); }

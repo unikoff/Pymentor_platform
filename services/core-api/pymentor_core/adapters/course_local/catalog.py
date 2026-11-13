@@ -474,7 +474,7 @@ def get_public_lessons(track_id: str) -> list[dict[str, Any]]:
             if key not in {"theory_markdown", "legacy_id"}
         }
         if (
-            lesson.get("source_file", "").startswith("chapter_02/block_05/")
+            lesson.get("source_file", "").startswith(("chapter_02/block_05/", "chapter_05/block_17/"))
             or lesson.get("source_file")
             == "chapter_01/block_04/20.1 - Проверяем чистую копию.md"
         ):

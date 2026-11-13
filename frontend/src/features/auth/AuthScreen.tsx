@@ -1,10 +1,10 @@
 import "./auth.css";
 import { useState, type FormEvent } from "react";
-import { ArrowLeft, ArrowRight, Eye, EyeOff, LockKeyhole, LogIn, UserRoundPlus } from "lucide-react";
-import { loginUser, registerUser } from "./api";
+import { ArrowLeft, ArrowRight, Eye, EyeOff, LockKeyhole, LogIn, MailCheck, UserRoundPlus } from "lucide-react";
+import { loginUser, registerUser, requestPasswordReset } from "./api";
 import { ThemeToggle } from "../../shared/ui/theme-toggle/ThemeToggle";
 import type { UserProfile } from "../../shared/api/contracts";
-type AuthMode = "login" | "register";
+type AuthMode = "login" | "register" | "reset";
 
 export function AuthScreen({
   onAuth,
@@ -19,15 +19,25 @@ export function AuthScreen({
   const [password, setPassword] = useState("");
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
+    setMessage("");
     setIsSubmitting(true);
 
     try {
       const emailValue = email.trim();
+      if (mode === "reset") {
+        const result = await requestPasswordReset(emailValue);
+        setMessage(result.message);
+        return;
+      }
+      if (new TextEncoder().encode(password).length > 72) {
+        throw new Error("Пароль слишком длинный. Сократите его и попробуйте снова.");
+      }
       const loginPayload = { email: emailValue, password };
 
       if (mode === "register") {
@@ -67,11 +77,11 @@ export function AuthScreen({
         </div>
 
         <div className="auth-intro" aria-live="polite">
-          <h1 id="auth-title">{mode === "login" ? "С возвращением" : "Создайте аккаунт"}</h1>
-          <p>{mode === "login" ? "Войдите, чтобы продолжить обучение." : "Создайте аккаунт, чтобы сохранить прогресс."}</p>
+          <h1 id="auth-title">{mode === "reset" ? "Восстановление доступа" : mode === "login" ? "С возвращением" : "Создайте аккаунт"}</h1>
+          <p>{mode === "reset" ? "Восстановление доступно для подтверждённой почты." : mode === "login" ? "Войдите, чтобы продолжить обучение." : "Создайте аккаунт, чтобы сохранить прогресс."}</p>
         </div>
 
-        <div className="auth-tabs" role="group" aria-label="Способ доступа">
+        {mode !== "reset" && <div className="auth-tabs" role="group" aria-label="Способ доступа">
           <button className={mode === "login" ? "is-active" : ""} type="button" aria-pressed={mode === "login"} onClick={() => { setMode("login"); setIsPasswordVisible(false); }}>
             <LogIn size={16} aria-hidden="true" />
             Вход
@@ -80,7 +90,7 @@ export function AuthScreen({
             <UserRoundPlus size={16} aria-hidden="true" />
             Регистрация
           </button>
-        </div>
+        </div>}
 
         <form key={mode} className="auth-form" onSubmit={handleSubmit}>
           {mode === "register" && (
@@ -100,7 +110,7 @@ export function AuthScreen({
             Email
             <input value={email} onChange={(event) => setEmail(event.target.value)} type="email" autoCapitalize="none" autoComplete="email" spellCheck={false} required />
           </label>
-          <div className="auth-password-group">
+          {mode !== "reset" && <div className="auth-password-group">
             <label htmlFor="auth-password">Пароль</label>
             <span className="auth-password-field">
               <input
@@ -124,15 +134,20 @@ export function AuthScreen({
                 {isPasswordVisible ? <EyeOff size={17} aria-hidden="true" /> : <Eye size={17} aria-hidden="true" />}
               </button>
             </span>
-          </div>
-          <p className="auth-security-note">
-            <LockKeyhole size={14} aria-hidden="true" />
-            <span>Пароль защищён bcrypt-хешированием и не хранится в открытом виде.</span>
-          </p>
+          </div>}
+          {mode !== "reset" && <div className="auth-password-help">
+            <p className="auth-security-note">
+              <LockKeyhole size={14} aria-hidden="true" />
+              <span>Пароль хранится как хеш.</span>
+            </p>
+            {mode === "login" && <button type="button" className="auth-text-link" onClick={() => { setMode("reset"); setError(""); setMessage(""); }}>Забыли пароль?</button>}
+          </div>}
           {error && <div className="form-error" role="alert">{error}</div>}
+          {message && <div className="auth-reset-message" role="status"><MailCheck size={19} aria-hidden="true" /><p>{message}</p></div>}
           <button className="primary-action" type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Проверка..." : <>{mode === "login" ? "Войти" : "Создать аккаунт"}<ArrowRight size={16} aria-hidden="true" /></>}
+            {isSubmitting ? (mode === "reset" ? "Отправляем…" : "Проверка...") : <>{mode === "reset" ? (message ? "Отправить повторно" : "Отправить письмо") : mode === "login" ? "Войти" : "Создать аккаунт"}<ArrowRight size={16} aria-hidden="true" /></>}
           </button>
+          {mode === "reset" && <button type="button" className="auth-reset-back" onClick={() => { setMode("login"); setError(""); setMessage(""); }}><ArrowLeft size={15} aria-hidden="true" /> Вернуться ко входу</button>}
         </form>
       </section>
     </main>

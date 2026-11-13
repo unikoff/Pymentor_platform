@@ -22,6 +22,7 @@ export type WorkspacePanelContextValue = {
   openLesson: (kind: LessonPanelKind, target: LessonTarget) => void;
   onRequireAuth: () => void;
   onLogout: () => void;
+  onUserChange: (user: UserProfile) => void;
   onCloseLessons: () => void;
 };
 export const WorkspacePanelContext = createContext<WorkspacePanelContextValue | null>(null);
@@ -118,7 +119,7 @@ function AccountDockPanel({ api }: IDockviewPanelProps) {
   if (!context.user || !opened) return null;
   return <div className="dock-scroll"><AsyncBoundary><AccountWorkspace user={context.user} tracks={context.course.tracks} courseEntries={context.course.courses}
     tracksLoaded={context.course.tracksLoaded} calendarMonth={context.calendarMonth}
-    onMonthChange={context.setCalendarMonth} onLogout={context.onLogout} /></AsyncBoundary></div>;
+    onMonthChange={context.setCalendarMonth} onLogout={context.onLogout} onUserChange={context.onUserChange} /></AsyncBoundary></div>;
 }
 function AdminDockPanel({ api }: IDockviewPanelProps) {
   const { user } = useWorkspace();

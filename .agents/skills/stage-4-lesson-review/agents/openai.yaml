@@ -1,0 +1,4 @@
+interface:
+  display_name: "Stage 4: ревью занятия"
+  short_description: "Проверка занятия и адресные исправления"
+  default_prompt: "Используй $stage-4-lesson-review для задачи «Stage 4: ревью занятия» по действующей методичке и в пределах поручения."

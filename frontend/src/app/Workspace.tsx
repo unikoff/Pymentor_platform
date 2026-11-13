@@ -50,8 +50,9 @@ function getInitialExplorerWidth() {
   return EXPLORER_DEFAULT_WIDTH;
 }
 
-export function Workspace({ user, onLogout, onRequireAuth }: {
+export function Workspace({ user, onUserChange, onLogout, onRequireAuth }: {
   user: UserProfile | null;
+  onUserChange: (user: UserProfile) => void;
   onLogout: () => void;
   onRequireAuth: () => void;
 }) {
@@ -180,7 +181,7 @@ export function Workspace({ user, onLogout, onRequireAuth }: {
   const workspaceHeading = activeLesson ? formatLessonHeading(activeLesson, activeTrackTitle) : undefined;
   const profileHint = getProfileHint(user);
   return <PracticeSessionProvider>
-    <WorkspacePanelContext.Provider value={{ user, course, calendarMonth, setCalendarMonth,
+    <WorkspacePanelContext.Provider value={{ user, onUserChange, course, calendarMonth, setCalendarMonth,
       selectedLessonId: lessonTarget?.trackId === course.activeTrackId ? lessonTarget.lessonId : "", onSelectLesson, openLesson, onRequireAuth, onLogout: handleLogout,
       onCloseLessons: closeLessons }}>
       <main ref={workspaceRef} className={`workspace workspace--dock ${compact ? "workspace--compact" : ""} ${isExplorerOpen ? "workspace--explorer-open" : "workspace--explorer-closed"}`} style={workspaceStyle}>

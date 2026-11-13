@@ -32,6 +32,7 @@ export function AccountPanel({
   onBookSlot,
   onCancelSlot,
   onLogout,
+  onUserChange,
   statisticsData,
   paymentsData,
   settingsData,
@@ -47,6 +48,7 @@ export function AccountPanel({
   onBookSlot: (slotId: number) => Promise<void>;
   onCancelSlot: (slotId: number) => Promise<void>;
   onLogout: () => void;
+  onUserChange: (user: UserProfile) => void;
   statisticsData: AccountStatisticsData;
   paymentsData?: AccountPaymentsData | null;
   settingsData?: AccountSettingsData | null;
@@ -103,7 +105,7 @@ export function AccountPanel({
       </div>
       <div className="account-tab-panel" role="tabpanel" id={`${tabsId}-panel-settings`}
         aria-labelledby={`${tabsId}-tab-settings`} hidden={activeTab !== "settings"} tabIndex={0}>
-        <AccountSettings user={user} data={settingsData} onLogout={onLogout} />
+        <AccountSettings user={user} data={settingsData} onLogout={onLogout} onUserChange={onUserChange} />
       </div>
       <div className="account-tab-panel" role="tabpanel" id={`${tabsId}-panel-achievements`}
         aria-labelledby={`${tabsId}-tab-achievements`} hidden={activeTab !== "achievements"} tabIndex={0}>

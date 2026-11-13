@@ -43,8 +43,19 @@ def ensure_default_landing(session_factory=SessionLocal) -> models.Landing:
         session.close()
 
 
+def ensure_verified_column(target_engine) -> None:
+    """Expand existing SQLite accounts without trusting their email addresses."""
+    columns = {column["name"] for column in inspect(target_engine).get_columns("users")}
+    if "verified" not in columns:
+        with target_engine.begin() as connection:
+            connection.execute(
+                text("ALTER TABLE users ADD COLUMN verified BOOLEAN NOT NULL DEFAULT 0")
+            )
+
+
 def ensure_schema() -> None:
     Base.metadata.create_all(bind=engine)
+    ensure_verified_column(engine)
     ensure_sqlite_progress_integrity(engine)
     ensure_sqlite_account_lifecycles(engine)
 

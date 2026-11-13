@@ -1,4 +1,7 @@
+import logging
+
 from fastapi import APIRouter
+from fastapi import BackgroundTasks
 from fastapi import Depends
 from fastapi import Header
 from fastapi import Query
@@ -20,17 +23,28 @@ from pymentor_core.modules.identity.api.schemas import CurrentUserResponse
 from pymentor_core.modules.identity.api.schemas import LogoutResponse
 from pymentor_core.modules.identity.api.schemas import UserCreate
 from pymentor_core.modules.identity.api.schemas import UserLogin
+from pymentor_core.shared.bindings import get_bindings
 
 user_router = APIRouter()
+logger = logging.getLogger(__name__)
+
+
+def _send_registration_verification(user_id: int, email: str, password_hash: str):
+    try:
+        get_bindings().email_auth.send_registration_verification(user_id, email, password_hash)
+    except Exception as exc:
+        logger.warning("Registration verification email failed: %s", type(exc).__name__)
 
 
 @user_router.post("/register", responses=api_contract_responses(AuthResponse, 400))
-def register_user(user: UserCreate, db: Session = Depends(get_db)):
+def register_user(user: UserCreate, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     user_db = service.register_user(user=user, db=db)
-    return {
+    response = {
         "message": "Registration successful",
         "user": service._serialize_user(user_db),
     }
+    background_tasks.add_task(_send_registration_verification, user_db.id, user_db.email, user_db.password)
+    return response
 
 
 @user_router.get("/login-capabilities")
@@ -142,3 +156,8 @@ def get_activity_summary(
 def logout_user(request: Request, response: Response, db: Session = Depends(get_db)):
     service.logout_user(request=request, response=response, db=db)
     return {"message": "Logout successful"}
+
+
+from pymentor_core.modules.identity.api.email_actions import router as email_actions_router
+
+user_router.include_router(email_actions_router)

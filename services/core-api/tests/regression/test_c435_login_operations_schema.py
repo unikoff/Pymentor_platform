@@ -64,8 +64,8 @@ def test_login_operations_schema_has_required_columns_constraints_and_index(monk
 
     assert migration.revision == "c435_login_operations"
     assert migration.down_revision == "c216_import_marker"
-    # C426 adds deletion outbox tables after the login-operations migration.
-    assert DUAL_LOCAL_SCHEMA_REVISION == "c426_deletion_outbox"
+    # The account verification migration now follows the deletion outbox.
+    assert DUAL_LOCAL_SCHEMA_REVISION == "c503_dual_email_change"
     lifecycle = tables["account_lifecycles"]
     assert lifecycle.c.user_id.primary_key
     owner = next(iter(lifecycle.c.user_id.foreign_keys))

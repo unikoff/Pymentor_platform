@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { ArrowRight, Check, Mail, Phone, X } from 'lucide-react';
 import { apiRequest } from '../../../shared/api/client';
 import { landingUrl } from '../../../shared/paths';
+import { trackConsultationAccepted } from '../analytics';
 import '../styles/consultation-form.css';
 
 type ContactMethod = 'phone' | 'email' | 'telegram';
@@ -68,6 +69,7 @@ export function ConsultationForm({ showActions = true }: { showActions?: boolean
       });
       if (!result.accepted) throw new Error('Заявка не принята');
       setSuccess(true);
+      trackConsultationAccepted();
     } catch {
       setError('Не удалось отправить заявку. Проверьте соединение и попробуйте ещё раз.');
     } finally {

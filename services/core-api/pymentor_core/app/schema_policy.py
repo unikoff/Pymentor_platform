@@ -1,8 +1,10 @@
 """Choose legacy SQLite bootstrap or externally managed migrations explicitly."""
 
-DUAL_LOCAL_SCHEMA_REVISION = "c426_deletion_outbox"
+DUAL_LOCAL_SCHEMA_REVISION = "c503_dual_email_change"
 DUAL_LOCAL_REQUIRED_TABLES = (
     "users",
+    "consumed_email_changes",
+    "email_change_requests",
     "admins",
     "sessions",
     "user_activity_days",

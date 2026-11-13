@@ -168,6 +168,7 @@ def configure_bindings():
         landings,
         landing_requests,
         notification_outbox,
+        email_auth,
     )
 
     from pymentor_core.adapters.telegram import transport
@@ -185,5 +186,6 @@ def configure_bindings():
             landing_requests=landing_requests,
             notifications=notification_outbox,
             telegram=transport,
+            email_auth=email_auth,
         )
     )

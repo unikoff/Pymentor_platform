@@ -9,6 +9,7 @@ backend/notification-worker.log.*
 backend/.runner.lock
 backend/.notification-worker.lock
 backend/.env
+/.env
 
 frontend/node_modules/
 frontend/*.log
@@ -42,3 +43,10 @@ docs/stage-system-setup/**/core-check-*/
 
 # Documentation is maintained locally.
 /docs/
+
+# Keep the shared theory/practice authoring contract eligible for Git.
+!/docs/
+/docs/*
+!/docs/make les stage/
+/docs/make les stage/*
+!/docs/make les stage/THEORY_PRACTICE_STANDARD.md

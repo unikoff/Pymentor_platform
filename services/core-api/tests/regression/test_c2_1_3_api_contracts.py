@@ -333,6 +333,8 @@ def _response_fixture(response, *, catalog: bool = False, track_id: str | None =
         body = json_module.loads(json_module.dumps(body, ensure_ascii=False))
     if isinstance(body, dict) and "user" in body:
         body["user"]["id"] = "<synthetic-user-id>"
+        # Historical fixture predates the additive email verification flag.
+        body["user"].pop("verified", None)
         if body["user"].get("subscription_until") is not None:
             body["user"]["subscription_until"] = "<utc-iso8601>"
     return {"status": response.status_code, "headers": safe_headers, "body": body}
@@ -342,6 +344,16 @@ def _without_content_revision(response_fixture: dict[str, Any]) -> dict[str, Any
     comparable = json_module.loads(json_module.dumps(response_fixture, ensure_ascii=False))
     if isinstance(comparable.get("body"), dict):
         comparable["body"].pop("content_revision", None)
+        # These aggregates follow the evolving live curriculum, not the API contract.
+        track = comparable["body"].get("track")
+        if isinstance(track, dict):
+            assert 0 <= track["lessons_completed"] <= track["lessons_countable"]
+            track.pop("lessons_completed")
+            track.pop("lessons_countable")
+            for block in track.get("blocks", []):
+                assert 0 <= block["completed"] <= block["total"]
+                block.pop("completed")
+                block.pop("total")
     return comparable
 
 
@@ -425,6 +437,16 @@ def test_frontend_route_inventory_and_openapi_compatibility():
     assert validation_schema["$ref"] == "#/components/schemas/HTTPValidationError"
 
 
+def test_email_actions_have_explicit_success_and_error_contracts():
+    schema = app.openapi()
+    for suffix in ("email-verification/request", "email-verification/confirm", "password-change/request", "password-reset/confirm"):
+        operation = schema["paths"][f"/api/user/{suffix}"]["post"]
+        assert operation["responses"]["200"]["content"]["application/json"]["schema"]["$ref"] == "#/components/schemas/EmailActionResponse"
+    reset = schema["paths"]["/api/user/password-reset/request"]["post"]
+    assert reset["responses"]["202"]["content"]["application/json"]["schema"]["$ref"] == "#/components/schemas/EmailActionResponse"
+    assert "400" in schema["paths"]["/api/user/password-reset/confirm"]["post"]["responses"]
+
+
 def test_all_frontend_operations_asgi_contracts_and_legacy_errors(clients):
     client, admin, sessions = clients
     observed_baseline_responses = {}
@@ -462,8 +484,9 @@ def test_all_frontend_operations_asgi_contracts_and_legacy_errors(clients):
     assert registered["user"]["subscription_plan"] is None
     assert set(registered["user"]) == {
         "id", "username", "email", "subscription_until", "subscription_plan",
-        "has_active_subscription", "is_admin",
+        "has_active_subscription", "is_admin", "verified",
     }
+    assert registered["user"]["verified"] is False
     _validate(AuthResponse, registered)
     student_id = registered["user"]["id"]
 

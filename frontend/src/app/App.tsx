@@ -5,6 +5,8 @@ import { AsyncBoundary } from "../shared/ui/async-boundary/AsyncBoundary";
 import { landingUrl, platformUrl } from "../shared/paths";
 import { NotFoundPage } from "./NotFoundPage";
 import { StartupScreen } from "./StartupScreen";
+import { EmailActionScreen } from "../features/auth/EmailActionScreen";
+import { clearEmailLink, readEmailLink } from "../features/auth/email-link";
 import "./status-pages.css";
 
 const Workspace = lazy(() => import("./Workspace").then(({ Workspace }) => ({ default: Workspace })));
@@ -42,6 +44,18 @@ function PlatformEntry() {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [isCheckingSession, setIsCheckingSession] = useState(true);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [emailAction, setEmailAction] = useState(() => {
+    const url = new URL(window.location.href);
+    if (!url.searchParams.has("email_action")) return undefined;
+    let result = null;
+    try { result = readEmailLink(url, window.sessionStorage); }
+    catch { result = readEmailLink(url, { getItem: () => null, setItem: () => {} }); }
+    if (url.hash) {
+      url.hash = "";
+      window.history.replaceState(window.history.state, "", url);
+    }
+    return result;
+  });
 
   useEffect(() => {
     getCurrentUser()
@@ -52,6 +66,14 @@ function PlatformEntry() {
 
   if (isCheckingSession) {
     return <StartupScreen />;
+  }
+
+  if (emailAction !== undefined) {
+    return <EmailActionScreen link={emailAction} user={user} onUserChange={setUser} onClose={() => {
+      clearEmailLink();
+      setEmailAction(undefined);
+      if (!user) setIsAuthOpen(true);
+    }} />;
   }
 
   if (!user && isAuthOpen) {
@@ -71,6 +93,7 @@ function PlatformEntry() {
       <Workspace
         key={user ? String(user.id) : "guest"}
         user={user}
+        onUserChange={setUser}
         onLogout={() => setUser(null)}
         onRequireAuth={() => setIsAuthOpen(true)}
       />

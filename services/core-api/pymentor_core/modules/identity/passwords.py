@@ -3,6 +3,12 @@
 import bcrypt
 
 
+def validate_bcrypt_length(password: str) -> str:
+    if len(password.encode("utf-8")) > 72:
+        raise ValueError("Пароль слишком длинный")
+    return password
+
+
 def hash_password(plain: str) -> str:
     salt = bcrypt.gensalt()
     return bcrypt.hashpw(plain.encode(), salt).decode()

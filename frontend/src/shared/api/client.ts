@@ -31,7 +31,9 @@ export async function apiRequest<T>(
     throw new Error("Сервер вернул повреждённые данные. Повторите загрузку.");
   }
   if (!response.ok) {
-    throw new Error(data?.detail || data?.message || "Запрос не выполнен");
+    const detail = typeof data?.detail === "string" ? data.detail :
+      typeof data?.message === "string" ? data.message : "Проверьте введённые данные и попробуйте снова";
+    throw new Error(detail);
   }
 
   return data as T;

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Stage 3: создание занятия"
+  short_description: "Создание занятия с полной приёмкой M1–M5"
+  default_prompt: "Используй $stage-3-lesson-build для задачи «Stage 3: создание занятия» по действующей методичке и в пределах поручения."

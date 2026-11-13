@@ -1,0 +1,4 @@
+interface:
+  display_name: "Stage 2: план занятия"
+  short_description: "План одного занятия и его приёмка P1–P4"
+  default_prompt: "Используй $stage-2-lesson-plan для задачи «Stage 2: план занятия» по действующей методичке и в пределах поручения."

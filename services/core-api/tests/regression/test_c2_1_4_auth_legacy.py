@@ -10,11 +10,16 @@ from __future__ import annotations
 import asyncio
 import json
 import os
+import socketserver
 import sys
+import threading
 from dataclasses import dataclass
 from datetime import datetime
-from datetime import timedelta
+from datetime import timedelta, timezone
+from email import policy
+from email.parser import BytesParser
 from http.cookies import SimpleCookie
+from urllib.parse import parse_qs, urlsplit
 from uuid import UUID
 
 # Fail closed: neither module import nor an ASGI request may use a real database.
@@ -49,7 +54,7 @@ EMAIL = "legacy-student@example.test"
 ADMIN_DENIED = {"detail": "Требуются права администратора"}
 PUBLIC_FIELDS = {
     "id", "username", "email", "subscription_until",
-    "subscription_plan", "has_active_subscription", "is_admin",
+    "subscription_plan", "has_active_subscription", "is_admin", "verified",
 }
 
 
@@ -157,6 +162,7 @@ def assert_user(user, *, email=EMAIL, is_admin=False):
     assert user["email"] == email
     assert user["username"] == "Synthetic Student"
     assert user["is_admin"] is is_admin
+    assert user["verified"] is False
     assert user["subscription_until"] is None
     assert user["subscription_plan"] is None
     assert user["has_active_subscription"] is False
@@ -193,6 +199,11 @@ def test_register_persists_real_salted_bcrypt_and_rejects_duplicates(memory_db):
     assert duplicate.data == {"detail": "Email already exists"}
     with memory_db() as db:
         assert len(db.scalars(select(models.User)).all()) == 2
+
+
+def test_passwords_over_bcrypt_byte_limit_are_validation_errors(memory_db):
+    assert register(password="я" * 37).status == 422
+    assert login(password="a" * 73).status == 422
 
 
 @pytest.mark.parametrize("secure", [False, True])
@@ -256,6 +267,434 @@ def test_logout_revokes_only_its_session_and_clears_cookie(memory_db):
     assert missing.data == {"detail": "No session token found"}
 
 
+def test_account_email_requests_require_authentication(memory_db):
+    verify = call("POST", "/api/user/email-verification/request")
+    change = call("POST", "/api/user/password-change/request")
+    assert verify.status == 401
+    assert change.status == 401
+
+
+def test_unverified_and_unknown_email_have_the_same_recovery_reply(memory_db):
+    assert register().status == 200
+    unverified = call("POST", "/api/user/password-reset/request", body={"email": EMAIL})
+    unknown = call("POST", "/api/user/password-reset/request", body={"email": "missing@example.test"})
+    assert unverified.status == unknown.status == 202
+    assert unverified.data == unknown.data
+
+
+@pytest.fixture
+def captured_account_email(monkeypatch):
+    from pymentor_core.adapters.sql import email_auth
+    from pymentor_core.modules.identity.api import email_actions
+
+    sent = []
+    monkeypatch.setenv("PYMENTOR_EMAIL_TOKEN_SECRET", "synthetic-only-secret-at-least-32-bytes")
+    monkeypatch.setattr(email_actions, "_allowed", lambda *_args: True)
+    monkeypatch.setattr(email_auth, "send_account_email", lambda config, recipient, purpose, token, **kwargs: sent.append((recipient, purpose, token)))
+    return sent
+
+
+@pytest.mark.parametrize("first_side", ["old", "new"])
+def test_profile_name_and_email_change_flow(memory_db, captured_account_email, first_side):
+    from pymentor_core.modules.identity.email_tokens import EmailTokens
+    assert call("GET", "/api/user/email-change/capabilities").data == {"confirmations_required": 2}
+    assert register().status == 200
+    session = login().cookie().value
+    assert call("PATCH", "/api/user/profile", body={"username": "  Новое имя  "}, cookie=session).data["user"]["username"] == "Новое имя"
+    assert call("PATCH", "/api/user/profile", body={"username": "  "}, cookie=session).status == 422
+    assert call("POST", "/api/user/email-change/request", body={"email": "next@example.test"}, cookie=session).status == 403
+    with memory_db() as db:
+        user = db.scalar(select(models.User).where(models.User.email == EMAIL))
+        user.verified = True
+        db.commit()
+        reset_token = EmailTokens("synthetic-only-secret-at-least-32-bytes").issue("reset_password", user.id, user.email, user.password)
+    assert call("POST", "/api/user/email-change/request", body={"email": "not-an-email"}, cookie=session).status == 422
+    requested = call("POST", "/api/user/email-change/request", body={"email": "next@example.test"}, cookie=session)
+    assert requested.status == 200
+    old_recipient, purpose, old_token = captured_account_email[-2]
+    new_recipient, new_purpose, new_token = captured_account_email[-1]
+    assert (old_recipient, purpose) == (EMAIL, "change_email_dual")
+    assert (new_recipient, new_purpose) == ("next@example.test", "change_email_dual")
+    assert EmailTokens("synthetic-only-secret-at-least-32-bytes").read(old_token, "change_email") is None
+    first, second = (old_token, new_token) if first_side == "old" else (new_token, old_token)
+    assert call("GET", "/api/user/me", cookie=session).data["user"]["email"] == EMAIL
+    confirmed = call("POST", "/api/user/email-change/confirm", body={"token": first})
+    assert confirmed.status == 200 and confirmed.data["completed"] is False
+    after_first = call("GET", "/api/user/me", cookie=session).data["user"]
+    assert after_first["email"] == EMAIL and after_first["verified"] is True
+    repeated = call("POST", "/api/user/email-change/confirm", body={"token": first})
+    assert repeated.status == 200 and repeated.data["completed"] is False
+    assert call("POST", "/api/user/email-change/confirm", body={"token": second}).data["completed"] is True
+    after = call("GET", "/api/user/me", cookie=session).data["user"]
+    assert after["email"] == "next@example.test" and after["verified"] is True
+    assert call("POST", "/api/user/password-reset/confirm", body={"token": reset_token, "new_password": "Synthetic-new-password-42"}).status == 400
+    assert call("POST", "/api/user/email-change/confirm", body={"token": second}).status == 400
+
+
+@pytest.mark.parametrize("failure_side", ["old", "new"])
+def test_email_change_conflicts_and_verification_delivery_error(memory_db, captured_account_email, monkeypatch, failure_side):
+    from pymentor_core.adapters.sql import email_auth
+    assert register().status == 200
+    assert register(email="occupied@example.test").status == 200
+    session = login().cookie().value
+    with memory_db() as db:
+        user = db.scalar(select(models.User).where(models.User.email == EMAIL))
+        user.verified = True
+        db.commit()
+    assert call("POST", "/api/user/email-change/request", body={"email": "OCCUPIED@example.test"}, cookie=session).status == 409
+    def fail_second(config, recipient, purpose, token, **kwargs):
+        if recipient == (EMAIL if failure_side == "old" else "new@example.test"):
+            raise OSError("synthetic SMTP failure")
+        captured_account_email.append((recipient, purpose, token))
+    monkeypatch.setattr(email_auth, "send_account_email", fail_second)
+    result = call("POST", "/api/user/email-change/request", body={"email": "new@example.test"}, cookie=session)
+    assert result.status == 503
+    if failure_side == "new":
+        token = captured_account_email[-1][2]
+        assert call("POST", "/api/user/email-change/confirm", body={"token": token}).status == 409
+    current = call("GET", "/api/user/me", cookie=session).data["user"]
+    assert current["email"] == EMAIL and current["verified"] is True
+
+
+def test_email_change_replay_after_return_and_revoked_confirmation(memory_db, captured_account_email):
+    from pymentor_core.modules.identity.email_tokens import EmailTokens
+    secret = "synthetic-only-secret-at-least-32-bytes"
+    assert register().status == 200
+    session = login().cookie().value
+    with memory_db() as db:
+        user = db.scalar(select(models.User).where(models.User.email == EMAIL))
+        user.verified = True
+        db.commit()
+        stale = EmailTokens(secret).issue("change_email", user.id, user.email, user.password, new_email="stale@example.test")
+        user.verified = False
+        db.commit()
+    assert call("POST", "/api/user/email-change/confirm", body={"token": stale}).status == 400
+    with memory_db() as db:
+        user = db.scalar(select(models.User).where(models.User.email == EMAIL))
+        user.verified = True
+        db.commit()
+    assert call("POST", "/api/user/email-change/request", body={"email": "next@example.test"}, cookie=session).status == 200
+    old_token, new_token = captured_account_email[-2][2], captured_account_email[-1][2]
+    assert call("POST", "/api/user/email-change/confirm", body={"token": old_token}).data["completed"] is False
+    assert call("POST", "/api/user/email-change/confirm", body={"token": new_token}).data["completed"] is True
+    with memory_db() as db:
+        user = db.scalar(select(models.User).where(models.User.email == "next@example.test"))
+        user.email, user.verified = EMAIL, True
+        db.commit()
+    assert call("POST", "/api/user/email-change/confirm", body={"token": old_token}).status == 400
+
+
+def test_email_change_address_taken_after_request(memory_db, captured_account_email):
+    assert register().status == 200
+    session = login().cookie().value
+    with memory_db() as db:
+        user = db.scalar(select(models.User).where(models.User.email == EMAIL))
+        user.verified = True
+        db.commit()
+    assert call("POST", "/api/user/email-change/request", body={"email": "new@example.test"}, cookie=session).status == 200
+    old_token, new_token = captured_account_email[-2][2], captured_account_email[-1][2]
+    assert register(email="new@example.test").status == 200
+    assert call("POST", "/api/user/email-change/confirm", body={"token": old_token}).data["completed"] is False
+    assert call("POST", "/api/user/email-change/confirm", body={"token": new_token}).status == 400
+    assert call("GET", "/api/user/me", cookie=session).data["user"]["email"] == EMAIL
+
+
+def test_email_change_proofs_cannot_be_mixed_between_requests(memory_db, captured_account_email):
+    assert register().status == 200
+    session = login().cookie().value
+    with memory_db() as db:
+        user = db.scalar(select(models.User).where(models.User.email == EMAIL))
+        user.verified = True
+        db.commit()
+    assert call("POST", "/api/user/email-change/request", body={"email": "first@example.test"}, cookie=session).status == 200
+    first_old, first_new = captured_account_email[-2][2], captured_account_email[-1][2]
+    assert call("POST", "/api/user/email-change/request", body={"email": "second@example.test"}, cookie=session).status == 200
+    second_new = captured_account_email[-1][2]
+    assert call("POST", "/api/user/email-change/confirm", body={"token": first_old}).data["completed"] is False
+    assert call("POST", "/api/user/email-change/confirm", body={"token": second_new}).data["completed"] is False
+    assert call("GET", "/api/user/me", cookie=session).data["user"]["email"] == EMAIL
+    assert call("POST", "/api/user/email-change/confirm", body={"token": first_new}).data["completed"] is True
+    assert call("GET", "/api/user/me", cookie=session).data["user"]["email"] == "first@example.test"
+    assert call("POST", "/api/user/email-change/confirm", body={"token": second_new}).status == 400
+
+
+def test_email_change_expired_request_keeps_original_address(memory_db, captured_account_email):
+    assert register().status == 200
+    session = login().cookie().value
+    with memory_db() as db:
+        user = db.scalar(select(models.User).where(models.User.email == EMAIL))
+        user.verified = True
+        db.commit()
+    assert call("POST", "/api/user/email-change/request", body={"email": "new@example.test"}, cookie=session).status == 200
+    token = captured_account_email[-1][2]
+    with memory_db() as db:
+        pending = db.scalar(select(models.EmailChangeRequest))
+        pending.expires_at = datetime.now(timezone.utc) - timedelta(seconds=1)
+        db.commit()
+    assert call("POST", "/api/user/email-change/confirm", body={"token": token}).status == 400
+    assert call("GET", "/api/user/me", cookie=session).data["user"]["email"] == EMAIL
+
+
+def test_registration_sends_verification_once_after_account_is_created(memory_db, captured_account_email):
+    response = register()
+    assert response.status == 200 and response.data["user"]["verified"] is False
+    assert len(captured_account_email) == 1
+    recipient, purpose, token = captured_account_email[0]
+    assert (recipient, purpose) == (EMAIL, "verify_email")
+    assert call("POST", "/api/user/email-verification/confirm", body={"token": token}).status == 200
+    assert login().data["user"]["verified"] is True
+    assert register().status == 400
+    assert len(captured_account_email) == 1
+
+
+def test_registration_survives_email_delivery_failure_and_can_resend(memory_db, captured_account_email, monkeypatch):
+    from pymentor_core.adapters.sql import email_auth
+
+    def unavailable(*_args, **_kwargs):
+        raise OSError("synthetic SMTP failure")
+
+    monkeypatch.setattr(email_auth, "send_account_email", unavailable)
+    assert register().status == 200
+    session = login().cookie().value
+    assert call("GET", "/api/user/me", cookie=session).data["user"]["verified"] is False
+    monkeypatch.setattr(email_auth, "send_account_email", lambda config, recipient, purpose, token: captured_account_email.append((recipient, purpose, token)))
+    assert call("POST", "/api/user/email-verification/request", cookie=session).status == 200
+    assert captured_account_email[0][:2] == (EMAIL, "verify_email")
+
+
+def test_verify_then_recover_password_invalidates_all_sessions(memory_db, captured_account_email):
+    assert register().status == 200
+    first = login().cookie().value
+    second = login().cookie().value
+    request = call("POST", "/api/user/email-verification/request", cookie=first)
+    assert request.status == 200
+    recipient, purpose, verification_token = captured_account_email.pop()
+    assert (recipient, purpose) == (EMAIL, "verify_email")
+    assert call("GET", "/api/user/email-verification/confirm").status != 200
+    reply = call("POST", "/api/user/email-verification/confirm", cookie=first, body={"token": verification_token})
+    assert reply.status == 200
+    assert call("GET", "/api/user/me", cookie=first).data["user"]["verified"] is True
+    reply = call("POST", "/api/user/password-reset/request", body={"email": EMAIL})
+    assert reply.status == 202
+    recipient, purpose, reset_token = captured_account_email.pop()
+    assert (recipient, purpose) == (EMAIL, "reset_password")
+    new_password = "Another-safe-passphrase-43"
+    changed = call("POST", "/api/user/password-reset/confirm", body={"token": reset_token, "new_password": new_password})
+    assert changed.status == 200
+    assert call("GET", "/api/user/me", cookie=first).status == 401
+    assert call("GET", "/api/user/me", cookie=second).status == 401
+    assert login(password=PASSWORD).status == 401
+    assert login(password=new_password).status == 200
+    assert call("POST", "/api/user/password-reset/confirm", body={"token": reset_token, "new_password": new_password}).status == 400
+
+
+def test_unverified_user_cannot_request_password_change_or_recovery(memory_db, captured_account_email):
+    assert register().status == 200
+    assert captured_account_email.pop()[1] == "verify_email"
+    session = login().cookie().value
+    assert call("POST", "/api/user/password-reset/request", body={"email": EMAIL}).status == 202
+    assert captured_account_email == []
+    assert call("POST", "/api/user/password-change/request", cookie=session).status == 403
+    assert captured_account_email == []
+    assert login(password=PASSWORD).data["user"]["verified"] is False
+
+
+def test_change_password_preserves_current_session_and_verification(memory_db, captured_account_email):
+    assert register().status == 200
+    first = login().cookie().value
+    second = login().cookie().value
+    assert call("POST", "/api/user/email-verification/request", cookie=first).status == 200
+    assert call("POST", "/api/user/email-verification/confirm", body={"token": captured_account_email.pop()[2]}).status == 200
+    assert call("POST", "/api/user/password-change/request", cookie=first).status == 200
+    token = captured_account_email.pop()[2]
+    assert call("POST", "/api/user/password-reset/confirm", cookie=first, body={"token": token, "new_password": "New-safe-passphrase-43"}).status == 200
+    me = call("GET", "/api/user/me", cookie=first)
+    assert me.status == 200 and me.data["user"]["verified"] is True
+    assert call("GET", "/api/user/me", cookie=second).status == 401
+    assert login(password=PASSWORD).status == 401
+    assert login(password="New-safe-passphrase-43").status == 200
+
+
+def test_change_password_never_preserves_a_different_users_session_for_the_owner(memory_db, captured_account_email):
+    assert register().status == 200
+    owner_session = login().cookie().value
+    verification_token = captured_account_email.pop()[2]
+    assert call("POST", "/api/user/email-verification/confirm", body={"token": verification_token}).status == 200
+    assert call("POST", "/api/user/password-change/request", cookie=owner_session).status == 200
+    token = captured_account_email.pop()[2]
+    assert register(email="other@example.test").status == 200
+    other_session = login(email="other@example.test").cookie().value
+    assert call("POST", "/api/user/password-reset/confirm", cookie=other_session, body={"token": token, "new_password": "New-safe-passphrase-43"}).status == 200
+    assert call("GET", "/api/user/me", cookie=owner_session).status == 401
+    assert call("GET", "/api/user/me", cookie=other_session).status == 200
+
+
+def test_reset_password_preserves_the_current_session_when_it_belongs_to_owner(memory_db, captured_account_email):
+    assert register().status == 200
+    current = login().cookie().value
+    other = login().cookie().value
+    assert call("POST", "/api/user/email-verification/request", cookie=current).status == 200
+    assert call("POST", "/api/user/email-verification/confirm", body={"token": captured_account_email.pop()[2]}).status == 200
+    assert call("POST", "/api/user/password-reset/request", body={"email": EMAIL}).status == 202
+    token = captured_account_email.pop()[2]
+    assert call("POST", "/api/user/password-reset/confirm", cookie=current, body={"token": token, "new_password": "New-safe-passphrase-43"}).status == 200
+    assert call("GET", "/api/user/me", cookie=current).data["user"]["verified"] is True
+    assert call("GET", "/api/user/me", cookie=other).status == 401
+
+
+@pytest.mark.parametrize("purpose", ["password-reset", "password-change"])
+def test_password_link_stops_working_if_email_is_no_longer_verified(memory_db, captured_account_email, purpose):
+    assert register().status == 200
+    with memory_db() as db:
+        user = db.scalar(select(models.User).where(models.User.email == EMAIL))
+        user.verified = True
+        db.commit()
+    if purpose == "password-reset":
+        assert call("POST", "/api/user/password-reset/request", body={"email": EMAIL}).status == 202
+    else:
+        session = login().cookie().value
+        assert call("POST", "/api/user/password-change/request", cookie=session).status == 200
+    token = captured_account_email.pop()[2]
+    with memory_db() as db:
+        user = db.scalar(select(models.User).where(models.User.email == EMAIL))
+        user.verified = False
+        db.commit()
+    assert call("POST", "/api/user/password-reset/confirm", body={"token": token, "new_password": "Another-safe-passphrase-43"}).status == 400
+    assert login(password=PASSWORD).status == 200
+
+
+def test_verification_link_confirms_its_owner_without_a_session(memory_db, captured_account_email):
+    assert register().status == 200
+    session = login().cookie().value
+    assert call("POST", "/api/user/email-verification/request", cookie=session).status == 200
+    token = captured_account_email.pop()[2]
+    assert call("POST", "/api/user/email-verification/confirm", body={"token": token}).status == 200
+    assert call("GET", "/api/user/me", cookie=session).data["user"]["verified"] is True
+    assert call("POST", "/api/user/email-verification/confirm", body={"token": "invalid"}).status == 400
+
+
+def test_verification_link_confirms_its_owner_not_another_logged_in_user(memory_db, captured_account_email):
+    assert register().status == 200
+    first = login().cookie().value
+    assert call("POST", "/api/user/email-verification/request", cookie=first).status == 200
+    token = captured_account_email.pop()[2]
+    assert register(email="other@example.test").status == 200
+    second = login(email="other@example.test").cookie().value
+    assert call("POST", "/api/user/email-verification/confirm", cookie=second, body={"token": token}).status == 200
+    assert call("GET", "/api/user/me", cookie=first).data["user"]["verified"] is True
+    assert call("GET", "/api/user/me", cookie=second).data["user"]["verified"] is False
+
+
+def test_verification_link_fails_if_account_email_changed(memory_db, captured_account_email):
+    assert register().status == 200
+    session = login().cookie().value
+    assert call("POST", "/api/user/email-verification/request", cookie=session).status == 200
+    token = captured_account_email.pop()[2]
+    with memory_db() as db:
+        user = db.scalar(select(models.User).where(models.User.email == EMAIL))
+        user.email = "changed@example.test"
+        db.commit()
+    assert call("POST", "/api/user/email-verification/confirm", body={"token": token}).status == 400
+    assert call("GET", "/api/user/me", cookie=session).data["user"]["verified"] is False
+
+
+def test_email_request_limits_do_not_block_other_people_on_same_network(monkeypatch):
+    from pymentor_core.modules.identity.api import email_actions
+
+    monkeypatch.setattr(email_actions, "_attempts", {})
+    monkeypatch.setattr(email_actions.time, "monotonic", lambda: 1000.0)
+    assert all(email_actions._allowed("reset-ip", "synthetic-ip") for _ in range(20))
+    assert not email_actions._allowed("reset-ip", "synthetic-ip")
+    assert email_actions._allowed("reset-email", "student@example.test")
+    assert not email_actions._allowed("reset-email", "student@example.test")
+    assert email_actions._allowed("reset-email", "other@example.test")
+
+
+def test_postgres_email_limit_uses_shared_store_without_raw_address():
+    import anyio
+    from types import SimpleNamespace
+    from pymentor_core.modules.identity.api import email_actions
+
+    calls = []
+    class FakeStore:
+        async def allow_email_request(self, digest, limit):
+            calls.append((digest, limit))
+            return True
+    request = SimpleNamespace(app=SimpleNamespace(state=SimpleNamespace(
+        profile="postgres_redis", local_async_identity=SimpleNamespace(redis=FakeStore())
+    )))
+    check = getattr(email_actions, "_request_allowed", None)
+    assert callable(check)
+    async def run():
+        return await anyio.to_thread.run_sync(check, request, "reset-email", "private@example.test")
+    assert anyio.run(run) is True
+    assert len(calls) == 1 and len(calls[0][0]) == 64 and calls[0][1] == 1
+    assert "private@example.test" not in calls[0][0]
+
+
+def test_synthetic_account_flow_delivers_real_local_smtp_messages(memory_db, monkeypatch):
+    from pymentor_core.modules.identity.api import email_actions
+
+    messages = []
+    class Sink(socketserver.StreamRequestHandler):
+        def handle(self):
+            self.wfile.write(b"220 local test SMTP\r\n")
+            data_mode = False
+            lines = []
+            while line := self.rfile.readline():
+                if data_mode:
+                    if line == b".\r\n":
+                        messages.append(BytesParser(policy=policy.default).parsebytes(b"".join(lines)))
+                        data_mode = False
+                        self.wfile.write(b"250 accepted\r\n")
+                    else:
+                        lines.append(line)
+                elif line.upper().startswith((b"EHLO", b"HELO")):
+                    self.wfile.write(b"250-localhost\r\n250 HELP\r\n")
+                elif line.upper().startswith(b"DATA"):
+                    data_mode = True
+                    self.wfile.write(b"354 send data\r\n")
+                elif line.upper().startswith(b"QUIT"):
+                    self.wfile.write(b"221 bye\r\n")
+                    break
+                else:
+                    self.wfile.write(b"250 ok\r\n")
+                self.wfile.flush()
+
+    def token_from_message(message):
+        plain = message.get_body(preferencelist=("plain",)).get_content()
+        link = next(line for line in plain.splitlines() if line.startswith("http://"))
+        return parse_qs(urlsplit(link).fragment)["token"][0]
+
+    monkeypatch.setattr(email_actions, "_attempts", {})
+    monkeypatch.setenv("PYMENTOR_EMAIL_TOKEN_SECRET", "synthetic-only-secret-at-least-32-bytes")
+    monkeypatch.setenv("PYMENTOR_EMAIL_PUBLIC_URL", "http://127.0.0.1:5173/backend")
+    monkeypatch.setenv("PYMENTOR_SMTP_HOST", "127.0.0.1")
+    monkeypatch.setenv("PYMENTOR_SMTP_FROM", "robot@example.test")
+    monkeypatch.setenv("PYMENTOR_SMTP_STARTTLS", "0")
+    monkeypatch.delenv("PYMENTOR_SMTP_USERNAME", raising=False)
+    monkeypatch.delenv("PYMENTOR_SMTP_PASSWORD", raising=False)
+    with socketserver.TCPServer(("127.0.0.1", 0), Sink) as server:
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        monkeypatch.setenv("PYMENTOR_SMTP_PORT", str(server.server_address[1]))
+        try:
+            assert register().status == 200
+            assert len(messages) == 1
+            assert messages[0]["To"] == EMAIL
+            token = token_from_message(messages[0])
+            session = login().cookie().value
+            assert call("POST", "/api/user/email-verification/confirm", cookie=session, body={"token": token}).status == 200
+            assert call("POST", "/api/user/password-reset/request", body={"email": EMAIL}).status == 202
+            token = token_from_message(messages[-1])
+            assert call("POST", "/api/user/password-reset/confirm", body={"token": token, "new_password": "Another-safe-passphrase-43"}).status == 200
+            assert login(password="Another-safe-passphrase-43").status == 200
+            assert len(messages) == 2
+        finally:
+            server.shutdown()
+            thread.join(timeout=5)
+
+
 def test_fourth_login_evicts_oldest_of_three_sql_sessions(memory_db):
     user_id = register().data["user"]["id"]
     tokens = []
@@ -291,7 +730,7 @@ def test_fourth_login_evicts_oldest_of_three_sql_sessions(memory_db):
 
 def test_client_cannot_forge_admin_role_and_student_is_forbidden(memory_db):
     created = register(
-        is_admin=True, role="admin", subscription_plan="pro",
+        is_admin=True, verified=True, role="admin", subscription_plan="pro",
         has_active_subscription=True, subscription_until="2099-01-01",
     )
     assert created.status == 200

@@ -5,6 +5,13 @@ from pymentor_core.adapters.sql.accounts import AccountReader
 
 
 class SqlSessionRepository(AccountReader):
+    def claim_password_state(self, user_id, password_hash):
+        """Hold the write lock while proving the verified password is still current."""
+        result = self.database.query(models.User).filter(
+            models.User.id == user_id, models.User._password_hash == password_hash
+        ).update({models.User._password_hash: models.User._password_hash}, synchronize_session=False)
+        return result == 1
+
     def session_by_token(self, token):
         if self.uow is not None:
             return self.uow.repository(models.Session).find_one(session_token=token)

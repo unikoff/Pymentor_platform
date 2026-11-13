@@ -4,6 +4,8 @@ from datetime import datetime
 
 from pydantic import BaseModel
 from pydantic import constr
+from pydantic import field_validator
+from pymentor_core.modules.identity.passwords import validate_bcrypt_length
 
 
 class UserCreate(BaseModel):
@@ -11,10 +13,14 @@ class UserCreate(BaseModel):
     email: constr(min_length=5, max_length=100)
     password: constr(min_length=8, max_length=128)
 
+    _validate_password_length = field_validator("password")(validate_bcrypt_length)
+
 
 class UserLogin(BaseModel):
     email: constr(min_length=5, max_length=100)
     password: constr(min_length=1, max_length=100)
+
+    _validate_password_length = field_validator("password")(validate_bcrypt_length)
 
 
 class UserPublic(BaseModel):
@@ -25,6 +31,7 @@ class UserPublic(BaseModel):
     subscription_plan: str | None = None
     has_active_subscription: bool = False
     is_admin: bool = False
+    verified: bool = False
 
     model_config = {"from_attributes": True, "extra": "forbid"}
 

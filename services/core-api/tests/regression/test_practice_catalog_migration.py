@@ -73,7 +73,10 @@ class PracticeCatalogMigrationTests(unittest.TestCase):
                 for first, last, block_name in ranges:
                     block = getattr(package, block_name)
                     if slug == "chapter_05":
-                        self.assertEqual({}, block.MANUAL_PRACTICE)
+                        if block_name == "block_17":
+                            self.assertEqual({81, "81.1", 82, "82.1", 83, "83.1", 84, "84.1", 85, "85.1"}, set(block.MANUAL_PRACTICE))
+                        else:
+                            self.assertEqual({}, block.MANUAL_PRACTICE)
                         self.assertEqual({}, block.CODE_TASKS)
                     elif slug != "chapter_03":
                         validate_block(first, last, block.MANUAL_PRACTICE, block.CODE_TASKS)

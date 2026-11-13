@@ -362,7 +362,7 @@ def manual_practice_answer(
     """Возвращает закрытый разбор только после явного запроса и проверки доступа."""
     lesson = find_lesson(lesson_id)
     if lesson is None or not (
-        lesson.get("source_file", "").startswith("chapter_02/block_05/")
+        lesson.get("source_file", "").startswith(("chapter_02/block_05/", "chapter_05/block_17/"))
         or lesson["id"] == "lesson-fa661256326bd13784d1c88d"
     ):
         raise HTTPException(

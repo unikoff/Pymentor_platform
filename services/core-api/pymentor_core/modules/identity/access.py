@@ -38,6 +38,7 @@ def _serialize_user(user_db) -> dict[str, object]:
         "subscription_plan": user_db.subscription_plan,
         "has_active_subscription": has_active_subscription(user_db),
         "is_admin": bool(user_db.is_admin),
+        "verified": bool(user_db.verified),
     }
 
 

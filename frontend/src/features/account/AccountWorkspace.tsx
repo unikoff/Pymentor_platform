@@ -6,9 +6,9 @@ import type { Track } from "../learning/types";
 import type { CourseEntry } from "../learning/useLearningCourse";
 import type { CalendarMonth, UserProfile } from "../../shared/api/contracts";
 
-export function AccountWorkspace({ user, tracks, courseEntries, tracksLoaded, calendarMonth, onMonthChange, onLogout }: {
+export function AccountWorkspace({ user, tracks, courseEntries, tracksLoaded, calendarMonth, onMonthChange, onLogout, onUserChange }: {
   user: UserProfile; tracks: Track[]; courseEntries: Record<string, CourseEntry>; tracksLoaded: boolean; calendarMonth: CalendarMonth;
-  onMonthChange: (month: CalendarMonth) => void; onLogout: () => void;
+  onMonthChange: (month: CalendarMonth) => void; onLogout: () => void; onUserChange: (user: UserProfile) => void;
 }) {
   const schedule = useAccountSchedule(user.id, calendarMonth);
   const statisticsData = useMemo<AccountStatisticsData>(() => {
@@ -48,6 +48,6 @@ export function AccountWorkspace({ user, tracks, courseEntries, tracksLoaded, ca
   return <AccountPanel user={user} calendarMonth={calendarMonth} onMonthChange={onMonthChange}
     activityDays={schedule.activityDays} activityTimes={schedule.activityTimes}
     bookingSlots={schedule.bookingSlots} bookingQuota={schedule.bookingQuota}
-    onBookSlot={schedule.bookSlot} onCancelSlot={schedule.cancelSlotBooking} onLogout={onLogout}
+    onBookSlot={schedule.bookSlot} onCancelSlot={schedule.cancelSlotBooking} onLogout={onLogout} onUserChange={onUserChange}
     statisticsData={statisticsData} />;
 }
