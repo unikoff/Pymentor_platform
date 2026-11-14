@@ -6,15 +6,13 @@ import unittest
 from copy import deepcopy
 from unittest.mock import patch
 
+import pytest
 from fastapi import FastAPI
-from sqlalchemy import create_engine
-from sqlalchemy.pool import StaticPool
-from sqlalchemy.orm import sessionmaker
+from pg_business_support import runtime_db, attach_identity
 
 from pymentor_core.adapters.course_local.catalog import find_track as catalog_find_track
 from pymentor_core.adapters.course_local.catalog import get_tracks_summary as catalog_get_tracks_summary
 from pymentor_core.adapters.sql import models
-from pymentor_core.app.database import Base
 from pymentor_core.adapters.sql import administration as admin_service
 from pymentor_core.modules.learning.api import service
 from pymentor_core.modules.learning.api.router import learning_router
@@ -81,20 +79,16 @@ class FixedResultExecutor:
 
 
 class ChapterOneCompletionTests(unittest.IsolatedAsyncioTestCase):
+    @pytest.fixture(autouse=True)
+    def postgres_fixture(self, runtime_db):
+        self.sessions = runtime_db
+
     def setUp(self):
-        self.engine = create_engine(
-            "sqlite://",
-            connect_args={"check_same_thread": False},
-            poolclass=StaticPool,
-        )
-        Base.metadata.create_all(self.engine)
-        self.sessions = sessionmaker(bind=self.engine)
         with self.sessions() as db:
             user = models.User(username="completion-test", email="completion@example.test", password="$2b$test")
             db.add(user)
             db.flush()
             self.user_id = user.id
-            db.add(models.Session(user_id=user.id, session_token="chapter01-completion-test"))
             db.commit()
 
         self.tasks = {TASK_A["id"]: deepcopy(TASK_A), TASK_B["id"]: deepcopy(TASK_B)}
@@ -112,6 +106,7 @@ class ChapterOneCompletionTests(unittest.IsolatedAsyncioTestCase):
         self.track = {"id": self.track_id, "lessons": [self.lesson]}
         self.executor = FixedResultExecutor()
         self.app = FastAPI()
+        attach_identity(self.app, {"chapter01-completion-test": self.user_id})
         self.app.include_router(learning_router, prefix="/learning")
 
         def get_summary():
@@ -135,7 +130,6 @@ class ChapterOneCompletionTests(unittest.IsolatedAsyncioTestCase):
     def tearDown(self):
         for item in reversed(self.patches):
             item.stop()
-        self.engine.dispose()
 
     async def submit(self, task_id: str, revision: str, result: str = "success"):
         return await asgi_request(

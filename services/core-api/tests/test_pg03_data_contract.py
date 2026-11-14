@@ -34,16 +34,10 @@ else:
 @pytest.mark.parametrize("adapter", ["bookings", "landings"])
 def test_write_adapters_reject_sqlite_sessions(adapter, monkeypatch):
     import importlib
-    from sqlalchemy import create_engine
-    from sqlalchemy.orm import Session
+    from types import SimpleNamespace
 
-    monkeypatch.setenv("DATABASE_URL", "postgresql+psycopg://app:p@127.0.0.1:9/pg03")
-    monkeypatch.delenv("PYMENTOR_DUAL_LOCAL_TEST", raising=False)
     module = importlib.import_module("pymentor_core.adapters.sql." + adapter)
-    engine = create_engine("sqlite://")
-    try:
-        with Session(engine) as session:
-            with pytest.raises(RuntimeError, match="PostgreSQL"):
-                module._start_write_transaction(session)
-    finally:
-        engine.dispose()
+    bind = SimpleNamespace(dialect=SimpleNamespace(name="sqlite"))
+    session = SimpleNamespace(get_bind=lambda: bind)
+    with pytest.raises(RuntimeError, match="PostgreSQL"):
+        module._start_write_transaction(session)

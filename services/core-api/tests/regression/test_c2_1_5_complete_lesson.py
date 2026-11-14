@@ -189,12 +189,12 @@ def test_chapter_one_editor_only_returns_success_without_writing_completion(worl
 
 
 @pytest.mark.parametrize("uow_enabled", [False, True])
-def test_duplicate_legacy_completion_rolls_back_pending_sqlite_transaction(world, uow_enabled):
+def test_duplicate_legacy_completion_rolls_back_pending_postgresql_transaction(world, uow_enabled):
     sessions, _ = world
     with sessions() as db:
         assert finish(db, "lesson-stable", uow_enabled=uow_enabled)["completed"] is True
     with sessions() as db:
-        # A duplicate completion causes a real SQLite integrity violation on commit.
+        # A duplicate completion causes a real PostgreSQL integrity violation on commit.
         # The existing progress writer must roll back all pending changes.
         db.add(models.BookingQuota(user_id=9, year=2026, month=11, granted_slots=2))
         assert finish(db, "lesson-stable", uow_enabled=uow_enabled)["completed"] is True

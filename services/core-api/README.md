@@ -25,9 +25,8 @@ services/core-api/
       telegram/           транспорт уведомлений
     shared/               внутренние порты, ошибки, неизменяемые bindings
   migrations/             один Alembic; выпущенные revisions сохранены
-  tools/migration/        snapshot, preflight, import, recovery и ACL
-  tools/maintenance/      явные команды администратора и слотов
-  tools/lab/              probes и сохранённые исследовательские варианты
+  tools/maintenance/      явная команда прав администратора для PostgreSQL
+  tools/lab/              guarded запуск единственной factory на disposable PG/Redis
   tests/regression/       сохранённые сценарии API, данных, курсов и отказов
   tests/architecture/     автоматические проверки границ
 ```
@@ -132,8 +131,8 @@ python -m alembic -c services/core-api/alembic-runtime.ini upgrade head
 
 Это не команда импорта данных и не обязательный шаг текущего cleanup на AlphaVPS.
 Не подменять runtime DSN migration credentials. Исторические revision IDs и проверенный
-additive schema bridge сохраняются. Старые lab/import инструменты имеют отдельные guards;
-они не являются альтернативным runtime и не запускаются обычным install/start.
+additive schema bridge сохраняются. Старые SQLite import/lab инструменты удалены;
+актуальные данные PostgreSQL используются без повторного импорта.
 
 ### Worker и health
 
@@ -174,7 +173,7 @@ python scripts/ci/preview_checks.py
 Группы: `tests/runtime_suites.json`. Required CI использует loopback57382 (DB/user
 pymentor_test), Redis57381, внешнюю подготовку только именованных test DB и отдельные
 процессы HTTP suites. Пустой/failed/skipped JUnit, недоступные сервисы и SQLite import/DSN
-блокируют gate. Исторические lab/archive проверки отделены от runtime-матрицы.
+блокируют gate. Старые lab/import fixtures удалены; бизнес-проверки работают на PostgreSQL.
 
 Canonical pipeline — `.github/workflows/release.yml`, candidate через PR в `Release`.
 Checks обязательны; images/publish выполняются только разрешённым push в Release.
@@ -196,8 +195,8 @@ process-local limiter. Формат подписанных ссылок/срок
 ## Работа с уже существующими данными
 
 Cleanup не меняет PostgreSQL tables/roles, Secret values/prefixes, данные и действующие
-сессии. Старые SQLite/PG backup, приватные snapshot и существующие import/recovery tools
-сохраняются отдельно; перенос из них не входит в этот спринт. Снятие template с desired
+сессии. Приватные архивы и PostgreSQL backup сохраняются отдельно от исходников;
+перенос из них не входит в очистку. Старые import/recovery tools удалены. Снятие template с desired
 state не является разрешением удалить фактический PVC/архив.
 
 Backup/restore текущего PostgreSQL выполняются по существующему операторскому runbook

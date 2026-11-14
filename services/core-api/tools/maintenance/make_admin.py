@@ -1,6 +1,7 @@
 """Preview an administrator permission change against an explicitly selected database."""
 
 import argparse
+from pymentor_core.app.settings import postgres_database_url
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from pymentor_core.adapters.sql import models
@@ -15,7 +16,7 @@ def main() -> None:
     mode.add_argument("--dry-run", action="store_true")
     mode.add_argument("--apply", action="store_true")
     args = parser.parse_args()
-    engine = create_engine(args.database_url, hide_parameters=True)
+    engine = create_engine(postgres_database_url(args.database_url), hide_parameters=True)
     try:
         with sessionmaker(bind=engine)() as db:
             user = db.query(models.User).filter(models.User.email == args.email).first()

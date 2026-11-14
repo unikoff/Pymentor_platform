@@ -1,7 +1,12 @@
 # Operator tools
 
 Пакет tools не входит в production image и не импортируется runtime.
-Запускать из services/core-api через `python -m tools.migration.NAME` / `tools.lab.NAME`.
-Сохраняются локальные allowlist, контроль labels/volumes/ACL, writer checks и запрет
-автоматического повтора после неизвестного исхода. Чужие journals/volumes не удаляются.
-Maintenance требует явную БД и выбор --dry-run/--apply. Подробности — ../README.md.
+`check_architecture.py` проверяет границы модулей. `lab/postgres_runtime.py`
+проверяет disposable PostgreSQL/Redis и запускает единственную рабочую factory.
+`python -m tools.maintenance.make_admin` требует явную PostgreSQL БД и выбор
+`--dry-run`/`--apply`. Подробности — ../README.md.
+
+Импортёры SQLite, snapshot/rollback, переходные ASGI-приложения и экспериментальные
+модели сессий удалены. Для слотов используется действующий административный API.
+Применённая история PostgreSQL Alembic находится в `migrations/`; повторный импорт
+данных для очистки не нужен.

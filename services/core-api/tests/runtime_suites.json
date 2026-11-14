@@ -19,7 +19,10 @@
     "regression/test_health.py",
     "regression/test_c224_timeouts.py",
     "regression/test_c225_role_guards.py",
-    "test_postgres_lab_entrypoint.py"
+    "test_postgres_lab_entrypoint.py",
+    "test_sqlite_source_retirement.py",
+    "regression/test_c224_projection_unit.py",
+    "regression/test_runner_feature_flag.py"
   ],
   "http": [
     "regression/test_c2_1_4_auth_legacy.py",
@@ -39,7 +42,13 @@
     "regression/test_landing_notification_worker.py",
     "regression/test_landing_consultation.py",
     "regression/test_c214_passwords.py",
-    "regression/test_landing_admin_routes.py"
+    "regression/test_landing_admin_routes.py",
+    "regression/test_chapter01_completion.py",
+    "regression/test_core_ports.py",
+    "regression/test_core_request_ports.py",
+    "regression/test_email_change_migration.py",
+    "regression/test_api_prefix_compatibility.py",
+    "regression/test_runner_execution.py::RunnerAPITests"
   ],
   "runtime": [
     "integration/test_pg02_runtime.py",
@@ -54,5 +63,5 @@
     "regression/test_c435_projection_recovery.py",
     "regression/test_dual_postgres_booking.py"
   ],
-  "note": "Explicit target suites; service groups require actual disposable PG/Redis with integration opt-in. Retained lab/import tests are not silently counted as passing."
+  "note": "Required PostgreSQL/Redis suites, including ported business fixtures and whole-source retirement guard. Service groups require actual disposable databases and explicit integration opt-in."
 }

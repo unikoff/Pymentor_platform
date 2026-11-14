@@ -4,27 +4,15 @@ import unittest
 from unittest.mock import patch
 
 from fastapi import HTTPException
-from sqlalchemy import create_engine
-from sqlalchemy.pool import StaticPool
 from starlette.requests import Request
 
-from pymentor_core.app.database import Base
 from pymentor_core.modules.learning.api import service
 from pymentor_core.modules.learning.api.schemas import CodeSubmitRequest
 from pymentor_core.modules.learning.api.schemas import InterpreterRunRequest
 
 
 class RunnerFeatureFlagTests(unittest.IsolatedAsyncioTestCase):
-    def setUp(self):
-        self.engine = create_engine(
-            "sqlite://",
-            connect_args={"check_same_thread": False},
-            poolclass=StaticPool,
-        )
-        Base.metadata.create_all(self.engine)
 
-    def tearDown(self):
-        self.engine.dispose()
 
     def test_only_explicit_truthy_configuration_enables_legacy_runner(self):
         for value in ("1", "true", "yes", "on"):
