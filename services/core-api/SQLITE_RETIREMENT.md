@@ -35,6 +35,10 @@ trees. Its temporary baseline was removed. The runtime image was checked as UID
 10001 with a read-only filesystem and no network: no retired adapter, importer,
 operator tools, database files or Alembic tooling were present.
 
+The first GitHub CI exposed Windows separators in the newly required architecture
+fixture's path map. Those literals now use portable repository paths. The exact
+import-cycle/path scenario passed on Windows/Python 3.14 and Linux/Python 3.12.
+
 The serving package has no behavior changes: the only remaining-file edit is an
 account-reader docstring; the removed importer had no serving callers. PostgreSQL
 Alembic history, frontend and course content are unchanged. Remaining SQLite text
