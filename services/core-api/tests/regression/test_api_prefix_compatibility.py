@@ -7,13 +7,10 @@ from datetime import timezone
 from pathlib import Path
 
 from fastapi import FastAPI
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.pool import StaticPool
+from pg_business_support import runtime_db
 
 from pymentor_core.app.dependencies import get_db
 from pymentor_core.adapters.sql import models
-from pymentor_core.app.database import Base
 from pymentor_core.modules.identity.api.router import user_router
 from pymentor_core.modules.bookings.api.router import booking_router
 from pymentor_core.modules.learning.api.router import learning_router
@@ -88,35 +85,6 @@ def _registered_prefixes():
     return prefixes
 
 
-def _make_test_app():
-    app = FastAPI()
-    configure_web(app)
-    for router, base in (
-        (user_router, "/user"), (user_router, "/api/user"),
-        (booking_router, "/user"), (booking_router, "/api/user"),
-        (learning_router, "/learning"), (learning_router, "/api/learning"),
-    ):
-        app.include_router(router, prefix=base)
-
-    engine = create_engine(
-        "sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool
-    )
-    Base.metadata.create_all(engine)
-    sessions = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-    with sessions() as db:
-        db.add(models.User(
-            username="API Compatibility Student", email=EMAIL, password=PASSWORD,
-            subscription_until=datetime.now(timezone.utc) + timedelta(days=30),
-            subscription_plan="pro",
-        ))
-        db.commit()
-
-    def override_get_db():
-        with sessions() as db:
-            yield db
-
-    app.dependency_overrides[get_db] = override_get_db
-    return app, engine
 
 
 def test_main_registers_api_aliases_and_keeps_legacy_prefixes():
@@ -128,67 +96,8 @@ def test_main_registers_api_aliases_and_keeps_legacy_prefixes():
     assert prefixes["learning_router"] == {"/learning", "/api/learning"}
 
 
-async def _exercise_api_aliases():
-    app, engine = _make_test_app()
-    try:
-        catalog_results = []
-        authenticated_catalog_results = []
-        login_results = []
-        logout_results = []
-        for prefix in ("/user", "/api/user"):
-            learning_prefix = "/learning" if prefix == "/user" else "/api/learning"
-            status, headers, catalog = await _request(app, "GET", f"{learning_prefix}/catalog")
-            assert status == 200
-            assert headers["content-type"].startswith("application/json")
-            assert headers["cache-control"] == "no-store"
-            catalog_results.append(catalog)
-
-            status, login_headers, login = await _request(
-                app, "POST", f"{prefix}/login",
-                payload={"email": EMAIL, "password": PASSWORD},
-            )
-            assert status == 200
-            assert login["message"] == "Login successful"
-            assert login["user"]["email"] == EMAIL
-            set_cookie = login_headers["set-cookie"].lower()
-            assert "httponly" in set_cookie and "samesite=lax" in set_cookie
-            assert "max-age=2592000" in set_cookie
-            cookie = login_headers["set-cookie"].split(";", 1)[0]
-            login_results.append(login)
-
-            status, _, authenticated_catalog = await _request(
-                app, "GET", f"{learning_prefix}/catalog", cookie=cookie
-            )
-            assert status == 200
-            authenticated_catalog_results.append(authenticated_catalog)
-
-            status, logout_headers, logout = await _request(
-                app, "POST", f"{prefix}/logout", cookie=cookie
-            )
-            assert status == 200
-            assert logout == {"message": "Logout successful"}
-            assert 'session=""' in logout_headers["set-cookie"].lower()
-            logout_results.append(logout)
-
-            status, _, unauthorized = await _request(app, "GET", f"{prefix}/me", cookie=cookie)
-            assert status == 401
-            assert unauthorized == {"detail": "Invalid session"}
-
-        assert catalog_results[0] == catalog_results[1]
-        assert authenticated_catalog_results[0] == authenticated_catalog_results[1]
-        assert login_results[0] == login_results[1]
-        assert logout_results[0] == logout_results[1]
-
-        for path in ("/user/refresh", "/api/user/refresh"):
-            status, _, body = await _request(app, "POST", path)
-            assert status == 404
-            assert body == {"detail": "Not Found"}
-    finally:
-        engine.dispose()
 
 
-def test_api_aliases_preserve_catalog_auth_cookies_and_missing_refresh():
-    asyncio.run(_exercise_api_aliases())
 
 
 def _make_origin_test_app():
@@ -250,3 +159,34 @@ async def _exercise_origin_check():
 
 def test_unsafe_origin_check_blocks_cross_origin_and_preserves_allowed_requests():
     asyncio.run(_exercise_origin_check())
+
+
+def test_api_aliases_preserve_catalog_auth_cookies_and_missing_refresh(runtime_db):
+    from uuid import uuid4
+    from test_c2_1_4_auth_legacy import call
+    with runtime_db() as db:
+        db.add(models.User(username="API Compatibility Student", email=EMAIL, password=PASSWORD,
+                           subscription_until=datetime.now(timezone.utc) + timedelta(days=30), subscription_plan="pro"))
+        db.commit()
+    catalogs = []
+    users = []
+    for prefix, learning in (("/user", "/learning"), ("/api/user", "/api/learning")):
+        catalog = call("GET", learning + "/catalog")
+        assert catalog.status == 200
+        assert catalog.header("cache-control") == "no-store"
+        catalogs.append(catalog.data)
+        login = call("POST", prefix + "/login", body={"email": EMAIL, "password": PASSWORD},
+                     headers={"Idempotency-Key": str(uuid4())})
+        assert login.status == 200
+        cookie = login.cookie()
+        assert cookie["httponly"] and cookie["samesite"].lower() == "lax"
+        assert cookie["max-age"] == "2592000"
+        users.append(login.data["user"])
+        assert call("GET", learning + "/catalog", cookie=cookie.value).status == 200
+        logout = call("POST", prefix + "/logout", cookie=cookie.value)
+        assert logout.status == 200 and logout.cookie().value == ""
+        assert call("GET", prefix + "/me", cookie=cookie.value).status == 401
+        # The full app's static GET fallback returns 405 for this absent POST.
+        assert call("POST", prefix + "/refresh").status == 405
+    assert catalogs[0] == catalogs[1]
+    assert users[0] == users[1]

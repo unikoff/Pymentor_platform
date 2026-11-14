@@ -15,9 +15,8 @@ from types import SimpleNamespace
 from unittest.mock import Mock
 
 import pytest
-from sqlalchemy import create_engine
+from pg_business_support import runtime_db, attach_identity
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import sessionmaker
 
 
 BACKEND_ROOT = (Path(__file__).resolve().parents[4] / 'backend')
@@ -33,7 +32,7 @@ def _module(name: str):
 
 
 def test_fake_adapters_exercise_clock_permissions_queue_and_external_api():
-    fakes = _module('tools.lab.storage.fakes')
+    fakes = _module('support_fakes')
     current_time = datetime(2026, 11, 4, 12, 30, tzinfo=timezone.utc)
     clock = fakes.FakeClock(current_time)
     permissions = fakes.FakePermissions({("student-7", "booking.read")})
@@ -59,7 +58,7 @@ def test_fake_adapters_exercise_clock_permissions_queue_and_external_api():
 def test_request_composition_creates_a_fresh_uow_around_the_supplied_session():
     composition = _module('pymentor_core.app.context')
     sqlalchemy_adapter = _module('pymentor_core.adapters.sql.unit_of_work')
-    fakes = _module('tools.lab.storage.fakes')
+    fakes = _module('support_fakes')
     dependencies = _module('pymentor_core.app.dependencies')
 
     clock = fakes.FakeClock(datetime(2026, 11, 4, tzinfo=timezone.utc))
@@ -84,10 +83,10 @@ def test_request_composition_creates_a_fresh_uow_around_the_supplied_session():
     assert first.clock is clock
 
 
-def test_activity_recording_works_with_sql_and_fake_repository_adapters(tmp_path):
+def test_activity_recording_works_with_sql_and_fake_repository_adapters(runtime_db):
     activity = _module('pymentor_core.modules.identity.activity')
     sqlalchemy_adapter = _module('pymentor_core.adapters.sql.unit_of_work')
-    fakes = _module('tools.lab.storage.fakes')
+    fakes = _module('support_fakes')
     models = _module('pymentor_core.adapters.sql.models')
     db_engine = _module('pymentor_core.app.database')
 
@@ -97,91 +96,80 @@ def test_activity_recording_works_with_sql_and_fake_repository_adapters(tmp_path
     current_time = datetime(2026, 11, 4, 12, 30, tzinfo=timezone.utc)
     clock = fakes.FakeClock(current_time)
     activity_date = date(2026, 11, 4)
-    database_path = (tmp_path / "ports.sqlite3").as_posix()
-    engine = create_engine(f"sqlite:///{database_path}")
-    db_engine.Base.metadata.create_all(engine)
-    session_factory = sessionmaker(bind=engine)
+    session_factory = runtime_db
 
-    try:
-        with session_factory() as session:
-            sql_uow = sqlalchemy_adapter.SqlAlchemyUnitOfWork(session)
-            saved_sql = activity.record_activity_day(
-                7, activity_date, session, uow=sql_uow, clock=clock
-            )
-            repeated_sql = activity.record_activity_day(
-                7,
-                activity_date,
-                session,
-                visited_at=datetime(2026, 11, 5, tzinfo=timezone.utc),
-                uow=sql_uow,
-                clock=clock,
-            )
-            assert saved_sql.id == repeated_sql.id
-            assert activity.serialize_activity_timestamp(repeated_sql.visited_at) == (
-                "2026-11-04T12:30:00+00:00"
-            )
-            assert session.query(models.UserActivityDay).count() == 1
-
-        memory = fakes.InMemoryDatabase()
-        memory_uow = fakes.InMemoryUnitOfWork(memory)
-        saved_fake = activity.record_activity_day(
-            7, activity_date, None, uow=memory_uow, clock=clock
+    with session_factory() as session:
+        session.add(models.User(id=7, username="Ports", email="ports@example.test", _password_hash="test"))
+        session.commit()
+        sql_uow = sqlalchemy_adapter.SqlAlchemyUnitOfWork(session)
+        saved_sql = activity.record_activity_day(
+            7, activity_date, session, uow=sql_uow, clock=clock
         )
-        repeated_fake = activity.record_activity_day(
+        repeated_sql = activity.record_activity_day(
             7,
             activity_date,
-            None,
+            session,
             visited_at=datetime(2026, 11, 5, tzinfo=timezone.utc),
-            uow=memory_uow,
+            uow=sql_uow,
             clock=clock,
         )
-        assert saved_fake is repeated_fake
-        assert activity.serialize_activity_timestamp(repeated_fake.visited_at) == (
+        assert saved_sql.id == repeated_sql.id
+        assert activity.serialize_activity_timestamp(repeated_sql.visited_at) == (
             "2026-11-04T12:30:00+00:00"
         )
-        assert len(memory.items(models.UserActivityDay)) == 1
-    finally:
-        engine.dispose()
+        assert session.query(models.UserActivityDay).count() == 1
+    memory = fakes.InMemoryDatabase()
+    memory_uow = fakes.InMemoryUnitOfWork(memory)
+    saved_fake = activity.record_activity_day(
+        7, activity_date, None, uow=memory_uow, clock=clock
+    )
+    repeated_fake = activity.record_activity_day(
+        7,
+        activity_date,
+        None,
+        visited_at=datetime(2026, 11, 5, tzinfo=timezone.utc),
+        uow=memory_uow,
+        clock=clock,
+    )
+    assert saved_fake is repeated_fake
+    assert activity.serialize_activity_timestamp(repeated_fake.visited_at) == (
+        "2026-11-04T12:30:00+00:00"
+    )
+    assert len(memory.items(models.UserActivityDay)) == 1
 
 
-def test_booking_listing_uses_the_injected_clock_without_changing_slot_visibility(tmp_path):
+def test_booking_listing_uses_the_injected_clock_without_changing_slot_visibility(runtime_db):
     booking_service = _module('pymentor_core.modules.bookings.api.service')
-    fakes = _module('tools.lab.storage.fakes')
+    fakes = _module('support_fakes')
     models = _module('pymentor_core.adapters.sql.models')
     db_engine = _module('pymentor_core.app.database')
 
     assert "clock" in inspect.signature(booking_service.list_bookable_slots).parameters
 
-    engine = create_engine(f"sqlite:///{(tmp_path / 'bookings.sqlite3').as_posix()}")
-    db_engine.Base.metadata.create_all(engine)
-    session_factory = sessionmaker(bind=engine)
+    session_factory = runtime_db
     now = datetime(2026, 11, 4, 15, 0, tzinfo=timezone.utc)
 
-    try:
-        with session_factory() as session:
-            past = models.BookingSlot(
-                slot_date=date(2026, 11, 4), start_time="17:59", duration_minutes=60
-            )
-            future = models.BookingSlot(
-                slot_date=date(2026, 11, 4), start_time="18:01", duration_minutes=60
-            )
-            session.add_all([past, future])
-            session.commit()
-            visible = booking_service.list_bookable_slots(
-                2026,
-                11,
-                7,
-                session,
-                clock=fakes.FakeClock(now),
-            )
-
-            assert [slot["id"] for slot in visible] == [future.id]
-    finally:
-        engine.dispose()
+    with session_factory() as session:
+        past = models.BookingSlot(
+            slot_date=date(2026, 11, 4), start_time="17:59", duration_minutes=60
+        )
+        future = models.BookingSlot(
+            slot_date=date(2026, 11, 4), start_time="18:01", duration_minutes=60
+        )
+        session.add_all([past, future])
+        session.commit()
+        visible = booking_service.list_bookable_slots(
+            2026,
+            11,
+            7,
+            session,
+            clock=fakes.FakeClock(now),
+        )
+        assert [slot["id"] for slot in visible] == [future.id]
 
 
 def test_fake_uow_rollback_restores_committed_values_and_entity_identity():
-    fakes = _module('tools.lab.storage.fakes')
+    fakes = _module('support_fakes')
     models = _module('pymentor_core.adapters.sql.models')
     memory = fakes.InMemoryDatabase()
     uow = fakes.InMemoryUnitOfWork(memory)
@@ -207,26 +195,26 @@ def test_fake_uow_rollback_restores_committed_values_and_entity_identity():
     ).granted_slots == 4
 
 
-def test_identity_session_lookup_uses_stub_repositories_without_a_database():
+def test_identity_lookup_uses_authenticated_principal_and_user_repository():
+    import anyio
+    from types import SimpleNamespace
+    from pg_business_support import IdentityStub
     accounts = _module('pymentor_core.modules.identity.api.accounts')
     models = _module('pymentor_core.adapters.sql.models')
-    session = SimpleNamespace(user_id=7)
     user = SimpleNamespace(id=7)
-    session_repository = Mock()
-    session_repository.find_one.return_value = session
-    user_repository = Mock()
-    user_repository.find_one.return_value = user
+    repository = Mock()
+    repository.find_one.return_value = user
     uow = Mock()
-    uow.repository.side_effect = lambda entity_type: {
-        models.Session: session_repository,
-        models.User: user_repository,
-    }[entity_type]
-    request = SimpleNamespace(cookies={"session": "session-7"})
+    uow.repository.return_value = repository
+    request = SimpleNamespace(cookies={"session": "session-7"}, app=SimpleNamespace(
+        state=SimpleNamespace(identity_sessions=IdentityStub({"session-7": 7}))))
 
-    assert accounts.get_current_user(request=request, db=None, uow=uow) is user
-
-    session_repository.find_one.assert_called_once_with(session_token="session-7")
-    user_repository.find_one.assert_called_once_with(id=7)
+    async def exercise():
+        found = await anyio.to_thread.run_sync(lambda: accounts.get_current_user(request=request, db=None, uow=uow))
+        assert found is user
+    anyio.run(exercise)
+    uow.repository.assert_called_once_with(models.User)
+    repository.find_one.assert_called_once_with(id=7)
     uow.commit.assert_not_called()
 
 
@@ -299,6 +287,8 @@ def test_access_policy_uses_identity_and_catalog_values_without_owning_a_reposit
 
 
 def test_admin_subscription_change_uses_identity_and_user_repositories_with_one_commit():
+    import anyio
+    from pg_business_support import IdentityStub
     admin = _module('pymentor_core.modules.administration.api.service')
     models = _module('pymentor_core.adapters.sql.models')
     payloads = _module('pymentor_core.modules.administration.api.schemas')
@@ -310,6 +300,7 @@ def test_admin_subscription_change_uses_identity_and_user_repositories_with_one_
         subscription_until=datetime.now(timezone.utc) + timedelta(days=2),
         subscription_plan="pro",
         is_admin=False,
+        verified=False,
     )
     users = {1: admin_user, 2: target_user}
     session_repository = Mock()
@@ -321,15 +312,13 @@ def test_admin_subscription_change_uses_identity_and_user_repositories_with_one_
         models.Session: session_repository,
         models.User: user_repository,
     }[entity_type]
-    request = SimpleNamespace(cookies={"session": "admin-session"})
+    request = SimpleNamespace(cookies={"session": "admin-session"}, app=SimpleNamespace(
+        state=SimpleNamespace(identity_sessions=IdentityStub({"admin-session": 1}))))
 
-    result = admin.change_subscription(
-        user_id=2,
-        payload=payloads.SubscriptionChange(days=None),
-        request=request,
-        db=None,
-        uow=uow,
-    )
+    async def exercise():
+        return await anyio.to_thread.run_sync(lambda: admin.change_subscription(
+            user_id=2, payload=payloads.SubscriptionChange(days=None), request=request, db=None, uow=uow))
+    result = anyio.run(exercise)
 
     assert target_user.subscription_until is None
     assert target_user.subscription_plan is None
@@ -343,7 +332,7 @@ def test_each_example_module_accepts_a_stub_repository_without_a_database():
 
     activity = _module('pymentor_core.modules.identity.activity')
     bookings = _module('pymentor_core.modules.bookings.api.service')
-    fakes = _module('tools.lab.storage.fakes')
+    fakes = _module('support_fakes')
     models = _module('pymentor_core.adapters.sql.models')
     instant = datetime(2026, 11, 4, 12, 30, tzinfo=timezone.utc)
     day = date(2026, 11, 4)
@@ -369,42 +358,38 @@ def test_each_example_module_accepts_a_stub_repository_without_a_database():
     booking_uow.commit.assert_not_called()
 
 
-def test_booking_quota_uses_both_sql_and_fake_repository_adapters(tmp_path):
+def test_booking_quota_uses_both_sql_and_fake_repository_adapters(runtime_db):
     bookings = _module('pymentor_core.modules.bookings.api.service')
-    fakes = _module('tools.lab.storage.fakes')
+    fakes = _module('support_fakes')
     sql = _module('pymentor_core.adapters.sql.unit_of_work')
     models = _module('pymentor_core.adapters.sql.models')
     db_engine = _module('pymentor_core.app.database')
-    engine = create_engine(f"sqlite:///{(tmp_path / 'quota.sqlite3').as_posix()}")
-    db_engine.Base.metadata.create_all(engine)
-    sessions = sessionmaker(bind=engine)
+    sessions = runtime_db
 
-    try:
-        with sessions() as db:
-            db.add_all([
-                models.BookingQuota(user_id=7, year=2026, month=11, granted_slots=4),
-                models.BookingQuota(user_id=7, year=2026, month=12, granted_slots=9),
-            ])
-            db.commit()
-            sql_uow = sql.SqlAlchemyUnitOfWork(db)
-            assert bookings.get_quota(7, 2026, 11, db) == 4
-            assert bookings.get_quota(7, 2026, 11, db, uow=sql_uow) == 4
-            assert bookings.get_quota(8, 2026, 11, db, uow=sql_uow) == 0
-
-        memory = fakes.InMemoryDatabase()
-        writer = fakes.InMemoryUnitOfWork(memory)
-        repo = writer.repository(models.BookingQuota)
-        repo.add(models.BookingQuota(user_id=7, year=2026, month=11, granted_slots=4))
-        repo.add(models.BookingQuota(user_id=7, year=2026, month=12, granted_slots=9))
-        writer.commit()
-        reader = fakes.InMemoryUnitOfWork(memory)
-        assert bookings.get_quota(7, 2026, 11, None, uow=reader) == 4
-        assert bookings.get_quota(8, 2026, 11, None, uow=reader) == 0
-    finally:
-        engine.dispose()
+    with sessions() as db:
+        db.add(models.User(id=7, username="Quota", email="quota@example.test", _password_hash="test"))
+        db.commit()
+        db.add_all([
+            models.BookingQuota(user_id=7, year=2026, month=11, granted_slots=4),
+            models.BookingQuota(user_id=7, year=2026, month=12, granted_slots=9),
+        ])
+        db.commit()
+        sql_uow = sql.SqlAlchemyUnitOfWork(db)
+        assert bookings.get_quota(7, 2026, 11, db) == 4
+        assert bookings.get_quota(7, 2026, 11, db, uow=sql_uow) == 4
+        assert bookings.get_quota(8, 2026, 11, db, uow=sql_uow) == 0
+    memory = fakes.InMemoryDatabase()
+    writer = fakes.InMemoryUnitOfWork(memory)
+    repo = writer.repository(models.BookingQuota)
+    repo.add(models.BookingQuota(user_id=7, year=2026, month=11, granted_slots=4))
+    repo.add(models.BookingQuota(user_id=7, year=2026, month=12, granted_slots=9))
+    writer.commit()
+    reader = fakes.InMemoryUnitOfWork(memory)
+    assert bookings.get_quota(7, 2026, 11, None, uow=reader) == 4
+    assert bookings.get_quota(8, 2026, 11, None, uow=reader) == 0
 
 
-def test_request_routes_share_overridden_session_with_request_uow(tmp_path):
+def test_request_routes_share_overridden_session_with_request_uow(runtime_db):
     from fastapi import FastAPI
 
     account_router = _module('pymentor_core.modules.identity.api.router')
@@ -412,20 +397,14 @@ def test_request_routes_share_overridden_session_with_request_uow(tmp_path):
     dependencies = _module('pymentor_core.app.dependencies')
     composition = _module('pymentor_core.app.context')
     sql = _module('pymentor_core.adapters.sql.unit_of_work')
-    fakes = _module('tools.lab.storage.fakes')
+    fakes = _module('support_fakes')
     models = _module('pymentor_core.adapters.sql.models')
     db_engine = _module('pymentor_core.app.database')
-    engine = create_engine(
-        f"sqlite:///{(tmp_path / 'request.sqlite3').as_posix()}",
-        connect_args={"check_same_thread": False},
-    )
-    db_engine.Base.metadata.create_all(engine)
-    sessions = sessionmaker(bind=engine)
+    sessions = runtime_db
     with sessions() as db:
         user = models.User(username="Test Student", email="ports@example.test", password="test-password")
         db.add(user)
         db.flush()
-        db.add(models.Session(user_id=user.id, session_token="ports-test-session"))
         db.add(models.BookingQuota(user_id=user.id, year=2026, month=11, granted_slots=3))
         db.add(models.BookingSlot(slot_date=date(2026, 11, 4), start_time="18:01", duration_minutes=60))
         db.commit()
@@ -451,6 +430,7 @@ def test_request_routes_share_overridden_session_with_request_uow(tmp_path):
         return uow
 
     app = FastAPI()
+    attach_identity(app, {"ports-test-session": user_id})
     app.include_router(account_router.user_router, prefix="/user")
     app.include_router(booking_router.booking_router, prefix="/user")
     app.dependency_overrides[dependencies.get_db] = get_test_db
@@ -498,21 +478,18 @@ def test_request_routes_share_overridden_session_with_request_uow(tmp_path):
         assert status == 200
         assert visit == {"activity_date": "2026-11-04", "visited_at": "2026-11-04T15:00:00+00:00"}
 
-    try:
-        asyncio.run(exercise())
-        assert len(opened) == len(uows) == 2
-        assert uows[0].session is opened[0]
-        assert uows[1].session is opened[1]
-        assert opened[0] is not opened[1]
-        assert repository_types == [models.BookingQuota, models.UserActivityDay]
-        with sessions() as db:
-            assert db.query(models.UserActivityDay).filter_by(user_id=user_id).count() == 1
-    finally:
-        engine.dispose()
+    asyncio.run(exercise())
+    assert len(opened) == len(uows) == 2
+    assert uows[0].session is opened[0]
+    assert uows[1].session is opened[1]
+    assert opened[0] is not opened[1]
+    assert repository_types == [models.BookingQuota, models.UserActivityDay]
+    with sessions() as db:
+        assert db.query(models.UserActivityDay).filter_by(user_id=user_id).count() == 1
 
 
 def test_core_infrastructure_and_two_example_modules_have_no_import_cycles():
-    module_files = {name: BACKEND_ROOT.parent / relative for name,relative in {'pymentor_core.shared.ports': 'services\\core-api\\pymentor_core\\shared\\ports.py', 'pymentor_core.app.context': 'services\\core-api\\pymentor_core\\app\\context.py', 'pymentor_core.app.paths': 'services\\core-api\\pymentor_core\\app\\paths.py', 'pymentor_core.app.dependencies': 'services\\core-api\\pymentor_core\\app\\dependencies.py', 'pymentor_core.app.wiring': 'services\\core-api\\pymentor_core\\app\\wiring.py', 'pymentor_core.app.database': 'services\\core-api\\pymentor_core\\app\\database.py', 'pymentor_core.adapters.sql.models': 'services\\core-api\\pymentor_core\\adapters\\sql\\models.py', 'pymentor_core.adapters.sql.unit_of_work': 'services\\core-api\\pymentor_core\\adapters\\sql\\unit_of_work.py', 'tools.lab.storage.fakes': 'services/core-api/tools/lab/storage/fakes.py', 'pymentor_core.app.defaults': 'services\\core-api\\pymentor_core\\app\\defaults.py', 'pymentor_core.modules.identity.activity': 'services\\core-api\\pymentor_core\\modules\\identity\\activity.py', 'pymentor_core.modules.identity.api.router': 'services\\core-api\\pymentor_core\\modules\\identity\\api\\router.py', 'pymentor_core.modules.identity.api.schemas': 'services\\core-api\\pymentor_core\\modules\\identity\\api\\schemas.py', 'pymentor_core.modules.identity.api.accounts': 'services\\core-api\\pymentor_core\\modules\\identity\\api\\accounts.py', 'pymentor_core.modules.bookings.api.router': 'services/core-api/pymentor_core/modules/bookings/api/router.py', 'pymentor_core.modules.bookings.api.schemas': 'services/core-api/pymentor_core/modules/bookings/api/schemas.py', 'pymentor_core.modules.bookings.api.service': 'services/core-api/pymentor_core/modules/bookings/api/service.py'}.items()}
+    module_files = {name: BACKEND_ROOT.parent / relative for name,relative in {'pymentor_core.shared.ports': 'services\\core-api\\pymentor_core\\shared\\ports.py', 'pymentor_core.app.context': 'services\\core-api\\pymentor_core\\app\\context.py', 'pymentor_core.app.paths': 'services\\core-api\\pymentor_core\\app\\paths.py', 'pymentor_core.app.dependencies': 'services\\core-api\\pymentor_core\\app\\dependencies.py', 'pymentor_core.app.wiring': 'services\\core-api\\pymentor_core\\app\\wiring.py', 'pymentor_core.app.database': 'services\\core-api\\pymentor_core\\app\\database.py', 'pymentor_core.adapters.sql.models': 'services\\core-api\\pymentor_core\\adapters\\sql\\models.py', 'pymentor_core.adapters.sql.unit_of_work': 'services\\core-api\\pymentor_core\\adapters\\sql\\unit_of_work.py', 'support_fakes': 'services/core-api/tests/regression/support_fakes.py', 'pymentor_core.app.defaults': 'services\\core-api\\pymentor_core\\app\\defaults.py', 'pymentor_core.modules.identity.activity': 'services\\core-api\\pymentor_core\\modules\\identity\\activity.py', 'pymentor_core.modules.identity.api.router': 'services\\core-api\\pymentor_core\\modules\\identity\\api\\router.py', 'pymentor_core.modules.identity.api.schemas': 'services\\core-api\\pymentor_core\\modules\\identity\\api\\schemas.py', 'pymentor_core.modules.identity.api.accounts': 'services\\core-api\\pymentor_core\\modules\\identity\\api\\accounts.py', 'pymentor_core.modules.bookings.api.router': 'services/core-api/pymentor_core/modules/bookings/api/router.py', 'pymentor_core.modules.bookings.api.schemas': 'services/core-api/pymentor_core/modules/bookings/api/schemas.py', 'pymentor_core.modules.bookings.api.service': 'services/core-api/pymentor_core/modules/bookings/api/service.py'}.items()}
     edges = {name: set() for name in module_files}
 
     for name, path in module_files.items():

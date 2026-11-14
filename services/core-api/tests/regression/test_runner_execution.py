@@ -12,12 +12,11 @@ from pathlib import Path
 from time import perf_counter
 from unittest.mock import patch
 
+import pytest
 from fastapi import FastAPI
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from pg_business_support import runtime_db, attach_identity
 
 from pymentor_core.adapters.sql import models
-from pymentor_core.app.database import Base
 from pymentor_core.adapters.legacy_runner.python import _run_runner_source
 from pymentor_core.adapters.legacy_runner.python import run_python_task
 from pymentor_core.adapters.legacy_runner.executor import RunnerExecutor
@@ -152,24 +151,24 @@ class RunnerResourceTests(unittest.TestCase):
 
 
 class RunnerAPITests(unittest.IsolatedAsyncioTestCase):
+    @pytest.fixture(autouse=True)
+    def postgres_fixture(self, runtime_db):
+        self.sessions = runtime_db
+
     def setUp(self):
         legacy_runner = patch.dict("os.environ", {"PYMENTOR_PUBLIC_RUNNER_ENABLED": "1"})
         legacy_runner.start()
         self.addCleanup(legacy_runner.stop)
         self.temp = tempfile.TemporaryDirectory(prefix="pymentor-execution-test-")
         self.executor = RunnerExecutor(Path(self.temp.name) / "runner.lock")
-        self.engine = create_engine(f"sqlite:///{Path(self.temp.name).as_posix()}/test.db",
-                                    connect_args={"check_same_thread": False})
-        Base.metadata.create_all(self.engine)
-        self.sessions = sessionmaker(bind=self.engine)
         with self.sessions() as db:
             user = models.User(username="test", email="runner@example.test", password="$2b$test")
             db.add(user)
             db.flush()
             self.user_id = user.id
-            db.add(models.Session(user_id=user.id, session_token="runner-test-session"))
             db.commit()
         self.app = FastAPI()
+        attach_identity(self.app, {"runner-test-session": self.user_id})
         self.app.include_router(learning_router, prefix="/learning")
         @self.app.get("/ping")
         def ping():
@@ -185,7 +184,6 @@ class RunnerAPITests(unittest.IsolatedAsyncioTestCase):
         self.executor.close()
         for item in reversed(self.patches):
             item.stop()
-        self.engine.dispose()
         self.temp.cleanup()
 
     async def submit(self, **kwargs):

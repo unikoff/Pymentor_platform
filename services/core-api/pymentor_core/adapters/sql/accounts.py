@@ -1,4 +1,4 @@
-"""Core-owned relational account queries shared by the two database profiles."""
+"""Core-owned relational account queries for the PostgreSQL runtime."""
 
 from pymentor_core.adapters.sql import models
 

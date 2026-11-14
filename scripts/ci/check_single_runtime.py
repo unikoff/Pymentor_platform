@@ -18,6 +18,58 @@ CONFIGS = (
     "deploy/helm/pymentor/templates/deployment-core.yaml", "deploy/local-postgres-redis/compose.yaml",
 )
 
+RETIRED_SOURCE_PATHS = (
+    "services/core-api/tools/migration",
+    "services/core-api/tools/lab/storage",
+    "services/core-api/tools/lab/session_models",
+    "services/core-api/pymentor_core/adapters/postgres/legacy_sessions.py",
+    "services/core-api/tools/maintenance/fill_booking_slots.py",
+)
+RETIRED_MODULES = (
+    "tools.migration", "tools.lab.storage", "tools.lab.session_models",
+    "tools.lab.c232", "tools.lab.inventory_sqlite_snapshot",
+    "pymentor_core.adapters.postgres.legacy_sessions",
+)
+
+
+def scan_retired_sources(root):
+    """Check tools and tests as well as runtime; content is an independent course."""
+    root = Path(root)
+    violations = [f"{name}:retired-sqlite-source-present"
+                  for name in RETIRED_SOURCE_PATHS if (root / name).exists()]
+    for directory in ("services", "scripts", "backend"):
+        for path in (root / directory).rglob("*.py"):
+            relative = path.relative_to(root).as_posix()
+            if relative.startswith("backend/content/") or any(
+                part in {"__pycache__", "node_modules", ".venv", "output"}
+                or part.startswith(".pytest") for part in path.relative_to(root).parts
+            ):
+                continue
+            source = path.read_text(encoding="utf-8-sig")
+            tree = ast.parse(source)
+            for node in ast.walk(tree):
+                names = []
+                if isinstance(node, ast.Import):
+                    names = [alias.name for alias in node.names]
+                elif isinstance(node, ast.ImportFrom):
+                    names = [node.module or ""]
+                    names += [(node.module or "") + "." + alias.name for alias in node.names]
+                if any(name == "sqlite3" or name.startswith(RETIRED_MODULES) for name in names):
+                    violations.append(f"{relative}:{node.lineno}:retired-source-import")
+                if not isinstance(node, ast.Call):
+                    continue
+                function = node.func
+                name = function.id if isinstance(function, ast.Name) else getattr(function, "attr", "")
+                if name == "import_module" and node.args and isinstance(node.args[0], ast.Constant):
+                    module = node.args[0].value
+                    if isinstance(module, str) and (module == "sqlite3" or module.startswith(RETIRED_MODULES)):
+                        violations.append(f"{relative}:{node.lineno}:dynamic-retired-import")
+                if name in {"create_engine", "create_async_engine"} and node.args:
+                    dsn = ast.get_source_segment(source, node.args[0]) or ""
+                    if re.search(r"sqlite(?:\+[a-z0-9_]+)?://", dsn.lower()):
+                        violations.append(f"{relative}:{node.lineno}:executable-sqlite-fixture")
+    return violations
+
 
 def scan_package(package):
     package = Path(package)
@@ -73,6 +125,8 @@ import importlib.util, os, sys
 from pathlib import Path
 assert os.getuid() == 10001
 assert not Path('/app/services/core-api/pymentor_core/adapters/legacy_sqlite').exists()
+assert not Path('/app/services/core-api/pymentor_core/adapters/postgres/legacy_sessions.py').exists()
+assert not Path('/app/services/core-api/tools').exists()
 assert not Path('/app/services/core-api/pymentor_core/app/passenger.py').exists()
 assert not Path('/app/backend/main.py').exists()
 assert not list(Path('/app').rglob('*.sqlite*'))
@@ -95,7 +149,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--image")
     args = parser.parse_args()
-    violations = scan_package(ROOT / "services/core-api/pymentor_core") + scan_config(ROOT)
+    violations = (scan_package(ROOT / "services/core-api/pymentor_core")
+                  + scan_config(ROOT) + scan_retired_sources(ROOT))
     if violations:
         print(json.dumps({"violations": violations}))
         raise SystemExit(1)

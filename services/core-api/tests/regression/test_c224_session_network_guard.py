@@ -224,12 +224,9 @@ def test_reconcile_rechecks_when_logout_changes_historical_top_three():
     run_scenario(scenario)
 
 
-@pytest.mark.parametrize("operation", ["reconcile", "import"])
-def test_projection_wait_does_not_hold_user_write_lock(operation):
+def test_projection_wait_does_not_hold_user_write_lock():
     from datetime import datetime
     from datetime import timezone
-    from pymentor_core.adapters.postgres.legacy_sessions import LegacySession
-    from pymentor_core.adapters.postgres.legacy_sessions import import_legacy_sessions
 
     async def scenario(db, store, user_id, email, password):
         service = AsyncIdentitySessions(db, store)
@@ -241,11 +238,8 @@ def test_projection_wait_does_not_hold_user_write_lock(operation):
             await release.wait()
             await add(uid, sessions)
 
-        if operation == "reconcile":
-            await service.login(email, password)
-            coroutine = service.reconcile_user(user_id)
-        else:
-            coroutine = import_legacy_sessions(service, user_id, [LegacySession(str(uuid4()), datetime.now(timezone.utc))])
+        await service.login(email, password)
+        coroutine = service.reconcile_user(user_id)
         with patch.object(store, "add_user_sessions", side_effect=slow):
             task = asyncio.create_task(coroutine)
             try:
@@ -283,83 +277,4 @@ def test_delayed_reconcile_does_not_remove_parallel_login_or_revive_logout():
         assert (await service.authenticate(new)).user_id == user_id
         with pytest.raises(InvalidSession):
             await service.authenticate(old)
-    run_scenario(scenario)
-
-
-@pytest.mark.parametrize("outcome", ["lost_reply", "cancel"])
-def test_import_interrupted_after_redis_write_never_commits(outcome):
-    from datetime import datetime
-    from datetime import timezone
-    from pymentor_core.adapters.postgres.legacy_sessions import LegacySession
-    from pymentor_core.adapters.postgres.legacy_sessions import import_legacy_sessions
-
-    async def scenario(db, store, user_id, email, password):
-        service = AsyncIdentitySessions(db, store)
-        token = str(uuid4())
-        add = store.add_user_sessions
-
-        async def interrupted(uid, sessions):
-            await add(uid, sessions)
-            if outcome == "cancel":
-                raise asyncio.CancelledError()
-            raise RedisConnectionError("synthetic lost response")
-
-        with patch.object(store, "add_user_sessions", side_effect=interrupted):
-            with pytest.raises(asyncio.CancelledError if outcome == "cancel" else IdentityUnavailable):
-                await import_legacy_sessions(service, user_id, [LegacySession(token, datetime.now(timezone.utc))])
-        with pytest.raises(InvalidSession):
-            await service.authenticate(token)
-        async with db.unit_of_work() as uow:
-            from sqlalchemy import text
-            row = (await uow.session.execute(text(
-                "SELECT (SELECT count(*) FROM sessions WHERE user_id=:id), "
-                "EXISTS (SELECT 1 FROM session_import_markers WHERE user_id=:id)"
-            ), {"id": user_id})).one()
-            assert tuple(row) == (0, False)
-    run_scenario(scenario)
-
-
-@pytest.mark.parametrize("winner", ["login", "login_logout", "import"])
-def test_import_rechecks_after_a_concurrent_winner(winner):
-    from datetime import datetime
-    from datetime import timezone
-    from pymentor_core.adapters.postgres.legacy_sessions import LegacySession
-    from pymentor_core.adapters.postgres.legacy_sessions import import_legacy_sessions
-
-    async def scenario(db, store, user_id, email, password):
-        service = AsyncIdentitySessions(db, store)
-        candidate = LegacySession(str(uuid4()), datetime.now(timezone.utc))
-        entered, release = asyncio.Event(), asyncio.Event()
-        add = store.add_user_sessions
-        calls = 0
-
-        async def first_slow(uid, sessions):
-            nonlocal calls
-            calls += 1
-            if calls == 1:
-                entered.set()
-                await release.wait()
-            await add(uid, sessions)
-
-        with patch.object(store, "add_user_sessions", side_effect=first_slow):
-            task = asyncio.create_task(import_legacy_sessions(service, user_id, [candidate]))
-            try:
-                await asyncio.wait_for(entered.wait(), 3)
-                if winner == "import":
-                    other = LegacySession(str(uuid4()), datetime.now(timezone.utc))
-                    assert await import_legacy_sessions(service, user_id, [other]) == 1
-                else:
-                    grant = await service.login(email, password)
-                    if winner == "login_logout":
-                        await service.logout(grant.token)
-            finally:
-                release.set()
-            with pytest.raises(ValueError, match="already has sessions|already consumed"):
-                await task
-        with pytest.raises(InvalidSession):
-            await service.authenticate(candidate.token)
-        if winner == "import":
-            assert (await service.authenticate(other.token)).user_id == user_id
-        elif winner == "login":
-            assert (await service.authenticate(grant.token)).user_id == user_id
     run_scenario(scenario)
